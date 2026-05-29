@@ -20,5 +20,16 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Oficios"
+
 include(":app")
- 
+include(":core:common")
+include(":core:model")
+include(":core:designsystem")
+include(":core:ui")
+include(":core:network")
+include(":core:datastore")
+include(":core:database")
+include(":core:data")
+include(":domain")
+include(":feature:home")
+include(":feature:settings")
