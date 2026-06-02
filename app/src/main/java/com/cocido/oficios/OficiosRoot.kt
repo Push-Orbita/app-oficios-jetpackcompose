@@ -4,7 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cocido.oficios.core.designsystem.theme.AppTheme
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.ThemeMode
 import com.cocido.oficios.navigation.OficiosApp
 import com.cocido.oficios.ui.MainViewModel
@@ -21,7 +21,7 @@ fun OficiosRoot(
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
 
-    AppTheme(darkTheme = darkTheme) {
+    OficiosTheme(darkTheme = darkTheme) {
         OficiosApp()
     }
 }

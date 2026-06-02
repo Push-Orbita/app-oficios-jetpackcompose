@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="21" />
+    <bytecodeTargetLevel target="17">
+      <module name="Oficios.core.data" target="21" />
+      <module name="Oficios.core.database" target="21" />
+      <module name="Oficios.core.datastore" target="21" />
+      <module name="Oficios.core.designsystem" target="21" />
+      <module name="Oficios.core.network" target="21" />
+      <module name="Oficios.core.ui" target="21" />
+      <module name="Oficios.feature.home" target="21" />
+      <module name="Oficios.feature.settings" target="21" />
+    </bytecodeTargetLevel>
   </component>
 </project>

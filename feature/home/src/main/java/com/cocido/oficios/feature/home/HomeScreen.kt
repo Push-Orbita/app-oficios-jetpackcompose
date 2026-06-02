@@ -8,22 +8,24 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.cocido.oficios.core.designsystem.component.AppButton
-import com.cocido.oficios.core.designsystem.component.AppCard
-import com.cocido.oficios.core.designsystem.component.AppErrorState
-import com.cocido.oficios.core.designsystem.component.AppLoading
-import com.cocido.oficios.core.designsystem.component.AppOutlinedButton
-import com.cocido.oficios.core.designsystem.component.AppScaffold
-import com.cocido.oficios.core.designsystem.component.AppTopBar
-import com.cocido.oficios.core.designsystem.theme.AppDimens
-import com.cocido.oficios.core.designsystem.theme.AppSpacing
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
+import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.R
+import androidx.compose.material3.Icon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,30 +34,35 @@ fun HomeScreen(
     onEvent: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AppScaffold(
+    OficiosScaffold(
         modifier = modifier,
         topBar = {
-            AppTopBar(
+            OficiosTopAppBar(
                 title = stringResource(R.string.home_title),
-                actionIcon = Icons.Outlined.Settings,
-                onActionClick = { onEvent(HomeEvent.NavigateToSettings) },
-                actionContentDescription = stringResource(R.string.home_open_settings),
+                actions = {
+                    IconButton(onClick = { onEvent(HomeEvent.NavigateToSettings) }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = stringResource(R.string.home_open_settings),
+                        )
+                    }
+                },
             )
         },
     ) { paddingValues ->
         when (uiState) {
             HomeUiState.Loading -> {
-                AppLoading(
+                OficiosLoadingState(
                     modifier = Modifier.padding(paddingValues),
                     message = stringResource(R.string.home_loading),
                 )
             }
             is HomeUiState.Error -> {
-                AppErrorState(
-                    message = uiState.message,
+                OficiosErrorState(
+                    title = stringResource(R.string.home_error_title),
+                    description = uiState.message,
                     onRetry = { onEvent(HomeEvent.Retry) },
                     modifier = Modifier.padding(paddingValues),
-                    retryLabel = stringResource(R.string.home_retry),
                 )
             }
             is HomeUiState.Success -> {
@@ -78,12 +85,12 @@ private fun HomeContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(AppSpacing.lg),
+            .padding(OficiosSpacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(AppSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
-        AppCard(
-            modifier = Modifier.widthIn(max = AppDimens.contentMaxWidth),
+        OficiosCard(
+            modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
         ) {
             Text(
                 text = uiState.content.title,
@@ -94,20 +101,21 @@ private fun HomeContent(
                 text = uiState.content.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = AppSpacing.sm),
+                modifier = Modifier.padding(top = OficiosSpacing.sm),
             )
         }
 
-        AppButton(
+        OficiosButton(
             text = stringResource(R.string.home_refresh),
             onClick = { onEvent(HomeEvent.LoadContent) },
-            modifier = Modifier.widthIn(max = AppDimens.contentMaxWidth),
+            modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
         )
 
-        AppOutlinedButton(
+        OficiosButton(
             text = stringResource(R.string.home_simulate_error),
             onClick = { onEvent(HomeEvent.SimulateError) },
-            modifier = Modifier.widthIn(max = AppDimens.contentMaxWidth),
+            modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
+            variant = OficiosButtonVariant.Outlined,
         )
     }
 }

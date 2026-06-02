@@ -6,4 +6,5 @@
     <string name="home_refresh">Refresh</string>
     <string name="home_simulate_error">Simulate error</string>
     <string name="home_open_settings">Open settings</string>
+    <string name="home_error_title">Error</string>
 </resources>
