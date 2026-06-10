@@ -16,6 +16,21 @@ object OficiosComponentSize {
     val avatarMd = 64.dp
     val avatarLg = 96.dp
     val contentMaxWidth = 640.dp
+
+    // Marca auth — baseline Figma 440dp (nodos 356:22, 356:49)
+    val authBrandMaxWidth = 351.dp
+    val authLogoWithTitleHeightCompact = 262.dp
+    val authLogoWithTitleHeightSplash = 269.dp
+    val authLogoIconWidthCompact = 122.dp
+    val authLogoIconWidthSplash = 163.dp
+    val authWordmarkHeight = 36.dp
+    val authRegisterBrandIconWidth = 61.dp
+
+    // Selección de rol — Figma 356:482
+    val registerRoleCardHeight = 172.dp
+    val registerRoleCardIconAreaHeight = 100.dp
+    val registerRoleCardIconWorkerHeight = 64.dp
+    val registerRoleCardIconClientHeight = 87.dp
 }
 
 // Alias de compatibilidad con código previo del template

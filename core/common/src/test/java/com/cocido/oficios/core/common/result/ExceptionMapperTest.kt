@@ -27,7 +27,7 @@ class ExceptionMapperTest {
 
         assertTrue(error is AppError.Unknown)
         assertEquals(
-            "Something went wrong. Please try again.",
+            "Algo salió mal. Intentá de nuevo.",
             error.userMessage(),
         )
     }

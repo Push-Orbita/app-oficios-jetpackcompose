@@ -90,8 +90,12 @@ fun OficiosButton(
         )
     }
 
-    val disabledContainerColor = containerColor.copy(alpha = OficiosAlpha.disabled)
-    val disabledContentColor = contentColor.copy(alpha = OficiosAlpha.disabled)
+    val (disabledContainerColor, disabledContentColor) = when (variant) {
+        OficiosButtonVariant.Primary -> MaterialTheme.colorScheme.primaryContainer to
+            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = OficiosAlpha.high)
+        else -> containerColor.copy(alpha = OficiosAlpha.disabled) to
+            contentColor.copy(alpha = OficiosAlpha.disabled)
+    }
 
     Button(
         onClick = { if (!loading) onClick() },

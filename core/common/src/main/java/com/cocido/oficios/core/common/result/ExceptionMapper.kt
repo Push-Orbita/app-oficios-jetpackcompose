@@ -27,7 +27,11 @@ fun Throwable.toAppError(): AppError {
 fun AppError.userMessage(): String = when (this) {
     is AppError.Network -> message
     is AppError.Validation -> message
-    is AppError.Unknown -> "Something went wrong. Please try again."
+    is AppError.Unauthorized -> message
+    is AppError.Forbidden -> message
+    is AppError.NotFound -> message
+    is AppError.Conflict -> message
+    is AppError.Unknown -> "Algo salió mal. Intentá de nuevo."
 }
 
 private fun Throwable.hasSslOrCertificateCause(): Boolean {

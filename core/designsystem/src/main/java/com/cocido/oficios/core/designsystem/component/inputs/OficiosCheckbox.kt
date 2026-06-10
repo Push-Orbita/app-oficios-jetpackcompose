@@ -31,10 +31,11 @@ fun OficiosCheckbox(
     label: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    expandWidth: Boolean = true,
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
+            .then(if (expandWidth) Modifier.fillMaxWidth() else Modifier)
             .clickable(enabled = enabled) { onCheckedChange(!checked) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),

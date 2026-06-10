@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_client_title">Completá tu perfil</string>
+    <string name="onboarding_client_subtitle">Necesitás estos datos para contratar servicios</string>
+    <string name="onboarding_provider_title">Configurá tu perfil profesional</string>
+    <string name="onboarding_provider_subtitle">Completá los pasos obligatorios para operar en la plataforma</string>
+    <string name="onboarding_pending_title">Tu perfil está en revisión</string>
+    <string name="onboarding_pending_subtitle">Cuando sea aprobado podrás recibir solicitudes de trabajo.</string>
+    <string name="onboarding_rejected_title">Tu perfil fue rechazado</string>
+    <string name="onboarding_rejected_subtitle">Revisá los datos y corregí lo indicado para volver a enviar.</string>
+    <string name="onboarding_rejected_reason">Motivo: %1$s</string>
+    <string name="onboarding_fix_profile">Corregir perfil</string>
+    <string name="onboarding_go_home_client">Ir al inicio</string>
+    <string name="onboarding_go_home_provider">Ir al panel</string>
+    <string name="onboarding_blocked_title">Cuenta bloqueada</string>
+    <string name="onboarding_blocked_subtitle">Tu cuenta fue bloqueada. Contactá soporte para más información.</string>
+    <string name="onboarding_inactive_title">Cuenta inactiva</string>
+    <string name="onboarding_inactive_subtitle">Tu cuenta está inactiva. Contactá soporte si necesitás reactivarla.</string>
+    <string name="onboarding_logout">Cerrar sesión</string>
+    <string name="onboarding_step_complete">Completo</string>
+    <string name="onboarding_step_pending">Pendiente</string>
+</resources>
