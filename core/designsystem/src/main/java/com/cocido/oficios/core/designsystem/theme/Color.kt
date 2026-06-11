@@ -10,11 +10,12 @@ import androidx.compose.ui.graphics.Color
 
 val OficiosColorBackground = Color(0xFF231D38)
 val OficiosColorSurface = Color(0xFF2A2340)
-val OficiosColorSurfaceVariant = Color(0xFF332A4E)
+val OficiosColorSurfaceVariant = Color(0xFF322A4E)
 val OficiosColorContainer = Color(0xFF413764)
 val OficiosColorOutline = Color(0xFF413764)
 val OficiosColorOutlineVariant = Color(0x66413764)     // 40 % opacity
 
+/** Fondo botón primario / acento — Figma #A32F56 */
 val OficiosColorPrimary = Color(0xFFA32F56)
 val OficiosColorPrimaryBorder = Color(0x80D197AB)      // rgba(209,151,171,0.5)
 val OficiosColorPrimaryContainer = Color(0xFF6B1E38)

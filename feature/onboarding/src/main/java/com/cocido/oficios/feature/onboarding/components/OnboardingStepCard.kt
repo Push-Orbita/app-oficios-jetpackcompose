@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.clickable
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -20,8 +21,20 @@ fun OnboardingStepCard(
     step: OnboardingStep,
     modifier: Modifier = Modifier,
     statusLabel: String,
+    enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
 ) {
-    OficiosCard(modifier = modifier.fillMaxWidth()) {
+    OficiosCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (enabled && onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                },
+            ),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

@@ -12,48 +12,85 @@ import com.cocido.oficios.feature.onboarding.ProviderOnboardingRoute
 import com.cocido.oficios.feature.onboarding.ProviderPendingRoute
 import com.cocido.oficios.feature.onboarding.ProviderRejectedRoute
 import com.cocido.oficios.feature.onboarding.gate.OnboardingGateRoute
+import com.cocido.oficios.feature.onboarding.steps.ClientContactoRoute
+import com.cocido.oficios.feature.onboarding.steps.ClientDomicilioRoute
+import com.cocido.oficios.feature.onboarding.steps.ProviderDniRoute
+import com.cocido.oficios.feature.onboarding.steps.ProviderLocalRoute
+import com.cocido.oficios.feature.onboarding.steps.ProviderProfessionalInfoRoute
+import com.cocido.oficios.feature.onboarding.steps.ProviderRubrosRoute
 
 fun NavGraphBuilder.onboardingGraph(
     onNavigateFromGate: (InitialDestination) -> Unit,
     onNavigateToProviderOnboarding: () -> Unit,
     onNavigateToClientHome: () -> Unit,
     onNavigateToProviderHome: () -> Unit,
-    onLogout: () -> Unit,
+    onNavigateToStep: (String) -> Unit,
+    onStepCompleted: () -> Unit,
+    onLoggedOut: () -> Unit,
 ) {
     composable(OnboardingDestination.GATE) {
         OnboardingGateRoute(onNavigate = onNavigateFromGate)
     }
     composable(OnboardingDestination.CLIENT_CHECKLIST) {
-        ClientOnboardingRoute(onLogout = onLogout)
+        ClientOnboardingRoute(
+            onLoggedOut = onLoggedOut,
+            onNavigateToStep = onNavigateToStep,
+            onRefresh = onStepCompleted,
+        )
     }
     composable(OnboardingDestination.PROVIDER_CHECKLIST) {
-        ProviderOnboardingRoute(onLogout = onLogout)
+        ProviderOnboardingRoute(
+            onLoggedOut = onLoggedOut,
+            onNavigateToStep = onNavigateToStep,
+            onNavigateFromGate = onNavigateFromGate,
+            onRefresh = onStepCompleted,
+        )
     }
     composable(OnboardingDestination.PROVIDER_PENDING) {
-        ProviderPendingRoute(onLogout = onLogout)
+        ProviderPendingRoute(onLoggedOut = onLoggedOut)
     }
     composable(OnboardingDestination.PROVIDER_REJECTED) {
         ProviderRejectedRoute(
             onFixProfile = onNavigateToProviderOnboarding,
-            onLogout = onLogout,
+            onLoggedOut = onLoggedOut,
+            onNavigateToStep = onNavigateToStep,
+            onRefresh = onStepCompleted,
         )
     }
     composable(OnboardingDestination.CLIENT_BLOCKED) {
-        ClientBlockedRoute(onLogout = onLogout)
+        ClientBlockedRoute(onLoggedOut = onLoggedOut)
     }
     composable(OnboardingDestination.CLIENT_INACTIVE) {
-        ClientInactiveRoute(onLogout = onLogout)
+        ClientInactiveRoute(onLoggedOut = onLoggedOut)
     }
     composable(OnboardingDestination.HOME_CLIENT) {
         ClientHomeShellRoute(
             onContinue = onNavigateToClientHome,
-            onLogout = onLogout,
+            onLoggedOut = onLoggedOut,
         )
     }
     composable(OnboardingDestination.HOME_PROVIDER) {
         ProviderHomeShellRoute(
             onContinue = onNavigateToProviderHome,
-            onLogout = onLogout,
+            onLoggedOut = onLoggedOut,
         )
+    }
+    composable(OnboardingDestination.CLIENT_DOMICILIO) {
+        ClientDomicilioRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.CLIENT_CONTACTO) {
+        ClientContactoRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.PROVIDER_DNI) {
+        ProviderDniRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.PROVIDER_PROFESSIONAL_INFO) {
+        ProviderProfessionalInfoRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.PROVIDER_RUBROS) {
+        ProviderRubrosRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.PROVIDER_LOCAL) {
+        ProviderLocalRoute(onSaved = onStepCompleted)
     }
 }

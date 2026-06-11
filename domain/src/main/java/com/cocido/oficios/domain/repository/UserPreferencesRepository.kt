@@ -6,4 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface UserPreferencesRepository {
     val themeMode: Flow<ThemeMode>
     suspend fun setThemeMode(themeMode: ThemeMode)
+    suspend fun getRememberSession(): Boolean
+    suspend fun setRememberSession(remember: Boolean)
 }

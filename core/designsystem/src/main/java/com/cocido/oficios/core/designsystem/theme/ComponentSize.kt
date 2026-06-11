@@ -6,6 +6,11 @@ object OficiosComponentSize {
     val textFieldHeight = 48.dp
     val buttonMinHeight = 36.dp
     val buttonHeight = 48.dp
+    val buttonPaddingHorizontal = 12.dp
+    val buttonPaddingVertical = 8.dp
+    val checkboxRowMinHeight = 40.dp
+    val checkboxRowPaddingVertical = 11.dp
+    val checkboxLabelGap = 11.dp
     val iconSm = 16.dp
     val iconMd = 24.dp
     val iconLg = 32.dp

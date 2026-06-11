@@ -7,6 +7,7 @@ data class User(
     val lastName: String,
     val role: UserRole,
     val emailVerified: Boolean,
+    val personaId: Long? = null,
     val profilePhotoUrl: String? = null,
 )
 

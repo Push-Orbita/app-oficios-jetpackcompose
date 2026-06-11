@@ -88,6 +88,14 @@ fun LoginScreen(
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
             )
 
+            OficiosButton(
+                text = stringResource(R.string.auth_forgot_password),
+                onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
+                enabled = !uiState.isLoading,
+                variant = OficiosButtonVariant.Ghost,
+                modifier = Modifier.align(Alignment.End),
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

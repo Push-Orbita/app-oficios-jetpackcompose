@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandRow
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
@@ -146,14 +147,16 @@ fun RegisterFormScreen(
             OficiosTextField(
                 value = uiState.fullName,
                 onValueChange = { onEvent(RegisterFormEvent.FullNameChanged(it)) },
-                label = stringResource(R.string.auth_full_name_label),
+                label = "",
+                placeholder = stringResource(R.string.auth_full_name_label),
                 isError = uiState.hasAttemptedSubmit && uiState.fullNameError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.fullNameError else null,
             )
             OficiosTextField(
                 value = uiState.document,
                 onValueChange = { onEvent(RegisterFormEvent.DocumentChanged(it)) },
-                label = stringResource(R.string.auth_document_label),
+                label = "",
+                placeholder = stringResource(R.string.auth_document_label),
                 isError = uiState.hasAttemptedSubmit && uiState.documentError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.documentError else null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -161,7 +164,8 @@ fun RegisterFormScreen(
             OficiosTextField(
                 value = uiState.email,
                 onValueChange = { onEvent(RegisterFormEvent.EmailChanged(it)) },
-                label = stringResource(R.string.auth_email_electronic_label),
+                label = "",
+                placeholder = stringResource(R.string.auth_email_electronic_label),
                 isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -174,22 +178,24 @@ fun RegisterFormScreen(
             OficiosPasswordField(
                 value = uiState.password,
                 onValueChange = { onEvent(RegisterFormEvent.PasswordChanged(it)) },
-                label = stringResource(R.string.auth_password_label),
+                label = "",
+                placeholder = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
                 onValueChange = { onEvent(RegisterFormEvent.ConfirmPasswordChanged(it)) },
-                label = stringResource(R.string.auth_repeat_password_label),
+                label = "",
+                placeholder = stringResource(R.string.auth_repeat_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.confirmPasswordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.confirmPasswordError else null,
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                verticalAlignment = Alignment.Top,
             ) {
                 OficiosTermsCheckbox(
                     checked = uiState.acceptedTerms,
@@ -198,12 +204,15 @@ fun RegisterFormScreen(
                     enabled = !uiState.isLoading,
                     prefix = stringResource(R.string.auth_terms_prefix),
                     termsLabel = stringResource(R.string.auth_terms_link),
+                    modifier = Modifier.weight(1f),
                 )
                 OficiosButton(
                     text = stringResource(R.string.auth_next_button),
                     onClick = { onEvent(RegisterFormEvent.Submit) },
                     enabled = uiState.canSubmit && !uiState.isLoading,
                     loading = uiState.isLoading,
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Compact,
                 )
             }
 
@@ -232,6 +241,7 @@ fun RegisterFormScreen(
                     onClick = { onEvent(RegisterFormEvent.LoginClicked) },
                     enabled = !uiState.isLoading,
                     variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Compact,
                 )
             }
         }

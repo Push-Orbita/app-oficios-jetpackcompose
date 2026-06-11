@@ -3,6 +3,10 @@ package com.cocido.oficios.core.network.di
 import com.cocido.oficios.core.network.BuildConfig
 import com.cocido.oficios.core.network.api.DemoApiService
 import com.cocido.oficios.core.network.api.auth.AuthApi
+import com.cocido.oficios.core.network.api.catalog.CatalogApi
+import com.cocido.oficios.core.network.api.profile.ClientProfileApi
+import com.cocido.oficios.core.network.api.profile.IdentityDocumentApi
+import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -93,6 +97,30 @@ object NetworkModule {
     @Singleton
     fun provideAuthApi(@ApiRetrofit retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCatalogApi(@ApiRetrofit retrofit: Retrofit): CatalogApi {
+        return retrofit.create(CatalogApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProviderProfileApi(@ApiRetrofit retrofit: Retrofit): ProviderProfileApi {
+        return retrofit.create(ProviderProfileApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideClientProfileApi(@ApiRetrofit retrofit: Retrofit): ClientProfileApi {
+        return retrofit.create(ClientProfileApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideIdentityDocumentApi(@ApiRetrofit retrofit: Retrofit): IdentityDocumentApi {
+        return retrofit.create(IdentityDocumentApi::class.java)
     }
 
     @Provides

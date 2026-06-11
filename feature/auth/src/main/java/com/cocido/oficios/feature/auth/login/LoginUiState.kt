@@ -6,6 +6,7 @@ sealed interface LoginEvent {
     data class RememberMeChanged(val value: Boolean) : LoginEvent
     data object Submit : LoginEvent
     data object RegisterClicked : LoginEvent
+    data object ForgotPasswordClicked : LoginEvent
     data object ContactSupportClicked : LoginEvent
 }
 

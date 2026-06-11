@@ -43,6 +43,7 @@ fun UsuarioDto.toDomainUser(): User = User(
     lastName = persona?.apellido.orEmpty(),
     role = UserRole.fromRoleName(rolUsuario?.nombre),
     emailVerified = emailVerificado,
+    personaId = persona?.id,
     profilePhotoUrl = fotoPerfil?.let { element ->
         (element as? JsonPrimitive)?.content
     },

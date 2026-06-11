@@ -27,30 +27,51 @@ private fun HttpException.toHttpAppError(): AppError {
     val message = parseErrorMessage(body) ?: message()
 
     return when (code()) {
-        400, 422 -> AppError.Validation(message = message, fieldErrors = parseFieldErrors(body))
+        400, 422 -> AppError.Validation(
+            message = message.ifBlank { "Revisá los datos ingresados" },
+            fieldErrors = parseFieldErrors(body),
+        )
         401 -> AppError.Unauthorized(message = message.ifBlank { "Credenciales inválidas" })
         403 -> AppError.Forbidden(message = message.ifBlank { "Acceso denegado" })
         404 -> AppError.NotFound(message = message.ifBlank { "Recurso no encontrado" })
         409 -> AppError.Conflict(message = message.ifBlank { "El recurso ya existe" })
         in 500..599 -> AppError.Network(message = "Error del servidor. Intentá más tarde.", code = code())
-        else -> AppError.Network(message = message, code = code())
+        else -> AppError.Network(message = message.ifBlank { "Error de red" }, code = code())
     }
 }
 
-private fun parseErrorMessage(body: String): String? {
+internal fun parseErrorMessage(body: String): String? {
     if (body.isBlank()) return null
     return runCatching {
         val json = errorJson.parseToJsonElement(body)
-        when (json) {
-            is JsonObject -> {
-                json["message"]?.jsonPrimitive?.content
-                    ?: json["error"]?.jsonPrimitive?.content
-                    ?: json["detail"]?.jsonPrimitive?.content
-            }
-            else -> null
-        }
+        if (json !is JsonObject) return@runCatching null
+
+        val candidates = listOfNotNull(
+            json["errorDetails"]?.jsonObject?.get("message")?.jsonPrimitive?.content,
+            json["message"]?.jsonPrimitive?.content,
+            json["detail"]?.jsonPrimitive?.content,
+            json["error"]?.jsonPrimitive?.takeIf { it.isString }?.content,
+        )
+
+        candidates.firstOrNull { isUserFacingErrorMessage(it) }
     }.getOrNull()
 }
+
+private fun isUserFacingErrorMessage(value: String): Boolean {
+    if (value.isBlank()) return false
+    return value.lowercase() !in uselessErrorMessages
+}
+
+private val uselessErrorMessages = setOf(
+    "true",
+    "false",
+    "error",
+    "unauthorized",
+    "forbidden",
+    "not found",
+    "conflict",
+    "bad request",
+)
 
 private fun parseFieldErrors(body: String): Map<String, String> {
     if (body.isBlank()) return emptyMap()

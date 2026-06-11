@@ -9,6 +9,7 @@ import com.cocido.oficios.feature.auth.login.LoginRoute
 import com.cocido.oficios.feature.auth.register.RegisterClientRoute
 import com.cocido.oficios.feature.auth.register.RegisterProviderRoute
 import com.cocido.oficios.feature.auth.register.RegisterRoleSelectionRoute
+import com.cocido.oficios.feature.auth.register.RegisterTradeRoute
 import com.cocido.oficios.feature.auth.splash.SplashRoute
 
 fun NavGraphBuilder.authGraph(
@@ -17,9 +18,12 @@ fun NavGraphBuilder.authGraph(
     onNavigateToLogin: () -> Unit,
     onNavigateToRegisterRole: () -> Unit,
     onNavigateToRegisterClient: () -> Unit,
+    onNavigateToRegisterTrade: () -> Unit,
     onNavigateToRegisterProvider: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToResetPassword: () -> Unit,
+    onContactSupport: () -> Unit,
+    onNavigateToTerms: () -> Unit,
 ) {
     composable(AuthDestination.SPLASH) {
         SplashRoute(onNavigate = onNavigateFromSplash)
@@ -28,25 +32,37 @@ fun NavGraphBuilder.authGraph(
         LoginRoute(
             onNavigateToOnboarding = onNavigateToOnboarding,
             onNavigateToRegister = onNavigateToRegisterRole,
+            onNavigateToForgotPassword = onNavigateToForgotPassword,
+            onContactSupport = onContactSupport,
         )
     }
     composable(AuthDestination.REGISTER_ROLE) {
         RegisterRoleSelectionRoute(
             onSelectClient = onNavigateToRegisterClient,
-            onSelectProvider = onNavigateToRegisterProvider,
+            onSelectProvider = onNavigateToRegisterTrade,
             onNavigateToLogin = onNavigateToLogin,
+            onContactSupport = onContactSupport,
         )
     }
     composable(AuthDestination.REGISTER_CLIENT) {
         RegisterClientRoute(
             onNavigateToOnboarding = onNavigateToOnboarding,
             onNavigateToLogin = onNavigateToLogin,
+            onNavigateToTerms = onNavigateToTerms,
+            onContactSupport = onContactSupport,
+        )
+    }
+    composable(AuthDestination.REGISTER_TRADE) {
+        RegisterTradeRoute(
+            onNavigateToProviderRegister = onNavigateToRegisterProvider,
         )
     }
     composable(AuthDestination.REGISTER_PROVIDER) {
         RegisterProviderRoute(
             onNavigateToOnboarding = onNavigateToOnboarding,
             onNavigateToLogin = onNavigateToLogin,
+            onNavigateToTerms = onNavigateToTerms,
+            onContactSupport = onContactSupport,
         )
     }
     composable(AuthDestination.FORGOT_PASSWORD) {

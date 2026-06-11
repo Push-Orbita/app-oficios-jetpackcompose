@@ -95,6 +95,12 @@ class TokenDataStore @Inject constructor(
 
     fun hasSession(): Boolean = !getAccessToken().isNullOrBlank()
 
+    fun isSessionEphemeral(): Boolean = prefs.getBoolean(KEY_SESSION_EPHEMERAL, false)
+
+    fun setSessionEphemeral(ephemeral: Boolean) {
+        prefs.edit().putBoolean(KEY_SESSION_EPHEMERAL, ephemeral).apply()
+    }
+
     private companion object {
         const val KEY_ACCESS_TOKEN = "access_token"
         const val KEY_REFRESH_TOKEN = "refresh_token"
@@ -106,5 +112,6 @@ class TokenDataStore @Inject constructor(
         const val KEY_EMAIL_VERIFIED = "email_verified"
         const val KEY_CLIENT_ROLE_ID = "client_role_id"
         const val KEY_PROVIDER_ROLE_ID = "provider_role_id"
+        const val KEY_SESSION_EPHEMERAL = "session_ephemeral"
     }
 }

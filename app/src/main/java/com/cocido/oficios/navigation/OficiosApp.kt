@@ -2,6 +2,9 @@ package com.cocido.oficios.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.cocido.oficios.core.ui.intent.openSupportPhone
+import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
@@ -30,6 +33,8 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = AuthDestination.SPLASH,
 ) {
+    val context = LocalContext.current
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -53,6 +58,9 @@ fun AppNavHost(
             onNavigateToRegisterClient = {
                 navController.navigate(AuthDestination.REGISTER_CLIENT)
             },
+            onNavigateToRegisterTrade = {
+                navController.navigate(AuthDestination.REGISTER_TRADE)
+            },
             onNavigateToRegisterProvider = {
                 navController.navigate(AuthDestination.REGISTER_PROVIDER)
             },
@@ -62,6 +70,8 @@ fun AppNavHost(
             onNavigateToResetPassword = {
                 navController.navigate(AuthDestination.RESET_PASSWORD)
             },
+            onContactSupport = { openSupportPhone(context) },
+            onNavigateToTerms = { openTermsAndConditions(context) },
         )
         onboardingGraph(
             onNavigateFromGate = { destination ->
@@ -84,7 +94,13 @@ fun AppNavHost(
                     launchSingleTop = true
                 }
             },
-            onLogout = {
+            onNavigateToStep = { route ->
+                navController.navigate(route)
+            },
+            onStepCompleted = {
+                navController.popBackStack()
+            },
+            onLoggedOut = {
                 navController.navigateToLoginClearingBackStack()
             },
         )

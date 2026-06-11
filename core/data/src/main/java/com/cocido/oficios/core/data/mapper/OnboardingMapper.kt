@@ -82,12 +82,17 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
     val stepMap = mapOf(
         "dni_numero" to ("DNI" to "Cargá tu número de documento."),
         "dni_imagenes" to ("Fotos del DNI" to "Subí las imágenes de tu documento."),
+        "dni_pendiente_revision" to ("DNI en revisión" to "Tu documentación está siendo revisada."),
+        "dni_rechazado" to ("DNI rechazado" to "Volvé a cargar tu documentación."),
+        "descripcion" to ("Descripción profesional" to "Contá qué servicios ofrecés."),
+        "experiencia" to ("Experiencia" to "Indicá tu experiencia en el rubro."),
         "rubro_principal" to ("Rubro principal" to "Seleccioná tu rubro principal."),
         "subrubros" to ("Subrubros" to "Elegí los subrubros que ofrecés."),
         "disponibilidad" to ("Días laborables" to "Configurá tus días y horarios."),
         "agenda_turnos" to ("Agenda de turnos" to "Configurá turnos si aplica."),
         "local_comercial" to ("Local comercial" to "Agregá tu local si atendés en sitio."),
         "informacion_personal" to ("Información personal" to "Completá tu información básica."),
+        "finalizar_perfil" to ("Finalizar perfil" to "Confirmá tu perfil para publicarlo."),
         "email_verificado" to ("Verificar email" to "Confirmá tu correo electrónico."),
     )
 

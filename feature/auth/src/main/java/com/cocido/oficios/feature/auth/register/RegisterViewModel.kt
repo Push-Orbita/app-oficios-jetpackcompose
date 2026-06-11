@@ -2,12 +2,14 @@ package com.cocido.oficios.feature.auth.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -26,6 +28,7 @@ enum class RegisterMode { CLIENT, PROVIDER }
 class RegisterViewModel @Inject constructor(
     private val registerClientUseCase: RegisterClientUseCase,
     private val registerProviderUseCase: RegisterProviderUseCase,
+    private val submitRegisterTradeDraftUseCase: SubmitRegisterTradeDraftUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterFormUiState())
@@ -100,6 +103,9 @@ class RegisterViewModel @Inject constructor(
 
             when (result) {
                 is AppResult.Success -> {
+                    if (mode == RegisterMode.PROVIDER) {
+                        submitRegisterTradeDraftUseCase()
+                    }
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(RegisterEffect.NavigateToOnboarding)
                 }
@@ -107,7 +113,7 @@ class RegisterViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            generalError = result.error.userMessage(),
+                            generalError = result.error.toRegisterMessage(),
                             hasAttemptedSubmit = true,
                         )
                     }
@@ -153,4 +159,10 @@ class RegisterViewModel @Inject constructor(
             acceptedTerms
         return copy(canSubmit = baseValid)
     }
+}
+
+private fun AppError.toRegisterMessage(): String = when (this) {
+    is AppError.Conflict -> message.ifBlank { "Este correo ya está registrado" }
+    is AppError.Validation -> message.ifBlank { "Revisá los datos ingresados" }
+    else -> userMessage()
 }

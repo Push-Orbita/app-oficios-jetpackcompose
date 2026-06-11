@@ -19,4 +19,19 @@
     <string name="onboarding_logout">Cerrar sesión</string>
     <string name="onboarding_step_complete">Completo</string>
     <string name="onboarding_step_pending">Pendiente</string>
+    <string name="onboarding_finalize_profile">Finalizar perfil</string>
+    <string name="onboarding_step_save">Guardar</string>
+    <string name="onboarding_step_domicilio_title">Agregar domicilio</string>
+    <string name="onboarding_step_contacto_title">Agregar contacto</string>
+    <string name="onboarding_step_dni_title">Documentación DNI</string>
+    <string name="onboarding_step_professional_title">Información profesional</string>
+    <string name="onboarding_step_rubros_title">Rubro y especialidades</string>
+    <string name="onboarding_step_local_title">Local comercial</string>
+    <string name="onboarding_step_barrio_label">Barrio</string>
+    <string name="onboarding_step_barrio_hint">Buscar barrio</string>
+    <string name="onboarding_step_calle_label">Calle</string>
+    <string name="onboarding_step_numero_label">Número</string>
+    <string name="onboarding_step_upload_dni">Enviar fotos del DNI</string>
+    <string name="onboarding_home_client_subtitle">Bienvenido a Oficios</string>
+    <string name="onboarding_home_provider_subtitle">Tu perfil está listo para operar</string>
 </resources>

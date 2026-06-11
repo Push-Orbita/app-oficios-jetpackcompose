@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun LoginRoute(
     onNavigateToOnboarding: () -> Unit,
     onNavigateToRegister: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit = {},
     onContactSupport: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
@@ -22,6 +23,7 @@ fun LoginRoute(
             when (effect) {
                 LoginEffect.NavigateToOnboarding -> onNavigateToOnboarding()
                 LoginEffect.NavigateToRegister -> onNavigateToRegister()
+                LoginEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
                 LoginEffect.NavigateToContactSupport -> onContactSupport()
             }
         }

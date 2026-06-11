@@ -2,9 +2,12 @@ package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -19,11 +22,6 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
-// ---------------------------------------------------------------------------
-// OficiosCheckbox
-// Basado en el diseño de Figma nodo 16:505 — checkbox magenta
-// ---------------------------------------------------------------------------
-
 @Composable
 fun OficiosCheckbox(
     checked: Boolean,
@@ -32,34 +30,60 @@ fun OficiosCheckbox(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     expandWidth: Boolean = true,
+    compactRow: Boolean = false,
 ) {
-    Row(
-        modifier = modifier
-            .then(if (expandWidth) Modifier.fillMaxWidth() else Modifier)
-            .clickable(enabled = enabled) { onCheckedChange(!checked) },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
-    ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = null,
-            modifier = Modifier.size(OficiosComponentSize.checkboxSize),
-            enabled = enabled,
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.outline,
-                checkmarkColor = MaterialTheme.colorScheme.onPrimary,
-                disabledCheckedColor = MaterialTheme.colorScheme.primary.copy(alpha = OficiosAlpha.disabled),
-                disabledUncheckedColor = MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled),
-            ),
+    val rowModifier = modifier
+        .then(if (expandWidth) Modifier.fillMaxWidth() else Modifier)
+        .then(
+            if (compactRow) {
+                Modifier
+                    .heightIn(min = OficiosComponentSize.checkboxRowMinHeight)
+                    .padding(start = OficiosSpacing.xxs)
+            } else {
+                Modifier
+            },
         )
+        .clickable(enabled = enabled) { onCheckedChange(!checked) }
+
+    Row(
+        modifier = rowModifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+    ) {
+        Box(
+            modifier = if (compactRow) {
+                Modifier.padding(
+                    end = OficiosComponentSize.checkboxLabelGap,
+                    top = OficiosComponentSize.checkboxRowPaddingVertical,
+                    bottom = OficiosComponentSize.checkboxRowPaddingVertical,
+                )
+            } else {
+                Modifier
+            },
+            contentAlignment = Alignment.Center,
+        ) {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = null,
+                modifier = Modifier.size(OficiosComponentSize.checkboxSize),
+                enabled = enabled,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.outline,
+                    checkmarkColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledCheckedColor = MaterialTheme.colorScheme.primary.copy(alpha = OficiosAlpha.disabled),
+                    disabledUncheckedColor = MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled),
+                ),
+            )
+        }
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
-            color = if (enabled)
+            color = if (enabled) {
                 MaterialTheme.colorScheme.onSurface
-            else
-                MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.disabled),
+            } else {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.disabled)
+            },
         )
     }
 }
@@ -68,10 +92,19 @@ fun OficiosCheckbox(
 @Composable
 private fun CheckboxPreview() {
     OficiosTheme {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-            OficiosCheckbox(checked = false, onCheckedChange = {}, label = "Recordarme")
-            OficiosCheckbox(checked = true, onCheckedChange = {}, label = "Acepto los términos y condiciones")
-            OficiosCheckbox(checked = false, onCheckedChange = {}, label = "Deshabilitado", enabled = false)
+        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.none)) {
+            OficiosCheckbox(
+                checked = true,
+                onCheckedChange = {},
+                label = "Especialización 1",
+                compactRow = true,
+            )
+            OficiosCheckbox(
+                checked = false,
+                onCheckedChange = {},
+                label = "Especialización 2",
+                compactRow = true,
+            )
         }
     }
 }

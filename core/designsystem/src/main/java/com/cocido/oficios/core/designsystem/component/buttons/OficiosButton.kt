@@ -25,8 +25,10 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorError
+import com.cocido.oficios.core.designsystem.theme.OficiosColorPrimary
 import com.cocido.oficios.core.designsystem.theme.OficiosColorPrimaryBorder
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -40,29 +42,40 @@ enum class OficiosButtonVariant {
     Success,
 }
 
+enum class OficiosButtonSize {
+    Compact,
+    Prominent,
+}
+
 @Composable
 fun OficiosButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     variant: OficiosButtonVariant = OficiosButtonVariant.Primary,
+    size: OficiosButtonSize = OficiosButtonSize.Compact,
     enabled: Boolean = true,
     loading: Boolean = false,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
 ) {
+    val minHeight = when (size) {
+        OficiosButtonSize.Compact -> OficiosComponentSize.buttonMinHeight
+        OficiosButtonSize.Prominent -> OficiosComponentSize.buttonHeight
+    }
+
     val (containerColor, contentColor, border, shadowColor) = when (variant) {
         OficiosButtonVariant.Primary -> ButtonColors(
-            container = MaterialTheme.colorScheme.primary,
-            content = MaterialTheme.colorScheme.onPrimary,
+            container = OficiosColorPrimary,
+            content = OficiosColorWhite,
             border = BorderStroke(1.dp, OficiosColorPrimaryBorder),
-            shadow = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+            shadow = OficiosColorPrimary.copy(alpha = 0.15f),
         )
         OficiosButtonVariant.Secondary -> ButtonColors(
-            container = MaterialTheme.colorScheme.secondary,
-            content = MaterialTheme.colorScheme.onSecondary,
+            container = OficiosColorWhite,
+            content = OficiosColorBackground,
             border = BorderStroke(1.dp, Color(0xFFE2E2E2)),
-            shadow = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
+            shadow = OficiosColorWhite.copy(alpha = 0.10f),
         )
         OficiosButtonVariant.Outlined -> ButtonColors(
             container = Color.Transparent,
@@ -90,32 +103,58 @@ fun OficiosButton(
         )
     }
 
+    val isInteractive = enabled && !loading
     val (disabledContainerColor, disabledContentColor) = when (variant) {
-        OficiosButtonVariant.Primary -> MaterialTheme.colorScheme.primaryContainer to
-            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = OficiosAlpha.high)
+        OficiosButtonVariant.Primary -> OficiosColorPrimary.copy(alpha = OficiosAlpha.disabled) to
+            OficiosColorWhite.copy(alpha = OficiosAlpha.high)
         else -> containerColor.copy(alpha = OficiosAlpha.disabled) to
             contentColor.copy(alpha = OficiosAlpha.disabled)
+    }
+    val activeBorder = when {
+        isInteractive -> border
+        variant == OficiosButtonVariant.Primary ->
+            BorderStroke(1.dp, OficiosColorPrimaryBorder.copy(alpha = OficiosAlpha.disabled))
+        variant == OficiosButtonVariant.Secondary ->
+            BorderStroke(1.dp, Color(0xFFE2E2E2).copy(alpha = OficiosAlpha.disabled))
+        else -> border
     }
 
     Button(
         onClick = { if (!loading) onClick() },
         modifier = modifier
-            .heightIn(min = OficiosComponentSize.buttonMinHeight)
+            .heightIn(min = minHeight)
             .then(
-                if (shadowColor != Color.Transparent)
-                    Modifier.shadow(elevation = 4.dp, shape = MaterialTheme.shapes.small, ambientColor = shadowColor, spotColor = shadowColor)
-                else Modifier
+                if (shadowColor != Color.Transparent && isInteractive) {
+                    Modifier.shadow(
+                        elevation = 4.dp,
+                        shape = MaterialTheme.shapes.small,
+                        ambientColor = shadowColor,
+                        spotColor = shadowColor,
+                    )
+                } else {
+                    Modifier
+                },
             ),
-        enabled = enabled && !loading,
+        enabled = isInteractive,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
             disabledContainerColor = disabledContainerColor,
             disabledContentColor = disabledContentColor,
         ),
-        border = border,
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 0.dp,
+            focusedElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            disabledElevation = 0.dp,
+        ),
+        border = activeBorder,
         shape = MaterialTheme.shapes.small,
-        contentPadding = PaddingValues(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xs),
+        contentPadding = PaddingValues(
+            horizontal = OficiosComponentSize.buttonPaddingHorizontal,
+            vertical = OficiosComponentSize.buttonPaddingVertical,
+        ),
     ) {
         if (loading) {
             CircularProgressIndicator(
@@ -126,13 +165,21 @@ fun OficiosButton(
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (leadingIcon != null) {
-                    Icon(imageVector = leadingIcon, contentDescription = null, modifier = Modifier.size(OficiosComponentSize.iconMd))
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
                     Spacer(Modifier.width(OficiosSpacing.xxs))
                 }
                 Text(text = text, style = MaterialTheme.typography.labelLarge)
                 if (trailingIcon != null) {
                     Spacer(Modifier.width(OficiosSpacing.xxs))
-                    Icon(imageVector = trailingIcon, contentDescription = null, modifier = Modifier.size(OficiosComponentSize.iconMd))
+                    Icon(
+                        imageVector = trailingIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
                 }
             }
         }
@@ -146,10 +193,6 @@ private data class ButtonColors(
     val shadow: Color,
 )
 
-// ---------------------------------------------------------------------------
-// Previews
-// ---------------------------------------------------------------------------
-
 @Preview(name = "Primary Button", showBackground = true, backgroundColor = 0xFF231D38)
 @Composable
 private fun PrimaryButtonPreview() {
@@ -160,52 +203,17 @@ private fun PrimaryButtonPreview() {
     }
 }
 
-@Preview(name = "Secondary Button", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Secondary Prominent", showBackground = true, backgroundColor = 0xFF231D38)
 @Composable
 private fun SecondaryButtonPreview() {
     OficiosTheme {
-        Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
-            OficiosButton(text = "Registrarse", onClick = {}, variant = OficiosButtonVariant.Secondary)
-        }
-    }
-}
-
-@Preview(name = "Loading Button", showBackground = true, backgroundColor = 0xFF231D38)
-@Composable
-private fun LoadingButtonPreview() {
-    OficiosTheme {
-        Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
-            OficiosButton(text = "Cargando…", onClick = {}, loading = true)
-        }
-    }
-}
-
-@Preview(name = "Disabled Button", showBackground = true, backgroundColor = 0xFF231D38)
-@Composable
-private fun DisabledButtonPreview() {
-    OficiosTheme {
-        Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
-            OficiosButton(text = "Deshabilitado", onClick = {}, enabled = false)
-        }
-    }
-}
-
-@Preview(name = "Ghost Button", showBackground = true, backgroundColor = 0xFF231D38)
-@Composable
-private fun GhostButtonPreview() {
-    OficiosTheme {
-        Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
-            OficiosButton(text = "Rechazar", onClick = {}, variant = OficiosButtonVariant.Ghost)
-        }
-    }
-}
-
-@Preview(name = "Danger Button", showBackground = true, backgroundColor = 0xFF231D38)
-@Composable
-private fun DangerButtonPreview() {
-    OficiosTheme {
-        Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
-            OficiosButton(text = "Eliminar", onClick = {}, variant = OficiosButtonVariant.Danger)
+        Box(Modifier.size(260.dp, 60.dp), contentAlignment = Alignment.Center) {
+            OficiosButton(
+                text = "Añadir otro horario",
+                onClick = {},
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
+            )
         }
     }
 }

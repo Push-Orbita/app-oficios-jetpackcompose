@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.usecase.auth.ClearEphemeralSessionIfNeededUseCase
 import com.cocido.oficios.domain.usecase.auth.ResolveInitialDestinationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class SplashViewModel @Inject constructor(
     private val resolveInitialDestinationUseCase: ResolveInitialDestinationUseCase,
+    private val clearEphemeralSessionIfNeededUseCase: ClearEphemeralSessionIfNeededUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading)
@@ -34,6 +36,7 @@ class SplashViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { SplashUiState.Loading }
             delay(MIN_SPLASH_DELAY_MS)
+            clearEphemeralSessionIfNeededUseCase()
             when (val result = resolveInitialDestinationUseCase()) {
                 is AppResult.Success -> _uiState.update { SplashUiState.Ready(result.data) }
                 is AppResult.Error -> _uiState.update { SplashUiState.Error(result.error.userMessage()) }

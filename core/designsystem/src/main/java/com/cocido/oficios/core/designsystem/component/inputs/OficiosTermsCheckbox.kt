@@ -2,7 +2,9 @@ package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Checkbox
@@ -30,6 +32,7 @@ fun OficiosTermsCheckbox(
     enabled: Boolean = true,
     prefix: String,
     termsLabel: String,
+    compactRow: Boolean = true,
 ) {
     val labelColor = if (enabled) {
         MaterialTheme.colorScheme.onSurface
@@ -40,24 +43,41 @@ fun OficiosTermsCheckbox(
     Row(
         modifier = modifier.clickable(enabled = enabled) { onCheckedChange(!checked) },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+        horizontalArrangement = Arrangement.Start,
     ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = null,
-            modifier = Modifier.size(OficiosComponentSize.checkboxSize),
-            enabled = enabled,
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.outline,
-                checkmarkColor = MaterialTheme.colorScheme.onPrimary,
-                disabledCheckedColor = MaterialTheme.colorScheme.primary.copy(alpha = OficiosAlpha.disabled),
-                disabledUncheckedColor = MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled),
-            ),
-        )
+        Box(
+            modifier = if (compactRow) {
+                Modifier
+                    .padding(start = OficiosSpacing.xxs)
+                    .padding(
+                        end = OficiosComponentSize.checkboxLabelGap,
+                        top = OficiosComponentSize.checkboxRowPaddingVertical,
+                        bottom = OficiosComponentSize.checkboxRowPaddingVertical,
+                    )
+            } else {
+                Modifier
+            },
+            contentAlignment = Alignment.Center,
+        ) {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = null,
+                modifier = Modifier.size(OficiosComponentSize.checkboxSize),
+                enabled = enabled,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.outline,
+                    checkmarkColor = MaterialTheme.colorScheme.onPrimary,
+                    disabledCheckedColor = MaterialTheme.colorScheme.primary.copy(alpha = OficiosAlpha.disabled),
+                    disabledUncheckedColor = MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled),
+                ),
+            )
+        }
 
         val annotatedLabel = buildAnnotatedString {
-            append(prefix)
+            val normalizedPrefix = prefix.trimEnd()
+            append(normalizedPrefix)
+            append('\u00A0')
             pushStringAnnotation(tag = "terms", annotation = "terms")
             withStyle(
                 SpanStyle(
@@ -72,6 +92,9 @@ fun OficiosTermsCheckbox(
 
         ClickableText(
             text = annotatedLabel,
+            modifier = Modifier
+                .weight(1f, fill = true)
+                .padding(end = OficiosSpacing.xs),
             style = MaterialTheme.typography.bodyLarge.copy(color = labelColor),
             onClick = { offset ->
                 annotatedLabel.getStringAnnotations(tag = "terms", start = offset, end = offset)

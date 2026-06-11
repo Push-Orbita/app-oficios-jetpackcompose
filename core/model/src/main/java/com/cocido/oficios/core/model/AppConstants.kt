@@ -5,4 +5,6 @@ object AppConstants {
     const val DATASTORE_NAME = "user_preferences"
     const val SESSION_PREFS_NAME = "oficios_session_encrypted"
     const val MIN_PASSWORD_LENGTH = 6
+    const val TERMS_URL = "https://oficios.app/terminos"
+    const val SUPPORT_PHONE = "+5491112345678"
 }

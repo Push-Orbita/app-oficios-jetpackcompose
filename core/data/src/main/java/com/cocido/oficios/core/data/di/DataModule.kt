@@ -4,13 +4,25 @@ import com.cocido.oficios.core.common.dispatcher.DefaultDispatcherProvider
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.logging.AppLogger
 import com.cocido.oficios.core.data.logging.AndroidAppLogger
+import com.cocido.oficios.core.data.register.RegisterTradeDraftDataStore
 import com.cocido.oficios.core.data.repository.AuthRepositoryImpl
+import com.cocido.oficios.core.data.repository.CatalogRepositoryImpl
 import com.cocido.oficios.core.data.repository.HomeRepositoryImpl
+import com.cocido.oficios.core.data.repository.ClientProfileRepositoryImpl
+import com.cocido.oficios.core.data.repository.IdentityDocumentRepositoryImpl
 import com.cocido.oficios.core.data.repository.OnboardingRepositoryImpl
+import com.cocido.oficios.core.data.repository.ProviderProfileRepositoryImpl
 import com.cocido.oficios.core.data.session.SessionManager
+import com.cocido.oficios.core.data.session.SessionPreferencesRepositoryImpl
 import com.cocido.oficios.domain.repository.AuthRepository
+import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
+import com.cocido.oficios.domain.repository.ClientProfileRepository
+import com.cocido.oficios.domain.repository.IdentityDocumentRepository
 import com.cocido.oficios.domain.repository.OnboardingRepository
+import com.cocido.oficios.domain.repository.ProviderProfileRepository
+import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.repository.SessionPreferencesRepository
 import com.cocido.oficios.domain.repository.SessionRepository
 import dagger.Binds
 import dagger.Module
@@ -46,6 +58,42 @@ abstract class DataModule {
     abstract fun bindSessionRepository(
         impl: SessionManager,
     ): SessionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSessionPreferencesRepository(
+        impl: SessionPreferencesRepositoryImpl,
+    ): SessionPreferencesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCatalogRepository(
+        impl: CatalogRepositoryImpl,
+    ): CatalogRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRegisterTradeDraftRepository(
+        impl: RegisterTradeDraftDataStore,
+    ): RegisterTradeDraftRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProviderProfileRepository(
+        impl: ProviderProfileRepositoryImpl,
+    ): ProviderProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindClientProfileRepository(
+        impl: ClientProfileRepositoryImpl,
+    ): ClientProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindIdentityDocumentRepository(
+        impl: IdentityDocumentRepositoryImpl,
+    ): IdentityDocumentRepository
 }
 
 @Module

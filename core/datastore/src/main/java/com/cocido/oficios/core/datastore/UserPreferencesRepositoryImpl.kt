@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.cocido.oficios.core.model.AppConstants
@@ -13,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.userPreferencesDataStore: DataStore<Preferences> by preferencesDataStore(
@@ -38,7 +40,17 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getRememberSession(): Boolean =
+        context.userPreferencesDataStore.data.map { it[REMEMBER_SESSION_KEY] ?: true }.first()
+
+    override suspend fun setRememberSession(remember: Boolean) {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[REMEMBER_SESSION_KEY] = remember
+        }
+    }
+
     private companion object {
         val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
+        val REMEMBER_SESSION_KEY = booleanPreferencesKey("remember_session")
     }
 }

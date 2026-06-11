@@ -139,6 +139,15 @@ val OficiosTypography = Typography(
     ),
 )
 
+/** Título "Registro de oficio" — Figma 356:610 */
+val OficiosRegisterTradeTitleStyle = TextStyle(
+    fontFamily = OficiosFontFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 32.sp,
+    lineHeight = 40.sp,
+    letterSpacing = 0.sp,
+)
+
 // Alias de compatibilidad con código previo del template
 @Deprecated("Usar OficiosTypography", replaceWith = ReplaceWith("OficiosTypography"))
 val AppTypography = OficiosTypography

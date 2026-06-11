@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.validation.AuthValidators
+import com.cocido.oficios.domain.usecase.auth.ApplyLoginSessionPreferenceUseCase
 import com.cocido.oficios.domain.usecase.auth.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -20,12 +21,14 @@ import kotlinx.coroutines.launch
 sealed interface LoginEffect {
     data object NavigateToOnboarding : LoginEffect
     data object NavigateToRegister : LoginEffect
+    data object NavigateToForgotPassword : LoginEffect
     data object NavigateToContactSupport : LoginEffect
 }
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
+    private val applyLoginSessionPreferenceUseCase: ApplyLoginSessionPreferenceUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -49,6 +52,7 @@ class LoginViewModel @Inject constructor(
             }
             LoginEvent.Submit -> submit()
             LoginEvent.RegisterClicked -> emitEffect(LoginEffect.NavigateToRegister)
+            LoginEvent.ForgotPasswordClicked -> emitEffect(LoginEffect.NavigateToForgotPassword)
             LoginEvent.ContactSupportClicked -> emitEffect(LoginEffect.NavigateToContactSupport)
         }
     }
@@ -77,6 +81,7 @@ class LoginViewModel @Inject constructor(
                 )
             ) {
                 is AppResult.Success -> {
+                    applyLoginSessionPreferenceUseCase(_uiState.value.rememberMe)
                     _uiState.update { it.copy(isLoading = false) }
                     emitEffect(LoginEffect.NavigateToOnboarding)
                 }

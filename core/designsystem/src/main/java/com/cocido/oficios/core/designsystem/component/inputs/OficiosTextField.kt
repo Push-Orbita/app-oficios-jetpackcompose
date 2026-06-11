@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
+import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -56,7 +57,11 @@ fun OficiosTextField(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = OficiosComponentSize.textFieldHeight),
-        label = { Text(text = label, style = MaterialTheme.typography.bodyMedium) },
+        label = if (label.isNotBlank()) {
+            { Text(text = label, style = MaterialTheme.typography.bodyMedium) }
+        } else {
+            null
+        },
         placeholder = placeholder?.let { { Text(text = it, style = MaterialTheme.typography.bodyLarge, color = placeholderColor) } },
         enabled = enabled,
         readOnly = readOnly,
@@ -74,11 +79,11 @@ fun OficiosTextField(
             disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled),
             focusedTextColor = MaterialTheme.colorScheme.onSurface,
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.disabled),
+            disabledTextColor = OficiosColorMutedText,
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,
             errorContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedLabelColor = MaterialTheme.colorScheme.primary,
             unfocusedLabelColor = placeholderColor,
             errorLabelColor = MaterialTheme.colorScheme.error,

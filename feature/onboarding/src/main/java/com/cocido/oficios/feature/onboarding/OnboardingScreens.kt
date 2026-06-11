@@ -23,6 +23,7 @@ import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
 import com.cocido.oficios.feature.onboarding.client.ClientOnboardingUiState
 import com.cocido.oficios.feature.onboarding.components.OnboardingStepCard
+import com.cocido.oficios.feature.onboarding.navigation.OnboardingStepNavigator
 import com.cocido.oficios.feature.onboarding.provider.ProviderOnboardingUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderStatusUiState
 
@@ -31,7 +32,9 @@ fun ClientOnboardingChecklistScreen(
     uiState: ClientOnboardingUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
+    onStepClick: (OnboardingStep) -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
 ) {
     OnboardingChecklistScaffold(
         title = stringResource(R.string.onboarding_client_title),
@@ -39,6 +42,8 @@ fun ClientOnboardingChecklistScreen(
         uiState = uiState,
         onRetry = onRetry,
         onLogout = onLogout,
+        onStepClick = onStepClick,
+        isLoggingOut = isLoggingOut,
         modifier = modifier,
     )
 }
@@ -48,7 +53,11 @@ fun ProviderOnboardingChecklistScreen(
     uiState: ProviderOnboardingUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
+    onStepClick: (OnboardingStep) -> Unit,
+    onFinalizeProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
+    isFinalizing: Boolean = false,
 ) {
     when (uiState) {
         ProviderOnboardingUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
@@ -62,6 +71,13 @@ fun ProviderOnboardingChecklistScreen(
             subtitle = stringResource(R.string.onboarding_provider_subtitle),
             steps = uiState.steps,
             onLogout = onLogout,
+            onStepClick = onStepClick,
+            showFinalize = uiState.steps.any {
+                it.id == "finalizar_perfil" && it.status != OnboardingStepStatus.COMPLETE
+            },
+            onFinalizeProfile = onFinalizeProfile,
+            isFinalizing = isFinalizing,
+            isLoggingOut = isLoggingOut,
             modifier = modifier,
         )
     }
@@ -73,6 +89,7 @@ fun ProviderPendingApprovalScreen(
     onRetry: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
 ) {
     when (uiState) {
         ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
@@ -86,6 +103,8 @@ fun ProviderPendingApprovalScreen(
             subtitle = stringResource(R.string.onboarding_pending_subtitle),
             steps = uiState.steps,
             onLogout = onLogout,
+            onStepClick = {},
+            isLoggingOut = isLoggingOut,
             modifier = modifier,
         )
         is ProviderStatusUiState.Rejected -> Unit
@@ -98,7 +117,9 @@ fun ProviderRejectedScreen(
     onRetry: () -> Unit,
     onFixProfile: () -> Unit,
     onLogout: () -> Unit,
+    onStepClick: (OnboardingStep) -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
 ) {
     when (uiState) {
         ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
@@ -115,6 +136,8 @@ fun ProviderRejectedScreen(
             primaryActionLabel = stringResource(R.string.onboarding_fix_profile),
             onPrimaryAction = onFixProfile,
             onLogout = onLogout,
+            onStepClick = onStepClick,
+            isLoggingOut = isLoggingOut,
             modifier = modifier,
         )
         is ProviderStatusUiState.Pending -> Unit
@@ -127,6 +150,7 @@ fun AccountStatusScreen(
     subtitle: String,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
 ) {
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
         CenterContent(
@@ -143,6 +167,8 @@ fun AccountStatusScreen(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    enabled = !isLoggingOut,
+                    loading = isLoggingOut,
                 )
             }
         }
@@ -156,6 +182,7 @@ fun HomeShellScreen(
     onContinue: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
 ) {
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
         CenterContent(
@@ -176,6 +203,8 @@ fun HomeShellScreen(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    enabled = !isLoggingOut,
+                    loading = isLoggingOut,
                 )
             }
         }
@@ -189,7 +218,9 @@ private fun OnboardingChecklistScaffold(
     uiState: ClientOnboardingUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
+    onStepClick: (OnboardingStep) -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
 ) {
     when (uiState) {
         ClientOnboardingUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
@@ -203,6 +234,8 @@ private fun OnboardingChecklistScaffold(
             subtitle = subtitle,
             steps = uiState.steps,
             onLogout = onLogout,
+            onStepClick = onStepClick,
+            isLoggingOut = isLoggingOut,
             modifier = modifier,
         )
     }
@@ -214,10 +247,15 @@ private fun ChecklistContent(
     subtitle: String,
     steps: List<OnboardingStep>,
     onLogout: () -> Unit,
+    onStepClick: (OnboardingStep) -> Unit,
     modifier: Modifier = Modifier,
+    isLoggingOut: Boolean = false,
     extraMessage: String? = null,
     primaryActionLabel: String? = null,
     onPrimaryAction: (() -> Unit)? = null,
+    showFinalize: Boolean = false,
+    onFinalizeProfile: (() -> Unit)? = null,
+    isFinalizing: Boolean = false,
 ) {
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
         CenterContent(
@@ -233,12 +271,28 @@ private fun ChecklistContent(
                     Text(text = extraMessage, style = MaterialTheme.typography.bodyMedium)
                 }
                 steps.forEach { step ->
+                    val actionable = OnboardingStepNavigator.isActionable(step)
                     OnboardingStepCard(
                         step = step,
                         statusLabel = when (step.status) {
                             OnboardingStepStatus.COMPLETE -> stringResource(R.string.onboarding_step_complete)
                             else -> stringResource(R.string.onboarding_step_pending)
                         },
+                        enabled = actionable,
+                        onClick = if (actionable) {
+                            { onStepClick(step) }
+                        } else {
+                            null
+                        },
+                    )
+                }
+                if (showFinalize && onFinalizeProfile != null) {
+                    OficiosButton(
+                        text = stringResource(R.string.onboarding_finalize_profile),
+                        onClick = onFinalizeProfile,
+                        modifier = Modifier.fillMaxWidth(),
+                        loading = isFinalizing,
+                        enabled = !isFinalizing && !isLoggingOut,
                     )
                 }
                 if (primaryActionLabel != null && onPrimaryAction != null) {
@@ -253,6 +307,8 @@ private fun ChecklistContent(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    enabled = !isLoggingOut,
+                    loading = isLoggingOut,
                 )
             }
         }

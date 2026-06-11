@@ -25,9 +25,34 @@ fun RegisterRoleSelectionRoute(
 }
 
 @Composable
+fun RegisterTradeRoute(
+    onNavigateToProviderRegister: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: RegisterTradeViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                RegisterTradeEffect.NavigateToProviderRegister -> onNavigateToProviderRegister()
+            }
+        }
+    }
+
+    RegisterTradeScreen(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
+    )
+}
+
+@Composable
 fun RegisterClientRoute(
     onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToTerms: () -> Unit = {},
+    onContactSupport: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
@@ -35,6 +60,8 @@ fun RegisterClientRoute(
         mode = RegisterMode.CLIENT,
         onNavigateToOnboarding = onNavigateToOnboarding,
         onNavigateToLogin = onNavigateToLogin,
+        onNavigateToTerms = onNavigateToTerms,
+        onContactSupport = onContactSupport,
         modifier = modifier,
         viewModel = viewModel,
     )
@@ -44,6 +71,8 @@ fun RegisterClientRoute(
 fun RegisterProviderRoute(
     onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToTerms: () -> Unit = {},
+    onContactSupport: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
@@ -51,6 +80,8 @@ fun RegisterProviderRoute(
         mode = RegisterMode.PROVIDER,
         onNavigateToOnboarding = onNavigateToOnboarding,
         onNavigateToLogin = onNavigateToLogin,
+        onNavigateToTerms = onNavigateToTerms,
+        onContactSupport = onContactSupport,
         modifier = modifier,
         viewModel = viewModel,
     )
@@ -61,6 +92,8 @@ private fun RegisterFormRoute(
     mode: RegisterMode,
     onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToTerms: () -> Unit,
+    onContactSupport: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel,
 ) {
@@ -75,7 +108,7 @@ private fun RegisterFormRoute(
             when (effect) {
                 RegisterEffect.NavigateToOnboarding -> onNavigateToOnboarding()
                 RegisterEffect.NavigateToLogin -> onNavigateToLogin()
-                RegisterEffect.NavigateToTerms -> Unit
+                RegisterEffect.NavigateToTerms -> onNavigateToTerms()
             }
         }
     }
