@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -9,10 +10,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun SettingsRoute(
     onNavigateBack: () -> Unit,
+    onLoggedOut: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val loggedOut by viewModel.loggedOut.collectAsStateWithLifecycle()
+
+    LaunchedEffect(loggedOut) {
+        if (loggedOut) onLoggedOut()
+    }
 
     SettingsScreen(
         uiState = uiState,

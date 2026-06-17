@@ -48,20 +48,19 @@ class SubmitRegisterTradeDraftUseCaseTest {
     }
 
     @Test
-    fun `clears draft on full success`() = runTest {
-        val draftRepository = FakeDraftRepository(
-            draft = RegisterTradeDraft(
-                categoryId = 1,
-                categoryName = "Hogar",
-                rubroId = 11,
-                rubroName = "Plomería",
-                subRubroIds = listOf(1),
-                otherSpecialization = null,
-                experienceRange = "3 a 5 años",
-                neighborhoodQuery = "Centro",
-                timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
-            ),
+    fun `keeps draft on full success for onboarding edits`() = runTest {
+        val draft = RegisterTradeDraft(
+            categoryId = 1,
+            categoryName = "Hogar",
+            rubroId = 11,
+            rubroName = "Plomería",
+            subRubroIds = listOf(1),
+            otherSpecialization = null,
+            experienceRange = "3 a 5 años",
+            neighborhoodQuery = "Centro",
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
         )
+        val draftRepository = FakeDraftRepository(draft = draft)
         val useCase = SubmitRegisterTradeDraftUseCase(
             providerProfileRepository = FakeProviderRepository(),
             registerTradeDraftRepository = draftRepository,
@@ -71,7 +70,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
         val result = useCase()
 
         assertTrue(result is AppResult.Success)
-        assertTrue(draftRepository.get() == null)
+        assertEquals(draft, draftRepository.get())
     }
 
     @Test
@@ -103,6 +102,19 @@ class SubmitRegisterTradeDraftUseCaseTest {
         useCase()
 
         assertEquals(99L, draftRepository.get()?.barrioId)
+    }
+
+    @Test
+    fun `requireDraft fails when draft is missing`() = runTest {
+        val useCase = SubmitRegisterTradeDraftUseCase(
+            providerProfileRepository = FakeProviderRepository(),
+            registerTradeDraftRepository = FakeDraftRepository(draft = null),
+            catalogRepository = FakeCatalogRepository(),
+        )
+
+        val result = useCase(requireDraft = true)
+
+        assertTrue(result is AppResult.Error)
     }
 
     private class FakeDraftRepository(

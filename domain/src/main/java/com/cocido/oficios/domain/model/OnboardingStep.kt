@@ -2,6 +2,7 @@ package com.cocido.oficios.domain.model
 
 enum class OnboardingStepStatus {
     PENDING,
+    IN_REVIEW,
     COMPLETE,
     BLOCKED,
     REJECTED,

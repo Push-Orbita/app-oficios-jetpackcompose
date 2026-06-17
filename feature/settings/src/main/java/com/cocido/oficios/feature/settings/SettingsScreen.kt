@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectableGroup
@@ -16,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -77,6 +80,24 @@ fun SettingsScreen(
                         onSelect = { onEvent(SettingsEvent.ThemeModeChanged(ThemeMode.DARK)) },
                     )
                 }
+            }
+
+            OficiosCard(modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth)) {
+                Text(
+                    text = stringResource(R.string.settings_session_section),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                OficiosButton(
+                    text = stringResource(R.string.settings_logout),
+                    onClick = { onEvent(SettingsEvent.Logout) },
+                    variant = OficiosButtonVariant.Ghost,
+                    loading = uiState.isLoggingOut,
+                    enabled = !uiState.isLoggingOut,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = OficiosSpacing.md),
+                )
             }
         }
     }

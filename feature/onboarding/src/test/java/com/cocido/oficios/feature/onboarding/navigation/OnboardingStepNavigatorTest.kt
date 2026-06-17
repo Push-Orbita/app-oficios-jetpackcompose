@@ -34,7 +34,7 @@ class OnboardingStepNavigatorTest {
             id = "dni_pendiente_revision",
             title = "DNI en revisión",
             description = "Esperá",
-            status = OnboardingStepStatus.PENDING,
+            status = OnboardingStepStatus.IN_REVIEW,
         )
         assertFalse(OnboardingStepNavigator.isActionable(step))
     }
@@ -42,6 +42,30 @@ class OnboardingStepNavigatorTest {
     @Test
     fun `finalizar perfil has no route`() {
         assertEquals(null, OnboardingStepNavigator.routeForStep("finalizar_perfil"))
+    }
+
+    @Test
+    fun `maps provider availability steps`() {
+        assertEquals(
+            OnboardingDestination.PROVIDER_AVAILABILITY,
+            OnboardingStepNavigator.routeForStep("disponibilidad"),
+        )
+        assertEquals(
+            OnboardingDestination.PROVIDER_AVAILABILITY,
+            OnboardingStepNavigator.routeForStep("agenda_turnos"),
+        )
+    }
+
+    @Test
+    fun `maps provider rubro steps separately from availability`() {
+        assertEquals(
+            OnboardingDestination.PROVIDER_RUBROS,
+            OnboardingStepNavigator.routeForStep("rubro_principal"),
+        )
+        assertEquals(
+            OnboardingDestination.PROVIDER_RUBROS,
+            OnboardingStepNavigator.routeForStep("subrubros"),
+        )
     }
 
     @Test

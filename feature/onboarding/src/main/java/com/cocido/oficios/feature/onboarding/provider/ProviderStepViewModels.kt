@@ -16,7 +16,6 @@ import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
-import com.cocido.oficios.domain.usecase.profile.RetryPendingTradeDraftUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
@@ -62,33 +61,32 @@ class ProviderDniViewModel @Inject constructor(
     fun onFrontImage(path: String?) = _uiState.update { it.copy(frontImagePath = path, error = null) }
     fun onBackImage(path: String?) = _uiState.update { it.copy(backImagePath = path, error = null) }
 
-    fun submitNumber() {
-        val documento = _uiState.value.documento.trim()
-        if (documento.isBlank()) return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            when (val result = updateProviderDniNumberUseCase(documento)) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(ProviderStepEffect.Saved)
-                }
-                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
-            }
-        }
-    }
-
-    fun submitImages() {
+    fun submit() {
         val state = _uiState.value
-        val front = state.frontImagePath ?: return
-        val back = state.backImagePath ?: return
+        val documento = state.documento.trim()
+        val front = state.frontImagePath
+        val back = state.backImagePath
+        if (documento.isBlank() || front == null || back == null) return
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            when (val result = uploadProviderDniImagesUseCase(front, back)) {
+
+            when (val numberResult = updateProviderDniNumberUseCase(documento)) {
+                is AppResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = numberResult.error.userMessage()) }
+                    return@launch
+                }
+                is AppResult.Success -> Unit
+            }
+
+            when (val imagesResult = uploadProviderDniImagesUseCase(front, back)) {
                 is AppResult.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(ProviderStepEffect.Saved)
                 }
-                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+                is AppResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
+                }
             }
         }
     }
@@ -157,11 +155,6 @@ data class ProviderRubrosUiState(
     val selectedCategoryId: Long? = null,
     val selectedTradeId: Long? = null,
     val selectedSubRubroIds: Set<Long> = emptySet(),
-    val selectedWorkDays: Set<String> = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
-    val timeFrom: String = "09:00",
-    val timeTo: String = "18:00",
-    val servesAtClientHome: Boolean = true,
-    val servesAtLocal: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 ) {
@@ -174,7 +167,6 @@ class ProviderRubrosViewModel @Inject constructor(
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
-    private val retryPendingTradeDraftUseCase: RetryPendingTradeDraftUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
 ) : ViewModel() {
 
@@ -195,11 +187,6 @@ class ProviderRubrosViewModel @Inject constructor(
                         selectedCategoryId = draft.categoryId,
                         selectedTradeId = draft.rubroId,
                         selectedSubRubroIds = draft.subRubroIds.toSet(),
-                        selectedWorkDays = draft.workDays.toSet().ifEmpty { it.selectedWorkDays },
-                        timeFrom = draft.timeSlots.firstOrNull()?.from ?: it.timeFrom,
-                        timeTo = draft.timeSlots.firstOrNull()?.to ?: it.timeTo,
-                        servesAtClientHome = draft.servesAtClientHome,
-                        servesAtLocal = draft.servesAtLocal,
                     )
                 }
                 loadRubros(draft.categoryId)
@@ -245,25 +232,179 @@ class ProviderRubrosViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         val rubroId = state.selectedTradeId ?: return
+        val categoryId = state.selectedCategoryId ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val draftResult = retryPendingTradeDraftUseCase()
-            if (draftResult is AppResult.Success) {
-                _uiState.update { it.copy(isLoading = false) }
-                _effects.emit(ProviderStepEffect.Saved)
+            val draft = buildDraft(state, rubroId, categoryId) ?: run {
+                _uiState.update { it.copy(isLoading = false, error = "Seleccioná categoría, rubro y especialidades") }
                 return@launch
             }
-            val request = ProviderRubroFullRequest(
-                rubroId = rubroId,
-                subRubroIds = state.selectedSubRubroIds.toList(),
+            registerTradeDraftRepository.save(draft)
+            when (val result = submitProviderRubroFullUseCase(draft.toRubroFullRequest())) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+            }
+        }
+    }
+
+    private suspend fun buildDraft(
+        state: ProviderRubrosUiState,
+        rubroId: Long,
+        categoryId: Long,
+    ): com.cocido.oficios.domain.model.RegisterTradeDraft? {
+        val existing = registerTradeDraftRepository.get()
+        val categoryName = state.categoryOptions.find { it.id == categoryId }?.label.orEmpty()
+        val rubroName = state.tradeOptions.find { it.id == rubroId }?.label.orEmpty()
+        if (categoryName.isBlank() || rubroName.isBlank()) return null
+        return (existing ?: com.cocido.oficios.domain.model.RegisterTradeDraft(
+            categoryId = categoryId,
+            categoryName = categoryName,
+            rubroId = rubroId,
+            rubroName = rubroName,
+            subRubroIds = state.selectedSubRubroIds.toList(),
+            otherSpecialization = null,
+            experienceRange = "",
+            neighborhoodQuery = "",
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+        )).copy(
+            categoryId = categoryId,
+            categoryName = categoryName,
+            rubroId = rubroId,
+            rubroName = rubroName,
+            subRubroIds = state.selectedSubRubroIds.toList(),
+        )
+    }
+}
+
+data class ProviderAvailabilityUiState(
+    val workDayOptions: List<Pair<String, String>> = ProviderAvailabilityDefaults.workDays,
+    val selectedWorkDays: Set<String> = ProviderAvailabilityDefaults.defaultSelectedWorkDays,
+    val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+    val timeOptions: List<String> = ProviderAvailabilityDefaults.timeOptions,
+    val servesAtClientHome: Boolean = true,
+    val servesAtLocal: Boolean = false,
+    val requiresTurns: Boolean = false,
+    val hasRubroContext: Boolean = false,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+) {
+    val canSubmit: Boolean
+        get() = hasRubroContext &&
+            selectedWorkDays.isNotEmpty() &&
+            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() }
+}
+
+private object ProviderAvailabilityDefaults {
+    val defaultSelectedWorkDays = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES")
+
+    val workDays = listOf(
+        "LUNES" to "Lunes",
+        "MARTES" to "Martes",
+        "MIERCOLES" to "Miércoles",
+        "JUEVES" to "Jueves",
+        "VIERNES" to "Viernes",
+        "SABADO" to "Sábado",
+        "DOMINGO" to "Domingo",
+    )
+
+    val timeOptions: List<String> = buildList {
+        for (hour in 0 until 24) {
+            for (minute in listOf(0, 30)) {
+                add("%02d:%02d".format(hour, minute))
+            }
+        }
+    }
+}
+
+@HiltViewModel
+class ProviderAvailabilityViewModel @Inject constructor(
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderAvailabilityUiState())
+    val uiState: StateFlow<ProviderAvailabilityUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            registerTradeDraftRepository.get()?.let { draft ->
+                _uiState.update {
+                    it.copy(
+                        selectedWorkDays = draft.workDays.toSet().ifEmpty { ProviderAvailabilityDefaults.defaultSelectedWorkDays },
+                        timeSlots = draft.timeSlots.ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
+                        servesAtClientHome = draft.servesAtClientHome,
+                        servesAtLocal = draft.servesAtLocal,
+                        requiresTurns = draft.requiresTurns,
+                        hasRubroContext = draft.rubroId > 0 && draft.subRubroIds.isNotEmpty(),
+                    )
+                }
+            } ?: _uiState.update {
+                it.copy(error = "Completá primero tu rubro y especialidades")
+            }
+        }
+    }
+
+    fun onWorkDayToggled(day: String, checked: Boolean) = _uiState.update {
+        val updated = it.selectedWorkDays.toMutableSet()
+        if (checked) updated.add(day) else updated.remove(day)
+        it.copy(selectedWorkDays = updated, error = null)
+    }
+
+    fun onTimeSlotFromChanged(index: Int, value: String) = _uiState.update { state ->
+        val slots = state.timeSlots.toMutableList()
+        if (index in slots.indices) {
+            slots[index] = slots[index].copy(from = value)
+        }
+        state.copy(timeSlots = slots, error = null)
+    }
+
+    fun onTimeSlotToChanged(index: Int, value: String) = _uiState.update { state ->
+        val slots = state.timeSlots.toMutableList()
+        if (index in slots.indices) {
+            slots[index] = slots[index].copy(to = value)
+        }
+        state.copy(timeSlots = slots, error = null)
+    }
+
+    fun onAddTimeSlot() = _uiState.update {
+        it.copy(timeSlots = it.timeSlots + RegisterTradeTimeSlotDraft("", ""))
+    }
+
+    fun onServesAtClientHomeChanged(value: Boolean) = _uiState.update { it.copy(servesAtClientHome = value, error = null) }
+    fun onServesAtLocalChanged(value: Boolean) = _uiState.update { it.copy(servesAtLocal = value, error = null) }
+    fun onRequiresTurnsChanged(value: Boolean) = _uiState.update { it.copy(requiresTurns = value, error = null) }
+
+    fun submit() {
+        val state = _uiState.value
+        if (!state.canSubmit) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val draft = registerTradeDraftRepository.get()
+            if (draft == null || draft.subRubroIds.isEmpty()) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        hasRubroContext = false,
+                        error = "Completá primero tu rubro y especialidades",
+                    )
+                }
+                return@launch
+            }
+            val updatedDraft = draft.copy(
+                workDays = state.selectedWorkDays.toList(),
+                timeSlots = state.timeSlots.filter { it.from.isNotBlank() && it.to.isNotBlank() },
                 servesAtClientHome = state.servesAtClientHome,
                 servesAtLocal = state.servesAtLocal,
-                workDays = state.selectedWorkDays.toList(),
-                timeSlots = listOf(RegisterTradeTimeSlotDraft(state.timeFrom, state.timeTo)),
+                requiresTurns = state.requiresTurns,
             )
-            when (val result = submitProviderRubroFullUseCase(request)) {
+            registerTradeDraftRepository.save(updatedDraft)
+            when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {
                 is AppResult.Success -> {
-                    registerTradeDraftRepository.clear()
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(ProviderStepEffect.Saved)
                 }
@@ -329,9 +470,9 @@ class ProviderLocalViewModel @Inject constructor(
             }
             val updatedDraft = draft.copy(
                 barrioId = barrioId,
-                neighborhoodQuery = state.calle.trim(),
                 servesAtLocal = true,
             )
+            registerTradeDraftRepository.save(updatedDraft)
             val request = updatedDraft.toRubroFullRequest().copy(
                 domicilioLocal = ProviderLocalDomicilioRequest(
                     barrioId = barrioId,

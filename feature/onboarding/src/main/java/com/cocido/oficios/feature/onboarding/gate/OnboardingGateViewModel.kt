@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.onboarding.gate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.domain.usecase.auth.ResolveInitialDestinationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 sealed interface OnboardingGateUiState {
     data object Loading : OnboardingGateUiState
     data class Ready(val destination: InitialDestination) : OnboardingGateUiState
+    data class Error(val message: String) : OnboardingGateUiState
 }
 
 @HiltViewModel
@@ -35,7 +37,13 @@ class OnboardingGateViewModel @Inject constructor(
             _uiState.update { OnboardingGateUiState.Loading }
             when (val result = resolveInitialDestinationUseCase()) {
                 is AppResult.Success -> _uiState.update { OnboardingGateUiState.Ready(result.data) }
-                is AppResult.Error -> _uiState.update { OnboardingGateUiState.Ready(InitialDestination.Login) }
+                is AppResult.Error -> {
+                    _uiState.update {
+                        OnboardingGateUiState.Error(
+                            result.error.userMessage().ifBlank { "No se pudo determinar tu destino" },
+                        )
+                    }
+                }
             }
         }
     }

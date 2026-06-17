@@ -31,6 +31,7 @@ data class ProviderRubroFullRequest(
     val servesAtLocal: Boolean,
     val workDays: List<String>,
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
+    val requiresTurns: Boolean = false,
     val domicilioLocal: ProviderLocalDomicilioRequest? = null,
 )
 

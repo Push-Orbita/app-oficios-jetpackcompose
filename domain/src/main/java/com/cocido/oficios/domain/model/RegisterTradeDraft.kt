@@ -22,6 +22,7 @@ data class RegisterTradeDraft(
     val workDays: List<String> = emptyList(),
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
+    val requiresTurns: Boolean = false,
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
     val paymentMethods: List<String> = emptyList(),
 )

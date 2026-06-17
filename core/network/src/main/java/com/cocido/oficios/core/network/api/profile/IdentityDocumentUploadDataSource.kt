@@ -3,9 +3,7 @@ package com.cocido.oficios.core.network.api.profile
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
+import com.cocido.oficios.core.common.contract.DniImageUploadContract
 
 @Singleton
 class IdentityDocumentUploadDataSource @Inject constructor(
@@ -14,17 +12,20 @@ class IdentityDocumentUploadDataSource @Inject constructor(
     suspend fun uploadDniImages(frontImagePath: String, backImagePath: String) {
         val frontFile = File(frontImagePath)
         val backFile = File(backImagePath)
-        val mediaType = "image/*".toMediaTypeOrNull()
+
+        validateDniImageFile(frontFile, sideLabel = "frente")
+        validateDniImageFile(backFile, sideLabel = "dorso")
+
         identityDocumentApi.uploadDniDocuments(
-            frenteArchivo = MultipartBody.Part.createFormData(
-                "frenteArchivo",
-                frontFile.name,
-                frontFile.asRequestBody(mediaType),
+            frenteArchivo = createDniImagePart(
+                fieldName = DniImageUploadContract.PART_FRONT_FIELD,
+                fileNamePrefix = DniImageUploadContract.FRONT_FILE_PREFIX,
+                file = frontFile,
             ),
-            dorsoArchivo = MultipartBody.Part.createFormData(
-                "dorsoArchivo",
-                backFile.name,
-                backFile.asRequestBody(mediaType),
+            dorsoArchivo = createDniImagePart(
+                fieldName = DniImageUploadContract.PART_BACK_FIELD,
+                fileNamePrefix = DniImageUploadContract.BACK_FILE_PREFIX,
+                file = backFile,
             ),
         )
     }

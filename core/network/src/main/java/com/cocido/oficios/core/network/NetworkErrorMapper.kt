@@ -47,6 +47,7 @@ internal fun parseErrorMessage(body: String): String? {
         if (json !is JsonObject) return@runCatching null
 
         val candidates = listOfNotNull(
+            parseNestedDetail(json["errorDetails"]?.jsonObject?.get("details")?.jsonPrimitive?.content),
             json["errorDetails"]?.jsonObject?.get("message")?.jsonPrimitive?.content,
             json["message"]?.jsonPrimitive?.content,
             json["detail"]?.jsonPrimitive?.content,
@@ -54,6 +55,18 @@ internal fun parseErrorMessage(body: String): String? {
         )
 
         candidates.firstOrNull { isUserFacingErrorMessage(it) }
+    }.getOrNull()
+}
+
+private fun parseNestedDetail(details: String?): String? {
+    if (details.isNullOrBlank()) return null
+    return runCatching {
+        val nested = errorJson.parseToJsonElement(details)
+        if (nested is JsonObject) {
+            nested["detail"]?.jsonPrimitive?.content
+        } else {
+            null
+        }
     }.getOrNull()
 }
 

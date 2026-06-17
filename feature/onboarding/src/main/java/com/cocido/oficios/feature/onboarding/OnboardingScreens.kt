@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -58,6 +59,7 @@ fun ProviderOnboardingChecklistScreen(
     modifier: Modifier = Modifier,
     isLoggingOut: Boolean = false,
     isFinalizing: Boolean = false,
+    finalizeError: String? = null,
 ) {
     when (uiState) {
         ProviderOnboardingUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
@@ -78,6 +80,7 @@ fun ProviderOnboardingChecklistScreen(
             onFinalizeProfile = onFinalizeProfile,
             isFinalizing = isFinalizing,
             isLoggingOut = isLoggingOut,
+            extraMessage = finalizeError,
             modifier = modifier,
         )
     }
@@ -276,7 +279,10 @@ private fun ChecklistContent(
                         step = step,
                         statusLabel = when (step.status) {
                             OnboardingStepStatus.COMPLETE -> stringResource(R.string.onboarding_step_complete)
-                            else -> stringResource(R.string.onboarding_step_pending)
+                            OnboardingStepStatus.IN_REVIEW -> stringResource(R.string.onboarding_step_in_review)
+                            OnboardingStepStatus.REJECTED -> stringResource(R.string.onboarding_step_rejected)
+                            OnboardingStepStatus.BLOCKED -> stringResource(R.string.onboarding_step_blocked)
+                            OnboardingStepStatus.PENDING -> stringResource(R.string.onboarding_step_incomplete)
                         },
                         enabled = actionable,
                         onClick = if (actionable) {

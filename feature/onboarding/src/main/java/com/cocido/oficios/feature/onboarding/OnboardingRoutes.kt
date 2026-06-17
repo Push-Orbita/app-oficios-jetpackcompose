@@ -59,6 +59,7 @@ fun ProviderOnboardingRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
     val isFinalizing by viewModel.isFinalizing.collectAsStateWithLifecycle()
+    val finalizeError by viewModel.finalizeError.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
 
@@ -67,7 +68,8 @@ fun ProviderOnboardingRoute(
         onRetry = viewModel::load,
         onLogout = logoutViewModel::logout,
         onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
-        onFinalizeProfile = { viewModel.finalizeProfile { onNavigateFromGate(InitialDestination.ProviderHome) } },
+        onFinalizeProfile = { viewModel.finalizeProfile(onNavigateFromGate) },
+        finalizeError = finalizeError,
         isLoggingOut = isLoggingOut,
         isFinalizing = isFinalizing,
         modifier = modifier,

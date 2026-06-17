@@ -14,6 +14,7 @@ import com.cocido.oficios.feature.onboarding.ProviderRejectedRoute
 import com.cocido.oficios.feature.onboarding.gate.OnboardingGateRoute
 import com.cocido.oficios.feature.onboarding.steps.ClientContactoRoute
 import com.cocido.oficios.feature.onboarding.steps.ClientDomicilioRoute
+import com.cocido.oficios.feature.onboarding.steps.ProviderAvailabilityRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderDniRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderLocalRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderProfessionalInfoRoute
@@ -29,7 +30,10 @@ fun NavGraphBuilder.onboardingGraph(
     onLoggedOut: () -> Unit,
 ) {
     composable(OnboardingDestination.GATE) {
-        OnboardingGateRoute(onNavigate = onNavigateFromGate)
+        OnboardingGateRoute(
+            onNavigate = onNavigateFromGate,
+            onNavigateToLogin = onLoggedOut,
+        )
     }
     composable(OnboardingDestination.CLIENT_CHECKLIST) {
         ClientOnboardingRoute(
@@ -89,6 +93,9 @@ fun NavGraphBuilder.onboardingGraph(
     }
     composable(OnboardingDestination.PROVIDER_RUBROS) {
         ProviderRubrosRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.PROVIDER_AVAILABILITY) {
+        ProviderAvailabilityRoute(onSaved = onStepCompleted)
     }
     composable(OnboardingDestination.PROVIDER_LOCAL) {
         ProviderLocalRoute(onSaved = onStepCompleted)

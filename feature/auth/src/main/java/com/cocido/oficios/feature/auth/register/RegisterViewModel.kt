@@ -7,9 +7,8 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
+import com.cocido.oficios.domain.usecase.auth.CompleteProviderRegistrationUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
-import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
-import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -27,8 +26,7 @@ enum class RegisterMode { CLIENT, PROVIDER }
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerClientUseCase: RegisterClientUseCase,
-    private val registerProviderUseCase: RegisterProviderUseCase,
-    private val submitRegisterTradeDraftUseCase: SubmitRegisterTradeDraftUseCase,
+    private val completeProviderRegistrationUseCase: CompleteProviderRegistrationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterFormUiState())
@@ -80,42 +78,64 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
-            val result = when (mode) {
-                RegisterMode.CLIENT -> registerClientUseCase(
-                    RegisterClientRequest(
-                        firstName = firstName,
-                        lastName = lastName,
-                        email = state.email.trim(),
-                        password = state.password,
-                        document = state.document.trim(),
-                    ),
-                )
-                RegisterMode.PROVIDER -> registerProviderUseCase(
-                    RegisterProviderRequest(
-                        firstName = firstName,
-                        lastName = lastName,
-                        email = state.email.trim(),
-                        password = state.password,
-                        document = state.document.trim(),
-                    ),
-                )
-            }
-
-            when (result) {
-                is AppResult.Success -> {
-                    if (mode == RegisterMode.PROVIDER) {
-                        submitRegisterTradeDraftUseCase()
-                    }
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(RegisterEffect.NavigateToOnboarding)
-                }
-                is AppResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            generalError = result.error.toRegisterMessage(),
-                            hasAttemptedSubmit = true,
+            when (mode) {
+                RegisterMode.CLIENT -> {
+                    when (
+                        val result = registerClientUseCase(
+                            RegisterClientRequest(
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = state.email.trim(),
+                                password = state.password,
+                                document = state.document.trim(),
+                            ),
                         )
+                    ) {
+                        is AppResult.Success -> {
+                            _uiState.update { it.copy(isLoading = false) }
+                            _effects.emit(RegisterEffect.NavigateToOnboarding)
+                        }
+                        is AppResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    generalError = result.error.toRegisterMessage(),
+                                    hasAttemptedSubmit = true,
+                                )
+                            }
+                        }
+                    }
+                }
+                RegisterMode.PROVIDER -> {
+                    when (
+                        val result = completeProviderRegistrationUseCase(
+                            RegisterProviderRequest(
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = state.email.trim(),
+                                password = state.password,
+                                document = state.document.trim(),
+                            ),
+                        )
+                    ) {
+                        is AppResult.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    generalError = result.data.profileSyncMessage,
+                                )
+                            }
+                            _effects.emit(RegisterEffect.NavigateToOnboarding)
+                        }
+                        is AppResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    generalError = result.error.toRegisterMessage(),
+                                    hasAttemptedSubmit = true,
+                                )
+                            }
+                        }
                     }
                 }
             }

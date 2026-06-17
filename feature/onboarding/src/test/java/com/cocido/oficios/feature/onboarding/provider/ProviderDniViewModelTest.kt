@@ -36,13 +36,15 @@ class ProviderDniViewModelTest {
     }
 
     @Test
-    fun `submit number emits saved effect`() = runTest(dispatcher) {
+    fun `submit sends number then images and emits saved effect`() = runTest(dispatcher) {
         val viewModel = createViewModel()
         val effects = mutableListOf<ProviderStepEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
         viewModel.onDocumentoChanged("12345678")
-        viewModel.submitNumber()
+        viewModel.onFrontImage("/tmp/front.jpg")
+        viewModel.onBackImage("/tmp/back.jpg")
+        viewModel.submit()
         advanceUntilIdle()
 
         assertTrue(effects.any { it is ProviderStepEffect.Saved })
@@ -50,17 +52,16 @@ class ProviderDniViewModelTest {
     }
 
     @Test
-    fun `submit images emits saved effect`() = runTest(dispatcher) {
+    fun `submit does nothing when form is incomplete`() = runTest(dispatcher) {
         val viewModel = createViewModel()
         val effects = mutableListOf<ProviderStepEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.onFrontImage("/tmp/front.jpg")
-        viewModel.onBackImage("/tmp/back.jpg")
-        viewModel.submitImages()
+        viewModel.onDocumentoChanged("12345678")
+        viewModel.submit()
         advanceUntilIdle()
 
-        assertTrue(effects.any { it is ProviderStepEffect.Saved })
+        assertTrue(effects.isEmpty())
         job.cancel()
     }
 

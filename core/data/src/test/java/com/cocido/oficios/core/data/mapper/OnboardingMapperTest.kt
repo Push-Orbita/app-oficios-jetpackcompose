@@ -51,6 +51,10 @@ class OnboardingMapperTest {
         ).toOnboardingSteps()
 
         assertTrue(steps.any { it.id == "dni_pendiente_revision" })
+        assertEquals(
+            OnboardingStepStatus.IN_REVIEW,
+            steps.first { it.id == "dni_pendiente_revision" }.status,
+        )
         assertTrue(steps.any { it.id == "rubro_principal" })
     }
 

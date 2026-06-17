@@ -15,5 +15,6 @@ object OnboardingDestination {
     const val PROVIDER_DNI = "onboarding/provider/dni"
     const val PROVIDER_PROFESSIONAL_INFO = "onboarding/provider/professional-info"
     const val PROVIDER_RUBROS = "onboarding/provider/rubros"
+    const val PROVIDER_AVAILABILITY = "onboarding/provider/availability"
     const val PROVIDER_LOCAL = "onboarding/provider/local"
 }

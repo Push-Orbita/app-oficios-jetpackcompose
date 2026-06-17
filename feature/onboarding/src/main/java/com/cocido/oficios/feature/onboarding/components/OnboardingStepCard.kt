@@ -11,7 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.clickable
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.theme.OficiosColorError
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWarning
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
@@ -59,10 +62,11 @@ fun OnboardingStepCard(
                 text = statusLabel,
                 style = MaterialTheme.typography.labelMedium,
                 color = when (step.status) {
-                    OnboardingStepStatus.COMPLETE -> MaterialTheme.colorScheme.primary
-                    OnboardingStepStatus.REJECTED -> MaterialTheme.colorScheme.error
+                    OnboardingStepStatus.COMPLETE -> OficiosColorSuccess
+                    OnboardingStepStatus.IN_REVIEW -> OficiosColorWarning
+                    OnboardingStepStatus.REJECTED -> OficiosColorError
                     OnboardingStepStatus.BLOCKED -> OficiosColorMutedText
-                    OnboardingStepStatus.PENDING -> MaterialTheme.colorScheme.tertiary
+                    OnboardingStepStatus.PENDING -> OficiosColorError
                 },
             )
         }

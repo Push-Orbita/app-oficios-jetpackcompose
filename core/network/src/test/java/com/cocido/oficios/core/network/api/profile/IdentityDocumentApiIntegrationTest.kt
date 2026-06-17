@@ -1,11 +1,9 @@
 package com.cocido.oficios.core.network.api.profile
 
+import com.cocido.oficios.core.common.contract.DniImageUploadContract
 import com.cocido.oficios.core.network.test.NetworkTestFactory
 import java.io.File
 import kotlinx.coroutines.test.runTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -18,6 +16,7 @@ class IdentityDocumentApiIntegrationTest {
 
     private lateinit var server: MockWebServer
     private lateinit var api: IdentityDocumentApi
+    private lateinit var uploadDataSource: IdentityDocumentUploadDataSource
     private lateinit var frontFile: File
     private lateinit var backFile: File
 
@@ -26,8 +25,9 @@ class IdentityDocumentApiIntegrationTest {
         server = MockWebServer()
         server.start()
         api = NetworkTestFactory.createIdentityDocumentApi(server)
+        uploadDataSource = IdentityDocumentUploadDataSource(api)
         frontFile = File.createTempFile("dni_front", ".jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
-        backFile = File.createTempFile("dni_back", ".jpg").apply { writeBytes(byteArrayOf(4, 5, 6)) }
+        backFile = File.createTempFile("dni_back", ".png").apply { writeBytes(byteArrayOf(4, 5, 6)) }
     }
 
     @After
@@ -38,26 +38,22 @@ class IdentityDocumentApiIntegrationTest {
     }
 
     @Test
-    fun `upload dni sends multipart request`() = runTest {
+    fun `upload dni sends multipart aligned with backend contract`() = runTest {
         server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
 
-        val mediaType = "image/*".toMediaTypeOrNull()
-        api.uploadDniDocuments(
-            frenteArchivo = MultipartBody.Part.createFormData(
-                "frenteArchivo",
-                frontFile.name,
-                frontFile.asRequestBody(mediaType),
-            ),
-            dorsoArchivo = MultipartBody.Part.createFormData(
-                "dorsoArchivo",
-                backFile.name,
-                backFile.asRequestBody(mediaType),
-            ),
-        )
+        uploadDataSource.uploadDniImages(frontFile.absolutePath, backFile.absolutePath)
 
         val request = server.takeRequest()
+        val body = request.body.readUtf8()
+
         assertEquals("POST", request.method)
-        assertEquals("/img-documento/subir-documento-dni", request.path)
+        assertEquals("/${DniImageUploadContract.ENDPOINT_PATH}", request.path)
         assertTrue(request.headers["Content-Type"]?.startsWith("multipart/") == true)
+        assertTrue(body.contains("name=\"${DniImageUploadContract.PART_FRONT_FIELD}\""))
+        assertTrue(body.contains("name=\"${DniImageUploadContract.PART_BACK_FIELD}\""))
+        assertTrue(body.contains("filename=\"${DniImageUploadContract.FRONT_FILE_PREFIX}.jpg\""))
+        assertTrue(body.contains("filename=\"${DniImageUploadContract.BACK_FILE_PREFIX}.png\""))
+        assertTrue(body.contains("Content-Type: image/jpeg"))
+        assertTrue(body.contains("Content-Type: image/png"))
     }
 }

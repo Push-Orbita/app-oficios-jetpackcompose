@@ -45,7 +45,7 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
             subRubroId = subRubroId,
             lugarDomicilio = servesAtClientHome,
             lugarLocal = servesAtLocal,
-            requiereTurnos = false,
+            requiereTurnos = requiresTurns,
         )
     },
     diasLaborales = workDays.map { day ->

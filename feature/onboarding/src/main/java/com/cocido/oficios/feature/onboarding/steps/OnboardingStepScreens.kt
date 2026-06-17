@@ -1,36 +1,43 @@
 package com.cocido.oficios.feature.onboarding.steps
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.core.ui.file.resolveUriToFilePath
+import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.client.ClientContactoUiState
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderDniUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderLocalUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoUiState
+import com.cocido.oficios.feature.onboarding.provider.ProviderAvailabilityUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderRubrosUiState
 
 @Composable
@@ -135,41 +142,161 @@ fun ProviderDniStepScreen(
     onDocumentoChanged: (String) -> Unit,
     onFrontImage: (String?) -> Unit,
     onBackImage: (String?) -> Unit,
-    onSubmitNumber: () -> Unit,
-    onSubmitImages: () -> Unit,
+    onSubmit: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val frontLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        onFrontImage(uri?.let { resolveUriToFilePath(context, it) })
+    val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
+    val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
+    val galleryLabel = stringResource(R.string.onboarding_image_picker_gallery)
+    val cancelLabel = stringResource(R.string.onboarding_image_picker_cancel)
+
+    val frontPicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onFrontImage,
+    )
+    val backPicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onBackImage,
+    )
+
+    val canSubmit = uiState.documento.isNotBlank() &&
+        uiState.frontImagePath != null &&
+        uiState.backImagePath != null
+
+    OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(OficiosSpacing.md)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        ) {
+            Text(
+                text = stringResource(R.string.onboarding_step_dni_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            if (uiState.error != null) {
+                OficiosInlineAlert(message = uiState.error)
+            }
+
+            DniStepSection(
+                title = stringResource(R.string.onboarding_step_dni_number_section),
+                description = stringResource(R.string.onboarding_step_dni_number_hint),
+            ) {
+                OficiosTextField(
+                    value = uiState.documento,
+                    onValueChange = onDocumentoChanged,
+                    label = stringResource(R.string.onboarding_step_dni_number_label),
+                )
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+
+            DniStepSection(
+                title = stringResource(R.string.onboarding_step_dni_photos_section),
+                description = stringResource(R.string.onboarding_step_dni_photos_hint),
+            ) {
+                DniImageUploadCard(
+                    title = stringResource(R.string.onboarding_step_dni_front_title),
+                    subtitle = stringResource(R.string.onboarding_step_dni_front_subtitle),
+                    isLoaded = uiState.frontImagePath != null,
+                    onClick = frontPicker.requestImage,
+                )
+                DniImageUploadCard(
+                    title = stringResource(R.string.onboarding_step_dni_back_title),
+                    subtitle = stringResource(R.string.onboarding_step_dni_back_subtitle),
+                    isLoaded = uiState.backImagePath != null,
+                    onClick = backPicker.requestImage,
+                )
+                OficiosButton(
+                    text = stringResource(R.string.onboarding_step_submit_dni),
+                    onClick = onSubmit,
+                    enabled = canSubmit && !uiState.isLoading,
+                    loading = uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
     }
-    val backLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        onBackImage(uri?.let { resolveUriToFilePath(context, it) })
+}
+
+@Composable
+private fun DniStepSection(
+    title: String,
+    description: String,
+    content: @Composable () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        content()
     }
-    OnboardingStepScaffold(
-        title = stringResource(R.string.onboarding_step_dni_title),
-        error = uiState.error,
-        isLoading = uiState.isLoading,
-        canSubmit = uiState.documento.isNotBlank(),
-        onSubmit = onSubmitNumber,
+}
+
+@Composable
+private fun DniImageUploadCard(
+    title: String,
+    subtitle: String,
+    isLoaded: Boolean,
+    onClick: () -> Unit,
+) {
+    OficiosCard(
+        onClick = onClick,
+        selected = isLoaded,
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        OficiosTextField(value = uiState.documento, onValueChange = onDocumentoChanged, label = "Número de DNI")
-        OficiosButton(
-            text = if (uiState.frontImagePath != null) "Frente cargado" else "Subir frente del DNI",
-            onClick = { frontLauncher.launch("image/*") },
+        Row(
             modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosButton(
-            text = if (uiState.backImagePath != null) "Dorso cargado" else "Subir dorso del DNI",
-            onClick = { backLauncher.launch("image/*") },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosButton(
-            text = stringResource(R.string.onboarding_step_upload_dni),
-            onClick = onSubmitImages,
-            enabled = uiState.frontImagePath != null && uiState.backImagePath != null && !uiState.isLoading,
-            loading = uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
-        )
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = if (isLoaded) Icons.Outlined.CheckCircle else Icons.Outlined.PhotoCamera,
+                contentDescription = null,
+                modifier = Modifier.size(OficiosSpacing.lg),
+                tint = if (isLoaded) OficiosColorSuccess else MaterialTheme.colorScheme.primary,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+            ) {
+                Text(text = title, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = if (isLoaded) stringResource(R.string.onboarding_step_dni_status_loaded) else subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            OficiosBadge(
+                label = stringResource(
+                    if (isLoaded) {
+                        R.string.onboarding_step_dni_status_loaded
+                    } else {
+                        R.string.onboarding_step_dni_status_pending
+                    },
+                ),
+                containerColor = if (isLoaded) {
+                    OficiosColorSuccess
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                },
+                contentColor = if (isLoaded) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
     }
 }
 
@@ -235,6 +362,105 @@ fun ProviderRubrosStepScreen(
                 compactRow = true,
             )
         }
+    }
+}
+
+@Composable
+fun ProviderAvailabilityStepScreen(
+    uiState: ProviderAvailabilityUiState,
+    onWorkDayToggled: (String, Boolean) -> Unit,
+    onTimeSlotFromChanged: (Int, String) -> Unit,
+    onTimeSlotToChanged: (Int, String) -> Unit,
+    onAddTimeSlot: () -> Unit,
+    onServesAtClientHomeChanged: (Boolean) -> Unit,
+    onServesAtLocalChanged: (Boolean) -> Unit,
+    onRequiresTurnsChanged: (Boolean) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    OnboardingStepScaffold(
+        title = stringResource(R.string.onboarding_step_availability_title),
+        error = uiState.error,
+        isLoading = uiState.isLoading,
+        canSubmit = uiState.canSubmit,
+        onSubmit = onSubmit,
+    ) {
+        AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_work_days)) {
+            uiState.workDayOptions.forEach { (dayId, dayLabel) ->
+                OficiosCheckbox(
+                    checked = dayId in uiState.selectedWorkDays,
+                    onCheckedChange = { onWorkDayToggled(dayId, it) },
+                    label = dayLabel,
+                    compactRow = true,
+                )
+            }
+        }
+
+        AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_service_location)) {
+            OficiosCheckbox(
+                checked = uiState.servesAtClientHome,
+                onCheckedChange = onServesAtClientHomeChanged,
+                label = stringResource(R.string.onboarding_step_availability_serves_at_home),
+                compactRow = true,
+            )
+            OficiosCheckbox(
+                checked = uiState.servesAtLocal,
+                onCheckedChange = onServesAtLocalChanged,
+                label = stringResource(R.string.onboarding_step_availability_serves_at_local),
+                compactRow = true,
+            )
+            OficiosCheckbox(
+                checked = uiState.requiresTurns,
+                onCheckedChange = onRequiresTurnsChanged,
+                label = stringResource(R.string.onboarding_step_availability_requires_turns),
+                compactRow = true,
+            )
+        }
+
+        AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_schedule)) {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.formSection)) {
+                uiState.timeSlots.forEachIndexed { index, slot ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                    ) {
+                        OficiosDropdownField(
+                            value = slot.from,
+                            options = uiState.timeOptions,
+                            onOptionSelected = { onTimeSlotFromChanged(index, it) },
+                            label = stringResource(R.string.onboarding_step_availability_from),
+                            placeholder = stringResource(R.string.onboarding_step_availability_from),
+                            modifier = Modifier.weight(1f),
+                            usePlaceholderOnly = true,
+                        )
+                        OficiosDropdownField(
+                            value = slot.to,
+                            options = uiState.timeOptions,
+                            onOptionSelected = { onTimeSlotToChanged(index, it) },
+                            label = stringResource(R.string.onboarding_step_availability_to),
+                            placeholder = stringResource(R.string.onboarding_step_availability_to),
+                            modifier = Modifier.weight(1f),
+                            usePlaceholderOnly = true,
+                        )
+                    }
+                }
+                OficiosButton(
+                    text = stringResource(R.string.onboarding_step_availability_add_schedule),
+                    onClick = onAddTimeSlot,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvailabilitySection(
+    title: String,
+    content: @Composable () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        content()
     }
 }
 

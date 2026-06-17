@@ -22,6 +22,14 @@ class ExceptionMapperTest {
     }
 
     @Test
+    fun `client validation maps to validation error`() {
+        val error = ClientValidationException("Formato no válido").toAppError()
+
+        assertTrue(error is AppError.Validation)
+        assertEquals("Formato no válido", error.userMessage())
+    }
+
+    @Test
     fun `unknown error hides technical message`() {
         val error = RuntimeException("Internal boom").toAppError()
 

@@ -1,6 +1,8 @@
 package com.cocido.oficios.domain.usecase.profile
 
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.ClientValidationException
+import com.cocido.oficios.core.common.result.toAppError
 import com.cocido.oficios.domain.mapper.toProfessionalInfoRequest
 import com.cocido.oficios.domain.mapper.toRubroFullRequest
 import com.cocido.oficios.domain.model.ClientContactoRequest
@@ -20,8 +22,19 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val catalogRepository: CatalogRepository,
 ) {
-    suspend operator fun invoke(): AppResult<Unit> {
-        var draft = registerTradeDraftRepository.get() ?: return AppResult.Success(Unit)
+    suspend operator fun invoke(requireDraft: Boolean = false): AppResult<Unit> {
+        var draft = registerTradeDraftRepository.get()
+        if (draft == null) {
+            return if (requireDraft) {
+                AppResult.Error(
+                    ClientValidationException(
+                        "No se encontraron los datos del rubro. Volvé al paso anterior y completalos de nuevo.",
+                    ).toAppError(),
+                )
+            } else {
+                AppResult.Success(Unit)
+            }
+        }
         draft = resolveBarrioId(draft)
 
         val infoResult = providerProfileRepository.updateProfessionalInfo(draft.toProfessionalInfoRequest())
@@ -29,7 +42,6 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
 
         return when (val rubroResult = providerProfileRepository.submitRubroFull(draft.toRubroFullRequest())) {
             is AppResult.Success -> {
-                registerTradeDraftRepository.clear()
                 AppResult.Success(Unit)
             }
             is AppResult.Error -> rubroResult

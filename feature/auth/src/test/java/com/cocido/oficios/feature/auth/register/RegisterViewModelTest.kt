@@ -1,19 +1,23 @@
 package com.cocido.oficios.feature.auth.register
 
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.usecase.auth.CompleteProviderRegistrationUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import com.cocido.oficios.feature.auth.FakeAuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import java.util.concurrent.atomic.AtomicBoolean
@@ -37,44 +41,49 @@ class RegisterViewModelTest {
 
     private fun createViewModel(
         draftSubmitted: AtomicBoolean = AtomicBoolean(false),
+        rubroSyncResult: AppResult<Unit> = AppResult.Success(Unit),
     ) = RegisterViewModel(
         RegisterClientUseCase(FakeAuthRepository()),
-        RegisterProviderUseCase(FakeAuthRepository()),
-        SubmitRegisterTradeDraftUseCase(
-            providerProfileRepository = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
-                override suspend fun updateProfessionalInfo(request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest) =
-                    AppResult.Success(Unit).also { draftSubmitted.set(true) }
-                override suspend fun submitRubroFull(request: com.cocido.oficios.domain.model.ProviderRubroFullRequest) =
-                    AppResult.Success(Unit)
-                override suspend fun finalizeProfile() = AppResult.Success(Unit)
-            },
-            registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
-                override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
-                override suspend fun get() = com.cocido.oficios.domain.model.RegisterTradeDraft(
-                    categoryId = 1,
-                    categoryName = "Hogar",
-                    rubroId = 10,
-                    rubroName = "Plomería",
-                    subRubroIds = listOf(100),
-                    otherSpecialization = null,
-                    experienceRange = "0 a 2 años",
-                    neighborhoodQuery = "Centro",
-                    timeSlots = listOf(
-                        com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft("09:00", "18:00"),
-                    ),
-                )
-                override suspend fun clear() = Unit
-            },
-            catalogRepository = object : com.cocido.oficios.domain.repository.CatalogRepository {
-                override suspend fun getCategories(): AppResult<List<CatalogOption>> =
-                    AppResult.Success(emptyList())
-                override suspend fun getRubrosByCategory(categoryId: Long): AppResult<List<CatalogOption>> =
-                    AppResult.Success(emptyList())
-                override suspend fun getSubRubrosByRubro(rubroId: Long): AppResult<List<CatalogOption>> =
-                    AppResult.Success(emptyList())
-                override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> =
-                    AppResult.Success(emptyList())
-            },
+        CompleteProviderRegistrationUseCase(
+            registerProviderUseCase = RegisterProviderUseCase(FakeAuthRepository()),
+            submitRegisterTradeDraftUseCase = SubmitRegisterTradeDraftUseCase(
+                providerProfileRepository = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
+                    override suspend fun updateProfessionalInfo(
+                        request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
+                    ) = AppResult.Success(Unit).also { draftSubmitted.set(true) }
+                    override suspend fun submitRubroFull(
+                        request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                    ) = rubroSyncResult
+                    override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                },
+                registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+                    override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
+                    override suspend fun get() = com.cocido.oficios.domain.model.RegisterTradeDraft(
+                        categoryId = 1,
+                        categoryName = "Hogar",
+                        rubroId = 10,
+                        rubroName = "Plomería",
+                        subRubroIds = listOf(100),
+                        otherSpecialization = null,
+                        experienceRange = "0 a 2 años",
+                        neighborhoodQuery = "Centro",
+                        timeSlots = listOf(
+                            com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft("09:00", "18:00"),
+                        ),
+                    )
+                    override suspend fun clear() = Unit
+                },
+                catalogRepository = object : com.cocido.oficios.domain.repository.CatalogRepository {
+                    override suspend fun getCategories(): AppResult<List<CatalogOption>> =
+                        AppResult.Success(emptyList())
+                    override suspend fun getRubrosByCategory(categoryId: Long): AppResult<List<CatalogOption>> =
+                        AppResult.Success(emptyList())
+                    override suspend fun getSubRubrosByRubro(rubroId: Long): AppResult<List<CatalogOption>> =
+                        AppResult.Success(emptyList())
+                    override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> =
+                        AppResult.Success(emptyList())
+                },
+            ),
         ),
     )
 
@@ -118,7 +127,7 @@ class RegisterViewModelTest {
     }
 
     @Test
-    fun `provider registration success with document`() = runTest(dispatcher) {
+    fun `provider registration syncs rubro to backend before finishing`() = runTest(dispatcher) {
         val draftSubmitted = AtomicBoolean(false)
         val viewModel = createViewModel(draftSubmitted)
         viewModel.setMode(RegisterMode.PROVIDER)
@@ -127,6 +136,24 @@ class RegisterViewModelTest {
         advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isLoading)
         assertTrue(draftSubmitted.get())
+    }
+
+    @Test
+    fun `provider registration continues to onboarding when rubro sync fails`() = runTest(dispatcher) {
+        val viewModel = createViewModel(
+            rubroSyncResult = AppResult.Error(AppError.Network(message = "Error del servidor")),
+        )
+        val effects = mutableListOf<RegisterEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.setMode(RegisterMode.PROVIDER)
+        fillValidClientForm(viewModel)
+        viewModel.onEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+
+        assertEquals("Error del servidor", viewModel.uiState.value.generalError)
+        assertTrue(effects.any { it is RegisterEffect.NavigateToOnboarding })
+        job.cancel()
     }
 
     private fun fillValidClientForm(viewModel: RegisterViewModel) {

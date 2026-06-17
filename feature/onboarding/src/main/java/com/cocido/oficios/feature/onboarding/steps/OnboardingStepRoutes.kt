@@ -10,6 +10,7 @@ import com.cocido.oficios.feature.onboarding.client.ClientContactoEffect
 import com.cocido.oficios.feature.onboarding.client.ClientContactoViewModel
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioEffect
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioViewModel
+import com.cocido.oficios.feature.onboarding.provider.ProviderAvailabilityViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderDniViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderLocalViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoViewModel
@@ -61,8 +62,7 @@ fun ProviderDniRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onDocumentoChanged = viewModel::onDocumentoChanged,
         onFrontImage = viewModel::onFrontImage,
         onBackImage = viewModel::onBackImage,
-        onSubmitNumber = viewModel::submitNumber,
-        onSubmitImages = viewModel::submitImages,
+        onSubmit = viewModel::submit,
     )
 }
 
@@ -93,6 +93,26 @@ fun ProviderRubrosRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onCategorySelected = viewModel::onCategorySelected,
         onTradeSelected = viewModel::onTradeSelected,
         onSubRubroToggled = viewModel::onSubRubroToggled,
+        onSubmit = viewModel::submit,
+    )
+}
+
+@Composable
+fun ProviderAvailabilityRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
+    val viewModel: ProviderAvailabilityViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { if (it is ProviderStepEffect.Saved) onSaved() }
+    }
+    ProviderAvailabilityStepScreen(
+        uiState = uiState,
+        onWorkDayToggled = viewModel::onWorkDayToggled,
+        onTimeSlotFromChanged = viewModel::onTimeSlotFromChanged,
+        onTimeSlotToChanged = viewModel::onTimeSlotToChanged,
+        onAddTimeSlot = viewModel::onAddTimeSlot,
+        onServesAtClientHomeChanged = viewModel::onServesAtClientHomeChanged,
+        onServesAtLocalChanged = viewModel::onServesAtLocalChanged,
+        onRequiresTurnsChanged = viewModel::onRequiresTurnsChanged,
         onSubmit = viewModel::submit,
     )
 }

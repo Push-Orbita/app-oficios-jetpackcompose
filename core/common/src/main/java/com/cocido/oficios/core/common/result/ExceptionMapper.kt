@@ -13,6 +13,7 @@ fun Throwable.toAppError(): AppError {
     }
 
     return when (this) {
+        is ClientValidationException -> AppError.Validation(message = message)
         is SocketTimeoutException -> AppError.Network(message = "Request timed out")
         is UnknownHostException -> AppError.Network(message = "No internet connection")
         is SSLException -> AppError.Network(message = "Secure connection could not be established")

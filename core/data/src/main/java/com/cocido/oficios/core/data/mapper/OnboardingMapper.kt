@@ -98,12 +98,16 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
 
     missingSteps.forEach { missing ->
         val (title, description) = stepMap[missing] ?: (missing to "Completá este paso.")
+        val status = when (missing) {
+            "dni_pendiente_revision" -> OnboardingStepStatus.IN_REVIEW
+            else -> OnboardingStepStatus.PENDING
+        }
         add(
             OnboardingStep(
                 id = missing,
                 title = title,
                 description = description,
-                status = OnboardingStepStatus.PENDING,
+                status = status,
             ),
         )
     }
@@ -111,9 +115,9 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
     if (missingSteps.isEmpty() && !isConfigurationComplete) {
         add(
             OnboardingStep(
-                id = "perfil",
-                title = "Completar perfil",
-                description = "Finalizá la configuración de tu perfil profesional.",
+                id = "finalizar_perfil",
+                title = "Finalizar perfil",
+                description = "Confirmá tu perfil para publicarlo.",
                 status = OnboardingStepStatus.PENDING,
             ),
         )

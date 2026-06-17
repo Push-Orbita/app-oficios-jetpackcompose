@@ -111,6 +111,7 @@ fun AppNavHost(
         )
         settingsScreen(
             onNavigateBack = { navController.popBackStack() },
+            onLoggedOut = { navController.navigateToLoginClearingBackStack() },
         )
     }
 }
