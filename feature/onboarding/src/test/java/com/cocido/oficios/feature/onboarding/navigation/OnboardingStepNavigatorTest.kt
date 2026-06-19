@@ -69,6 +69,14 @@ class OnboardingStepNavigatorTest {
     }
 
     @Test
+    fun `maps provider payment methods route`() {
+        assertEquals(
+            OnboardingDestination.PROVIDER_PAYMENT_METHODS,
+            OnboardingStepNavigator.routeForStep("metodos_pago"),
+        )
+    }
+
+    @Test
     fun `pending rubro step is actionable`() {
         val step = OnboardingStep(
             id = "rubro_principal",

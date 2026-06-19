@@ -22,6 +22,7 @@ data class ProviderProfessionalInfoRequest(
     val descripcion: String? = null,
     val experiencia: String? = null,
     val documento: String? = null,
+    val paymentMethods: List<String>? = null,
 )
 
 data class ProviderRubroFullRequest(
@@ -33,6 +34,7 @@ data class ProviderRubroFullRequest(
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
     val requiresTurns: Boolean = false,
     val domicilioLocal: ProviderLocalDomicilioRequest? = null,
+    val paymentMethods: List<String> = emptyList(),
 )
 
 data class ProviderLocalDomicilioRequest(

@@ -13,6 +13,7 @@ import com.cocido.oficios.feature.onboarding.client.ClientDomicilioViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderAvailabilityViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderDniViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderLocalViewModel
+import com.cocido.oficios.feature.onboarding.provider.ProviderPaymentMethodsViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderRubrosViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderStepEffect
@@ -113,6 +114,20 @@ fun ProviderAvailabilityRoute(onSaved: () -> Unit, modifier: Modifier = Modifier
         onServesAtClientHomeChanged = viewModel::onServesAtClientHomeChanged,
         onServesAtLocalChanged = viewModel::onServesAtLocalChanged,
         onRequiresTurnsChanged = viewModel::onRequiresTurnsChanged,
+        onSubmit = viewModel::submit,
+    )
+}
+
+@Composable
+fun ProviderPaymentMethodsRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
+    val viewModel: ProviderPaymentMethodsViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { if (it is ProviderStepEffect.Saved) onSaved() }
+    }
+    ProviderPaymentMethodsStepScreen(
+        uiState = uiState,
+        onMethodToggled = viewModel::onMethodToggled,
         onSubmit = viewModel::submit,
     )
 }

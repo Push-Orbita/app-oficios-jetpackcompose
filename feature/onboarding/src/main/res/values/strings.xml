@@ -40,6 +40,11 @@
     <string name="onboarding_step_availability_to">Hasta</string>
     <string name="onboarding_step_availability_add_schedule">Agregar horario</string>
     <string name="onboarding_step_local_title">Local comercial</string>
+    <string name="onboarding_step_payment_methods_title">Métodos de pago</string>
+    <string name="onboarding_step_payment_methods_hint">Seleccioná al menos un método para cobrar tus servicios.</string>
+    <string name="onboarding_step_payment_efectivo">Efectivo</string>
+    <string name="onboarding_step_payment_transferencia">Transferencia</string>
+    <string name="onboarding_step_payment_mercadopago">Mercado Pago</string>
     <string name="onboarding_step_barrio_label">Barrio</string>
     <string name="onboarding_step_barrio_hint">Buscar barrio</string>
     <string name="onboarding_step_calle_label">Calle</string>

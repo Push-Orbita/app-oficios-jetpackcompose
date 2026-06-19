@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.data.test
 
+import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.profile.ClientProfileApi
 import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -19,6 +20,9 @@ internal object NetworkTestHelper {
 
     fun createProviderProfileApi(server: MockWebServer): ProviderProfileApi =
         createRetrofit(server).create(ProviderProfileApi::class.java)
+
+    fun createAuthApi(server: MockWebServer): AuthApi =
+        createRetrofit(server).create(AuthApi::class.java)
 
     fun createClientProfileApi(server: MockWebServer): ClientProfileApi =
         createRetrofit(server).create(ClientProfileApi::class.java)

@@ -91,6 +91,7 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         "disponibilidad" to ("Días laborables" to "Configurá tus días y horarios."),
         "agenda_turnos" to ("Agenda de turnos" to "Configurá turnos si aplica."),
         "local_comercial" to ("Local comercial" to "Agregá tu local si atendés en sitio."),
+        "metodos_pago" to ("Métodos de pago" to "Seleccioná cómo querés cobrar."),
         "informacion_personal" to ("Información personal" to "Completá tu información básica."),
         "finalizar_perfil" to ("Finalizar perfil" to "Confirmá tu perfil para publicarlo."),
         "email_verificado" to ("Verificar email" to "Confirmá tu correo electrónico."),
@@ -108,17 +109,6 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
                 title = title,
                 description = description,
                 status = status,
-            ),
-        )
-    }
-
-    if (missingSteps.isEmpty() && !isConfigurationComplete) {
-        add(
-            OnboardingStep(
-                id = "finalizar_perfil",
-                title = "Finalizar perfil",
-                description = "Confirmá tu perfil para publicarlo.",
-                status = OnboardingStepStatus.PENDING,
             ),
         )
     }

@@ -18,6 +18,7 @@ fun ProviderProfessionalInfoRequest.toDto() = UpdateTrabajadorPerfilProfesionalR
     descripcion = descripcion,
     experiencia = experiencia,
     documento = documento,
+    metodosPago = paymentMethods,
 )
 
 fun ClientDomicilioRequest.toDto() = CreateDomicilioRequestDto(
@@ -64,6 +65,7 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
             longitud = it.longitud,
         )
     },
+    metodosPago = paymentMethods.takeIf { it.isNotEmpty() },
 )
 
 private fun List<RegisterTradeTimeSlotDraft>.toHorarios(): List<CreateHorarioLaboralRequestDto> =

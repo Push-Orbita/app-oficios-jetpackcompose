@@ -7,12 +7,14 @@ import com.cocido.oficios.domain.model.ClientProfileStatus
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
 import com.cocido.oficios.domain.model.ProviderProfileStatus
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.repository.OnboardingRepository
 import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
 import com.cocido.oficios.domain.usecase.auth.ResolveInitialDestinationUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.RetryPendingTradeDraftUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
+import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -60,20 +62,26 @@ class ProviderOnboardingViewModelTest {
             )
             override suspend fun clear() = Unit
         }
+        val providerProfileRepository = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
+            override suspend fun updateProfessionalInfo(
+                request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
+            ) = AppResult.Success(Unit).also { retryCalled = true }
+            override suspend fun submitRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun finalizeProfile() = AppResult.Success(Unit)
+            override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
+        }
         val viewModel = ProviderOnboardingViewModel(
             getOnboardingStatusUseCase = GetOnboardingStatusUseCase(FakeOnboardingRepository()),
             registerTradeDraftRepository = draftRepository,
+            syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                providerProfileRepository = providerProfileRepository,
+                registerTradeDraftRepository = draftRepository,
+            ),
             retryPendingTradeDraftUseCase = RetryPendingTradeDraftUseCase(
                 SubmitRegisterTradeDraftUseCase(
-                    providerProfileRepository = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
-                        override suspend fun updateProfessionalInfo(
-                            request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
-                        ) = AppResult.Success(Unit).also { retryCalled = true }
-                        override suspend fun submitRubroFull(
-                            request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
-                        ) = AppResult.Success(Unit)
-                        override suspend fun finalizeProfile() = AppResult.Success(Unit)
-                    },
+                    providerProfileRepository = providerProfileRepository,
                     registerTradeDraftRepository = draftRepository,
                     catalogRepository = object : com.cocido.oficios.domain.repository.CatalogRepository {
                         override suspend fun getCategories() =
@@ -85,6 +93,10 @@ class ProviderOnboardingViewModelTest {
                         override suspend fun searchBarrios(query: String) =
                             AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
                     },
+                    syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                        providerProfileRepository = providerProfileRepository,
+                        registerTradeDraftRepository = draftRepository,
+                    ),
                 ),
             ),
             finalizeProviderProfileUseCase = FinalizeProviderProfileUseCase(
@@ -96,6 +108,7 @@ class ProviderOnboardingViewModelTest {
                         request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                     ) = AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                    override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
                 },
             ),
             resolveInitialDestinationUseCase = ResolveInitialDestinationUseCase(

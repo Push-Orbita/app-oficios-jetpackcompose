@@ -16,5 +16,6 @@ object OnboardingDestination {
     const val PROVIDER_PROFESSIONAL_INFO = "onboarding/provider/professional-info"
     const val PROVIDER_RUBROS = "onboarding/provider/rubros"
     const val PROVIDER_AVAILABILITY = "onboarding/provider/availability"
+    const val PROVIDER_PAYMENT_METHODS = "onboarding/provider/payment-methods"
     const val PROVIDER_LOCAL = "onboarding/provider/local"
 }

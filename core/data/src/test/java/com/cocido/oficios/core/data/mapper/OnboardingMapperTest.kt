@@ -79,4 +79,17 @@ class OnboardingMapperTest {
         assertEquals(OnboardingStepStatus.COMPLETE, domicilioStep.status)
         assertFalse(status.toOnboardingSteps().any { it.id == "email_verificado" })
     }
+
+    @Test
+    fun `maps provider payment methods step`() {
+        val steps = ProviderProfileStatus(
+            accountStatus = com.cocido.oficios.domain.model.AccountStatus.PENDING_APPROVAL,
+            isConfigurationComplete = false,
+            isProfileComplete = false,
+            isOperational = false,
+            missingSteps = listOf("metodos_pago"),
+        ).toOnboardingSteps()
+
+        assertTrue(steps.any { it.id == "metodos_pago" })
+    }
 }

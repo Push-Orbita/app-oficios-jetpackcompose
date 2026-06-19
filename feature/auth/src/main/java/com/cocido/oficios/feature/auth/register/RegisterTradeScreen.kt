@@ -19,6 +19,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -182,6 +183,39 @@ fun RegisterTradeScreen(
                     onClick = { onEvent(RegisterTradeEvent.AddTimeSlot) },
                 )
             }
+        }
+
+        RegisterTradeLabeledSection(
+            title = stringResource(R.string.auth_register_trade_payment_label),
+        ) {
+            Text(
+                text = stringResource(R.string.auth_register_trade_payment_hint),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OficiosCheckbox(
+                checked = ProviderPaymentMethods.EFECTIVO in uiState.selectedPaymentMethods,
+                onCheckedChange = {
+                    onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, it))
+                },
+                label = stringResource(R.string.auth_register_trade_payment_efectivo),
+                compactRow = true,
+            )
+            OficiosCheckbox(
+                checked = ProviderPaymentMethods.TRANSFERENCIA in uiState.selectedPaymentMethods,
+                onCheckedChange = {
+                    onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.TRANSFERENCIA, it))
+                },
+                label = stringResource(R.string.auth_register_trade_payment_transferencia),
+                compactRow = true,
+            )
+            OficiosCheckbox(
+                checked = ProviderPaymentMethods.MERCADOPAGO in uiState.selectedPaymentMethods,
+                onCheckedChange = {
+                    onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.MERCADOPAGO, it))
+                },
+                label = stringResource(R.string.auth_register_trade_payment_mercadopago),
+                compactRow = true,
+            )
         }
 
         Row(

@@ -1,5 +1,7 @@
 package com.cocido.oficios.core.network.api.auth.dto
 
+import com.cocido.oficios.core.network.api.profile.dto.ProviderDomicilioDto
+import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -142,6 +144,7 @@ data class TrabajadorPerfilEstadoRequisitosDto(
     val tieneAgendaSiAplica: Boolean = false,
     val perfilOperativo: Boolean = false,
     val emailVerificado: Boolean = false,
+    val requisitosOnboardingCompletos: Boolean = false,
 )
 
 @Serializable
@@ -149,7 +152,12 @@ data class TrabajadorOficioPerfilMeDto(
     val id: Long,
     val estado: String,
     val documento: String? = null,
+    val descripcion: String? = null,
+    val experiencia: String? = null,
     val perfilOperativo: Boolean = false,
+    val rubros: List<TrabajadorOficioRubroFullDto> = emptyList(),
+    val domicilios: List<ProviderDomicilioDto> = emptyList(),
+    val metodosPago: List<String> = emptyList(),
     val documentoIdentidad: ImgDocumentoSimpleDto? = null,
     val usuario: UsuarioDto? = null,
 )

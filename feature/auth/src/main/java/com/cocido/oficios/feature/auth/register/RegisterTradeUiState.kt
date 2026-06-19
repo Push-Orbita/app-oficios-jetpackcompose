@@ -20,6 +20,7 @@ sealed interface RegisterTradeEvent {
     data class WorkDayToggled(val day: String, val checked: Boolean) : RegisterTradeEvent
     data class ServesAtClientHomeChanged(val value: Boolean) : RegisterTradeEvent
     data class ServesAtLocalChanged(val value: Boolean) : RegisterTradeEvent
+    data class PaymentMethodToggled(val method: String, val checked: Boolean) : RegisterTradeEvent
     data object Continue : RegisterTradeEvent
     data object RetryLoadCatalog : RegisterTradeEvent
 }
@@ -40,6 +41,7 @@ data class RegisterTradeUiState(
     val otherSpecialization: String = "",
     val selectedExperienceRange: String = "",
     val neighborhoodQuery: String = "",
+    val selectedPaymentMethods: Set<String> = emptySet(),
     val timeSlots: List<RegisterTradeTimeSlot> = listOf(RegisterTradeTimeSlot()),
     val isLoadingCatalog: Boolean = false,
     val isLoadingTrades: Boolean = false,

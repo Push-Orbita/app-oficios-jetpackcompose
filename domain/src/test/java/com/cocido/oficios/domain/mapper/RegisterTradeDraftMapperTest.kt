@@ -23,6 +23,7 @@ class RegisterTradeDraftMapperTest {
             servesAtClientHome = true,
             servesAtLocal = false,
             timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+            paymentMethods = listOf("EFECTIVO", "TRANSFERENCIA"),
         )
 
         val request = draft.toRubroFullRequest()
@@ -31,5 +32,6 @@ class RegisterTradeDraftMapperTest {
         assertEquals(listOf(101L, 102L), request.subRubroIds)
         assertEquals(listOf("LUNES", "VIERNES"), request.workDays)
         assertTrue(request.servesAtClientHome)
+        assertEquals(listOf("EFECTIVO", "TRANSFERENCIA"), request.paymentMethods)
     }
 }

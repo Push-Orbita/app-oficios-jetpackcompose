@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.mapper.toRubroFullRequest
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -17,6 +18,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
+import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
@@ -102,7 +104,7 @@ data class ProviderProfessionalInfoUiState(
 @HiltViewModel
 class ProviderProfessionalInfoViewModel @Inject constructor(
     private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
-    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderProfessionalInfoUiState())
@@ -112,10 +114,10 @@ class ProviderProfessionalInfoViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            registerTradeDraftRepository.get()?.let { draft ->
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
                 _uiState.update {
                     it.copy(
-                        descripcion = draft.otherSpecialization ?: draft.rubroName,
+                        descripcion = draft.otherSpecialization.orEmpty(),
                         experiencia = draft.experienceRange,
                     )
                 }
@@ -168,6 +170,7 @@ class ProviderRubrosViewModel @Inject constructor(
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderRubrosUiState())
@@ -181,7 +184,7 @@ class ProviderRubrosViewModel @Inject constructor(
                 is AppResult.Success -> _uiState.update { it.copy(categoryOptions = result.data) }
                 is AppResult.Error -> _uiState.update { it.copy(error = result.error.userMessage()) }
             }
-            registerTradeDraftRepository.get()?.let { draft ->
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
                 _uiState.update {
                     it.copy(
                         selectedCategoryId = draft.categoryId,
@@ -323,6 +326,7 @@ private object ProviderAvailabilityDefaults {
 class ProviderAvailabilityViewModel @Inject constructor(
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderAvailabilityUiState())
@@ -332,7 +336,8 @@ class ProviderAvailabilityViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            registerTradeDraftRepository.get()?.let { draft ->
+            val draft = syncRegisterTradeDraftFromProfileUseCase()
+            if (draft != null) {
                 _uiState.update {
                     it.copy(
                         selectedWorkDays = draft.workDays.toSet().ifEmpty { ProviderAvailabilityDefaults.defaultSelectedWorkDays },
@@ -343,8 +348,10 @@ class ProviderAvailabilityViewModel @Inject constructor(
                         hasRubroContext = draft.rubroId > 0 && draft.subRubroIds.isNotEmpty(),
                     )
                 }
-            } ?: _uiState.update {
-                it.copy(error = "Completá primero tu rubro y especialidades")
+            } else {
+                _uiState.update {
+                    it.copy(error = "Completá primero tu rubro y especialidades")
+                }
             }
         }
     }
@@ -429,6 +436,7 @@ class ProviderLocalViewModel @Inject constructor(
     private val searchBarriosUseCase: SearchBarriosUseCase,
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderLocalUiState())
@@ -436,6 +444,21 @@ class ProviderLocalViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ProviderStepEffect>()
     val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
     private var searchJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
+                if (draft.barrioId != null || draft.neighborhoodQuery.isNotBlank()) {
+                    _uiState.update {
+                        it.copy(
+                            barrioQuery = draft.neighborhoodQuery,
+                            selectedBarrioId = draft.barrioId,
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     fun onBarrioQueryChanged(query: String) {
         _uiState.update { it.copy(barrioQuery = query, selectedBarrioId = null) }
@@ -486,6 +509,73 @@ class ProviderLocalViewModel @Inject constructor(
                     _effects.emit(ProviderStepEffect.Saved)
                 }
                 is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+            }
+        }
+    }
+}
+
+data class ProviderPaymentMethodsUiState(
+    val selectedMethods: Set<String> = emptySet(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
+) {
+    val canSubmit: Boolean get() = selectedMethods.isNotEmpty()
+}
+
+@HiltViewModel
+class ProviderPaymentMethodsViewModel @Inject constructor(
+    private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderPaymentMethodsUiState())
+    val uiState: StateFlow<ProviderPaymentMethodsUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
+                _uiState.update {
+                    it.copy(selectedMethods = draft.paymentMethods.toSet())
+                }
+            }
+        }
+    }
+
+    fun onMethodToggled(method: String, checked: Boolean) = _uiState.update {
+        val updated = it.selectedMethods.toMutableSet()
+        if (checked) updated.add(method) else updated.remove(method)
+        it.copy(selectedMethods = updated, error = null)
+    }
+
+    fun submit() {
+        val methods = _uiState.value.selectedMethods.toList()
+        if (methods.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val draft = registerTradeDraftRepository.get()
+            val updatedDraft = draft?.copy(paymentMethods = methods)
+            if (updatedDraft != null) {
+                registerTradeDraftRepository.save(updatedDraft)
+            }
+            val result = if (updatedDraft != null && updatedDraft.subRubroIds.isNotEmpty()) {
+                submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())
+            } else {
+                updateProviderProfessionalInfoUseCase(
+                    ProviderProfessionalInfoRequest(paymentMethods = methods),
+                )
+            }
+            when (result) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+                }
             }
         }
     }

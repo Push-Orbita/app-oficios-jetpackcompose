@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.onboarding.provider
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
@@ -72,6 +73,7 @@ class ProviderFinalizeViewModelTest {
                     override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
                         AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = result
+                    override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
                 },
             ),
         )

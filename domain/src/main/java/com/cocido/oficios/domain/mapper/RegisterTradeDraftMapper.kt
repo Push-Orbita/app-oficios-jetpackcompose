@@ -27,6 +27,7 @@ fun RegisterTradeDraft.toRubroFullRequest() = ProviderRubroFullRequest(
     } else {
         null
     },
+    paymentMethods = paymentMethods,
 )
 
 private val DEFAULT_WORK_DAYS = listOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES")

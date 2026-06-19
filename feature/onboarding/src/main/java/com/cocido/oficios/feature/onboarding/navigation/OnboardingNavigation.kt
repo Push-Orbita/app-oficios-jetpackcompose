@@ -16,6 +16,7 @@ import com.cocido.oficios.feature.onboarding.steps.ClientContactoRoute
 import com.cocido.oficios.feature.onboarding.steps.ClientDomicilioRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderAvailabilityRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderDniRoute
+import com.cocido.oficios.feature.onboarding.steps.ProviderPaymentMethodsRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderLocalRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderProfessionalInfoRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderRubrosRoute
@@ -96,6 +97,9 @@ fun NavGraphBuilder.onboardingGraph(
     }
     composable(OnboardingDestination.PROVIDER_AVAILABILITY) {
         ProviderAvailabilityRoute(onSaved = onStepCompleted)
+    }
+    composable(OnboardingDestination.PROVIDER_PAYMENT_METHODS) {
+        ProviderPaymentMethodsRoute(onSaved = onStepCompleted)
     }
     composable(OnboardingDestination.PROVIDER_LOCAL) {
         ProviderLocalRoute(onSaved = onStepCompleted)

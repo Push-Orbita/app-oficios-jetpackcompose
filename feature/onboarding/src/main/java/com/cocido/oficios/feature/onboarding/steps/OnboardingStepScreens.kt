@@ -34,8 +34,10 @@ import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.client.ClientContactoUiState
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioUiState
+import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.feature.onboarding.provider.ProviderDniUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderLocalUiState
+import com.cocido.oficios.feature.onboarding.provider.ProviderPaymentMethodsUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderAvailabilityUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderRubrosUiState
@@ -451,6 +453,59 @@ fun ProviderAvailabilityStepScreen(
             }
         }
     }
+}
+
+@Composable
+fun ProviderPaymentMethodsStepScreen(
+    uiState: ProviderPaymentMethodsUiState,
+    onMethodToggled: (String, Boolean) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    OnboardingStepScaffold(
+        title = stringResource(R.string.onboarding_step_payment_methods_title),
+        error = uiState.error,
+        isLoading = uiState.isLoading,
+        canSubmit = uiState.canSubmit,
+        onSubmit = onSubmit,
+    ) {
+        Text(
+            text = stringResource(R.string.onboarding_step_payment_methods_hint),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        PaymentMethodCheckbox(
+            method = ProviderPaymentMethods.EFECTIVO,
+            label = stringResource(R.string.onboarding_step_payment_efectivo),
+            checked = ProviderPaymentMethods.EFECTIVO in uiState.selectedMethods,
+            onCheckedChange = { onMethodToggled(ProviderPaymentMethods.EFECTIVO, it) },
+        )
+        PaymentMethodCheckbox(
+            method = ProviderPaymentMethods.TRANSFERENCIA,
+            label = stringResource(R.string.onboarding_step_payment_transferencia),
+            checked = ProviderPaymentMethods.TRANSFERENCIA in uiState.selectedMethods,
+            onCheckedChange = { onMethodToggled(ProviderPaymentMethods.TRANSFERENCIA, it) },
+        )
+        PaymentMethodCheckbox(
+            method = ProviderPaymentMethods.MERCADOPAGO,
+            label = stringResource(R.string.onboarding_step_payment_mercadopago),
+            checked = ProviderPaymentMethods.MERCADOPAGO in uiState.selectedMethods,
+            onCheckedChange = { onMethodToggled(ProviderPaymentMethods.MERCADOPAGO, it) },
+        )
+    }
+}
+
+@Composable
+private fun PaymentMethodCheckbox(
+    method: String,
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    OficiosCheckbox(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        label = label,
+        compactRow = true,
+    )
 }
 
 @Composable

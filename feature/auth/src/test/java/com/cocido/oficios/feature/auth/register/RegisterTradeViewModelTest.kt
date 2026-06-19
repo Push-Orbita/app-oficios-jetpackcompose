@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.auth.register
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
@@ -82,6 +83,7 @@ class RegisterTradeViewModelTest {
         viewModel.onEvent(RegisterTradeEvent.SpecializationToggled("100", checked = true))
         viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))
         viewModel.onEvent(RegisterTradeEvent.NeighborhoodQueryChanged("Centro"))
+        viewModel.onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, checked = true))
         viewModel.onEvent(RegisterTradeEvent.TimeSlotFromChanged(0, "08:00"))
         viewModel.onEvent(RegisterTradeEvent.TimeSlotToChanged(0, "12:00"))
         viewModel.onEvent(RegisterTradeEvent.Continue)

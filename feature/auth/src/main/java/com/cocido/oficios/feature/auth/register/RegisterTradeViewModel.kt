@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.auth.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
@@ -83,6 +84,11 @@ class RegisterTradeViewModel @Inject constructor(
             }
             is RegisterTradeEvent.ServesAtLocalChanged -> update {
                 it.copy(servesAtLocal = event.value)
+            }
+            is RegisterTradeEvent.PaymentMethodToggled -> update {
+                val updated = it.selectedPaymentMethods.toMutableSet()
+                if (event.checked) updated.add(event.method) else updated.remove(event.method)
+                it.copy(selectedPaymentMethods = updated)
             }
             RegisterTradeEvent.Continue -> continueToProviderRegister()
             RegisterTradeEvent.RetryLoadCatalog -> loadCategories()
@@ -219,6 +225,7 @@ class RegisterTradeViewModel @Inject constructor(
                     workDays = state.selectedWorkDays.toList(),
                     servesAtClientHome = state.servesAtClientHome,
                     servesAtLocal = state.servesAtLocal,
+                    paymentMethods = state.selectedPaymentMethods.toList(),
                     timeSlots = state.timeSlots
                         .filter { it.from.isNotBlank() && it.to.isNotBlank() }
                         .map { RegisterTradeTimeSlotDraft(from = it.from, to = it.to) },
@@ -240,6 +247,7 @@ class RegisterTradeViewModel @Inject constructor(
             hasSpecialization &&
             selectedExperienceRange.isNotBlank() &&
             neighborhoodQuery.isNotBlank() &&
+            selectedPaymentMethods.isNotEmpty() &&
             selectedWorkDays.isNotEmpty() &&
             (servesAtClientHome || servesAtLocal) &&
             timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() }

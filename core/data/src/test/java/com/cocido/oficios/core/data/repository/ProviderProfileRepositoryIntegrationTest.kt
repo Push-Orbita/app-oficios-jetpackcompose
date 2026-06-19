@@ -25,7 +25,8 @@ class ProviderProfileRepositoryIntegrationTest {
         server = MockWebServer()
         server.start()
         val api = NetworkTestHelper.createProviderProfileApi(server)
-        repository = ProviderProfileRepositoryImpl(ProviderProfileRemoteDataSource(api))
+        val authApi = NetworkTestHelper.createAuthApi(server)
+        repository = ProviderProfileRepositoryImpl(ProviderProfileRemoteDataSource(api, authApi))
     }
 
     @After

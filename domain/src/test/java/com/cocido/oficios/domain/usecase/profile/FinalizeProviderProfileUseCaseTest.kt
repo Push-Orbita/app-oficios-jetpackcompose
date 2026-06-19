@@ -3,6 +3,7 @@ package com.cocido.oficios.domain.usecase.profile
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import kotlinx.coroutines.test.runTest
@@ -35,5 +36,7 @@ class FinalizeProviderProfileUseCaseTest {
             AppResult.Success(Unit)
 
         override suspend fun finalizeProfile() = finalizeResult
+
+        override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
     }
 }

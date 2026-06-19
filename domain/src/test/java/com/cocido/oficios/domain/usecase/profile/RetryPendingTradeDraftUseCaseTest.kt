@@ -3,6 +3,7 @@ package com.cocido.oficios.domain.usecase.profile
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -28,21 +29,24 @@ class RetryPendingTradeDraftUseCaseTest {
             neighborhoodQuery = "Centro",
             timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
         )
+        val draftRepository = object : RegisterTradeDraftRepository {
+            override suspend fun save(draft: RegisterTradeDraft) = Unit
+            override suspend fun get() = draft
+            override suspend fun clear() = Unit
+        }
+        val providerProfileRepository = object : ProviderProfileRepository {
+            override suspend fun updateProfessionalInfo(request: ProviderProfessionalInfoRequest) =
+                AppResult.Success(Unit)
+
+            override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
+                AppResult.Success(Unit)
+
+            override suspend fun finalizeProfile() = AppResult.Success(Unit)
+            override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
+        }
         val submitUseCase = SubmitRegisterTradeDraftUseCase(
-            providerProfileRepository = object : ProviderProfileRepository {
-                override suspend fun updateProfessionalInfo(request: ProviderProfessionalInfoRequest) =
-                    AppResult.Success(Unit)
-
-                override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
-                    AppResult.Success(Unit)
-
-                override suspend fun finalizeProfile() = AppResult.Success(Unit)
-            },
-            registerTradeDraftRepository = object : RegisterTradeDraftRepository {
-                override suspend fun save(draft: RegisterTradeDraft) = Unit
-                override suspend fun get() = draft
-                override suspend fun clear() = Unit
-            },
+            providerProfileRepository = providerProfileRepository,
+            registerTradeDraftRepository = draftRepository,
             catalogRepository = object : CatalogRepository {
                 override suspend fun getCategories() = AppResult.Success(emptyList<CatalogOption>())
                 override suspend fun getRubrosByCategory(categoryId: Long) =
@@ -52,6 +56,10 @@ class RetryPendingTradeDraftUseCaseTest {
                 override suspend fun searchBarrios(query: String) =
                     AppResult.Success(emptyList<CatalogOption>())
             },
+            syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                providerProfileRepository = providerProfileRepository,
+                registerTradeDraftRepository = draftRepository,
+            ),
         )
         val useCase = RetryPendingTradeDraftUseCase(submitUseCase)
 

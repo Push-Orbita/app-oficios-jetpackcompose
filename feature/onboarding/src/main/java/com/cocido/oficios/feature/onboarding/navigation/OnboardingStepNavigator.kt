@@ -22,6 +22,7 @@ object OnboardingStepNavigator {
         "descripcion", "experiencia" -> OnboardingDestination.PROVIDER_PROFESSIONAL_INFO
         "rubro_principal", "subrubros" -> OnboardingDestination.PROVIDER_RUBROS
         "disponibilidad", "agenda_turnos" -> OnboardingDestination.PROVIDER_AVAILABILITY
+        "metodos_pago" -> OnboardingDestination.PROVIDER_PAYMENT_METHODS
         "local_comercial" -> OnboardingDestination.PROVIDER_LOCAL
         "informacion_personal" -> OnboardingDestination.PROVIDER_PROFESSIONAL_INFO
         "finalizar_perfil" -> null

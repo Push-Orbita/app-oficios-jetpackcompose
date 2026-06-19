@@ -3,10 +3,12 @@ package com.cocido.oficios.feature.auth.register
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.usecase.auth.CompleteProviderRegistrationUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
+import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import com.cocido.oficios.feature.auth.FakeAuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -55,6 +57,7 @@ class RegisterViewModelTest {
                         request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                     ) = rubroSyncResult
                     override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                    override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
                 },
                 registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
                     override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
@@ -83,6 +86,24 @@ class RegisterViewModelTest {
                     override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> =
                         AppResult.Success(emptyList())
                 },
+                syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                    providerProfileRepository = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
+                        override suspend fun updateProfessionalInfo(
+                            request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
+                        ) = AppResult.Success(Unit)
+                        override suspend fun submitRubroFull(
+                            request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                        ) = AppResult.Success(Unit)
+                        override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                        override suspend fun loadProviderProfileForSync() =
+                            AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                    },
+                    registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+                        override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
+                        override suspend fun get() = null
+                        override suspend fun clear() = Unit
+                    },
+                ),
             ),
         ),
     )

@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -20,26 +21,12 @@ class SubmitRegisterTradeDraftUseCaseTest {
     @Test
     fun `keeps draft when rubro submission fails`() = runTest {
         val draftRepository = FakeDraftRepository(
-            draft = RegisterTradeDraft(
-                categoryId = 1,
-                categoryName = "Hogar",
-                rubroId = 11,
-                rubroName = "Plomería",
-                subRubroIds = listOf(1),
-                otherSpecialization = null,
-                experienceRange = "3 a 5 años",
-                neighborhoodQuery = "Centro",
-                timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
-            ),
+            draft = sampleDraft(),
         )
         val providerRepository = FakeProviderRepository(
             rubroResult = AppResult.Error(AppError.Validation("DNI pendiente")),
         )
-        val useCase = SubmitRegisterTradeDraftUseCase(
-            providerProfileRepository = providerRepository,
-            registerTradeDraftRepository = draftRepository,
-            catalogRepository = FakeCatalogRepository(),
-        )
+        val useCase = createUseCase(draftRepository, providerRepository)
 
         val result = useCase()
 
@@ -49,23 +36,9 @@ class SubmitRegisterTradeDraftUseCaseTest {
 
     @Test
     fun `keeps draft on full success for onboarding edits`() = runTest {
-        val draft = RegisterTradeDraft(
-            categoryId = 1,
-            categoryName = "Hogar",
-            rubroId = 11,
-            rubroName = "Plomería",
-            subRubroIds = listOf(1),
-            otherSpecialization = null,
-            experienceRange = "3 a 5 años",
-            neighborhoodQuery = "Centro",
-            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
-        )
+        val draft = sampleDraft()
         val draftRepository = FakeDraftRepository(draft = draft)
-        val useCase = SubmitRegisterTradeDraftUseCase(
-            providerProfileRepository = FakeProviderRepository(),
-            registerTradeDraftRepository = draftRepository,
-            catalogRepository = FakeCatalogRepository(),
-        )
+        val useCase = createUseCase(draftRepository)
 
         val result = useCase()
 
@@ -75,19 +48,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
 
     @Test
     fun `resolves barrioId from catalog search`() = runTest {
-        val draftRepository = FakeDraftRepository(
-            draft = RegisterTradeDraft(
-                categoryId = 1,
-                categoryName = "Hogar",
-                rubroId = 11,
-                rubroName = "Plomería",
-                subRubroIds = listOf(1),
-                otherSpecialization = null,
-                experienceRange = "3 a 5 años",
-                neighborhoodQuery = "Centro",
-                timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
-            ),
-        )
+        val draftRepository = FakeDraftRepository(draft = sampleDraft())
         val catalogRepository = FakeCatalogRepository(
             barrios = listOf(CatalogOption(id = 99, label = "Centro")),
         )
@@ -97,6 +58,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
             ),
             registerTradeDraftRepository = draftRepository,
             catalogRepository = catalogRepository,
+            syncRegisterTradeDraftFromProfileUseCase = createSyncUseCase(draftRepository),
         )
 
         useCase()
@@ -105,17 +67,66 @@ class SubmitRegisterTradeDraftUseCaseTest {
     }
 
     @Test
-    fun `requireDraft fails when draft is missing`() = runTest {
+    fun `loads draft from profile when local draft is missing`() = runTest {
+        val remoteDraft = sampleDraft()
+        val draftRepository = FakeDraftRepository(draft = null)
         val useCase = SubmitRegisterTradeDraftUseCase(
-            providerProfileRepository = FakeProviderRepository(),
-            registerTradeDraftRepository = FakeDraftRepository(draft = null),
+            providerProfileRepository = FakeProviderRepository(
+                tradeDraft = remoteDraft,
+            ),
+            registerTradeDraftRepository = draftRepository,
             catalogRepository = FakeCatalogRepository(),
+            syncRegisterTradeDraftFromProfileUseCase = createSyncUseCase(
+                draftRepository,
+                FakeProviderRepository(tradeDraft = remoteDraft),
+            ),
         )
+
+        val result = useCase()
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(remoteDraft, draftRepository.get())
+    }
+
+    @Test
+    fun `requireDraft fails when draft is missing`() = runTest {
+        val draftRepository = FakeDraftRepository(draft = null)
+        val useCase = createUseCase(draftRepository)
 
         val result = useCase(requireDraft = true)
 
         assertTrue(result is AppResult.Error)
     }
+
+    private fun createUseCase(
+        draftRepository: FakeDraftRepository,
+        providerRepository: FakeProviderRepository = FakeProviderRepository(),
+    ) = SubmitRegisterTradeDraftUseCase(
+        providerProfileRepository = providerRepository,
+        registerTradeDraftRepository = draftRepository,
+        catalogRepository = FakeCatalogRepository(),
+        syncRegisterTradeDraftFromProfileUseCase = createSyncUseCase(draftRepository, providerRepository),
+    )
+
+    private fun createSyncUseCase(
+        draftRepository: RegisterTradeDraftRepository,
+        providerRepository: ProviderProfileRepository = FakeProviderRepository(),
+    ) = SyncRegisterTradeDraftFromProfileUseCase(
+        providerProfileRepository = providerRepository,
+        registerTradeDraftRepository = draftRepository,
+    )
+
+    private fun sampleDraft() = RegisterTradeDraft(
+        categoryId = 1,
+        categoryName = "Hogar",
+        rubroId = 11,
+        rubroName = "Plomería",
+        subRubroIds = listOf(1),
+        otherSpecialization = null,
+        experienceRange = "3 a 5 años",
+        neighborhoodQuery = "Centro",
+        timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+    )
 
     private class FakeDraftRepository(
         private var draft: RegisterTradeDraft?,
@@ -133,6 +144,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
 
     private class FakeProviderRepository(
         private val rubroResult: AppResult<Unit> = AppResult.Success(Unit),
+        private val tradeDraft: RegisterTradeDraft? = null,
     ) : ProviderProfileRepository {
         override suspend fun updateProfessionalInfo(request: ProviderProfessionalInfoRequest) =
             AppResult.Success(Unit)
@@ -140,6 +152,9 @@ class SubmitRegisterTradeDraftUseCaseTest {
         override suspend fun submitRubroFull(request: ProviderRubroFullRequest) = rubroResult
 
         override suspend fun finalizeProfile() = AppResult.Success(Unit)
+
+        override suspend fun loadProviderProfileForSync(): AppResult<ProviderProfileSync> =
+            AppResult.Success(ProviderProfileSync(tradeDraft = tradeDraft, paymentMethods = tradeDraft?.paymentMethods.orEmpty()))
     }
 
     private class FakeCatalogRepository(

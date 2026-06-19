@@ -7,6 +7,7 @@ data class UpdateTrabajadorPerfilProfesionalRequestDto(
     val descripcion: String? = null,
     val experiencia: String? = null,
     val documento: String? = null,
+    val metodosPago: List<String>? = null,
 )
 
 @Serializable
@@ -16,6 +17,7 @@ data class CreateFullAltaRubrosSubrubrosRequestDto(
     val subrubros: List<CreateSubrubroRequestDto>,
     val diasLaborales: List<CreateDiaLaboralRequestDto>,
     val domicilioLocal: CreateDomicilioLocalRequestDto? = null,
+    val metodosPago: List<String>? = null,
 )
 
 @Serializable

@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.onboarding.provider
 
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
@@ -73,6 +74,7 @@ class ProviderDniViewModelTest {
                 override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
                     AppResult.Success(Unit)
                 override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
             },
         ),
         uploadProviderDniImagesUseCase = UploadProviderDniImagesUseCase(

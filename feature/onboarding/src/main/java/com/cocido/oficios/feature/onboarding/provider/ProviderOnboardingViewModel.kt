@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
 import com.cocido.oficios.domain.usecase.auth.ResolveInitialDestinationUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.RetryPendingTradeDraftUseCase
+import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,7 @@ sealed interface ProviderStatusUiState {
 class ProviderOnboardingViewModel @Inject constructor(
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val retryPendingTradeDraftUseCase: RetryPendingTradeDraftUseCase,
     private val finalizeProviderProfileUseCase: FinalizeProviderProfileUseCase,
     private val resolveInitialDestinationUseCase: ResolveInitialDestinationUseCase,
@@ -73,6 +75,8 @@ class ProviderOnboardingViewModel @Inject constructor(
     private suspend fun syncTradeDraftIfNeeded(
         status: com.cocido.oficios.domain.model.ProviderProfileStatus,
     ): com.cocido.oficios.domain.model.ProviderProfileStatus {
+        syncRegisterTradeDraftFromProfileUseCase()
+
         if (status.missingSteps.none { it in TRADE_DRAFT_MISSING_STEPS }) return status
 
         val draft = registerTradeDraftRepository.get()
@@ -92,6 +96,7 @@ class ProviderOnboardingViewModel @Inject constructor(
             "subrubros",
             "disponibilidad",
             "agenda_turnos",
+            "metodos_pago",
             "descripcion",
             "experiencia",
         )
