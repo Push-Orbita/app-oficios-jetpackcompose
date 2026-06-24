@@ -30,6 +30,7 @@ data class ProviderProfileStatus(
     val isConfigurationComplete: Boolean,
     val isProfileComplete: Boolean,
     val isOperational: Boolean,
+    val isIdentityVerified: Boolean = false,
     val missingSteps: List<String>,
     val rejectionReason: String? = null,
 )

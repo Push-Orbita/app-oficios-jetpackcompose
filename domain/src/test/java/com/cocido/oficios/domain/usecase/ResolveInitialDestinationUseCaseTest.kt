@@ -140,6 +140,7 @@ class ResolveInitialDestinationUseCaseTest {
             override suspend fun getRefreshToken() = null
             override suspend fun updateTokens(tokens: AuthTokens) = Unit
             override suspend fun getCachedUser() = null
+            override suspend fun updateCachedUser(user: User) = Unit
         }
         val authRepository = object : AuthRepository {
             override suspend fun login(email: String, password: String) =
@@ -155,6 +156,8 @@ class ResolveInitialDestinationUseCaseTest {
             override suspend fun verifyPasswordResetCode(code: String) = AppResult.Error(AppError.Unknown())
             override suspend fun resetPassword(resetToken: String, password: String, confirmPassword: String) =
                 AppResult.Error(AppError.Unknown())
+            override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a tu correo")
+            override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
             override suspend fun getUserRoles(): AppResult<List<com.cocido.oficios.domain.model.UserRoleDefinition>> =
                 AppResult.Success(emptyList())
         }

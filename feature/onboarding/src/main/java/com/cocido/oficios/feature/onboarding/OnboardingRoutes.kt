@@ -5,25 +5,27 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.feature.onboarding.client.ClientOnboardingViewModel
-import com.cocido.oficios.feature.onboarding.navigation.OnboardingStepNavigator
+import com.cocido.oficios.feature.onboarding.components.OnboardingChecklistRouteHost
 import com.cocido.oficios.feature.onboarding.provider.ProviderOnboardingViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderPendingViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderRejectedViewModel
 import com.cocido.oficios.feature.onboarding.session.LogoutViewModel
 import com.cocido.oficios.feature.onboarding.session.OnboardingLogoutEffect
+import com.cocido.oficios.feature.onboarding.navigation.OnboardingStepNavigator
 
 @Composable
 fun ClientOnboardingRoute(
     onLoggedOut: () -> Unit,
     onNavigateToStep: (String) -> Unit,
+    onNavigateFromGate: (InitialDestination) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ClientOnboardingViewModel = hiltViewModel(),
@@ -32,17 +34,26 @@ fun ClientOnboardingRoute(
     OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+    val completionPhase by viewModel.completionPhase.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
 
-    ClientOnboardingChecklistScreen(
-        uiState = uiState,
-        onRetry = viewModel::load,
-        onLogout = logoutViewModel::logout,
-        onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
-        isLoggingOut = isLoggingOut,
+    OnboardingChecklistRouteHost(
+        completionPhase = completionPhase,
+        effects = viewModel.effects,
+        onNavigate = onNavigateFromGate,
         modifier = modifier,
-    )
+        submittingMessage = null,
+    ) {
+        ClientOnboardingChecklistScreen(
+            uiState = uiState,
+            onRetry = viewModel::load,
+            onLogout = logoutViewModel::logout,
+            onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
+            isLoggingOut = isLoggingOut,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable
@@ -58,22 +69,30 @@ fun ProviderOnboardingRoute(
     OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
-    val isFinalizing by viewModel.isFinalizing.collectAsStateWithLifecycle()
-    val finalizeError by viewModel.finalizeError.collectAsStateWithLifecycle()
+    val completionPhase by viewModel.completionPhase.collectAsStateWithLifecycle()
+    val completionError by viewModel.completionError.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
 
-    ProviderOnboardingChecklistScreen(
-        uiState = uiState,
-        onRetry = viewModel::load,
-        onLogout = logoutViewModel::logout,
-        onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
-        onFinalizeProfile = { viewModel.finalizeProfile(onNavigateFromGate) },
-        finalizeError = finalizeError,
-        isLoggingOut = isLoggingOut,
-        isFinalizing = isFinalizing,
+    OnboardingChecklistRouteHost(
+        completionPhase = completionPhase,
+        effects = viewModel.effects,
+        onNavigate = onNavigateFromGate,
         modifier = modifier,
-    )
+        submittingMessage = stringResource(R.string.onboarding_finalize_submitting),
+    ) {
+        ProviderOnboardingChecklistScreen(
+            uiState = uiState,
+            onRetry = viewModel::load,
+            onLogout = logoutViewModel::logout,
+            onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
+            onFinalizeProfile = viewModel::finalizeProfile,
+            finalizeError = completionError,
+            isLoggingOut = isLoggingOut,
+            isFinalizing = false,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable

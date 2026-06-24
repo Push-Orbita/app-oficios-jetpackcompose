@@ -59,6 +59,16 @@ class SessionManager @Inject constructor(
         }
     }
 
+    override suspend fun updateCachedUser(user: User) {
+        tokenDataStore.updateEmailVerified(user.emailVerified)
+        val current = _authState.value
+        if (current is AuthState.Authenticated) {
+            _authState.update {
+                AuthState.Authenticated(current.session.copy(user = user))
+            }
+        }
+    }
+
     override suspend fun getCachedUser(): User? {
         val id = tokenDataStore.getUserId() ?: return null
         val email = tokenDataStore.getUserEmail() ?: return null

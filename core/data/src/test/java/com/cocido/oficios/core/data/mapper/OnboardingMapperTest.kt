@@ -34,7 +34,7 @@ class OnboardingMapperTest {
     }
 
     @Test
-    fun `maps provider missing steps including dni and rubro`() {
+    fun `maps provider missing steps including dni and rubro when identity verified`() {
         val status = TrabajadorPerfilEstadoDto(
             estado = "PENDIENTE",
             perfilCompleto = false,
@@ -47,6 +47,7 @@ class OnboardingMapperTest {
             isConfigurationComplete = status.isConfigurationComplete,
             isProfileComplete = status.isProfileComplete,
             isOperational = status.isOperational,
+            isIdentityVerified = true,
             missingSteps = status.missingSteps,
         ).toOnboardingSteps()
 
@@ -56,6 +57,23 @@ class OnboardingMapperTest {
             steps.first { it.id == "dni_pendiente_revision" }.status,
         )
         assertTrue(steps.any { it.id == "rubro_principal" })
+    }
+
+    @Test
+    fun `hides rubro steps until identity is verified`() {
+        val steps = ProviderProfileStatus(
+            accountStatus = AccountStatus.PENDING_APPROVAL,
+            isConfigurationComplete = false,
+            isProfileComplete = false,
+            isOperational = false,
+            isIdentityVerified = false,
+            missingSteps = listOf("dni_pendiente_revision", "rubro_principal", "subrubros", "metodos_pago"),
+        ).toOnboardingSteps()
+
+        assertTrue(steps.any { it.id == "dni_pendiente_revision" })
+        assertFalse(steps.any { it.id == "rubro_principal" })
+        assertFalse(steps.any { it.id == "subrubros" })
+        assertFalse(steps.any { it.id == "metodos_pago" })
     }
 
     @Test
@@ -87,9 +105,11 @@ class OnboardingMapperTest {
             isConfigurationComplete = false,
             isProfileComplete = false,
             isOperational = false,
+            isIdentityVerified = true,
             missingSteps = listOf("metodos_pago"),
         ).toOnboardingSteps()
 
         assertTrue(steps.any { it.id == "metodos_pago" })
     }
+
 }

@@ -76,6 +76,10 @@ class ClientDomicilioViewModel @Inject constructor(
         }
     }
 
+    fun dismissBarrioSuggestions() {
+        _uiState.update { it.copy(barrioOptions = emptyList()) }
+    }
+
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
     fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
 

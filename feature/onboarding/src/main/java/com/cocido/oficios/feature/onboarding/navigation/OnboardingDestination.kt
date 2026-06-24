@@ -10,6 +10,7 @@ object OnboardingDestination {
     const val CLIENT_INACTIVE = "onboarding/client-inactive"
     const val HOME_CLIENT = "home/client"
     const val HOME_PROVIDER = "home/provider"
+    const val VERIFY_EMAIL = "onboarding/verify-email"
     const val CLIENT_DOMICILIO = "onboarding/client/domicilio"
     const val CLIENT_CONTACTO = "onboarding/client/contacto"
     const val PROVIDER_DNI = "onboarding/provider/dni"

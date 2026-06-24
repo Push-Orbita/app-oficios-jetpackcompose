@@ -1,0 +1,54 @@
+---
+description: Estandarizar UI, flujos y código Android/Kotlin/Compose; evitar duplicación
+alwaysApply: true
+---
+
+# Estandarización y código limpio (Oficios)
+
+Prioridad: **un solo patrón por intención de producto**, no dos implementaciones paralelas (cliente vs proveedor, pantallas gemelas, efectos distintos para lo mismo).
+
+## Cuándo extraer y unificar
+
+- Si la misma lógica, estado, efecto o UI aparece **2+ veces** (aunque con datos distintos) → extraer a capa compartida antes de copiar/pegar.
+- Flujos gemelos (onboarding, auth, checklist, confirmación, navegación post-éxito) deben compartir **tipos, navigator/helper y composables host**, no ViewModels casi idénticos.
+- Preferir **extender el design system** (`core/designsystem`) antes de estilos ad hoc en features.
+
+## Dónde vive cada cosa
+
+| Qué | Dónde |
+|-----|--------|
+| Tokens, componentes UI reutilizables | `core/designsystem` |
+| Modelos/efectos/fases de flujo compartidos | `feature/*/common/` o módulo compartido del feature |
+| Orquestación de navegación + animación | helper único (ej. `*Navigator`, `*RouteHost`) |
+| Lógica de negocio | `domain` (use cases) |
+| API y mapeo | `core/data` + `core/network` |
+| Pantallas y ViewModels por rol | `feature/*` (delgados; delegan en lo compartido) |
+
+## Jetpack Compose (senior)
+
+- **State hoisting**: UI stateless; ViewModel expone `StateFlow` + efectos de navegación en `SharedFlow(replay = 1)` para one-shot events.
+- **Material 3**: menús, campos, autocomplete y feedback con patrones M3; no usar `Button` primario como lista de sugerencias.
+- **Un efecto = un nombre**: `NavigateAfterCompletion`, no variantes por rol salvo destino distinto.
+- **Sin pantallas puente** si el destino final ya está resuelto: animación → home directo.
+- Previews en componentes de design system cuando el componente sea nuevo.
+
+## Reglas de implementación
+
+1. **Minimizar diff** en el cambio puntual, pero **no dejar deuda duplicada** si el patrón ya se repitió.
+2. **No sobre-abstraer** una sola línea; sí abstraer flujos, hosts de ruta y modelos de estado repetidos.
+3. **Convenciones del repo**: Hilt, Clean Architecture, español en UI/strings, tests de integración de red con fixtures.
+4. Al unificar cliente/proveedor, conservar solo lo que **realmente difiere** (pasos, endpoints, destino inicial).
+
+## Ejemplos vigentes en el repo
+
+- `OnboardingChecklistUiState`, `OnboardingCompletionPhase`, `OnboardingChecklistEffect`
+- `OnboardingCompletionNavigator` + `OnboardingChecklistRouteHost` + `OnboardingConfirmedOverlay`
+- `OficiosAutocompleteField` (no botones por sugerencia)
+- `navigateToInitialDestination` → home real, sin shell intermedio
+
+## Antipatrones a evitar
+
+- Duplicar sealed interfaces casi iguales (`ClientX` / `ProviderX`) sin revisar unificación.
+- Lógica de animación/delay/navegación copiada en varios ViewModels.
+- UI que refleja granularidad del backend (varios botones por sub-llamada).
+- Componentes visuales fuera del design system sin justificación.

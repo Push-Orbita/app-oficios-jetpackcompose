@@ -8,7 +8,7 @@ import androidx.compose.ui.test.performClick
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
-import com.cocido.oficios.feature.onboarding.client.ClientOnboardingUiState
+import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
 import org.junit.Assert.assertEquals
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -34,7 +34,7 @@ class ClientOnboardingChecklistScreenTest {
         composeTestRule.setContent {
             OficiosTheme {
                 ClientOnboardingChecklistScreen(
-                    uiState = ClientOnboardingUiState.Success(
+                    uiState = com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState.Success(
                         steps = listOf(domicilioStep),
                     ),
                     onRetry = {},

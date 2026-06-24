@@ -20,6 +20,7 @@ import com.cocido.oficios.feature.onboarding.steps.ProviderPaymentMethodsRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderLocalRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderProfessionalInfoRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderRubrosRoute
+import com.cocido.oficios.feature.onboarding.verify.VerifyEmailRoute
 
 fun NavGraphBuilder.onboardingGraph(
     onNavigateFromGate: (InitialDestination) -> Unit,
@@ -40,6 +41,7 @@ fun NavGraphBuilder.onboardingGraph(
         ClientOnboardingRoute(
             onLoggedOut = onLoggedOut,
             onNavigateToStep = onNavigateToStep,
+            onNavigateFromGate = onNavigateFromGate,
             onRefresh = onStepCompleted,
         )
     }
@@ -79,6 +81,9 @@ fun NavGraphBuilder.onboardingGraph(
             onContinue = onNavigateToProviderHome,
             onLoggedOut = onLoggedOut,
         )
+    }
+    composable(OnboardingDestination.VERIFY_EMAIL) {
+        VerifyEmailRoute(onVerified = onStepCompleted)
     }
     composable(OnboardingDestination.CLIENT_DOMICILIO) {
         ClientDomicilioRoute(onSaved = onStepCompleted)

@@ -3,6 +3,7 @@ package com.cocido.oficios.core.network.api.auth
 import com.cocido.oficios.core.network.api.auth.dto.ClientePerfilEstadoDto
 import com.cocido.oficios.core.network.api.auth.dto.ClientePerfilMeDto
 import com.cocido.oficios.core.network.api.auth.dto.LoginRequestDto
+import com.cocido.oficios.core.network.api.auth.dto.MessageResponseDto
 import com.cocido.oficios.core.network.api.auth.dto.LoginResponseDto
 import com.cocido.oficios.core.network.api.auth.dto.RefreshTokenRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.RefreshTokenResponseDto
@@ -13,6 +14,7 @@ import com.cocido.oficios.core.network.api.auth.dto.SignupResponseDto
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorPerfilEstadoDto
 import com.cocido.oficios.core.network.api.auth.dto.UsuarioDto
+import com.cocido.oficios.core.network.api.auth.dto.VerifyEmailRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.VerifyPasswordResetCodeDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -60,6 +62,12 @@ interface AuthApi {
         @Header("Authorization") authorization: String,
         @Body request: ResetPasswordWithCodeDto,
     )
+
+    @POST("auth/send-verification-email")
+    suspend fun sendVerificationEmail(): MessageResponseDto
+
+    @POST("auth/verify-email")
+    suspend fun verifyEmail(@Body request: VerifyEmailRequestDto)
 
     @GET("rol-usuario/search")
     suspend fun searchUserRoles(

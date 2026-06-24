@@ -29,6 +29,7 @@ fun ClientDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         uiState = uiState,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
         onBarrioSelected = viewModel::onBarrioSelected,
+        onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
         onNumeroChanged = viewModel::onNumeroChanged,
         onSubmit = viewModel::submit,
@@ -143,6 +144,7 @@ fun ProviderLocalRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         uiState = uiState,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
         onBarrioSelected = viewModel::onBarrioSelected,
+        onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
         onSubmit = viewModel::submit,
     )

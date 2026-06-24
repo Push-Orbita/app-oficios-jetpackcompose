@@ -5,17 +5,14 @@ import com.cocido.oficios.domain.model.OnboardingStepStatus
 
 object OnboardingStepNavigator {
 
-    private val nonActionablePendingSteps = setOf(
-        "email_verificado",
-    )
-
     fun isActionable(step: OnboardingStep): Boolean = when (step.status) {
-        OnboardingStepStatus.PENDING -> step.id !in nonActionablePendingSteps
+        OnboardingStepStatus.PENDING -> true
         OnboardingStepStatus.REJECTED -> true
         else -> false
     }
 
     fun routeForStep(stepId: String): String? = when (stepId) {
+        "email_verificado" -> OnboardingDestination.VERIFY_EMAIL
         "domicilio" -> OnboardingDestination.CLIENT_DOMICILIO
         "contacto" -> OnboardingDestination.CLIENT_CONTACTO
         "dni_numero", "dni_imagenes", "dni_rechazado" -> OnboardingDestination.PROVIDER_DNI

@@ -1,6 +1,7 @@
 package com.cocido.oficios.core.network.api.profile
 
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
+import com.cocido.oficios.core.network.api.auth.dto.TrabajadorPerfilEstadoDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubrubrosRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import kotlinx.serialization.json.JsonElement
@@ -21,5 +22,5 @@ interface ProviderProfileApi {
     ): JsonElement
 
     @POST("trabajador-oficio/me/finalizar-perfil")
-    suspend fun finalizeProfile(): TrabajadorOficioPerfilMeDto
+    suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto
 }

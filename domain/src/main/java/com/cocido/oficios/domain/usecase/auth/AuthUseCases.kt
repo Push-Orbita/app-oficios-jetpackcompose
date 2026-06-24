@@ -57,6 +57,31 @@ class ResetPasswordUseCase @Inject constructor(
     ): AppResult<Unit> = authRepository.resetPassword(resetToken, password, confirmPassword)
 }
 
+class SendVerificationEmailUseCase @Inject constructor(
+    private val authRepository: AuthRepository,
+) {
+    suspend operator fun invoke(): AppResult<String> = authRepository.sendVerificationEmail()
+}
+
+class VerifyEmailUseCase @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val sessionRepository: SessionRepository,
+) {
+    suspend operator fun invoke(code: String): AppResult<Unit> {
+        when (val verifyResult = authRepository.verifyEmail(code)) {
+            is AppResult.Error -> return verifyResult
+            is AppResult.Success -> Unit
+        }
+        return when (val userResult = authRepository.getCurrentUser()) {
+            is AppResult.Success -> {
+                sessionRepository.updateCachedUser(userResult.data)
+                AppResult.Success(Unit)
+            }
+            is AppResult.Error -> userResult
+        }
+    }
+}
+
 class RefreshTokenUseCase @Inject constructor(
     private val authRepository: AuthRepository,
     private val sessionRepository: SessionRepository,

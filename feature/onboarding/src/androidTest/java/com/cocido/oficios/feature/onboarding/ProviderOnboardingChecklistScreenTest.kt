@@ -10,7 +10,7 @@ import com.cocido.oficios.feature.onboarding.TestHostActivity
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
-import com.cocido.oficios.feature.onboarding.provider.ProviderOnboardingUiState
+import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
 import org.junit.Assert.assertEquals
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -45,7 +45,7 @@ class ProviderOnboardingChecklistScreenTest {
         composeTestRule.setContent {
             OficiosTheme {
                 ProviderOnboardingChecklistScreen(
-                    uiState = ProviderOnboardingUiState.Success(steps),
+                    uiState = com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState.Success(steps),
                     onRetry = {},
                     onLogout = {},
                     onStepClick = { clickedStepId = it.id },

@@ -25,6 +25,7 @@ fun TrabajadorPerfilEstadoDto.toDomain(
     isConfigurationComplete = configuracionCompleta,
     isProfileComplete = perfilCompleto,
     isOperational = requisitos?.perfilOperativo == true,
+    isIdentityVerified = requisitos?.identidadVerificada == true,
     missingSteps = faltantes,
     rejectionReason = rejectionReason,
 )
@@ -79,6 +80,13 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
 }
 
 fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
+    val preIdentityStepIds = setOf(
+        "dni_numero",
+        "dni_imagenes",
+        "dni_pendiente_revision",
+        "dni_rechazado",
+        "email_verificado",
+    )
     val stepMap = mapOf(
         "dni_numero" to ("DNI" to "Cargá tu número de documento."),
         "dni_imagenes" to ("Fotos del DNI" to "Subí las imágenes de tu documento."),
@@ -86,8 +94,8 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         "dni_rechazado" to ("DNI rechazado" to "Volvé a cargar tu documentación."),
         "descripcion" to ("Descripción profesional" to "Contá qué servicios ofrecés."),
         "experiencia" to ("Experiencia" to "Indicá tu experiencia en el rubro."),
-        "rubro_principal" to ("Rubro principal" to "Seleccioná tu rubro principal."),
-        "subrubros" to ("Subrubros" to "Elegí los subrubros que ofrecés."),
+        "rubro_principal" to ("Rubro y especialidades" to "Seleccioná tu rubro y las especialidades que ofrecés."),
+        "subrubros" to ("Rubro y especialidades" to "Seleccioná tu rubro y las especialidades que ofrecés."),
         "disponibilidad" to ("Días laborables" to "Configurá tus días y horarios."),
         "agenda_turnos" to ("Agenda de turnos" to "Configurá turnos si aplica."),
         "local_comercial" to ("Local comercial" to "Agregá tu local si atendés en sitio."),
@@ -98,6 +106,8 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
     )
 
     missingSteps.forEach { missing ->
+        if (!isIdentityVerified && missing !in preIdentityStepIds) return@forEach
+        if (missing == "subrubros" && missingSteps.contains("rubro_principal")) return@forEach
         val (title, description) = stepMap[missing] ?: (missing to "Completá este paso.")
         val status = when (missing) {
             "dni_pendiente_revision" -> OnboardingStepStatus.IN_REVIEW

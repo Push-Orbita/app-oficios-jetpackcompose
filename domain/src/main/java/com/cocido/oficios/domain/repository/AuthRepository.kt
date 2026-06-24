@@ -18,5 +18,7 @@ interface AuthRepository {
     suspend fun requestPasswordReset(email: String): AppResult<Unit>
     suspend fun verifyPasswordResetCode(code: String): AppResult<String>
     suspend fun resetPassword(resetToken: String, password: String, confirmPassword: String): AppResult<Unit>
+    suspend fun sendVerificationEmail(): AppResult<String>
+    suspend fun verifyEmail(code: String): AppResult<Unit>
     suspend fun getUserRoles(): AppResult<List<UserRoleDefinition>>
 }

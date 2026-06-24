@@ -81,6 +81,12 @@ class TokenDataStore @Inject constructor(
             .apply()
     }
 
+    fun updateEmailVerified(emailVerified: Boolean) {
+        prefs.edit()
+            .putBoolean(KEY_EMAIL_VERIFIED, emailVerified)
+            .apply()
+    }
+
     fun saveRoleIds(clientRoleId: Long?, providerRoleId: Long?) {
         prefs.edit().apply {
             if (clientRoleId != null) putLong(KEY_CLIENT_ROLE_ID, clientRoleId)

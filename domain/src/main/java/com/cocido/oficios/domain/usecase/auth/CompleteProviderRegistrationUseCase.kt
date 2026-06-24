@@ -26,7 +26,7 @@ class CompleteProviderRegistrationUseCase @Inject constructor(
                             ProviderRegistrationOutcome(
                                 session = registration.data,
                                 profileSynced = false,
-                                profileSyncMessage = profileSync.error.userMessage(),
+                                profileSyncMessage = profileSync.error.toProviderRegistrationSyncMessage(),
                             ),
                         )
                     }
@@ -41,5 +41,18 @@ class CompleteProviderRegistrationUseCase @Inject constructor(
                 }
             }
         }
+    }
+}
+
+private fun com.cocido.oficios.core.common.result.AppError.toProviderRegistrationSyncMessage(): String {
+    val message = userMessage()
+    return if (
+        message.contains("identidad", ignoreCase = true) ||
+        message.contains("documentación", ignoreCase = true) ||
+        message.contains("documentacion", ignoreCase = true)
+    ) {
+        "Cuenta creada. Tu rubro quedó guardado y se enviará al servidor cuando aprueben tu DNI."
+    } else {
+        message
     }
 }

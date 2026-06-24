@@ -24,6 +24,7 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
+import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -49,9 +50,11 @@ fun OnboardingStepScaffold(
     error: String? = null,
     isLoading: Boolean = false,
     canSubmit: Boolean = true,
+    submitText: String? = null,
     onSubmit: () -> Unit,
     content: @Composable () -> Unit,
 ) {
+    val buttonText = submitText ?: stringResource(R.string.onboarding_step_save)
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
         Column(
             modifier = Modifier
@@ -65,7 +68,7 @@ fun OnboardingStepScaffold(
             if (error != null) OficiosInlineAlert(message = error)
             content()
             OficiosButton(
-                text = stringResource(R.string.onboarding_step_save),
+                text = buttonText,
                 onClick = onSubmit,
                 enabled = canSubmit && !isLoading,
                 loading = isLoading,
@@ -80,6 +83,7 @@ fun ClientDomicilioStepScreen(
     uiState: ClientDomicilioUiState,
     onBarrioQueryChanged: (String) -> Unit,
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
+    onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
     onNumeroChanged: (String) -> Unit,
     onSubmit: () -> Unit,
@@ -91,19 +95,16 @@ fun ClientDomicilioStepScreen(
         canSubmit = uiState.canSubmit,
         onSubmit = onSubmit,
     ) {
-        OficiosTextField(
+        OficiosAutocompleteField(
             value = uiState.barrioQuery,
             onValueChange = onBarrioQueryChanged,
+            suggestions = uiState.barrioOptions,
+            onSuggestionSelected = onBarrioSelected,
+            suggestionLabel = { it.label },
             label = stringResource(R.string.onboarding_step_barrio_label),
             placeholder = stringResource(R.string.onboarding_step_barrio_hint),
+            onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
-        uiState.barrioOptions.forEach { option ->
-            OficiosButton(
-                text = option.label,
-                onClick = { onBarrioSelected(option) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
         OficiosTextField(
             value = uiState.calle,
             onValueChange = onCalleChanged,
@@ -524,6 +525,7 @@ fun ProviderLocalStepScreen(
     uiState: ProviderLocalUiState,
     onBarrioQueryChanged: (String) -> Unit,
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
+    onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
     onSubmit: () -> Unit,
 ) {
@@ -534,14 +536,16 @@ fun ProviderLocalStepScreen(
         canSubmit = uiState.selectedBarrioId != null && uiState.calle.isNotBlank(),
         onSubmit = onSubmit,
     ) {
-        OficiosTextField(
+        OficiosAutocompleteField(
             value = uiState.barrioQuery,
             onValueChange = onBarrioQueryChanged,
+            suggestions = uiState.barrioOptions,
+            onSuggestionSelected = onBarrioSelected,
+            suggestionLabel = { it.label },
             label = stringResource(R.string.onboarding_step_barrio_label),
+            placeholder = stringResource(R.string.onboarding_step_barrio_hint),
+            onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
-        uiState.barrioOptions.forEach { option ->
-            OficiosButton(text = option.label, onClick = { onBarrioSelected(option) }, modifier = Modifier.fillMaxWidth())
-        }
         OficiosTextField(value = uiState.calle, onValueChange = onCalleChanged, label = stringResource(R.string.onboarding_step_calle_label))
     }
 }

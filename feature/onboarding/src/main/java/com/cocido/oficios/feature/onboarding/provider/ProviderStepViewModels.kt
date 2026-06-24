@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
@@ -171,6 +172,7 @@ class ProviderRubrosViewModel @Inject constructor(
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderRubrosUiState())
@@ -238,6 +240,10 @@ class ProviderRubrosViewModel @Inject constructor(
         val categoryId = state.selectedCategoryId ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
             val draft = buildDraft(state, rubroId, categoryId) ?: run {
                 _uiState.update { it.copy(isLoading = false, error = "Seleccioná categoría, rubro y especialidades") }
                 return@launch
@@ -327,6 +333,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderAvailabilityUiState())
@@ -391,6 +398,10 @@ class ProviderAvailabilityViewModel @Inject constructor(
         if (!state.canSubmit) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
             val draft = registerTradeDraftRepository.get()
             if (draft == null || draft.subRubroIds.isEmpty()) {
                 _uiState.update {
@@ -479,6 +490,10 @@ class ProviderLocalViewModel @Inject constructor(
         }
     }
 
+    fun dismissBarrioSuggestions() {
+        _uiState.update { it.copy(barrioOptions = emptyList()) }
+    }
+
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
 
     fun submit() {
@@ -528,6 +543,7 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderPaymentMethodsUiState())
@@ -556,6 +572,10 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
         if (methods.isEmpty()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
             val draft = registerTradeDraftRepository.get()
             val updatedDraft = draft?.copy(paymentMethods = methods)
             if (updatedDraft != null) {

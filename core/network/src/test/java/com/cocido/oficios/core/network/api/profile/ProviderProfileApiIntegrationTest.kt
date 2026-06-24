@@ -89,7 +89,7 @@ class ProviderProfileApiIntegrationTest {
     fun `finalize perfil hits correct path`() = runTest {
         server.enqueue(
             MockResponse()
-                .setResponseCode(200)
+                .setResponseCode(201)
                 .setBody(NetworkTestFactory.loadFixture("profile/finalize_perfil_ok.json")),
         )
 
@@ -98,6 +98,7 @@ class ProviderProfileApiIntegrationTest {
         val request = server.takeRequest()
         assertEquals("POST", request.method)
         assertEquals("/trabajador-oficio/me/finalizar-perfil", request.path)
-        assertEquals(1L, response.id)
+        assertEquals("VALIDADO", response.estado)
+        assertEquals(true, response.perfilCompleto)
     }
 }

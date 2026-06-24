@@ -7,6 +7,7 @@ import com.cocido.oficios.core.network.api.auth.dto.RefreshTokenRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.RequestPasswordResetCodeDto
 import com.cocido.oficios.core.network.api.auth.dto.ResetPasswordWithCodeDto
 import com.cocido.oficios.core.network.api.auth.dto.RolUsuarioDto
+import com.cocido.oficios.core.network.api.auth.dto.VerifyEmailRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.VerifyPasswordResetCodeDto
 import com.cocido.oficios.core.network.safeApiCall
 import javax.inject.Inject
@@ -73,6 +74,14 @@ class AuthRemoteDataSource @Inject constructor(
                 confirmarContrasena = confirmPassword,
             ),
         )
+    }
+
+    suspend fun sendVerificationEmail() = safeApiCall {
+        authApi.sendVerificationEmail().message
+    }
+
+    suspend fun verifyEmail(code: String) = safeApiCall {
+        authApi.verifyEmail(VerifyEmailRequestDto(codigo = code))
     }
 
     suspend fun getUserRoles() = safeApiCall {

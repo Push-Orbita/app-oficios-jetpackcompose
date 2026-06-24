@@ -22,15 +22,14 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.layout.CenterContent
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
-import com.cocido.oficios.feature.onboarding.client.ClientOnboardingUiState
+import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
 import com.cocido.oficios.feature.onboarding.components.OnboardingStepCard
 import com.cocido.oficios.feature.onboarding.navigation.OnboardingStepNavigator
-import com.cocido.oficios.feature.onboarding.provider.ProviderOnboardingUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderStatusUiState
 
 @Composable
 fun ClientOnboardingChecklistScreen(
-    uiState: ClientOnboardingUiState,
+    uiState: OnboardingChecklistUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
     onStepClick: (OnboardingStep) -> Unit,
@@ -51,7 +50,7 @@ fun ClientOnboardingChecklistScreen(
 
 @Composable
 fun ProviderOnboardingChecklistScreen(
-    uiState: ProviderOnboardingUiState,
+    uiState: OnboardingChecklistUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
     onStepClick: (OnboardingStep) -> Unit,
@@ -62,27 +61,30 @@ fun ProviderOnboardingChecklistScreen(
     finalizeError: String? = null,
 ) {
     when (uiState) {
-        ProviderOnboardingUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
-        is ProviderOnboardingUiState.Error -> OficiosErrorState(
+        OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
+        is OnboardingChecklistUiState.Error -> OficiosErrorState(
             title = "Error",
             description = uiState.message,
             onRetry = onRetry,
         )
-        is ProviderOnboardingUiState.Success -> ChecklistContent(
-            title = stringResource(R.string.onboarding_provider_title),
-            subtitle = stringResource(R.string.onboarding_provider_subtitle),
-            steps = uiState.steps,
-            onLogout = onLogout,
-            onStepClick = onStepClick,
-            showFinalize = uiState.steps.any {
+        is OnboardingChecklistUiState.Success -> {
+            val showFinalize = uiState.steps.any {
                 it.id == "finalizar_perfil" && it.status != OnboardingStepStatus.COMPLETE
-            },
-            onFinalizeProfile = onFinalizeProfile,
-            isFinalizing = isFinalizing,
-            isLoggingOut = isLoggingOut,
-            extraMessage = finalizeError,
-            modifier = modifier,
-        )
+            }
+            ChecklistContent(
+                title = stringResource(R.string.onboarding_provider_title),
+                subtitle = stringResource(R.string.onboarding_provider_subtitle),
+                steps = uiState.steps.filterNot { showFinalize && it.id == "finalizar_perfil" },
+                onLogout = onLogout,
+                onStepClick = onStepClick,
+                showFinalize = showFinalize,
+                onFinalizeProfile = onFinalizeProfile,
+                isFinalizing = isFinalizing,
+                isLoggingOut = isLoggingOut,
+                extraMessage = finalizeError,
+                modifier = modifier,
+            )
+        }
     }
 }
 
@@ -218,7 +220,7 @@ fun HomeShellScreen(
 private fun OnboardingChecklistScaffold(
     title: String,
     subtitle: String,
-    uiState: ClientOnboardingUiState,
+    uiState: OnboardingChecklistUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
     onStepClick: (OnboardingStep) -> Unit,
@@ -226,13 +228,13 @@ private fun OnboardingChecklistScaffold(
     isLoggingOut: Boolean = false,
 ) {
     when (uiState) {
-        ClientOnboardingUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
-        is ClientOnboardingUiState.Error -> OficiosErrorState(
+        OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
+        is OnboardingChecklistUiState.Error -> OficiosErrorState(
             title = "Error",
             description = uiState.message,
             onRetry = onRetry,
         )
-        is ClientOnboardingUiState.Success -> ChecklistContent(
+        is OnboardingChecklistUiState.Success -> ChecklistContent(
             title = title,
             subtitle = subtitle,
             steps = uiState.steps,

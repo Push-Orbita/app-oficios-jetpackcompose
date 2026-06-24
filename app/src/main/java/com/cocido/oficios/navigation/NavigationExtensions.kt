@@ -3,6 +3,7 @@ package com.cocido.oficios.navigation
 import androidx.navigation.NavHostController
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
+import com.cocido.oficios.feature.home.navigation.HomeDestination
 import com.cocido.oficios.feature.onboarding.navigation.OnboardingDestination
 
 fun NavHostController.navigateToInitialDestination(destination: InitialDestination) {
@@ -12,8 +13,9 @@ fun NavHostController.navigateToInitialDestination(destination: InitialDestinati
         InitialDestination.ProviderOnboarding -> OnboardingDestination.PROVIDER_CHECKLIST
         InitialDestination.ProviderPendingApproval -> OnboardingDestination.PROVIDER_PENDING
         InitialDestination.ProviderRejected -> OnboardingDestination.PROVIDER_REJECTED
-        InitialDestination.ClientHome -> OnboardingDestination.HOME_CLIENT
-        InitialDestination.ProviderHome -> OnboardingDestination.HOME_PROVIDER
+        InitialDestination.ClientHome,
+        InitialDestination.ProviderHome,
+        -> HomeDestination.route
         InitialDestination.ClientBlocked -> OnboardingDestination.CLIENT_BLOCKED
         InitialDestination.ClientInactive -> OnboardingDestination.CLIENT_INACTIVE
     }

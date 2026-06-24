@@ -92,6 +92,16 @@ data class VerifyPasswordResetCodeDto(
 )
 
 @Serializable
+data class VerifyEmailRequestDto(
+    val codigo: String,
+)
+
+@Serializable
+data class MessageResponseDto(
+    val message: String,
+)
+
+@Serializable
 data class VerifyPasswordResetCodeResponseDto(
     @SerialName("reset_token") val resetToken: String? = null,
 )

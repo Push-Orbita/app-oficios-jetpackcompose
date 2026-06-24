@@ -108,6 +108,18 @@ class AuthRepositoryImpl @Inject constructor(
         is AppResult.Error -> result
     }
 
+    override suspend fun sendVerificationEmail(): AppResult<String> =
+        when (val result = remoteDataSource.sendVerificationEmail()) {
+            is AppResult.Success -> AppResult.Success(result.data)
+            is AppResult.Error -> result
+        }
+
+    override suspend fun verifyEmail(code: String): AppResult<Unit> =
+        when (val result = remoteDataSource.verifyEmail(code)) {
+            is AppResult.Success -> AppResult.Success(Unit)
+            is AppResult.Error -> result
+        }
+
     override suspend fun getUserRoles(): AppResult<List<UserRoleDefinition>> =
         when (val result = remoteDataSource.getUserRoles()) {
             is AppResult.Success -> {

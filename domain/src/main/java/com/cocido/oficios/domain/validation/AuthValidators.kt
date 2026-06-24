@@ -45,4 +45,10 @@ object AuthValidators {
         !DNI_REGEX.matches(document) -> "Ingresá un DNI válido"
         else -> null
     }
+
+    fun validateVerificationCode(code: String): String? = when {
+        code.isBlank() -> "Ingresá el código"
+        code.length != 6 || code.any { !it.isDigit() } -> "El código debe tener 6 dígitos"
+        else -> null
+    }
 }

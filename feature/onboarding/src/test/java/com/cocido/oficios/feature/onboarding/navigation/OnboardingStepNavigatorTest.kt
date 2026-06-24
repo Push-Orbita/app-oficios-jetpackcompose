@@ -18,14 +18,22 @@ class OnboardingStepNavigatorTest {
     }
 
     @Test
-    fun `email verified is not actionable`() {
+    fun `maps verify email step`() {
+        assertEquals(
+            OnboardingDestination.VERIFY_EMAIL,
+            OnboardingStepNavigator.routeForStep("email_verificado"),
+        )
+    }
+
+    @Test
+    fun `email verified pending step is actionable`() {
         val step = OnboardingStep(
             id = "email_verificado",
             title = "Email",
             description = "Verificar",
             status = OnboardingStepStatus.PENDING,
         )
-        assertFalse(OnboardingStepNavigator.isActionable(step))
+        assertTrue(OnboardingStepNavigator.isActionable(step))
     }
 
     @Test

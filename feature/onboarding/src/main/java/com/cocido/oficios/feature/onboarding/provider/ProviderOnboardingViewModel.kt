@@ -12,19 +12,21 @@ import com.cocido.oficios.domain.usecase.auth.ResolveInitialDestinationUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.RetryPendingTradeDraftUseCase
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
+import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistEffect
+import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
+import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionNavigator
+import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionPhase
+import com.cocido.oficios.feature.onboarding.common.shouldAutoFinalizeProviderProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-sealed interface ProviderOnboardingUiState {
-    data object Loading : ProviderOnboardingUiState
-    data class Success(val steps: List<OnboardingStep>) : ProviderOnboardingUiState
-    data class Error(val message: String) : ProviderOnboardingUiState
-}
 
 sealed interface ProviderStatusUiState {
     data object Loading : ProviderStatusUiState
@@ -43,30 +45,39 @@ class ProviderOnboardingViewModel @Inject constructor(
     private val resolveInitialDestinationUseCase: ResolveInitialDestinationUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<ProviderOnboardingUiState>(ProviderOnboardingUiState.Loading)
-    val uiState: StateFlow<ProviderOnboardingUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<OnboardingChecklistUiState>(OnboardingChecklistUiState.Loading)
+    val uiState: StateFlow<OnboardingChecklistUiState> = _uiState.asStateFlow()
 
-    private val _isFinalizing = MutableStateFlow(false)
-    val isFinalizing: StateFlow<Boolean> = _isFinalizing.asStateFlow()
+    private val _completionPhase = MutableStateFlow<OnboardingCompletionPhase>(OnboardingCompletionPhase.Idle)
+    val completionPhase: StateFlow<OnboardingCompletionPhase> = _completionPhase.asStateFlow()
 
-    private val _finalizeError = MutableStateFlow<String?>(null)
-    val finalizeError: StateFlow<String?> = _finalizeError.asStateFlow()
+    private val _completionError = MutableStateFlow<String?>(null)
+    val completionError: StateFlow<String?> = _completionError.asStateFlow()
+
+    private val _effects = MutableSharedFlow<OnboardingChecklistEffect>(replay = 1)
+    val effects: SharedFlow<OnboardingChecklistEffect> = _effects.asSharedFlow()
 
     init {
         load()
     }
 
     fun load() {
+        if (_completionPhase.value != OnboardingCompletionPhase.Idle) return
+
         viewModelScope.launch {
-            _uiState.update { ProviderOnboardingUiState.Loading }
+            _uiState.update { OnboardingChecklistUiState.Loading }
             when (val result = getOnboardingStatusUseCase.getProviderStatus()) {
                 is AppResult.Success -> {
                     val status = syncTradeDraftIfNeeded(result.data)
                     val steps = getOnboardingStatusUseCase.getProviderSteps(status)
-                    _uiState.update { ProviderOnboardingUiState.Success(steps) }
+                    when {
+                        steps.shouldAutoFinalizeProviderProfile() -> finalizeProfile()
+                        steps.isEmpty() -> completeAndNavigate()
+                        else -> _uiState.update { OnboardingChecklistUiState.Success(steps) }
+                    }
                 }
                 is AppResult.Error -> {
-                    _uiState.update { ProviderOnboardingUiState.Error("No se pudo cargar el estado del perfil") }
+                    _uiState.update { OnboardingChecklistUiState.Error("No se pudo cargar el estado del perfil") }
                 }
             }
         }
@@ -78,6 +89,7 @@ class ProviderOnboardingViewModel @Inject constructor(
         syncRegisterTradeDraftFromProfileUseCase()
 
         if (status.missingSteps.none { it in TRADE_DRAFT_MISSING_STEPS }) return status
+        if (!status.isIdentityVerified) return status
 
         val draft = registerTradeDraftRepository.get()
         if (draft == null || draft.subRubroIds.isEmpty()) return status
@@ -87,6 +99,78 @@ class ProviderOnboardingViewModel @Inject constructor(
         return when (val refreshed = getOnboardingStatusUseCase.getProviderStatus()) {
             is AppResult.Success -> refreshed.data
             is AppResult.Error -> status
+        }
+    }
+
+    fun finalizeProfile() {
+        if (_completionPhase.value != OnboardingCompletionPhase.Idle) return
+
+        viewModelScope.launch {
+            _completionPhase.update { OnboardingCompletionPhase.Submitting }
+            _completionError.update { null }
+            when (val finalizeResult = finalizeProviderProfileUseCase()) {
+                is AppResult.Success -> {
+                    when (val destination = resolveInitialDestinationUseCase()) {
+                        is AppResult.Success -> {
+                            OnboardingCompletionNavigator.navigateAfterCompletion(
+                                destination = destination.data,
+                                phase = _completionPhase,
+                                effects = _effects,
+                            )
+                        }
+                        is AppResult.Error -> {
+                            _completionPhase.update { OnboardingCompletionPhase.Idle }
+                            _completionError.update { destination.error.userMessage() }
+                            reloadChecklist()
+                        }
+                    }
+                }
+                is AppResult.Error -> {
+                    _completionPhase.update { OnboardingCompletionPhase.Idle }
+                    _completionError.update {
+                        finalizeResult.error.userMessage().ifBlank {
+                            "No se pudo finalizar el perfil. Revisá los pasos pendientes."
+                        }
+                    }
+                    reloadChecklist()
+                }
+            }
+        }
+    }
+
+    private suspend fun completeAndNavigate() {
+        OnboardingCompletionNavigator.resolveAndNavigate(
+            resolveInitialDestinationUseCase = resolveInitialDestinationUseCase,
+            stuckDestination = InitialDestination.ProviderOnboarding,
+            fallbackDestination = null,
+            phase = _completionPhase,
+            effects = _effects,
+            onStuck = {
+                _uiState.update {
+                    OnboardingChecklistUiState.Error(
+                        "No encontramos pasos pendientes, pero tu perfil aún no está listo para operar.",
+                    )
+                }
+            },
+            onResolveError = { message ->
+                _uiState.update { OnboardingChecklistUiState.Error(message) }
+            },
+        )
+    }
+
+    private suspend fun reloadChecklist() {
+        when (val result = getOnboardingStatusUseCase.getProviderStatus()) {
+            is AppResult.Success -> {
+                val steps = getOnboardingStatusUseCase.getProviderSteps(result.data)
+                if (steps.isEmpty()) {
+                    completeAndNavigate()
+                } else {
+                    _uiState.update { OnboardingChecklistUiState.Success(steps) }
+                }
+            }
+            is AppResult.Error -> {
+                _uiState.update { OnboardingChecklistUiState.Error("No se pudo cargar el estado del perfil") }
+            }
         }
     }
 
@@ -100,29 +184,6 @@ class ProviderOnboardingViewModel @Inject constructor(
             "descripcion",
             "experiencia",
         )
-    }
-
-    fun finalizeProfile(onResolved: (InitialDestination) -> Unit) {
-        viewModelScope.launch {
-            _isFinalizing.update { true }
-            _finalizeError.update { null }
-            when (finalizeProviderProfileUseCase()) {
-                is AppResult.Success -> {
-                    when (val destination = resolveInitialDestinationUseCase()) {
-                        is AppResult.Success -> onResolved(destination.data)
-                        is AppResult.Error -> {
-                            _finalizeError.update { destination.error.userMessage() }
-                            load()
-                        }
-                    }
-                }
-                is AppResult.Error -> {
-                    _finalizeError.update { "No se pudo finalizar el perfil. Revisá los pasos pendientes." }
-                    load()
-                }
-            }
-            _isFinalizing.update { false }
-        }
     }
 }
 
