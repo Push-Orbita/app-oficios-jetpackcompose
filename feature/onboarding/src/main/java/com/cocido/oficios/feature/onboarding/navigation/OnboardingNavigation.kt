@@ -4,10 +4,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.feature.onboarding.ClientBlockedRoute
-import com.cocido.oficios.feature.onboarding.ClientHomeShellRoute
 import com.cocido.oficios.feature.onboarding.ClientInactiveRoute
 import com.cocido.oficios.feature.onboarding.ClientOnboardingRoute
-import com.cocido.oficios.feature.onboarding.ProviderHomeShellRoute
 import com.cocido.oficios.feature.onboarding.ProviderOnboardingRoute
 import com.cocido.oficios.feature.onboarding.ProviderPendingRoute
 import com.cocido.oficios.feature.onboarding.ProviderRejectedRoute
@@ -25,8 +23,6 @@ import com.cocido.oficios.feature.onboarding.verify.VerifyEmailRoute
 fun NavGraphBuilder.onboardingGraph(
     onNavigateFromGate: (InitialDestination) -> Unit,
     onNavigateToProviderOnboarding: () -> Unit,
-    onNavigateToClientHome: () -> Unit,
-    onNavigateToProviderHome: () -> Unit,
     onNavigateToStep: (String) -> Unit,
     onStepCompleted: () -> Unit,
     onLoggedOut: () -> Unit,
@@ -69,18 +65,6 @@ fun NavGraphBuilder.onboardingGraph(
     }
     composable(OnboardingDestination.CLIENT_INACTIVE) {
         ClientInactiveRoute(onLoggedOut = onLoggedOut)
-    }
-    composable(OnboardingDestination.HOME_CLIENT) {
-        ClientHomeShellRoute(
-            onContinue = onNavigateToClientHome,
-            onLoggedOut = onLoggedOut,
-        )
-    }
-    composable(OnboardingDestination.HOME_PROVIDER) {
-        ProviderHomeShellRoute(
-            onContinue = onNavigateToProviderHome,
-            onLoggedOut = onLoggedOut,
-        )
     }
     composable(OnboardingDestination.VERIFY_EMAIL) {
         VerifyEmailRoute(onVerified = onStepCompleted)

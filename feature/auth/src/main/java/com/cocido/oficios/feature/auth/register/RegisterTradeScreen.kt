@@ -5,9 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +17,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
+import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -102,18 +100,15 @@ fun RegisterTradeScreen(
         RegisterTradeLabeledSection(
             title = stringResource(R.string.auth_register_trade_neighborhood_label),
         ) {
-            OficiosTextField(
+            OficiosAutocompleteField(
                 value = uiState.neighborhoodQuery,
                 onValueChange = { onEvent(RegisterTradeEvent.NeighborhoodQueryChanged(it)) },
+                suggestions = uiState.neighborhoodOptions,
+                onSuggestionSelected = { onEvent(RegisterTradeEvent.NeighborhoodSelected(it)) },
+                suggestionLabel = { it.label },
                 label = "",
                 placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
+                onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
             )
         }
 

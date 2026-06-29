@@ -181,42 +181,6 @@ fun AccountStatusScreen(
 }
 
 @Composable
-fun HomeShellScreen(
-    title: String,
-    subtitle: String,
-    onContinue: () -> Unit,
-    onLogout: () -> Unit,
-    modifier: Modifier = Modifier,
-    isLoggingOut: Boolean = false,
-) {
-    OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
-        CenterContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
-                Text(text = title, style = MaterialTheme.typography.headlineSmall)
-                Text(text = subtitle, style = MaterialTheme.typography.bodyMedium)
-                OficiosButton(
-                    text = stringResource(R.string.onboarding_go_home_client),
-                    onClick = onContinue,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OficiosButton(
-                    text = stringResource(R.string.onboarding_logout),
-                    onClick = onLogout,
-                    modifier = Modifier.fillMaxWidth(),
-                    variant = OficiosButtonVariant.Secondary,
-                    enabled = !isLoggingOut,
-                    loading = isLoggingOut,
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun OnboardingChecklistScaffold(
     title: String,
     subtitle: String,

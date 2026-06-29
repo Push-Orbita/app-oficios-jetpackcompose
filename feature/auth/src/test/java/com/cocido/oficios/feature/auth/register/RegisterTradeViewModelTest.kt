@@ -10,6 +10,7 @@ import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
+import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -83,6 +84,7 @@ class RegisterTradeViewModelTest {
         viewModel.onEvent(RegisterTradeEvent.SpecializationToggled("100", checked = true))
         viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))
         viewModel.onEvent(RegisterTradeEvent.NeighborhoodQueryChanged("Centro"))
+        viewModel.onEvent(RegisterTradeEvent.NeighborhoodSelected(CatalogOption(id = 5, label = "Centro")))
         viewModel.onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, checked = true))
         viewModel.onEvent(RegisterTradeEvent.TimeSlotFromChanged(0, "08:00"))
         viewModel.onEvent(RegisterTradeEvent.TimeSlotToChanged(0, "12:00"))
@@ -94,6 +96,7 @@ class RegisterTradeViewModelTest {
         assertEquals(1L, draft?.categoryId)
         assertEquals(10L, draft?.rubroId)
         assertEquals(listOf(100L), draft?.subRubroIds)
+        assertEquals(5L, draft?.barrioId)
     }
 
     @Test
@@ -112,6 +115,8 @@ class RegisterTradeViewModelTest {
         viewModel.onEvent(RegisterTradeEvent.SpecializationToggled("100", checked = true))
         viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))
         viewModel.onEvent(RegisterTradeEvent.NeighborhoodQueryChanged("Centro"))
+        viewModel.onEvent(RegisterTradeEvent.NeighborhoodSelected(CatalogOption(id = 5, label = "Centro")))
+        viewModel.onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, checked = true))
         viewModel.onEvent(RegisterTradeEvent.WorkDayToggled("SABADO", checked = true))
         viewModel.onEvent(RegisterTradeEvent.ServesAtLocalChanged(true))
         viewModel.onEvent(RegisterTradeEvent.TimeSlotFromChanged(0, "08:00"))
@@ -140,6 +145,7 @@ class RegisterTradeViewModelTest {
         getCategoriesUseCase = GetCategoriesUseCase(fakeCatalogRepository),
         getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(fakeCatalogRepository),
         getSubRubrosByRubroUseCase = GetSubRubrosByRubroUseCase(fakeCatalogRepository),
+        searchBarriosUseCase = SearchBarriosUseCase(fakeCatalogRepository),
         registerTradeDraftRepository = fakeDraftRepository,
     )
 
@@ -159,7 +165,7 @@ class RegisterTradeViewModelTest {
             AppResult.Success(subRubros)
 
         override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> =
-            AppResult.Success(emptyList())
+            AppResult.Success(listOf(CatalogOption(id = 5, label = "Centro")))
     }
 
     private class FakeRegisterTradeDraftRepository : RegisterTradeDraftRepository {

@@ -10,8 +10,11 @@ import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
+import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,6 +29,7 @@ class RegisterTradeViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
+    private val searchBarriosUseCase: SearchBarriosUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
 ) : ViewModel() {
 
@@ -34,6 +38,8 @@ class RegisterTradeViewModel @Inject constructor(
 
     private val _effects = MutableSharedFlow<RegisterTradeEffect>()
     val effects: SharedFlow<RegisterTradeEffect> = _effects.asSharedFlow()
+
+    private var neighborhoodSearchJob: Job? = null
 
     init {
         _uiState.update {
@@ -62,8 +68,16 @@ class RegisterTradeViewModel @Inject constructor(
             is RegisterTradeEvent.ExperienceRangeChanged -> update {
                 it.copy(selectedExperienceRange = event.value)
             }
-            is RegisterTradeEvent.NeighborhoodQueryChanged -> update {
-                it.copy(neighborhoodQuery = event.value)
+            is RegisterTradeEvent.NeighborhoodQueryChanged -> onNeighborhoodQueryChanged(event.value)
+            is RegisterTradeEvent.NeighborhoodSelected -> update {
+                it.copy(
+                    neighborhoodQuery = event.option.label,
+                    selectedBarrioId = event.option.id,
+                    neighborhoodOptions = emptyList(),
+                )
+            }
+            RegisterTradeEvent.NeighborhoodSuggestionsDismissed -> update {
+                it.copy(neighborhoodOptions = emptyList())
             }
             is RegisterTradeEvent.TimeSlotFromChanged -> update {
                 it.copy(timeSlots = it.timeSlots.updateAt(event.index) { slot -> slot.copy(from = event.value) })
@@ -222,6 +236,7 @@ class RegisterTradeViewModel @Inject constructor(
                     },
                     experienceRange = state.selectedExperienceRange,
                     neighborhoodQuery = state.neighborhoodQuery,
+                    barrioId = state.selectedBarrioId,
                     workDays = state.selectedWorkDays.toList(),
                     servesAtClientHome = state.servesAtClientHome,
                     servesAtLocal = state.servesAtLocal,
@@ -232,6 +247,27 @@ class RegisterTradeViewModel @Inject constructor(
                 ),
             )
             _effects.emit(RegisterTradeEffect.NavigateToProviderRegister)
+        }
+    }
+
+    private fun onNeighborhoodQueryChanged(query: String) {
+        update {
+            it.copy(
+                neighborhoodQuery = query,
+                selectedBarrioId = null,
+            )
+        }
+        neighborhoodSearchJob?.cancel()
+        if (query.length < 2) {
+            update { it.copy(neighborhoodOptions = emptyList()) }
+            return
+        }
+        neighborhoodSearchJob = viewModelScope.launch {
+            delay(300)
+            when (val result = searchBarriosUseCase(query)) {
+                is AppResult.Success -> update { it.copy(neighborhoodOptions = result.data) }
+                is AppResult.Error -> Unit
+            }
         }
     }
 
@@ -246,6 +282,7 @@ class RegisterTradeViewModel @Inject constructor(
             selectedTradeId != null &&
             hasSpecialization &&
             selectedExperienceRange.isNotBlank() &&
+            selectedBarrioId != null &&
             neighborhoodQuery.isNotBlank() &&
             selectedPaymentMethods.isNotEmpty() &&
             selectedWorkDays.isNotEmpty() &&

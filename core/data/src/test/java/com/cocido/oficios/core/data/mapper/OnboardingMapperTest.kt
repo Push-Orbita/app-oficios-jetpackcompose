@@ -83,7 +83,7 @@ class OnboardingMapperTest {
     }
 
     @Test
-    fun `completed client address marks domicilio complete`() {
+    fun `hides completed client onboarding steps`() {
         val status = ClientePerfilEstadoDto(
             perfilCompleto = false,
             requisitos = ClientePerfilEstadoRequisitosDto(
@@ -93,9 +93,11 @@ class OnboardingMapperTest {
             ),
         ).toDomain(AccountStatus.ACTIVE)
 
-        val domicilioStep = status.toOnboardingSteps().first { it.id == "domicilio" }
-        assertEquals(OnboardingStepStatus.COMPLETE, domicilioStep.status)
-        assertFalse(status.toOnboardingSteps().any { it.id == "email_verificado" })
+        val steps = status.toOnboardingSteps()
+
+        assertFalse(steps.any { it.id == "domicilio" })
+        assertTrue(steps.any { it.id == "contacto" })
+        assertFalse(steps.any { it.id == "email_verificado" })
     }
 
     @Test

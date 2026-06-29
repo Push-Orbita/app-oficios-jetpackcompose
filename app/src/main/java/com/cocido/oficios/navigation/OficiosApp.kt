@@ -82,18 +82,6 @@ fun AppNavHost(
                     launchSingleTop = true
                 }
             },
-            onNavigateToClientHome = {
-                navController.navigate(HomeDestination.route) {
-                    popUpTo(AuthDestination.SPLASH) { inclusive = true }
-                    launchSingleTop = true
-                }
-            },
-            onNavigateToProviderHome = {
-                navController.navigate(HomeDestination.route) {
-                    popUpTo(AuthDestination.SPLASH) { inclusive = true }
-                    launchSingleTop = true
-                }
-            },
             onNavigateToStep = { route ->
                 navController.navigate(route)
             },

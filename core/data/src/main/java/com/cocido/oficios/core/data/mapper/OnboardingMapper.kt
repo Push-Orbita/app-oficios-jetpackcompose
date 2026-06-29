@@ -50,22 +50,26 @@ fun String.toClientAccountStatus(): AccountStatus = when (uppercase()) {
 }
 
 fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
-    add(
-        OnboardingStep(
-            id = "domicilio",
-            title = "Domicilio",
-            description = "Agregá al menos un domicilio para contratar servicios.",
-            status = if (hasAddress) OnboardingStepStatus.COMPLETE else OnboardingStepStatus.PENDING,
-        ),
-    )
-    add(
-        OnboardingStep(
-            id = "contacto",
-            title = "Contacto",
-            description = "Agregá al menos un contacto para recibir notificaciones.",
-            status = if (hasContact) OnboardingStepStatus.COMPLETE else OnboardingStepStatus.PENDING,
-        ),
-    )
+    if (!hasAddress) {
+        add(
+            OnboardingStep(
+                id = "domicilio",
+                title = "Domicilio",
+                description = "Agregá al menos un domicilio para contratar servicios.",
+                status = OnboardingStepStatus.PENDING,
+            ),
+        )
+    }
+    if (!hasContact) {
+        add(
+            OnboardingStep(
+                id = "contacto",
+                title = "Contacto",
+                description = "Agregá al menos un contacto para recibir notificaciones.",
+                status = OnboardingStepStatus.PENDING,
+            ),
+        )
+    }
     if (!emailVerified) {
         add(
             OnboardingStep(
