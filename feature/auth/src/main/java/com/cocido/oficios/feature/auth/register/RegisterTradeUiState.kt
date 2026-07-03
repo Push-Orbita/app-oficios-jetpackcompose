@@ -9,6 +9,7 @@ data class RegisterTradeTimeSlot(
 
 sealed interface RegisterTradeEvent {
     data class CategoryChanged(val value: String) : RegisterTradeEvent
+    data class CategoryGridSelected(val option: CatalogOption) : RegisterTradeEvent
     data class TradeChanged(val value: String) : RegisterTradeEvent
     data class SpecializationToggled(val id: String, val checked: Boolean) : RegisterTradeEvent
     data class OtherSpecializationChanged(val value: String) : RegisterTradeEvent

@@ -18,11 +18,15 @@ import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
+import com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase
+import com.cocido.oficios.domain.usecase.profile.GetWorkCertificatesUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitSecondaryProviderRubroUseCase
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
+import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -40,7 +44,15 @@ data class ProviderDniUiState(
     val documento: String = "",
     val frontImagePath: String? = null,
     val backImagePath: String? = null,
+    val frontFileName: String? = null,
+    val backFileName: String? = null,
+    val frontRemoteLoaded: Boolean = false,
+    val backRemoteLoaded: Boolean = false,
+    val certificateName: String = "",
+    val certificatePath: String? = null,
+    val existingCertificateName: String? = null,
     val isLoading: Boolean = false,
+    val isPreloading: Boolean = true,
     val error: String? = null,
 )
 
@@ -53,6 +65,9 @@ sealed interface ProviderStepEffect {
 class ProviderDniViewModel @Inject constructor(
     private val updateProviderDniNumberUseCase: UpdateProviderDniNumberUseCase,
     private val uploadProviderDniImagesUseCase: UploadProviderDniImagesUseCase,
+    private val getProviderDniDocumentsUseCase: GetProviderDniDocumentsUseCase,
+    private val uploadWorkCertificateUseCase: UploadWorkCertificateUseCase,
+    private val getWorkCertificatesUseCase: GetWorkCertificatesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderDniUiState())
@@ -60,16 +75,53 @@ class ProviderDniViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ProviderStepEffect>()
     val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
 
+    init {
+        preloadDocuments()
+    }
+
+    private fun preloadDocuments() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isPreloading = true) }
+            when (val dniResult = getProviderDniDocumentsUseCase()) {
+                is AppResult.Success -> dniResult.data?.let { docs ->
+                    _uiState.update {
+                        it.copy(
+                            frontRemoteLoaded = !docs.frontUrl.isNullOrBlank(),
+                            backRemoteLoaded = !docs.backUrl.isNullOrBlank(),
+                            frontFileName = docs.frontFileName,
+                            backFileName = docs.backFileName,
+                        )
+                    }
+                }
+                is AppResult.Error -> Unit
+            }
+            when (val certResult = getWorkCertificatesUseCase()) {
+                is AppResult.Success -> certResult.data.firstOrNull()?.let { cert ->
+                    _uiState.update { it.copy(existingCertificateName = cert.name) }
+                }
+                is AppResult.Error -> Unit
+            }
+            _uiState.update { it.copy(isPreloading = false) }
+        }
+    }
+
     fun onDocumentoChanged(value: String) = _uiState.update { it.copy(documento = value, error = null) }
-    fun onFrontImage(path: String?) = _uiState.update { it.copy(frontImagePath = path, error = null) }
-    fun onBackImage(path: String?) = _uiState.update { it.copy(backImagePath = path, error = null) }
+    fun onFrontImage(path: String?) = _uiState.update {
+        it.copy(frontImagePath = path, frontFileName = path?.substringAfterLast('/'), error = null)
+    }
+    fun onBackImage(path: String?) = _uiState.update {
+        it.copy(backImagePath = path, backFileName = path?.substringAfterLast('/'), error = null)
+    }
+    fun onCertificateNameChanged(value: String) = _uiState.update { it.copy(certificateName = value, error = null) }
+    fun onCertificateSelected(path: String?) = _uiState.update { it.copy(certificatePath = path, error = null) }
 
     fun submit() {
         val state = _uiState.value
         val documento = state.documento.trim()
         val front = state.frontImagePath
         val back = state.backImagePath
-        if (documento.isBlank() || front == null || back == null) return
+        val hasRemoteImages = state.frontRemoteLoaded && state.backRemoteLoaded
+        if (documento.isBlank() || (!hasRemoteImages && (front == null || back == null))) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -82,15 +134,35 @@ class ProviderDniViewModel @Inject constructor(
                 is AppResult.Success -> Unit
             }
 
-            when (val imagesResult = uploadProviderDniImagesUseCase(front, back)) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(ProviderStepEffect.Saved)
-                }
-                is AppResult.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
+            if (front != null && back != null) {
+                when (val imagesResult = uploadProviderDniImagesUseCase(front, back)) {
+                    is AppResult.Error -> {
+                        _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
+                        return@launch
+                    }
+                    is AppResult.Success -> Unit
                 }
             }
+
+            val certificatePath = state.certificatePath
+            val certificateName = state.certificateName.trim()
+            if (certificatePath != null && certificateName.isNotBlank()) {
+                when (val certResult = uploadWorkCertificateUseCase(certificateName, certificatePath)) {
+                    is AppResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = "DNI enviado, pero el certificado falló: ${certResult.error.userMessage()}",
+                            )
+                        }
+                        return@launch
+                    }
+                    is AppResult.Success -> Unit
+                }
+            }
+
+            _uiState.update { it.copy(isLoading = false) }
+            _effects.emit(ProviderStepEffect.Saved)
         }
     }
 }
@@ -158,6 +230,7 @@ data class ProviderRubrosUiState(
     val selectedCategoryId: Long? = null,
     val selectedTradeId: Long? = null,
     val selectedSubRubroIds: Set<Long> = emptySet(),
+    val isSecondaryRubro: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 ) {
@@ -170,6 +243,7 @@ class ProviderRubrosViewModel @Inject constructor(
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val submitSecondaryProviderRubroUseCase: SubmitSecondaryProviderRubroUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
@@ -210,6 +284,8 @@ class ProviderRubrosViewModel @Inject constructor(
         loadSubRubros(id)
     }
 
+    fun onSecondaryRubroChanged(checked: Boolean) = _uiState.update { it.copy(isSecondaryRubro = checked) }
+
     fun onSubRubroToggled(id: Long, checked: Boolean) = _uiState.update {
         val updated = it.selectedSubRubroIds.toMutableSet()
         if (checked) updated.add(id) else updated.remove(id)
@@ -249,7 +325,13 @@ class ProviderRubrosViewModel @Inject constructor(
                 return@launch
             }
             registerTradeDraftRepository.save(draft)
-            when (val result = submitProviderRubroFullUseCase(draft.toRubroFullRequest())) {
+            val request = draft.toRubroFullRequest()
+            val result = if (state.isSecondaryRubro) {
+                submitSecondaryProviderRubroUseCase(request)
+            } else {
+                submitProviderRubroFullUseCase(request)
+            }
+            when (result) {
                 is AppResult.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(ProviderStepEffect.Saved)
@@ -437,10 +519,13 @@ data class ProviderLocalUiState(
     val barrioOptions: List<CatalogOption> = emptyList(),
     val selectedBarrioId: Long? = null,
     val calle: String = "",
+    val numero: String = "",
     val nombre: String = "Local comercial",
     val isLoading: Boolean = false,
     val error: String? = null,
-)
+) {
+    val canSubmit: Boolean get() = selectedBarrioId != null && calle.isNotBlank()
+}
 
 @HiltViewModel
 class ProviderLocalViewModel @Inject constructor(
@@ -495,10 +580,13 @@ class ProviderLocalViewModel @Inject constructor(
     }
 
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
+    fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
+    fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
 
     fun submit() {
         val state = _uiState.value
         val barrioId = state.selectedBarrioId ?: return
+        if (!state.canSubmit) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             val draft = registerTradeDraftRepository.get()
@@ -506,6 +594,9 @@ class ProviderLocalViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, error = "Completá primero rubro y subrubros") }
                 return@launch
             }
+            val streetLine = listOf(state.calle.trim(), state.numero.trim())
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
             val updatedDraft = draft.copy(
                 barrioId = barrioId,
                 servesAtLocal = true,
@@ -514,8 +605,8 @@ class ProviderLocalViewModel @Inject constructor(
             val request = updatedDraft.toRubroFullRequest().copy(
                 domicilioLocal = ProviderLocalDomicilioRequest(
                     barrioId = barrioId,
-                    calle = state.calle.trim(),
-                    nombre = state.nombre,
+                    calle = streetLine,
+                    nombre = state.nombre.trim().ifBlank { "Local comercial" },
                 ),
             )
             when (val result = submitProviderRubroFullUseCase(request)) {

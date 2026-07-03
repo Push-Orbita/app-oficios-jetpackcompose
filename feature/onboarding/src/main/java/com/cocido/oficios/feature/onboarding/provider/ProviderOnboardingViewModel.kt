@@ -57,8 +57,17 @@ class ProviderOnboardingViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<OnboardingChecklistEffect>(replay = 1)
     val effects: SharedFlow<OnboardingChecklistEffect> = _effects.asSharedFlow()
 
+    private val _kycBannerMessage = MutableStateFlow<String?>(null)
+    val kycBannerMessage: StateFlow<String?> = _kycBannerMessage.asStateFlow()
+
+    private var lastIdentityVerified: Boolean? = null
+
     init {
         load()
+    }
+
+    fun dismissKycBanner() {
+        _kycBannerMessage.update { null }
     }
 
     fun load() {
@@ -69,6 +78,12 @@ class ProviderOnboardingViewModel @Inject constructor(
             when (val result = getOnboardingStatusUseCase.getProviderStatus()) {
                 is AppResult.Success -> {
                     val status = syncTradeDraftIfNeeded(result.data)
+                    if (lastIdentityVerified == false && status.isIdentityVerified) {
+                        _kycBannerMessage.update {
+                            "Tu documentación fue actualizada. Revisá el estado en el checklist."
+                        }
+                    }
+                    lastIdentityVerified = status.isIdentityVerified
                     val steps = getOnboardingStatusUseCase.getProviderSteps(status)
                     when {
                         steps.shouldAutoFinalizeProviderProfile() -> finalizeProfile()

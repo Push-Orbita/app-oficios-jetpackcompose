@@ -59,6 +59,7 @@ fun ProviderOnboardingChecklistScreen(
     isLoggingOut: Boolean = false,
     isFinalizing: Boolean = false,
     finalizeError: String? = null,
+    onDismissBanner: (() -> Unit)? = null,
 ) {
     when (uiState) {
         OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())

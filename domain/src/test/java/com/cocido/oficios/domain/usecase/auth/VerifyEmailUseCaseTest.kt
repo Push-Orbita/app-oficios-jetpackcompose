@@ -50,6 +50,7 @@ class VerifyEmailUseCaseTest {
                 override suspend fun getAccessToken() = "token"
                 override suspend fun getRefreshToken() = "refresh"
                 override suspend fun updateTokens(tokens: AuthTokens) = Unit
+                override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
                 override suspend fun getCachedUser() = null
                 override suspend fun updateCachedUser(user: User) {
                     cachedUser = user
@@ -94,6 +95,7 @@ class VerifyEmailUseCaseTest {
                 override suspend fun getAccessToken() = null
                 override suspend fun getRefreshToken() = null
                 override suspend fun updateTokens(tokens: AuthTokens) = Unit
+                override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
                 override suspend fun getCachedUser() = null
                 override suspend fun updateCachedUser(user: User) {
                     updateCalled = true

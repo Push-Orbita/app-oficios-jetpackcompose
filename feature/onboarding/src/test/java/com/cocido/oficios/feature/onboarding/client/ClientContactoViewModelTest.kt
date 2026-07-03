@@ -60,6 +60,8 @@ class ClientContactoViewModelTest {
             object : ClientProfileRepository {
                 override suspend fun saveDomicilio(request: ClientDomicilioRequest) = AppResult.Success(Unit)
                 override suspend fun saveContacto(request: ClientContactoRequest) = AppResult.Success(Unit)
+                override suspend fun getMyDomicilios() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ClientDomicilio>())
+                override suspend fun getMyContactos() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ClientContacto>())
             },
         ),
     )

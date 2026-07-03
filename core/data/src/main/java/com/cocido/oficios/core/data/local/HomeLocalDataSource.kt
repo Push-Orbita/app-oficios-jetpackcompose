@@ -7,21 +7,25 @@ import javax.inject.Inject
 class HomeLocalDataSource @Inject constructor(
     private val cachedItemDao: CachedItemDao,
 ) {
-    suspend fun getCachedHomeContent(): CachedItemEntity? {
-        return cachedItemDao.getByKey(HOME_CONTENT_KEY)
+    suspend fun getRecentCategoryIds(): List<Long> {
+        val cached = cachedItemDao.getByKey(RECENT_CATEGORIES_KEY) ?: return emptyList()
+        return cached.value
+            .split(",")
+            .mapNotNull { it.trim().toLongOrNull() }
     }
 
-    suspend fun cacheHomeContent(title: String, description: String) {
+    suspend fun saveRecentCategoryIds(ids: List<Long>) {
         cachedItemDao.insert(
             CachedItemEntity(
-                key = HOME_CONTENT_KEY,
-                value = "$title|$description",
+                key = RECENT_CATEGORIES_KEY,
+                value = ids.joinToString(","),
                 updatedAt = System.currentTimeMillis(),
             ),
         )
     }
 
-    private companion object {
-        const val HOME_CONTENT_KEY = "home_content"
+    companion object {
+        const val MAX_RECENT_CATEGORIES = 6
+        private const val RECENT_CATEGORIES_KEY = "home_recent_categories"
     }
 }

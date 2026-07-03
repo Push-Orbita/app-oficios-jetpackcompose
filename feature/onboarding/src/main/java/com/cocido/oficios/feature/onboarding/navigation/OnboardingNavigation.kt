@@ -10,6 +10,7 @@ import com.cocido.oficios.feature.onboarding.ProviderOnboardingRoute
 import com.cocido.oficios.feature.onboarding.ProviderPendingRoute
 import com.cocido.oficios.feature.onboarding.ProviderRejectedRoute
 import com.cocido.oficios.feature.onboarding.gate.OnboardingGateRoute
+import com.cocido.oficios.feature.onboarding.steps.ClientContactDomicilioRoute
 import com.cocido.oficios.feature.onboarding.steps.ClientContactoRoute
 import com.cocido.oficios.feature.onboarding.steps.ClientDomicilioRoute
 import com.cocido.oficios.feature.onboarding.steps.ProviderAvailabilityRoute
@@ -69,11 +70,14 @@ fun NavGraphBuilder.onboardingGraph(
     composable(OnboardingDestination.VERIFY_EMAIL) {
         VerifyEmailRoute(onVerified = onStepCompleted)
     }
+    composable(OnboardingDestination.CLIENT_CONTACT_DOMICILIO) {
+        ClientContactDomicilioRoute(onSaved = onStepCompleted)
+    }
     composable(OnboardingDestination.CLIENT_DOMICILIO) {
-        ClientDomicilioRoute(onSaved = onStepCompleted)
+        ClientContactDomicilioRoute(onSaved = onStepCompleted)
     }
     composable(OnboardingDestination.CLIENT_CONTACTO) {
-        ClientContactoRoute(onSaved = onStepCompleted)
+        ClientContactDomicilioRoute(onSaved = onStepCompleted)
     }
     composable(OnboardingDestination.PROVIDER_DNI) {
         ProviderDniRoute(onSaved = onStepCompleted)

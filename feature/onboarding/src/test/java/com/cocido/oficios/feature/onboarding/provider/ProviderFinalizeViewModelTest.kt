@@ -72,6 +72,8 @@ class ProviderFinalizeViewModelTest {
                         AppResult.Success(Unit)
                     override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
                         AppResult.Success(Unit)
+                    override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) =
+                        AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = result
                     override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
                 },

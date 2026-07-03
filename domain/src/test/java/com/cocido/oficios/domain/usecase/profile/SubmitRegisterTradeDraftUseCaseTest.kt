@@ -151,6 +151,8 @@ class SubmitRegisterTradeDraftUseCaseTest {
 
         override suspend fun submitRubroFull(request: ProviderRubroFullRequest) = rubroResult
 
+        override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) = rubroResult
+
         override suspend fun finalizeProfile() = AppResult.Success(Unit)
 
         override suspend fun loadProviderProfileForSync(): AppResult<ProviderProfileSync> =

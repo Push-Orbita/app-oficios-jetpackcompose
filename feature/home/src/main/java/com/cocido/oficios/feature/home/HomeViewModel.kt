@@ -4,54 +4,124 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
-import com.cocido.oficios.domain.usecase.GetHomeContentUseCase
+import com.cocido.oficios.domain.model.RecentSearchEntry
+import com.cocido.oficios.domain.model.RecentSearchType
+import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
+import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getHomeContentUseCase: GetHomeContentUseCase,
+    private val getClientHomeUseCase: GetClientHomeUseCase,
+    private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private var forceError = false
+    private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
 
     init {
-        loadContent()
+        loadHome()
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-            HomeEvent.LoadContent,
-            HomeEvent.Retry,
-            -> loadContent()
-            HomeEvent.SimulateError -> {
-                forceError = true
-                loadContent()
-            }
-            HomeEvent.NavigateToSettings -> Unit
+            HomeEvent.Retry -> loadHome()
+            HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
+            HomeEvent.OpenNotifications -> emitComingSoon()
+            HomeEvent.ContactSupport -> emitEffect(HomeEffect.ContactSupport)
+            is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
+            HomeEvent.VoiceSearch -> emitComingSoon()
+            is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
+            HomeEvent.NavigateToSettings -> emitEffect(HomeEffect.NavigateToSettings)
+            HomeEvent.NavigateToProfile -> emitEffect(HomeEffect.NavigateToProfile)
+            HomeEvent.NavigateToFavorites -> emitEffect(HomeEffect.NavigateToFavorites)
+            HomeEvent.NavigateToHelp -> emitEffect(HomeEffect.NavigateToHelp)
+            is HomeEvent.WorkerViewProfile -> emitEffect(HomeEffect.NavigateToWorker(event.workerId))
+            HomeEvent.WorkerContact -> emitComingSoon()
+            HomeEvent.SeeAllWorkers -> emitEffect(HomeEffect.NavigateToSearchResults())
         }
     }
 
-    private fun loadContent() {
+    private fun onRecentSearchSelected(entry: RecentSearchEntry) {
+        viewModelScope.launch {
+            trackRecentSearchUseCase(entry)
+            when (entry.type) {
+                RecentSearchType.CATEGORY -> {
+                    emitEffect(HomeEffect.NavigateToRubros(entry.id, entry.label))
+                }
+                RecentSearchType.RUBRO -> {
+                    emitEffect(
+                        HomeEffect.NavigateToSearchResults(
+                            rubroId = entry.rubroId ?: entry.id,
+                            rubroLabel = entry.label,
+                            categoryId = entry.categoryId,
+                        ),
+                    )
+                }
+                RecentSearchType.SUBRUBRO -> {
+                    emitEffect(
+                        HomeEffect.NavigateToSearchResults(
+                            rubroId = entry.rubroId ?: 0L,
+                            rubroLabel = entry.label,
+                            subRubroId = entry.id,
+                            subRubroLabel = entry.label,
+                            categoryId = entry.categoryId,
+                        ),
+                    )
+                }
+                RecentSearchType.QUERY -> {
+                    emitEffect(HomeEffect.NavigateToSearchResults(query = entry.label))
+                }
+            }
+        }
+    }
+
+    private fun onSearchSubmitted(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) {
+            emitEffect(HomeEffect.NavigateToSearch)
+            return
+        }
+        viewModelScope.launch {
+            trackRecentSearchUseCase(
+                RecentSearchEntry(
+                    type = RecentSearchType.QUERY,
+                    id = trimmed.hashCode().toLong(),
+                    label = trimmed,
+                ),
+            )
+            emitEffect(HomeEffect.NavigateToSearchResults(query = trimmed))
+        }
+    }
+
+    private fun loadHome() {
         viewModelScope.launch {
             _uiState.update { HomeUiState.Loading }
-            when (val result = getHomeContentUseCase(forceError = forceError)) {
-                is AppResult.Success -> {
-                    forceError = false
-                    _uiState.update { HomeUiState.Success(result.data) }
-                }
+            when (val result = getClientHomeUseCase()) {
+                is AppResult.Success -> _uiState.update { HomeUiState.Success(result.data) }
                 is AppResult.Error -> {
                     _uiState.update { HomeUiState.Error(result.error.userMessage()) }
                 }
             }
         }
+    }
+
+    private fun emitComingSoon() {
+        emitEffect(HomeEffect.ShowComingSoon)
+    }
+
+    private fun emitEffect(effect: HomeEffect) {
+        viewModelScope.launch { _effects.send(effect) }
     }
 }

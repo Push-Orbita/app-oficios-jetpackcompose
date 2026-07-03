@@ -10,7 +10,6 @@ import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.UserRoleDefinition
 import com.cocido.oficios.domain.model.UserSession
-import kotlinx.serialization.json.JsonPrimitive
 
 fun LoginResponseDto.toDomainSession(): UserSession =
     UserSession(tokens = toTokens(), user = usuario.toDomainUser())
@@ -44,9 +43,7 @@ fun UsuarioDto.toDomainUser(): User = User(
     role = UserRole.fromRoleName(rolUsuario?.nombre),
     emailVerified = emailVerificado,
     personaId = persona?.id,
-    profilePhotoUrl = fotoPerfil?.let { element ->
-        (element as? JsonPrimitive)?.content
-    },
+    profilePhotoUrl = fotoPerfil.toPhotoUrl(),
 )
 
 fun RolUsuarioDto.toDomainRoleDefinition(): UserRoleDefinition = UserRoleDefinition(

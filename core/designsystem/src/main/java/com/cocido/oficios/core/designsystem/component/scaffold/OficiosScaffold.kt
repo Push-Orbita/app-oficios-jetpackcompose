@@ -6,8 +6,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,15 +26,20 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 // ---------------------------------------------------------------------------
 // OficiosScaffold — wrapper centralizado sobre M3 Scaffold
 //
-// Aplica WindowInsets.systemBars automáticamente a través de Scaffold M3.
-// Loading overlay bloquea toda interacción cuando isLoading = true.
+// Con enableEdgeToEdge() en MainActivity:
+// - contentWindowInsets = safeDrawing → respeta status bar y gesture bar en contenido
+// - bottomBar opcional → OficiosBottomBarSlot reserva altura de navigationBars
+// - topBar opcional → aplicar OficiosTopBarSlot si el top bar es custom
+//
+// Todas las pantallas deben usar este scaffold (o AuthScreenLayout / layouts que lo usen).
+// No aplicar insets manualmente en features salvo casos excepcionales (IME, sheets).
 // ---------------------------------------------------------------------------
 
 @Composable
 fun OficiosScaffold(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
-    bottomBar: @Composable () -> Unit = {},
+    bottomBar: (@Composable () -> Unit)? = null,
     isLoading: Boolean = false,
     snackbarHostState: SnackbarHostState? = null,
     content: @Composable (PaddingValues) -> Unit,
@@ -43,14 +50,16 @@ fun OficiosScaffold(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = topBar,
-            bottomBar = bottomBar,
+            bottomBar = bottomBar?.let { bar ->
+                { OficiosBottomBarSlot(content = bar) }
+            } ?: {},
             snackbarHost = { SnackbarHost(hostState = snackbarState) },
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
+            contentWindowInsets = WindowInsets.safeDrawing,
             content = content,
         )
 
-        // Loading overlay: semitransparente, bloquea toda interacción
         AnimatedVisibility(
             visible = isLoading,
             enter = fadeIn(),
@@ -68,15 +77,11 @@ fun OficiosScaffold(
     }
 }
 
-// ---------------------------------------------------------------------------
-// OficiosScreen — atajo que combina OficiosScaffold + content sin padding manual
-// ---------------------------------------------------------------------------
-
 @Composable
 fun OficiosScreen(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
-    bottomBar: @Composable () -> Unit = {},
+    bottomBar: (@Composable () -> Unit)? = null,
     isLoading: Boolean = false,
     snackbarHostState: SnackbarHostState? = null,
     content: @Composable () -> Unit,

@@ -13,8 +13,7 @@ object OnboardingStepNavigator {
 
     fun routeForStep(stepId: String): String? = when (stepId) {
         "email_verificado" -> OnboardingDestination.VERIFY_EMAIL
-        "domicilio" -> OnboardingDestination.CLIENT_DOMICILIO
-        "contacto" -> OnboardingDestination.CLIENT_CONTACTO
+        "domicilio", "contacto" -> OnboardingDestination.CLIENT_CONTACT_DOMICILIO
         "dni_numero", "dni_imagenes", "dni_rechazado" -> OnboardingDestination.PROVIDER_DNI
         "descripcion", "experiencia" -> OnboardingDestination.PROVIDER_PROFESSIONAL_INFO
         "rubro_principal", "subrubros" -> OnboardingDestination.PROVIDER_RUBROS

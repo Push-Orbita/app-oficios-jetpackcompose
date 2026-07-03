@@ -23,6 +23,9 @@ class ProviderProfileRepositoryImpl @Inject constructor(
     override suspend fun submitRubroFull(request: ProviderRubroFullRequest): AppResult<Unit> =
         remoteDataSource.createRubroFull(request.toDto()).map { }
 
+    override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest): AppResult<Unit> =
+        remoteDataSource.createSecondaryRubroFull(request.toDto()).map { }
+
     override suspend fun finalizeProfile(): AppResult<Unit> =
         remoteDataSource.finalizeProfile().map { }
 

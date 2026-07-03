@@ -1,22 +1,16 @@
 package com.cocido.oficios.core.data.mapper
 
-import com.cocido.oficios.core.network.api.GreetingDto
+import com.cocido.oficios.domain.model.CatalogOption
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HomeMapperTest {
 
     @Test
-    fun `maps dto to domain model`() {
-        val dto = GreetingDto(
-            id = 1,
-            title = "Hello",
-            body = "World",
-        )
+    fun `maps catalog option to home category item`() {
+        val item = CatalogOption(id = 3, label = "Construcción").toHomeCategoryItem()
 
-        val domain = dto.toDomain()
-
-        assertEquals("Hello", domain.title)
-        assertEquals("World", domain.description)
+        assertEquals(3L, item.id)
+        assertEquals("Construcción", item.name)
     }
 }

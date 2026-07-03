@@ -10,10 +10,14 @@ import org.junit.Test
 class OnboardingStepNavigatorTest {
 
     @Test
-    fun `maps client domicilio step`() {
+    fun `maps client domicilio and contacto to unified step`() {
         assertEquals(
-            OnboardingDestination.CLIENT_DOMICILIO,
+            OnboardingDestination.CLIENT_CONTACT_DOMICILIO,
             OnboardingStepNavigator.routeForStep("domicilio"),
+        )
+        assertEquals(
+            OnboardingDestination.CLIENT_CONTACT_DOMICILIO,
+            OnboardingStepNavigator.routeForStep("contacto"),
         )
     }
 

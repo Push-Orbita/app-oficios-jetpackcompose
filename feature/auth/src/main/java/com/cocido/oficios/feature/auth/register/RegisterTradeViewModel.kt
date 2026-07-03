@@ -55,6 +55,7 @@ class RegisterTradeViewModel @Inject constructor(
 
     fun onEvent(event: RegisterTradeEvent) {
         when (event) {
+            is RegisterTradeEvent.CategoryGridSelected -> onCategoryChanged(event.option.label)
             is RegisterTradeEvent.CategoryChanged -> onCategoryChanged(event.value)
             is RegisterTradeEvent.TradeChanged -> onTradeChanged(event.value)
             is RegisterTradeEvent.SpecializationToggled -> update {

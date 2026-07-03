@@ -33,6 +33,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 import com.cocido.oficios.feature.onboarding.R
+import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioUiState
 import com.cocido.oficios.feature.onboarding.client.ClientContactoUiState
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioUiState
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
@@ -73,6 +74,98 @@ fun OnboardingStepScaffold(
                 enabled = canSubmit && !isLoading,
                 loading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+fun ClientContactDomicilioStepScreen(
+    uiState: ClientContactDomicilioUiState,
+    onNombreChanged: (String) -> Unit,
+    onTelefonoChanged: (String) -> Unit,
+    onEmailChanged: (String) -> Unit,
+    onBarrioQueryChanged: (String) -> Unit,
+    onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
+    onBarrioSuggestionsDismissed: () -> Unit,
+    onCalleChanged: (String) -> Unit,
+    onNumeroChanged: (String) -> Unit,
+    onPisoChanged: (String) -> Unit,
+    onDepartamentoChanged: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    OnboardingStepScaffold(
+        title = stringResource(R.string.onboarding_step_contact_domicilio_title),
+        error = uiState.error,
+        isLoading = uiState.isLoading || uiState.isPreloading,
+        canSubmit = uiState.canSubmit,
+        onSubmit = onSubmit,
+    ) {
+        Text(
+            text = stringResource(R.string.onboarding_step_contact_domicilio_contact_section),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(R.string.onboarding_step_contact_domicilio_contact_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OficiosTextField(
+            value = uiState.nombre,
+            onValueChange = onNombreChanged,
+            label = stringResource(R.string.onboarding_step_contact_nombre_label),
+        )
+        OficiosTextField(
+            value = uiState.telefono,
+            onValueChange = onTelefonoChanged,
+            label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
+        )
+        OficiosTextField(
+            value = uiState.email,
+            onValueChange = onEmailChanged,
+            label = stringResource(R.string.onboarding_step_contact_email_label),
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+        Text(
+            text = stringResource(R.string.onboarding_step_contact_domicilio_address_section),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        OficiosAutocompleteField(
+            value = uiState.barrioQuery,
+            onValueChange = onBarrioQueryChanged,
+            suggestions = uiState.barrioOptions,
+            onSuggestionSelected = onBarrioSelected,
+            suggestionLabel = { it.label },
+            label = stringResource(R.string.onboarding_step_barrio_label),
+            placeholder = stringResource(R.string.onboarding_step_barrio_hint),
+            onSuggestionsDismissed = onBarrioSuggestionsDismissed,
+        )
+        OficiosTextField(
+            value = uiState.calle,
+            onValueChange = onCalleChanged,
+            label = stringResource(R.string.onboarding_step_calle_label),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        ) {
+            OficiosTextField(
+                value = uiState.numero,
+                onValueChange = onNumeroChanged,
+                label = stringResource(R.string.onboarding_step_numero_label),
+                modifier = Modifier.weight(1f),
+            )
+            OficiosTextField(
+                value = uiState.piso,
+                onValueChange = onPisoChanged,
+                label = stringResource(R.string.onboarding_step_piso_label),
+                modifier = Modifier.weight(1f),
+            )
+            OficiosTextField(
+                value = uiState.departamento,
+                onValueChange = onDepartamentoChanged,
+                label = stringResource(R.string.onboarding_step_departamento_label),
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -133,9 +226,9 @@ fun ClientContactoStepScreen(
         canSubmit = uiState.canSubmit,
         onSubmit = onSubmit,
     ) {
-        OficiosTextField(value = uiState.nombre, onValueChange = onNombreChanged, label = "Nombre")
-        OficiosTextField(value = uiState.telefono, onValueChange = onTelefonoChanged, label = "WhatsApp")
-        OficiosTextField(value = uiState.email, onValueChange = onEmailChanged, label = "Email (opcional)")
+        OficiosTextField(value = uiState.nombre, onValueChange = onNombreChanged, label = stringResource(R.string.onboarding_step_contact_nombre_label))
+        OficiosTextField(value = uiState.telefono, onValueChange = onTelefonoChanged, label = stringResource(R.string.onboarding_step_contact_whatsapp_label))
+        OficiosTextField(value = uiState.email, onValueChange = onEmailChanged, label = stringResource(R.string.onboarding_step_contact_email_label))
     }
 }
 

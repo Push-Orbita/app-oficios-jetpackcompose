@@ -74,6 +74,9 @@ class ProviderOnboardingViewModelTest {
             override suspend fun submitRubroFull(
                 request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
             ) = AppResult.Success(Unit)
+            override suspend fun submitSecondaryRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
             override suspend fun finalizeProfile() = AppResult.Success(Unit)
             override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
         }
@@ -112,6 +115,9 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun submitRubroFull(
                         request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                     ) = AppResult.Success(Unit)
+                    override suspend fun submitSecondaryRubroFull(
+                        request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                    ) = AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = AppResult.Success(Unit)
                     override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
                 },
@@ -129,6 +135,7 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun getAccessToken() = "token"
                     override suspend fun getRefreshToken() = null
                     override suspend fun updateTokens(tokens: com.cocido.oficios.domain.model.AuthTokens) = Unit
+                    override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
                     override suspend fun getCachedUser() = null
                     override suspend fun updateCachedUser(user: com.cocido.oficios.domain.model.User) = Unit
                 },
@@ -249,6 +256,9 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun submitRubroFull(
                         request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                     ) = AppResult.Success(Unit)
+                    override suspend fun submitSecondaryRubroFull(
+                        request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                    ) = AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = AppResult.Success(Unit).also { finalizeCalled = true }
                     override suspend fun loadProviderProfileForSync() =
                         AppResult.Success(ProviderProfileSync(tradeDraft = null))
@@ -266,6 +276,9 @@ class ProviderOnboardingViewModelTest {
                             request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
                         ) = AppResult.Success(Unit)
                         override suspend fun submitRubroFull(
+                            request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                        ) = AppResult.Success(Unit)
+                        override suspend fun submitSecondaryRubroFull(
                             request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                         ) = AppResult.Success(Unit)
                         override suspend fun finalizeProfile() = AppResult.Success(Unit)
@@ -295,6 +308,9 @@ class ProviderOnboardingViewModelTest {
                             override suspend fun submitRubroFull(
                                 request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                             ) = AppResult.Success(Unit)
+                            override suspend fun submitSecondaryRubroFull(
+                                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                            ) = AppResult.Success(Unit)
                             override suspend fun finalizeProfile() = AppResult.Success(Unit)
                             override suspend fun loadProviderProfileForSync() =
                                 AppResult.Success(ProviderProfileSync(tradeDraft = null))
@@ -315,6 +331,9 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun submitRubroFull(
                         request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                     ) = AppResult.Success(Unit)
+                    override suspend fun submitSecondaryRubroFull(
+                        request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                    ) = AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = AppResult.Success(Unit).also { finalizeCalled = true }
                     override suspend fun loadProviderProfileForSync() =
                         AppResult.Success(ProviderProfileSync(tradeDraft = null))
@@ -333,6 +352,7 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun getAccessToken() = "token"
                     override suspend fun getRefreshToken() = null
                     override suspend fun updateTokens(tokens: com.cocido.oficios.domain.model.AuthTokens) = Unit
+                    override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
                     override suspend fun getCachedUser() = null
                     override suspend fun updateCachedUser(user: com.cocido.oficios.domain.model.User) = Unit
                 },

@@ -15,6 +15,7 @@ import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.repository.WorkCertificateRepository
 import javax.inject.Inject
 
 class SubmitRegisterTradeDraftUseCase @Inject constructor(
@@ -134,6 +135,18 @@ class SaveClientContactoUseCase @Inject constructor(
         clientProfileRepository.saveContacto(request)
 }
 
+class GetClientDomiciliosUseCase @Inject constructor(
+    private val clientProfileRepository: ClientProfileRepository,
+) {
+    suspend operator fun invoke() = clientProfileRepository.getMyDomicilios()
+}
+
+class GetClientContactosUseCase @Inject constructor(
+    private val clientProfileRepository: ClientProfileRepository,
+) {
+    suspend operator fun invoke() = clientProfileRepository.getMyContactos()
+}
+
 class UpdateProviderProfessionalInfoUseCase @Inject constructor(
     private val providerProfileRepository: ProviderProfileRepository,
 ) {
@@ -157,11 +170,37 @@ class UploadProviderDniImagesUseCase @Inject constructor(
         identityDocumentRepository.uploadDniImages(frontImagePath, backImagePath)
 }
 
+class GetProviderDniDocumentsUseCase @Inject constructor(
+    private val identityDocumentRepository: IdentityDocumentRepository,
+) {
+    suspend operator fun invoke() = identityDocumentRepository.getMyDniDocuments()
+}
+
+class UploadWorkCertificateUseCase @Inject constructor(
+    private val workCertificateRepository: WorkCertificateRepository,
+) {
+    suspend operator fun invoke(name: String, filePath: String) =
+        workCertificateRepository.uploadCertificate(name, filePath)
+}
+
+class GetWorkCertificatesUseCase @Inject constructor(
+    private val workCertificateRepository: WorkCertificateRepository,
+) {
+    suspend operator fun invoke() = workCertificateRepository.getMyCertificates()
+}
+
 class SubmitProviderRubroFullUseCase @Inject constructor(
     private val providerProfileRepository: ProviderProfileRepository,
 ) {
     suspend operator fun invoke(request: ProviderRubroFullRequest): AppResult<Unit> =
         providerProfileRepository.submitRubroFull(request)
+}
+
+class SubmitSecondaryProviderRubroUseCase @Inject constructor(
+    private val providerProfileRepository: ProviderProfileRepository,
+) {
+    suspend operator fun invoke(request: ProviderRubroFullRequest): AppResult<Unit> =
+        providerProfileRepository.submitSecondaryRubroFull(request)
 }
 
 class FinalizeProviderProfileUseCase @Inject constructor(

@@ -71,6 +71,7 @@ fun ProviderOnboardingRoute(
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
     val completionPhase by viewModel.completionPhase.collectAsStateWithLifecycle()
     val completionError by viewModel.completionError.collectAsStateWithLifecycle()
+    val kycBannerMessage by viewModel.kycBannerMessage.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
 
@@ -87,7 +88,8 @@ fun ProviderOnboardingRoute(
             onLogout = logoutViewModel::logout,
             onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
             onFinalizeProfile = viewModel::finalizeProfile,
-            finalizeError = completionError,
+            finalizeError = completionError ?: kycBannerMessage,
+            onDismissBanner = viewModel::dismissKycBanner,
             isLoggingOut = isLoggingOut,
             isFinalizing = false,
             modifier = modifier,

@@ -1,16 +1,16 @@
 package com.cocido.oficios.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.cocido.oficios.core.ui.intent.openSupportPhone
-import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.cocido.oficios.core.ui.intent.openSupportPhone
+import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
-import com.cocido.oficios.feature.home.navigation.HomeDestination
 import com.cocido.oficios.feature.home.navigation.homeScreen
 import com.cocido.oficios.feature.onboarding.navigation.onboardingGraph
 import com.cocido.oficios.feature.settings.navigation.SettingsDestination
@@ -34,6 +34,9 @@ fun AppNavHost(
     startDestination: String = AuthDestination.SPLASH,
 ) {
     val context = LocalContext.current
+    val showMessage: (String) -> Unit = { message ->
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     NavHost(
         navController = navController,
@@ -93,9 +96,11 @@ fun AppNavHost(
             },
         )
         homeScreen(
+            navController = navController,
             onNavigateToSettings = {
                 navController.navigate(SettingsDestination.route)
             },
+            onShowMessage = showMessage,
         )
         settingsScreen(
             onNavigateBack = { navController.popBackStack() },

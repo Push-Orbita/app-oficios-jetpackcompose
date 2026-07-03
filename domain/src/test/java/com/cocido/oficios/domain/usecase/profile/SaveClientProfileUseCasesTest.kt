@@ -2,7 +2,9 @@ package com.cocido.oficios.domain.usecase.profile
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
+import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
@@ -41,5 +43,7 @@ class SaveClientProfileUseCasesTest {
     ) : ClientProfileRepository {
         override suspend fun saveDomicilio(request: ClientDomicilioRequest) = domicilioResult
         override suspend fun saveContacto(request: ClientContactoRequest) = contactoResult
+        override suspend fun getMyDomicilios(): AppResult<List<ClientDomicilio>> = AppResult.Success(emptyList())
+        override suspend fun getMyContactos(): AppResult<List<ClientContacto>> = AppResult.Success(emptyList())
     }
 }

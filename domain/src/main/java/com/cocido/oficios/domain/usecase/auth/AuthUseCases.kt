@@ -96,6 +96,20 @@ class RefreshTokenUseCase @Inject constructor(
     }
 }
 
+class RefreshTokenIfNeededUseCase @Inject constructor(
+    private val sessionRepository: SessionRepository,
+    private val refreshTokenUseCase: RefreshTokenUseCase,
+) {
+    suspend operator fun invoke() {
+        if (com.cocido.oficios.core.common.auth.TokenExpiry.shouldRefresh(
+                sessionRepository.getAccessTokenExpiresAtMillis(),
+            )
+        ) {
+            refreshTokenUseCase()
+        }
+    }
+}
+
 class GetCurrentUserUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {

@@ -1,8 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.cards
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
@@ -21,8 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
@@ -50,27 +47,19 @@ fun WorkerCard(
     rating: Float?,
     avatarUrl: String?,
     isVerified: Boolean = false,
+    contactLabel: String,
+    viewProfileLabel: String,
     onContact: () -> Unit,
     onViewProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OficiosCard(modifier = modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.Top) {
-            // Avatar placeholder — reemplazar con AsyncImage (Coil) cuando se integre
-            Box(
-                modifier = Modifier
-                    .size(OficiosComponentSize.avatarMd)
-                    .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = OficiosColorMutedText,
-                    modifier = Modifier.size(OficiosComponentSize.iconLg),
-                )
-            }
+            OficiosAvatar(
+                name = name,
+                imageUrl = avatarUrl,
+                size = OficiosComponentSize.avatarMd,
+            )
 
             Spacer(Modifier.width(OficiosSpacing.md))
 
@@ -129,12 +118,12 @@ fun WorkerCard(
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
         ) {
             OficiosButton(
-                text = "Contactar",
+                text = contactLabel,
                 onClick = onContact,
                 modifier = Modifier.weight(1f),
             )
             OficiosButton(
-                text = "Ver perfil",
+                text = viewProfileLabel,
                 onClick = onViewProfile,
                 modifier = Modifier.weight(1f),
                 variant = OficiosButtonVariant.Secondary,
@@ -154,6 +143,8 @@ private fun WorkerCardPreview() {
                 rating = 4.8f,
                 avatarUrl = null,
                 isVerified = true,
+                contactLabel = "Contactar",
+                viewProfileLabel = "Ver perfil",
                 onContact = {},
                 onViewProfile = {},
             )

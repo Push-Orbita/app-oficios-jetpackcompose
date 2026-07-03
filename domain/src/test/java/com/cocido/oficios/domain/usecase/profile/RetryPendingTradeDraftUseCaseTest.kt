@@ -41,6 +41,9 @@ class RetryPendingTradeDraftUseCaseTest {
             override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
                 AppResult.Success(Unit)
 
+            override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) =
+                AppResult.Success(Unit)
+
             override suspend fun finalizeProfile() = AppResult.Success(Unit)
             override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
         }
