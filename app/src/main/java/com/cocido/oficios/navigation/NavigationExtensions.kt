@@ -15,7 +15,7 @@ fun NavHostController.navigateToInitialDestination(destination: InitialDestinati
         InitialDestination.ProviderRejected -> OnboardingDestination.PROVIDER_REJECTED
         InitialDestination.ClientHome,
         InitialDestination.ProviderHome,
-        -> HomeDestination.route
+        -> HomeDestination.graph
         InitialDestination.ClientBlocked -> OnboardingDestination.CLIENT_BLOCKED
         InitialDestination.ClientInactive -> OnboardingDestination.CLIENT_INACTIVE
     }

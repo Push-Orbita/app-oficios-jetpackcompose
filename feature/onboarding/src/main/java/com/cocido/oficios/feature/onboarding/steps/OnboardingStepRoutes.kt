@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioEffect
+import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioViewModel
 import com.cocido.oficios.feature.onboarding.client.ClientContactoEffect
 import com.cocido.oficios.feature.onboarding.client.ClientContactoViewModel
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioEffect
@@ -17,6 +19,29 @@ import com.cocido.oficios.feature.onboarding.provider.ProviderPaymentMethodsView
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderRubrosViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderStepEffect
+
+@Composable
+fun ClientContactDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
+    val viewModel: ClientContactDomicilioViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { if (it is ClientContactDomicilioEffect.Saved) onSaved() }
+    }
+    ClientContactDomicilioStepScreen(
+        uiState = uiState,
+        onNombreChanged = viewModel::onNombreChanged,
+        onTelefonoChanged = viewModel::onTelefonoChanged,
+        onEmailChanged = viewModel::onEmailChanged,
+        onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
+        onBarrioSelected = viewModel::onBarrioSelected,
+        onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
+        onCalleChanged = viewModel::onCalleChanged,
+        onNumeroChanged = viewModel::onNumeroChanged,
+        onPisoChanged = viewModel::onPisoChanged,
+        onDepartamentoChanged = viewModel::onDepartamentoChanged,
+        onSubmit = viewModel::submit,
+    )
+}
 
 @Composable
 fun ClientDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {

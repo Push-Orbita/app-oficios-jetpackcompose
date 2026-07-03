@@ -73,6 +73,8 @@ class ProviderDniViewModelTest {
                     AppResult.Success(Unit)
                 override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
                     AppResult.Success(Unit)
+                override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) =
+                    AppResult.Success(Unit)
                 override suspend fun finalizeProfile() = AppResult.Success(Unit)
                 override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
             },
@@ -81,6 +83,30 @@ class ProviderDniViewModelTest {
             object : IdentityDocumentRepository {
                 override suspend fun uploadDniImages(frontImagePath: String, backImagePath: String) =
                     AppResult.Success(Unit)
+                override suspend fun getMyDniDocuments() = AppResult.Success(null)
+            },
+        ),
+        getProviderDniDocumentsUseCase = com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase(
+            object : IdentityDocumentRepository {
+                override suspend fun uploadDniImages(frontImagePath: String, backImagePath: String) =
+                    AppResult.Success(Unit)
+                override suspend fun getMyDniDocuments() = AppResult.Success(null)
+            },
+        ),
+        uploadWorkCertificateUseCase = com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase(
+            object : com.cocido.oficios.domain.repository.WorkCertificateRepository {
+                override suspend fun uploadCertificate(name: String, filePath: String) =
+                    AppResult.Error(com.cocido.oficios.core.common.result.AppError.Unknown())
+                override suspend fun getMyCertificates(): AppResult<List<com.cocido.oficios.domain.model.WorkCertificateInfo>> =
+                    AppResult.Success(emptyList())
+            },
+        ),
+        getWorkCertificatesUseCase = com.cocido.oficios.domain.usecase.profile.GetWorkCertificatesUseCase(
+            object : com.cocido.oficios.domain.repository.WorkCertificateRepository {
+                override suspend fun uploadCertificate(name: String, filePath: String) =
+                    AppResult.Error(com.cocido.oficios.core.common.result.AppError.Unknown())
+                override suspend fun getMyCertificates(): AppResult<List<com.cocido.oficios.domain.model.WorkCertificateInfo>> =
+                    AppResult.Success(emptyList())
             },
         ),
     )

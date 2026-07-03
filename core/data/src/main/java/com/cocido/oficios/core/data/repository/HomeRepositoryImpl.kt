@@ -1,63 +1,112 @@
 package com.cocido.oficios.core.data.repository
 
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
-import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
-import com.cocido.oficios.core.data.local.HomeLocalDataSource
-import com.cocido.oficios.core.data.mapper.toDomain
-import com.cocido.oficios.core.data.remote.HomeRemoteDataSource
-import com.cocido.oficios.domain.model.HomeContent
+import com.cocido.oficios.core.data.mapper.toHomeCategoryItems
+import com.cocido.oficios.domain.model.ClientHomeContent
+import com.cocido.oficios.domain.model.HomeCategoryItem
+import com.cocido.oficios.domain.model.RecentSearchEntry
+import com.cocido.oficios.domain.model.RecentSearchType
+import com.cocido.oficios.domain.model.User
+import com.cocido.oficios.domain.model.WorkerSearchFilters
+import com.cocido.oficios.domain.model.WorkerSummary
+import com.cocido.oficios.domain.repository.AuthRepository
+import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
+import com.cocido.oficios.domain.repository.RecentSearchRepository
+import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 
 class HomeRepositoryImpl @Inject constructor(
-    private val remoteDataSource: HomeRemoteDataSource,
-    private val localDataSource: HomeLocalDataSource,
+    private val authRepository: AuthRepository,
+    private val catalogRepository: CatalogRepository,
+    private val recentSearchRepository: RecentSearchRepository,
+    private val workerSearchRepository: WorkerSearchRepository,
     private val dispatcherProvider: DispatcherProvider,
 ) : HomeRepository {
 
-    override suspend fun getHomeContent(forceError: Boolean): AppResult<HomeContent> {
+    override suspend fun getClientHome(): AppResult<ClientHomeContent> {
         return withContext(dispatcherProvider.io) {
-            if (forceError) {
-                return@withContext AppResult.Error(
-                    AppError.Validation(message = "Simulated error for demo purposes"),
-                )
-            }
-
-            when (val remoteResult = remoteDataSource.fetchHomeContent()) {
+            when (val userResult = authRepository.getCurrentUser()) {
+                is AppResult.Error -> userResult
                 is AppResult.Success -> {
-                    val content = remoteResult.data.toDomain()
-                    localDataSource.cacheHomeContent(
-                        title = content.title,
-                        description = content.description,
-                    )
-                    AppResult.Success(content)
-                }
-                is AppResult.Error -> {
-                    getCachedContent() ?: getDemoFallbackContent()
+                    when (val categoriesResult = catalogRepository.getCategories()) {
+                        is AppResult.Error -> categoriesResult
+                        is AppResult.Success -> {
+                            val categories = categoriesResult.data.toHomeCategoryItems()
+                            val recent = resolveRecentSearches(categories)
+                            val featuredWorkers = loadFeaturedWorkers()
+                            AppResult.Success(
+                                userResult.data.toClientHomeContent(
+                                    recentSearches = recent,
+                                    featuredWorkers = featuredWorkers,
+                                ),
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
-    private suspend fun getDemoFallbackContent(): AppResult<HomeContent> {
-        localDataSource.cacheHomeContent(
-            title = HomeDemoFallbackContent.title,
-            description = HomeDemoFallbackContent.description,
-        )
-        return AppResult.Success(HomeDemoFallbackContent)
+    override suspend fun getCategories(): AppResult<List<HomeCategoryItem>> {
+        return withContext(dispatcherProvider.io) {
+            when (val result = catalogRepository.getCategories()) {
+                is AppResult.Error -> result
+                is AppResult.Success -> AppResult.Success(result.data.toHomeCategoryItems())
+            }
+        }
     }
 
-    private suspend fun getCachedContent(): AppResult<HomeContent>? {
-        val cached = localDataSource.getCachedHomeContent() ?: return null
-        val parts = cached.value.split("|", limit = 2)
-        if (parts.size != 2) return null
-        return AppResult.Success(
-            HomeContent(
-                title = parts[0],
-                description = parts[1],
-            ),
+    override suspend fun trackRecentSearch(entry: RecentSearchEntry) {
+        withContext(dispatcherProvider.io) {
+            recentSearchRepository.track(entry)
+        }
+    }
+
+    private suspend fun resolveRecentSearches(
+        categories: List<HomeCategoryItem>,
+    ): List<RecentSearchEntry> {
+        val stored = recentSearchRepository.getRecents()
+        if (stored.isNotEmpty()) return stored.take(3)
+
+        return categories.take(3).map { category ->
+            RecentSearchEntry(
+                type = RecentSearchType.CATEGORY,
+                id = category.id,
+                label = category.name,
+                categoryId = category.id,
+            )
+        }
+    }
+
+    private suspend fun loadFeaturedWorkers(): List<WorkerSummary> {
+        return when (
+            val result = workerSearchRepository.searchWorkers(
+                filters = WorkerSearchFilters(),
+                pageNumber = 1,
+                pageSize = FEATURED_WORKERS_PAGE_SIZE,
+            )
+        ) {
+            is AppResult.Success -> result.data.items
+            is AppResult.Error -> emptyList()
+        }
+    }
+
+    private fun User.toClientHomeContent(
+        recentSearches: List<RecentSearchEntry>,
+        featuredWorkers: List<WorkerSummary>,
+    ): ClientHomeContent =
+        ClientHomeContent(
+            userDisplayName = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" "),
+            emailVerified = emailVerified,
+            profilePhotoUrl = profilePhotoUrl,
+            recentSearches = recentSearches,
+            featuredWorkers = featuredWorkers,
         )
+
+    private companion object {
+        const val FEATURED_WORKERS_PAGE_SIZE = 5
     }
 }

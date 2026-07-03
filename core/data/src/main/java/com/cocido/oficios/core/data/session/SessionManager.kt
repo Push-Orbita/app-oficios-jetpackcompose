@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.data.session
 
+import com.cocido.oficios.core.common.auth.TokenExpiry
 import com.cocido.oficios.core.datastore.TokenDataStore
 import com.cocido.oficios.domain.model.AuthState
 import com.cocido.oficios.domain.model.AuthTokens
@@ -36,6 +37,7 @@ class SessionManager @Inject constructor(
             firstName = user.firstName,
             lastName = user.lastName,
             emailVerified = user.emailVerified,
+            accessTokenExpiresAtMillis = TokenExpiry.expiresAtMillis(tokens.expiresIn),
         )
         _authState.update { AuthState.Authenticated(UserSession(tokens = tokens, user = user)) }
     }
@@ -49,8 +51,15 @@ class SessionManager @Inject constructor(
 
     override suspend fun getRefreshToken(): String? = tokenDataStore.getRefreshToken()
 
+    override suspend fun getAccessTokenExpiresAtMillis(): Long? =
+        tokenDataStore.getAccessTokenExpiresAtMillis()
+
     override suspend fun updateTokens(tokens: AuthTokens) {
-        tokenDataStore.updateTokens(tokens.accessToken, tokens.refreshToken)
+        tokenDataStore.updateTokensFromExpiresIn(
+            accessToken = tokens.accessToken,
+            refreshToken = tokens.refreshToken,
+            expiresIn = tokens.expiresIn,
+        )
         val current = _authState.value
         if (current is AuthState.Authenticated) {
             _authState.update {

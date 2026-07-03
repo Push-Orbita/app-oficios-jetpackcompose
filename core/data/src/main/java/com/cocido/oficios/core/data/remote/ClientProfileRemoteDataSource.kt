@@ -18,4 +18,12 @@ class ClientProfileRemoteDataSource @Inject constructor(
     suspend fun createContacto(request: CreateContactoRequestDto) = safeApiCall {
         clientProfileApi.createContacto(request)
     }
+
+    suspend fun getMyDomicilios() = safeApiCall {
+        clientProfileApi.getMyDomicilios()
+    }
+
+    suspend fun getMyContactos() = safeApiCall {
+        clientProfileApi.getMyContactos()
+    }
 }

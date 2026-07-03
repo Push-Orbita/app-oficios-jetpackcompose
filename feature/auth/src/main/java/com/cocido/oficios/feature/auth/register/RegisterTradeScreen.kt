@@ -15,6 +15,8 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
+import com.cocido.oficios.core.designsystem.component.categories.CategoryGridItem
+import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
@@ -54,36 +56,52 @@ fun RegisterTradeScreen(
             )
         }
 
-        OficiosDropdownField(
-            value = uiState.selectedCategory,
-            options = uiState.categories,
-            onOptionSelected = { onEvent(RegisterTradeEvent.CategoryChanged(it)) },
-            label = stringResource(R.string.auth_register_trade_category_label),
-            placeholder = stringResource(R.string.auth_register_trade_category_hint),
-            enabled = !uiState.isLoadingCatalog && uiState.categoryOptions.isNotEmpty(),
-            usePlaceholderOnly = true,
-        )
+        if (uiState.selectedCategoryId == null && uiState.categoryOptions.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.auth_register_trade_category_label),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            OficiosCategoriesGrid(
+                categories = uiState.categoryOptions.map { CategoryGridItem(it.id, it.label) },
+                onCategoryClick = { item ->
+                    uiState.categoryOptions.find { it.id == item.id }?.let { option ->
+                        onEvent(RegisterTradeEvent.CategoryGridSelected(option))
+                    }
+                },
+            )
+        } else {
+            OficiosDropdownField(
+                value = uiState.selectedCategory,
+                options = uiState.categories,
+                onOptionSelected = { onEvent(RegisterTradeEvent.CategoryChanged(it)) },
+                label = stringResource(R.string.auth_register_trade_category_label),
+                placeholder = stringResource(R.string.auth_register_trade_category_hint),
+                enabled = !uiState.isLoadingCatalog && uiState.categoryOptions.isNotEmpty(),
+                usePlaceholderOnly = true,
+            )
 
-        OficiosDropdownField(
-            value = uiState.selectedTrade,
-            options = uiState.trades,
-            onOptionSelected = { onEvent(RegisterTradeEvent.TradeChanged(it)) },
-            label = stringResource(R.string.auth_register_trade_trade_label),
-            placeholder = stringResource(R.string.auth_register_trade_trade_hint),
-            enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
-            usePlaceholderOnly = true,
-        )
+            OficiosDropdownField(
+                value = uiState.selectedTrade,
+                options = uiState.trades,
+                onOptionSelected = { onEvent(RegisterTradeEvent.TradeChanged(it)) },
+                label = stringResource(R.string.auth_register_trade_trade_label),
+                placeholder = stringResource(R.string.auth_register_trade_trade_hint),
+                enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
+                usePlaceholderOnly = true,
+            )
 
-        RegisterTradeSpecializationsSection(
-            options = uiState.specializationOptions,
-            isLoading = uiState.isLoadingSpecializations,
-            selected = uiState.selectedSpecializations,
-            otherValue = uiState.otherSpecialization,
-            showOtherField = uiState.isOtherSpecializationVisible,
-            onToggle = { id, checked -> onEvent(RegisterTradeEvent.SpecializationToggled(id, checked)) },
-            onOtherChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
-        )
+            RegisterTradeSpecializationsSection(
+                options = uiState.specializationOptions,
+                isLoading = uiState.isLoadingSpecializations,
+                selected = uiState.selectedSpecializations,
+                otherValue = uiState.otherSpecialization,
+                showOtherField = uiState.isOtherSpecializationVisible,
+                onToggle = { id, checked -> onEvent(RegisterTradeEvent.SpecializationToggled(id, checked)) },
+                onOtherChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
+            )
+        }
 
+        if (uiState.selectedCategoryId != null) {
         RegisterTradeLabeledSection(
             title = stringResource(R.string.auth_register_trade_experience_label),
         ) {
@@ -228,6 +246,7 @@ fun RegisterTradeScreen(
                 enabled = uiState.canContinue && !uiState.isLoading,
                 loading = uiState.isLoading,
             )
+        }
         }
     }
 }

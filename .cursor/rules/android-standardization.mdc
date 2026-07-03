@@ -46,6 +46,20 @@ Prioridad: **un solo patrón por intención de producto**, no dos implementacion
 - `OficiosAutocompleteField` (no botones por sugerencia)
 - `navigateToInitialDestination` → home real, sin shell intermedio
 
+## Edge-to-edge e insets del sistema (obligatorio)
+
+`MainActivity` usa `enableEdgeToEdge()`. **Toda pantalla** debe respetar status bar y barra de gestos igual que login.
+
+| Caso | Patrón |
+|------|--------|
+| Pantalla estándar | `OficiosScaffold` + `padding(padding)` del lambda de contenido |
+| Con bottom nav | `OficiosScaffold(bottomBar = { ... })` — el slot aplica `OficiosBottomBarSlot` automáticamente |
+| Layouts de auth/onboarding | `AuthScreenLayout` / `OnboardingStepScaffold` (ya usan `OficiosScaffold`) |
+| Top bar custom fuera del slot | `OficiosTopBarSlot` |
+| Teclado | `imePadding()` además del padding del scaffold (ej. auth) |
+
+**Prohibido:** `navigationBarsPadding()`, `windowInsetsBottomHeight` o lógica de insets ad hoc en features. Centralizar en `core/designsystem/component/scaffold/`.
+
 ## Antipatrones a evitar
 
 - Duplicar sealed interfaces casi iguales (`ClientX` / `ProviderX`) sin revisar unificación.

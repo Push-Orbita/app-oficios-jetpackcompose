@@ -22,6 +22,10 @@ class ProviderProfileRemoteDataSource @Inject constructor(
         providerProfileApi.createRubroFull(request)
     }
 
+    suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = safeApiCall {
+        providerProfileApi.createSecondaryRubroFull(request)
+    }
+
     suspend fun finalizeProfile() = safeApiCall {
         providerProfileApi.finalizeProfile()
     }

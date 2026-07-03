@@ -56,6 +56,9 @@ class RegisterViewModelTest {
                     override suspend fun submitRubroFull(
                         request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                     ) = rubroSyncResult
+                    override suspend fun submitSecondaryRubroFull(
+                        request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                    ) = rubroSyncResult
                     override suspend fun finalizeProfile() = AppResult.Success(Unit)
                     override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
                 },
@@ -92,6 +95,9 @@ class RegisterViewModelTest {
                             request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
                         ) = AppResult.Success(Unit)
                         override suspend fun submitRubroFull(
+                            request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+                        ) = AppResult.Success(Unit)
+                        override suspend fun submitSecondaryRubroFull(
                             request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
                         ) = AppResult.Success(Unit)
                         override suspend fun finalizeProfile() = AppResult.Success(Unit)

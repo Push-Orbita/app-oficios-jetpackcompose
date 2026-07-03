@@ -1,10 +1,9 @@
 package com.cocido.oficios.feature.auth.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,40 +26,28 @@ fun AuthSupportCard(
     enabled: Boolean = true,
     message: String = stringResource(R.string.auth_support_message),
 ) {
-    Box(modifier = modifier.fillMaxWidth()) {
-        OficiosCard(
+    OficiosCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(OficiosSpacing.md),
+    ) {
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(OficiosSpacing.md),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f),
-                )
-                OficiosButton(
-                    text = stringResource(R.string.auth_support_contact),
-                    onClick = onContactClick,
-                    enabled = enabled,
-                    variant = OficiosButtonVariant.Secondary,
-                )
-            }
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+            )
+            OficiosButton(
+                text = stringResource(R.string.auth_support_contact),
+                onClick = onContactClick,
+                enabled = enabled,
+                variant = OficiosButtonVariant.Secondary,
+            )
         }
-
-        OficiosButton(
-            text = "?",
-            onClick = onContactClick,
-            enabled = enabled,
-            variant = OficiosButtonVariant.Ghost,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = OficiosSpacing.xl, y = -OficiosSpacing.xl),
-        )
     }
 }
 

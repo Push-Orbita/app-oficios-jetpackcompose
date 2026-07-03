@@ -139,6 +139,7 @@ class ResolveInitialDestinationUseCaseTest {
             override suspend fun getAccessToken() = accessToken
             override suspend fun getRefreshToken() = null
             override suspend fun updateTokens(tokens: AuthTokens) = Unit
+            override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
             override suspend fun getCachedUser() = null
             override suspend fun updateCachedUser(user: User) = Unit
         }

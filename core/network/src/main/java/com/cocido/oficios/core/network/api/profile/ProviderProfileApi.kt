@@ -21,6 +21,11 @@ interface ProviderProfileApi {
         @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
     ): JsonElement
 
+    @POST("trabajador-oficio-rubro/full/secundario")
+    suspend fun createSecondaryRubroFull(
+        @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
+    ): JsonElement
+
     @POST("trabajador-oficio/me/finalizar-perfil")
     suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto
 }

@@ -8,7 +8,11 @@ import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubru
 import com.cocido.oficios.core.network.api.profile.dto.CreateHorarioLaboralRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateSubrubroRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.ContactoSinPersonaDto
+import com.cocido.oficios.core.network.api.profile.dto.DomicilioSinPersonaDto
+import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
+import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
@@ -27,6 +31,9 @@ fun ClientDomicilioRequest.toDto() = CreateDomicilioRequestDto(
     nombre = nombre,
     calle = calle,
     numero = numero,
+    casaTorre = casaTorre,
+    departamento = departamento,
+    piso = piso,
     latitud = latitud,
     longitud = longitud,
     favorito = favorito,
@@ -72,3 +79,24 @@ private fun List<RegisterTradeTimeSlotDraft>.toHorarios(): List<CreateHorarioLab
     filter { it.from.isNotBlank() && it.to.isNotBlank() }
         .map { CreateHorarioLaboralRequestDto(horaInicio = it.from, horaFin = it.to) }
         .ifEmpty { listOf(CreateHorarioLaboralRequestDto("09:00", "18:00")) }
+
+fun DomicilioSinPersonaDto.toDomain() = ClientDomicilio(
+    id = id,
+    barrioId = barrio?.id ?: 0L,
+    barrioName = barrio?.nombre,
+    nombre = nombre,
+    calle = calle,
+    numero = numero,
+    casaTorre = casaTorre,
+    departamento = departamento,
+    piso = piso,
+    favorito = favorito,
+)
+
+fun ContactoSinPersonaDto.toDomain() = ClientContacto(
+    id = id,
+    nombre = nombre,
+    telefonoWhatsapp = telefonoWhatsapp,
+    email = email,
+    favorito = favorito,
+)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.cocido.oficios.core.common.auth.TokenExpiry
 import com.cocido.oficios.core.model.AppConstants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -52,6 +53,11 @@ class TokenDataStore @Inject constructor(
         return if (value == -1L) null else value
     }
 
+    fun getAccessTokenExpiresAtMillis(): Long? {
+        val value = prefs.getLong(KEY_ACCESS_TOKEN_EXPIRES_AT, -1L)
+        return if (value == -1L) null else value
+    }
+
     fun saveSession(
         accessToken: String,
         refreshToken: String,
@@ -61,6 +67,7 @@ class TokenDataStore @Inject constructor(
         firstName: String,
         lastName: String,
         emailVerified: Boolean,
+        accessTokenExpiresAtMillis: Long? = null,
     ) {
         prefs.edit()
             .putString(KEY_ACCESS_TOKEN, accessToken)
@@ -71,14 +78,40 @@ class TokenDataStore @Inject constructor(
             .putString(KEY_USER_FIRST_NAME, firstName)
             .putString(KEY_USER_LAST_NAME, lastName)
             .putBoolean(KEY_EMAIL_VERIFIED, emailVerified)
+            .apply {
+                if (accessTokenExpiresAtMillis != null) {
+                    putLong(KEY_ACCESS_TOKEN_EXPIRES_AT, accessTokenExpiresAtMillis)
+                } else {
+                    remove(KEY_ACCESS_TOKEN_EXPIRES_AT)
+                }
+            }
             .apply()
     }
 
-    fun updateTokens(accessToken: String, refreshToken: String) {
+    fun updateTokens(
+        accessToken: String,
+        refreshToken: String,
+        accessTokenExpiresAtMillis: Long? = null,
+    ) {
         prefs.edit()
             .putString(KEY_ACCESS_TOKEN, accessToken)
             .putString(KEY_REFRESH_TOKEN, refreshToken)
+            .apply {
+                if (accessTokenExpiresAtMillis != null) {
+                    putLong(KEY_ACCESS_TOKEN_EXPIRES_AT, accessTokenExpiresAtMillis)
+                } else {
+                    remove(KEY_ACCESS_TOKEN_EXPIRES_AT)
+                }
+            }
             .apply()
+    }
+
+    fun updateTokensFromExpiresIn(accessToken: String, refreshToken: String, expiresIn: String?) {
+        updateTokens(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            accessTokenExpiresAtMillis = TokenExpiry.expiresAtMillis(expiresIn),
+        )
     }
 
     fun updateEmailVerified(emailVerified: Boolean) {
@@ -119,5 +152,6 @@ class TokenDataStore @Inject constructor(
         const val KEY_CLIENT_ROLE_ID = "client_role_id"
         const val KEY_PROVIDER_ROLE_ID = "provider_role_id"
         const val KEY_SESSION_EPHEMERAL = "session_ephemeral"
+        const val KEY_ACCESS_TOKEN_EXPIRES_AT = "access_token_expires_at"
     }
 }

@@ -3,6 +3,7 @@ package com.cocido.oficios.core.network.test
 import com.cocido.oficios.core.network.api.profile.ClientProfileApi
 import com.cocido.oficios.core.network.api.profile.IdentityDocumentApi
 import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
+import com.cocido.oficios.core.network.api.search.WorkerSearchApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -33,6 +34,9 @@ object NetworkTestFactory {
 
     fun createIdentityDocumentApi(server: MockWebServer): IdentityDocumentApi =
         createRetrofit(server).create(IdentityDocumentApi::class.java)
+
+    fun createWorkerSearchApi(server: MockWebServer): WorkerSearchApi =
+        createRetrofit(server).create(WorkerSearchApi::class.java)
 
     fun loadFixture(path: String): String =
         checkNotNull(javaClass.classLoader?.getResourceAsStream(path)) {

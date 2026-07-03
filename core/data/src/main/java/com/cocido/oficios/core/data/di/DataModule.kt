@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.dispatcher.DefaultDispatcherProvider
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.logging.AppLogger
 import com.cocido.oficios.core.data.logging.AndroidAppLogger
+import com.cocido.oficios.core.data.local.RecentSearchDataStore
 import com.cocido.oficios.core.data.register.RegisterTradeDraftDataStore
 import com.cocido.oficios.core.data.repository.AuthRepositoryImpl
 import com.cocido.oficios.core.data.repository.CatalogRepositoryImpl
@@ -12,6 +13,8 @@ import com.cocido.oficios.core.data.repository.ClientProfileRepositoryImpl
 import com.cocido.oficios.core.data.repository.IdentityDocumentRepositoryImpl
 import com.cocido.oficios.core.data.repository.OnboardingRepositoryImpl
 import com.cocido.oficios.core.data.repository.ProviderProfileRepositoryImpl
+import com.cocido.oficios.core.data.repository.WorkCertificateRepositoryImpl
+import com.cocido.oficios.core.data.repository.WorkerSearchRepositoryImpl
 import com.cocido.oficios.core.data.session.SessionManager
 import com.cocido.oficios.core.data.session.SessionPreferencesRepositoryImpl
 import com.cocido.oficios.domain.repository.AuthRepository
@@ -21,9 +24,12 @@ import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
 import com.cocido.oficios.domain.repository.OnboardingRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
+import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.repository.SessionPreferencesRepository
 import com.cocido.oficios.domain.repository.SessionRepository
+import com.cocido.oficios.domain.repository.WorkCertificateRepository
+import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -94,6 +100,24 @@ abstract class DataModule {
     abstract fun bindIdentityDocumentRepository(
         impl: IdentityDocumentRepositoryImpl,
     ): IdentityDocumentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkCertificateRepository(
+        impl: WorkCertificateRepositoryImpl,
+    ): WorkCertificateRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkerSearchRepository(
+        impl: WorkerSearchRepositoryImpl,
+    ): WorkerSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRecentSearchRepository(
+        impl: RecentSearchDataStore,
+    ): RecentSearchRepository
 }
 
 @Module

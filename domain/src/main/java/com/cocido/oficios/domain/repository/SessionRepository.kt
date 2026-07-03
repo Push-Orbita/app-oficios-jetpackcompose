@@ -13,6 +13,7 @@ interface SessionRepository {
     suspend fun getAccessToken(): String?
     suspend fun getRefreshToken(): String?
     suspend fun updateTokens(tokens: AuthTokens)
+    suspend fun getAccessTokenExpiresAtMillis(): Long?
     suspend fun getCachedUser(): User?
     suspend fun updateCachedUser(user: User)
 }

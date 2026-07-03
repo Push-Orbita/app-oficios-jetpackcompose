@@ -4,49 +4,42 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.feature.home.R
-import androidx.compose.material3.Icon
+import com.cocido.oficios.domain.model.ClientHomeContent
+import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
+import com.cocido.oficios.feature.home.components.ClientHomeHeader
+import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
+import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
+import com.cocido.oficios.feature.home.components.HomeSearchEntryField
+import com.cocido.oficios.feature.home.components.HomeSupportSection
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
+    selectedTab: ClientHomeTab,
     onEvent: (HomeEvent) -> Unit,
+    onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = {
-            OficiosTopAppBar(
-                title = stringResource(R.string.home_title),
-                actions = {
-                    IconButton(onClick = { onEvent(HomeEvent.NavigateToSettings) }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = stringResource(R.string.home_open_settings),
-                        )
-                    }
-                },
+        bottomBar = {
+            ClientHomeBottomBar(
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected,
             )
         },
     ) { paddingValues ->
@@ -66,8 +59,8 @@ fun HomeScreen(
                 )
             }
             is HomeUiState.Success -> {
-                HomeContent(
-                    uiState = uiState,
+                HomeSuccessContent(
+                    content = uiState.content,
                     onEvent = onEvent,
                     modifier = Modifier.padding(paddingValues),
                 )
@@ -77,45 +70,50 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeContent(
-    uiState: HomeUiState.Success,
+private fun HomeSuccessContent(
+    content: ClientHomeContent,
     onEvent: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(OficiosSpacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        OficiosCard(
-            modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
-        ) {
-            Text(
-                text = uiState.content.title,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = uiState.content.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = OficiosSpacing.sm),
+        ClientHomeHeader(
+            userName = content.userDisplayName,
+            emailVerified = content.emailVerified,
+            profilePhotoUrl = content.profilePhotoUrl,
+            onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
+        )
+        HomeSearchEntryField(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearch = { onEvent(HomeEvent.SearchSubmitted(searchQuery)) },
+            placeholder = stringResource(R.string.home_search_hint),
+            onMicClick = { onEvent(HomeEvent.VoiceSearch) },
+        )
+        if (content.featuredWorkers.isNotEmpty()) {
+            HomeFeaturedWorkersSection(
+                workers = content.featuredWorkers,
+                onViewProfile = { onEvent(HomeEvent.WorkerViewProfile(it.id)) },
+                onContact = { onEvent(HomeEvent.WorkerContact) },
+                onSeeAll = { onEvent(HomeEvent.SeeAllWorkers) },
             )
         }
-
-        OficiosButton(
-            text = stringResource(R.string.home_refresh),
-            onClick = { onEvent(HomeEvent.LoadContent) },
-            modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
-        )
-
-        OficiosButton(
-            text = stringResource(R.string.home_simulate_error),
-            onClick = { onEvent(HomeEvent.SimulateError) },
-            modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
-            variant = OficiosButtonVariant.Outlined,
+        if (content.recentSearches.isNotEmpty()) {
+            HomeRecentSearchesSection(
+                searches = content.recentSearches,
+                onSearchClick = { onEvent(HomeEvent.RecentSearchSelected(it)) },
+            )
+        }
+        HomeSupportSection(
+            onContactClick = { onEvent(HomeEvent.ContactSupport) },
+            modifier = Modifier.padding(top = OficiosSpacing.md),
         )
     }
 }

@@ -56,6 +56,7 @@ class ClearEphemeralSessionIfNeededUseCaseTest {
         override suspend fun getAccessToken(): String? = null
         override suspend fun getRefreshToken(): String? = null
         override suspend fun updateTokens(tokens: AuthTokens) = Unit
+        override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
         override suspend fun getCachedUser(): User? = null
         override suspend fun updateCachedUser(user: User) = Unit
     }

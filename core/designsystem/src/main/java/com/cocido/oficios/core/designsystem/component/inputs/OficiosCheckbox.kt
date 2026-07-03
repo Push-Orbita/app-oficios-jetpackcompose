@@ -48,12 +48,11 @@ fun OficiosCheckbox(
     Row(
         modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.spacedBy(OficiosComponentSize.checkboxLabelGap),
     ) {
         Box(
             modifier = if (compactRow) {
                 Modifier.padding(
-                    end = OficiosComponentSize.checkboxLabelGap,
                     top = OficiosComponentSize.checkboxRowPaddingVertical,
                     bottom = OficiosComponentSize.checkboxRowPaddingVertical,
                 )
