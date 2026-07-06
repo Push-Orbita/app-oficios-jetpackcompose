@@ -14,7 +14,8 @@ android {
 
     defaultConfig {
         minSdk = 27
-        buildConfigField("String", "BASE_URL", "\"https://jsonplaceholder.typicode.com/\"")
+        buildConfigField("String", "BASE_URL", "\"https://apioficios.pushsoftware.com.ar/\"")
+        buildConfigField("String", "DEMO_BASE_URL", "\"https://jsonplaceholder.typicode.com/\"")
     }
 
     compileOptions {
@@ -33,6 +34,8 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
+    implementation(project(":core:datastore"))
+    implementation(project(":core:model"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
@@ -42,4 +45,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
 }

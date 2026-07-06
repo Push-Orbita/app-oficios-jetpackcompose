@@ -1,0 +1,717 @@
+package com.cocido.oficios.feature.onboarding.provider
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.mapper.toRubroFullRequest
+import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderPaymentMethods
+import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
+import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
+import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
+import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
+import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
+import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
+import com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase
+import com.cocido.oficios.domain.usecase.profile.GetWorkCertificatesUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitSecondaryProviderRubroUseCase
+import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
+import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
+import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
+import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
+import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+data class ProviderDniUiState(
+    val documento: String = "",
+    val frontImagePath: String? = null,
+    val backImagePath: String? = null,
+    val frontFileName: String? = null,
+    val backFileName: String? = null,
+    val frontRemoteLoaded: Boolean = false,
+    val backRemoteLoaded: Boolean = false,
+    val certificateName: String = "",
+    val certificatePath: String? = null,
+    val existingCertificateName: String? = null,
+    val isLoading: Boolean = false,
+    val isPreloading: Boolean = true,
+    val error: String? = null,
+)
+
+sealed interface ProviderStepEffect {
+    data object Saved : ProviderStepEffect
+    data object Finalized : ProviderStepEffect
+}
+
+@HiltViewModel
+class ProviderDniViewModel @Inject constructor(
+    private val updateProviderDniNumberUseCase: UpdateProviderDniNumberUseCase,
+    private val uploadProviderDniImagesUseCase: UploadProviderDniImagesUseCase,
+    private val getProviderDniDocumentsUseCase: GetProviderDniDocumentsUseCase,
+    private val uploadWorkCertificateUseCase: UploadWorkCertificateUseCase,
+    private val getWorkCertificatesUseCase: GetWorkCertificatesUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderDniUiState())
+    val uiState: StateFlow<ProviderDniUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        preloadDocuments()
+    }
+
+    private fun preloadDocuments() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isPreloading = true) }
+            when (val dniResult = getProviderDniDocumentsUseCase()) {
+                is AppResult.Success -> dniResult.data?.let { docs ->
+                    _uiState.update {
+                        it.copy(
+                            frontRemoteLoaded = !docs.frontUrl.isNullOrBlank(),
+                            backRemoteLoaded = !docs.backUrl.isNullOrBlank(),
+                            frontFileName = docs.frontFileName,
+                            backFileName = docs.backFileName,
+                        )
+                    }
+                }
+                is AppResult.Error -> Unit
+            }
+            when (val certResult = getWorkCertificatesUseCase()) {
+                is AppResult.Success -> certResult.data.firstOrNull()?.let { cert ->
+                    _uiState.update { it.copy(existingCertificateName = cert.name) }
+                }
+                is AppResult.Error -> Unit
+            }
+            _uiState.update { it.copy(isPreloading = false) }
+        }
+    }
+
+    fun onDocumentoChanged(value: String) = _uiState.update { it.copy(documento = value, error = null) }
+    fun onFrontImage(path: String?) = _uiState.update {
+        it.copy(frontImagePath = path, frontFileName = path?.substringAfterLast('/'), error = null)
+    }
+    fun onBackImage(path: String?) = _uiState.update {
+        it.copy(backImagePath = path, backFileName = path?.substringAfterLast('/'), error = null)
+    }
+    fun onCertificateNameChanged(value: String) = _uiState.update { it.copy(certificateName = value, error = null) }
+    fun onCertificateSelected(path: String?) = _uiState.update { it.copy(certificatePath = path, error = null) }
+
+    fun submit() {
+        val state = _uiState.value
+        val documento = state.documento.trim()
+        val front = state.frontImagePath
+        val back = state.backImagePath
+        val hasRemoteImages = state.frontRemoteLoaded && state.backRemoteLoaded
+        if (documento.isBlank() || (!hasRemoteImages && (front == null || back == null))) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            when (val numberResult = updateProviderDniNumberUseCase(documento)) {
+                is AppResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = numberResult.error.userMessage()) }
+                    return@launch
+                }
+                is AppResult.Success -> Unit
+            }
+
+            if (front != null && back != null) {
+                when (val imagesResult = uploadProviderDniImagesUseCase(front, back)) {
+                    is AppResult.Error -> {
+                        _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
+                        return@launch
+                    }
+                    is AppResult.Success -> Unit
+                }
+            }
+
+            val certificatePath = state.certificatePath
+            val certificateName = state.certificateName.trim()
+            if (certificatePath != null && certificateName.isNotBlank()) {
+                when (val certResult = uploadWorkCertificateUseCase(certificateName, certificatePath)) {
+                    is AppResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = "DNI enviado, pero el certificado falló: ${certResult.error.userMessage()}",
+                            )
+                        }
+                        return@launch
+                    }
+                    is AppResult.Success -> Unit
+                }
+            }
+
+            _uiState.update { it.copy(isLoading = false) }
+            _effects.emit(ProviderStepEffect.Saved)
+        }
+    }
+}
+
+data class ProviderProfessionalInfoUiState(
+    val descripcion: String = "",
+    val experiencia: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+)
+
+@HiltViewModel
+class ProviderProfessionalInfoViewModel @Inject constructor(
+    private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderProfessionalInfoUiState())
+    val uiState: StateFlow<ProviderProfessionalInfoUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
+                _uiState.update {
+                    it.copy(
+                        descripcion = draft.otherSpecialization.orEmpty(),
+                        experiencia = draft.experienceRange,
+                    )
+                }
+            }
+        }
+    }
+
+    fun onDescripcionChanged(value: String) = _uiState.update { it.copy(descripcion = value, error = null) }
+    fun onExperienciaChanged(value: String) = _uiState.update { it.copy(experiencia = value, error = null) }
+
+    fun submit() {
+        val state = _uiState.value
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            when (
+                val result = updateProviderProfessionalInfoUseCase(
+                    ProviderProfessionalInfoRequest(
+                        descripcion = state.descripcion.trim(),
+                        experiencia = state.experiencia.trim(),
+                    ),
+                )
+            ) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+            }
+        }
+    }
+}
+
+data class ProviderRubrosUiState(
+    val categoryOptions: List<CatalogOption> = emptyList(),
+    val tradeOptions: List<CatalogOption> = emptyList(),
+    val specializationOptions: List<CatalogOption> = emptyList(),
+    val selectedCategoryId: Long? = null,
+    val selectedTradeId: Long? = null,
+    val selectedSubRubroIds: Set<Long> = emptySet(),
+    val isSecondaryRubro: Boolean = false,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+) {
+    val canSubmit: Boolean get() = selectedTradeId != null && selectedSubRubroIds.isNotEmpty()
+}
+
+@HiltViewModel
+class ProviderRubrosViewModel @Inject constructor(
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
+    private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val submitSecondaryProviderRubroUseCase: SubmitSecondaryProviderRubroUseCase,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderRubrosUiState())
+    val uiState: StateFlow<ProviderRubrosUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            when (val result = getCategoriesUseCase()) {
+                is AppResult.Success -> _uiState.update { it.copy(categoryOptions = result.data) }
+                is AppResult.Error -> _uiState.update { it.copy(error = result.error.userMessage()) }
+            }
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
+                _uiState.update {
+                    it.copy(
+                        selectedCategoryId = draft.categoryId,
+                        selectedTradeId = draft.rubroId,
+                        selectedSubRubroIds = draft.subRubroIds.toSet(),
+                    )
+                }
+                loadRubros(draft.categoryId)
+                loadSubRubros(draft.rubroId)
+            }
+        }
+    }
+
+    fun onCategorySelected(id: Long) {
+        _uiState.update { it.copy(selectedCategoryId = id, selectedTradeId = null, tradeOptions = emptyList()) }
+        loadRubros(id)
+    }
+
+    fun onTradeSelected(id: Long) {
+        _uiState.update { it.copy(selectedTradeId = id, specializationOptions = emptyList()) }
+        loadSubRubros(id)
+    }
+
+    fun onSecondaryRubroChanged(checked: Boolean) = _uiState.update { it.copy(isSecondaryRubro = checked) }
+
+    fun onSubRubroToggled(id: Long, checked: Boolean) = _uiState.update {
+        val updated = it.selectedSubRubroIds.toMutableSet()
+        if (checked) updated.add(id) else updated.remove(id)
+        it.copy(selectedSubRubroIds = updated)
+    }
+
+    private fun loadRubros(categoryId: Long) {
+        viewModelScope.launch {
+            when (val result = getRubrosByCategoryUseCase(categoryId)) {
+                is AppResult.Success -> _uiState.update { it.copy(tradeOptions = result.data) }
+                is AppResult.Error -> Unit
+            }
+        }
+    }
+
+    private fun loadSubRubros(rubroId: Long) {
+        viewModelScope.launch {
+            when (val result = getSubRubrosByRubroUseCase(rubroId)) {
+                is AppResult.Success -> _uiState.update { it.copy(specializationOptions = result.data) }
+                is AppResult.Error -> Unit
+            }
+        }
+    }
+
+    fun submit() {
+        val state = _uiState.value
+        val rubroId = state.selectedTradeId ?: return
+        val categoryId = state.selectedCategoryId ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
+            val draft = buildDraft(state, rubroId, categoryId) ?: run {
+                _uiState.update { it.copy(isLoading = false, error = "Seleccioná categoría, rubro y especialidades") }
+                return@launch
+            }
+            registerTradeDraftRepository.save(draft)
+            val request = draft.toRubroFullRequest()
+            val result = if (state.isSecondaryRubro) {
+                submitSecondaryProviderRubroUseCase(request)
+            } else {
+                submitProviderRubroFullUseCase(request)
+            }
+            when (result) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+            }
+        }
+    }
+
+    private suspend fun buildDraft(
+        state: ProviderRubrosUiState,
+        rubroId: Long,
+        categoryId: Long,
+    ): com.cocido.oficios.domain.model.RegisterTradeDraft? {
+        val existing = registerTradeDraftRepository.get()
+        val categoryName = state.categoryOptions.find { it.id == categoryId }?.label.orEmpty()
+        val rubroName = state.tradeOptions.find { it.id == rubroId }?.label.orEmpty()
+        if (categoryName.isBlank() || rubroName.isBlank()) return null
+        return (existing ?: com.cocido.oficios.domain.model.RegisterTradeDraft(
+            categoryId = categoryId,
+            categoryName = categoryName,
+            rubroId = rubroId,
+            rubroName = rubroName,
+            subRubroIds = state.selectedSubRubroIds.toList(),
+            otherSpecialization = null,
+            experienceRange = "",
+            neighborhoodQuery = "",
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+        )).copy(
+            categoryId = categoryId,
+            categoryName = categoryName,
+            rubroId = rubroId,
+            rubroName = rubroName,
+            subRubroIds = state.selectedSubRubroIds.toList(),
+        )
+    }
+}
+
+data class ProviderAvailabilityUiState(
+    val workDayOptions: List<Pair<String, String>> = ProviderAvailabilityDefaults.workDays,
+    val selectedWorkDays: Set<String> = ProviderAvailabilityDefaults.defaultSelectedWorkDays,
+    val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+    val timeOptions: List<String> = ProviderAvailabilityDefaults.timeOptions,
+    val servesAtClientHome: Boolean = true,
+    val servesAtLocal: Boolean = false,
+    val requiresTurns: Boolean = false,
+    val hasRubroContext: Boolean = false,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+) {
+    val canSubmit: Boolean
+        get() = hasRubroContext &&
+            selectedWorkDays.isNotEmpty() &&
+            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() }
+}
+
+private object ProviderAvailabilityDefaults {
+    val defaultSelectedWorkDays = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES")
+
+    val workDays = listOf(
+        "LUNES" to "Lunes",
+        "MARTES" to "Martes",
+        "MIERCOLES" to "Miércoles",
+        "JUEVES" to "Jueves",
+        "VIERNES" to "Viernes",
+        "SABADO" to "Sábado",
+        "DOMINGO" to "Domingo",
+    )
+
+    val timeOptions: List<String> = buildList {
+        for (hour in 0 until 24) {
+            for (minute in listOf(0, 30)) {
+                add("%02d:%02d".format(hour, minute))
+            }
+        }
+    }
+}
+
+@HiltViewModel
+class ProviderAvailabilityViewModel @Inject constructor(
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderAvailabilityUiState())
+    val uiState: StateFlow<ProviderAvailabilityUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            val draft = syncRegisterTradeDraftFromProfileUseCase()
+            if (draft != null) {
+                _uiState.update {
+                    it.copy(
+                        selectedWorkDays = draft.workDays.toSet().ifEmpty { ProviderAvailabilityDefaults.defaultSelectedWorkDays },
+                        timeSlots = draft.timeSlots.ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
+                        servesAtClientHome = draft.servesAtClientHome,
+                        servesAtLocal = draft.servesAtLocal,
+                        requiresTurns = draft.requiresTurns,
+                        hasRubroContext = draft.rubroId > 0 && draft.subRubroIds.isNotEmpty(),
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(error = "Completá primero tu rubro y especialidades")
+                }
+            }
+        }
+    }
+
+    fun onWorkDayToggled(day: String, checked: Boolean) = _uiState.update {
+        val updated = it.selectedWorkDays.toMutableSet()
+        if (checked) updated.add(day) else updated.remove(day)
+        it.copy(selectedWorkDays = updated, error = null)
+    }
+
+    fun onTimeSlotFromChanged(index: Int, value: String) = _uiState.update { state ->
+        val slots = state.timeSlots.toMutableList()
+        if (index in slots.indices) {
+            slots[index] = slots[index].copy(from = value)
+        }
+        state.copy(timeSlots = slots, error = null)
+    }
+
+    fun onTimeSlotToChanged(index: Int, value: String) = _uiState.update { state ->
+        val slots = state.timeSlots.toMutableList()
+        if (index in slots.indices) {
+            slots[index] = slots[index].copy(to = value)
+        }
+        state.copy(timeSlots = slots, error = null)
+    }
+
+    fun onAddTimeSlot() = _uiState.update {
+        it.copy(timeSlots = it.timeSlots + RegisterTradeTimeSlotDraft("", ""))
+    }
+
+    fun onServesAtClientHomeChanged(value: Boolean) = _uiState.update { it.copy(servesAtClientHome = value, error = null) }
+    fun onServesAtLocalChanged(value: Boolean) = _uiState.update { it.copy(servesAtLocal = value, error = null) }
+    fun onRequiresTurnsChanged(value: Boolean) = _uiState.update { it.copy(requiresTurns = value, error = null) }
+
+    fun submit() {
+        val state = _uiState.value
+        if (!state.canSubmit) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
+            val draft = registerTradeDraftRepository.get()
+            if (draft == null || draft.subRubroIds.isEmpty()) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        hasRubroContext = false,
+                        error = "Completá primero tu rubro y especialidades",
+                    )
+                }
+                return@launch
+            }
+            val updatedDraft = draft.copy(
+                workDays = state.selectedWorkDays.toList(),
+                timeSlots = state.timeSlots.filter { it.from.isNotBlank() && it.to.isNotBlank() },
+                servesAtClientHome = state.servesAtClientHome,
+                servesAtLocal = state.servesAtLocal,
+                requiresTurns = state.requiresTurns,
+            )
+            registerTradeDraftRepository.save(updatedDraft)
+            when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+            }
+        }
+    }
+}
+
+data class ProviderLocalUiState(
+    val barrioQuery: String = "",
+    val barrioOptions: List<CatalogOption> = emptyList(),
+    val selectedBarrioId: Long? = null,
+    val calle: String = "",
+    val numero: String = "",
+    val nombre: String = "Local comercial",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+) {
+    val canSubmit: Boolean get() = selectedBarrioId != null && calle.isNotBlank()
+}
+
+@HiltViewModel
+class ProviderLocalViewModel @Inject constructor(
+    private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderLocalUiState())
+    val uiState: StateFlow<ProviderLocalUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+    private var searchJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
+                if (draft.barrioId != null || draft.neighborhoodQuery.isNotBlank()) {
+                    _uiState.update {
+                        it.copy(
+                            barrioQuery = draft.neighborhoodQuery,
+                            selectedBarrioId = draft.barrioId,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun onBarrioQueryChanged(query: String) {
+        _uiState.update { it.copy(barrioQuery = query, selectedBarrioId = null) }
+        searchJob?.cancel()
+        if (query.length < 2) return
+        searchJob = viewModelScope.launch {
+            delay(300)
+            when (val result = searchBarriosUseCase(query)) {
+                is AppResult.Success -> _uiState.update { it.copy(barrioOptions = result.data) }
+                is AppResult.Error -> Unit
+            }
+        }
+    }
+
+    fun onBarrioSelected(option: CatalogOption) {
+        _uiState.update {
+            it.copy(barrioQuery = option.label, selectedBarrioId = option.id, barrioOptions = emptyList())
+        }
+    }
+
+    fun dismissBarrioSuggestions() {
+        _uiState.update { it.copy(barrioOptions = emptyList()) }
+    }
+
+    fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
+    fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
+    fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
+
+    fun submit() {
+        val state = _uiState.value
+        val barrioId = state.selectedBarrioId ?: return
+        if (!state.canSubmit) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val draft = registerTradeDraftRepository.get()
+            if (draft == null || draft.subRubroIds.isEmpty()) {
+                _uiState.update { it.copy(isLoading = false, error = "Completá primero rubro y subrubros") }
+                return@launch
+            }
+            val streetLine = listOf(state.calle.trim(), state.numero.trim())
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+            val updatedDraft = draft.copy(
+                barrioId = barrioId,
+                servesAtLocal = true,
+            )
+            registerTradeDraftRepository.save(updatedDraft)
+            val request = updatedDraft.toRubroFullRequest().copy(
+                domicilioLocal = ProviderLocalDomicilioRequest(
+                    barrioId = barrioId,
+                    calle = streetLine,
+                    nombre = state.nombre.trim().ifBlank { "Local comercial" },
+                ),
+            )
+            when (val result = submitProviderRubroFullUseCase(request)) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+            }
+        }
+    }
+}
+
+data class ProviderPaymentMethodsUiState(
+    val selectedMethods: Set<String> = emptySet(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
+) {
+    val canSubmit: Boolean get() = selectedMethods.isNotEmpty()
+}
+
+@HiltViewModel
+class ProviderPaymentMethodsViewModel @Inject constructor(
+    private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProviderPaymentMethodsUiState())
+    val uiState: StateFlow<ProviderPaymentMethodsUiState> = _uiState.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            syncRegisterTradeDraftFromProfileUseCase()?.let { draft ->
+                _uiState.update {
+                    it.copy(selectedMethods = draft.paymentMethods.toSet())
+                }
+            }
+        }
+    }
+
+    fun onMethodToggled(method: String, checked: Boolean) = _uiState.update {
+        val updated = it.selectedMethods.toMutableSet()
+        if (checked) updated.add(method) else updated.remove(method)
+        it.copy(selectedMethods = updated, error = null)
+    }
+
+    fun submit() {
+        val methods = _uiState.value.selectedMethods.toList()
+        if (methods.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
+            val draft = registerTradeDraftRepository.get()
+            val updatedDraft = draft?.copy(paymentMethods = methods)
+            if (updatedDraft != null) {
+                registerTradeDraftRepository.save(updatedDraft)
+            }
+            val result = if (updatedDraft != null && updatedDraft.subRubroIds.isNotEmpty()) {
+                submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())
+            } else {
+                updateProviderProfessionalInfoUseCase(
+                    ProviderProfessionalInfoRequest(paymentMethods = methods),
+                )
+            }
+            when (result) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                is AppResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+                }
+            }
+        }
+    }
+}
+
+@HiltViewModel
+class ProviderFinalizeViewModel @Inject constructor(
+    private val finalizeProviderProfileUseCase: FinalizeProviderProfileUseCase,
+) : ViewModel() {
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _effects = MutableSharedFlow<ProviderStepEffect>()
+    val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
+
+    fun finalize() {
+        viewModelScope.launch {
+            _isLoading.update { true }
+            when (val result = finalizeProviderProfileUseCase()) {
+                is AppResult.Success -> {
+                    _isLoading.update { false }
+                    _effects.emit(ProviderStepEffect.Finalized)
+                }
+                is AppResult.Error -> _isLoading.update { false }
+            }
+        }
+    }
+}

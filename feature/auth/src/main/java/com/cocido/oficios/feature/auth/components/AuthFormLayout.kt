@@ -1,0 +1,69 @@
+package com.cocido.oficios.feature.auth.components
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandScale
+import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+
+@Composable
+fun AuthFormLayout(
+    title: String,
+    subtitle: String? = null,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+    brandScale: OficiosBrandScale = OficiosBrandScale.Compact,
+    showBrand: Boolean = true,
+    footer: @Composable ColumnScope.() -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    AuthScreenLayout(
+        modifier = modifier,
+        isLoading = isLoading,
+        brandScale = brandScale,
+        showBrand = showBrand,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (!subtitle.isNullOrBlank()) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = OficiosColorMutedText,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(Modifier.height(OficiosSpacing.sm))
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            content = content,
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = OficiosSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            content = footer,
+        )
+    }
+}

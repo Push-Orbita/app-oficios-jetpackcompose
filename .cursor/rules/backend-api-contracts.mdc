@@ -1,0 +1,28 @@
+---
+description: Alinear peticiones HTTP y payloads con el contrato del backend Oficios
+globs: core/network/**,core/data/**,domain/**,feature/**/src/main/**
+alwaysApply: false
+---
+
+# Contrato con el backend (apioficios.pushsoftware.com.ar)
+
+Antes de implementar o modificar llamadas al API:
+
+1. **Definir el contrato explícitamente** en código (`*Api.kt`, DTOs en `ProfileDtos.kt`, objetos en `core/common/contract/`). No inventar nombres de campos, paths ni tipos MIME.
+2. **Validar en cliente** lo que el backend ya valida (formatos, campos obligatorios, extensiones) *antes* de enviar. Usar `ClientValidationException` con mensaje claro para el usuario.
+3. **Nunca usar placeholders genéricos** en multipart/JSON si el backend es estricto (ej. `image/*`, extensiones incorrectas, nombres de part distintos a `frenteArchivo`/`dorsoArchivo`).
+4. **Tests de integración con MockWebServer** deben assertar path, método, nombres de campos y `Content-Type` reales del request — no solo que compile.
+5. **Errores del backend**: mapear `errorDetails.details` anidado (código VA01) al mensaje visible; no mostrar solo "Datos de entrada no válidos" si hay detalle específico.
+6. **Si falta documentación del backend**, agregar fixture JSON en `core/network/src/test/resources/` y un test que falle si el contrato cambia.
+
+Referencias actuales:
+- DNI upload: `DniImageUploadContract` + `POST img-documento/subir-documento-dni`
+- Perfil proveedor: `ProviderProfileApi` (`PATCH trabajador-oficio/me`, `POST trabajador-oficio-rubro/full`, etc.)
+- Perfil cliente: `ClientProfileApi` (`POST domicilios`, `POST contacto`)
+
+# Flujo de usuario (no exponer el backend)
+
+1. **Un paso del onboarding = una intención del usuario**, no un endpoint. Si el backend requiere 2+ llamadas para completar un paso (ej. guardar DNI + subir fotos), orquestarlas en el ViewModel/use case y mostrar **un solo botón de acción** (ej. "Enviar documentación").
+2. **No navegar** hasta que el paso completo haya terminado con éxito. Nunca emitir `Saved`/cerrar pantalla tras una sub-llamada parcial.
+3. **No inventar botones intermedios** tipo "Guardar número", "Guardar borrador" o similares salvo que el producto lo pida explícitamente.
+4. La separación domain/data/network (varios use cases/repos) es interna; la UI no debe reflejar esa granularidad.

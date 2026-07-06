@@ -10,6 +10,23 @@ sealed interface AppError {
 
     data class Validation(
         override val message: String,
+        val fieldErrors: Map<String, String> = emptyMap(),
+    ) : AppError
+
+    data class Unauthorized(
+        override val message: String,
+    ) : AppError
+
+    data class Forbidden(
+        override val message: String,
+    ) : AppError
+
+    data class NotFound(
+        override val message: String,
+    ) : AppError
+
+    data class Conflict(
+        override val message: String,
     ) : AppError
 
     data class Unknown(

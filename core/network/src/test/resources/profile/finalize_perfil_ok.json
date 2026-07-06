@@ -1,0 +1,23 @@
+{
+  "estado": "VALIDADO",
+  "perfilCompleto": true,
+  "configuracionCompleta": true,
+  "requisitos": {
+    "tieneDniNumero": true,
+    "tieneDniImagenes": true,
+    "identidadVerificada": true,
+    "tieneDescripcion": true,
+    "tieneExperiencia": true,
+    "tieneRubroPrincipal": true,
+    "tieneSubrubros": true,
+    "tieneDisponibilidad": true,
+    "tieneLocalSiAplica": true,
+    "tieneAgendaSiAplica": true,
+    "tieneMetodosPago": true,
+    "tieneInformacionPersonal": true,
+    "perfilOperativo": true,
+    "emailVerificado": true,
+    "requisitosOnboardingCompletos": true
+  },
+  "faltantes": []
+}

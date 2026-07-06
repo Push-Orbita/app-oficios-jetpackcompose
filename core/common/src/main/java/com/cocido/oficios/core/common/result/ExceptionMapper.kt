@@ -13,6 +13,7 @@ fun Throwable.toAppError(): AppError {
     }
 
     return when (this) {
+        is ClientValidationException -> AppError.Validation(message = message)
         is SocketTimeoutException -> AppError.Network(message = "Request timed out")
         is UnknownHostException -> AppError.Network(message = "No internet connection")
         is SSLException -> AppError.Network(message = "Secure connection could not be established")
@@ -27,7 +28,11 @@ fun Throwable.toAppError(): AppError {
 fun AppError.userMessage(): String = when (this) {
     is AppError.Network -> message
     is AppError.Validation -> message
-    is AppError.Unknown -> "Something went wrong. Please try again."
+    is AppError.Unauthorized -> message
+    is AppError.Forbidden -> message
+    is AppError.NotFound -> message
+    is AppError.Conflict -> message
+    is AppError.Unknown -> "Algo salió mal. Intentá de nuevo."
 }
 
 private fun Throwable.hasSslOrCertificateCause(): Boolean {

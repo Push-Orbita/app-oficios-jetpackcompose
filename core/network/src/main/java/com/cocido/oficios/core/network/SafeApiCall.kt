@@ -8,12 +8,7 @@ import retrofit2.HttpException
 suspend fun <T> safeApiCall(block: suspend () -> T): AppResult<T> = try {
     AppResult.Success(block())
 } catch (exception: HttpException) {
-    AppResult.Error(
-        AppError.Network(
-            message = exception.message() ?: "HTTP error",
-            code = exception.code(),
-        ),
-    )
+    AppResult.Error(exception.toNetworkAppError())
 } catch (throwable: Throwable) {
     AppResult.Error(throwable.toAppError())
 }

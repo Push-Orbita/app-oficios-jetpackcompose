@@ -6,8 +6,12 @@ import com.cocido.oficios.feature.settings.SettingsRoute
 
 fun NavGraphBuilder.settingsScreen(
     onNavigateBack: () -> Unit,
+    onLoggedOut: () -> Unit,
 ) {
     composable(route = SettingsDestination.route) {
-        SettingsRoute(onNavigateBack = onNavigateBack)
+        SettingsRoute(
+            onNavigateBack = onNavigateBack,
+            onLoggedOut = onLoggedOut,
+        )
     }
 }
