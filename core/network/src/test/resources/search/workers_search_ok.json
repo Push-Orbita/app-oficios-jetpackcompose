@@ -1,0 +1,56 @@
+{
+  "data": [
+    {
+      "id": 12,
+      "estado": "VALIDADO",
+      "documento": "30123456",
+      "descripcion": "Plomero con experiencia en instalaciones domiciliarias.",
+      "experiencia": "5 años",
+      "usuario": {
+        "id": 88,
+        "email": "carlos@example.com",
+        "emailVerificado": true,
+        "persona": {
+          "id": 50,
+          "nombres": "Carlos",
+          "apellido": "Rodríguez"
+        },
+        "rolUsuario": {
+          "id": 2,
+          "nombre": "Trabajador"
+        }
+      },
+      "rubros": [
+        {
+          "id": 1,
+          "principal": true,
+          "rubro": {
+            "id": 3,
+            "nombre": "Plomería"
+          },
+          "subRubros": [
+            {
+              "id": 10,
+              "lugarDomicilio": true,
+              "lugarLocal": false,
+              "subRubro": {
+                "id": 7,
+                "nombre": "Reparación de cañerías"
+              }
+            }
+          ]
+        }
+      ],
+      "reputacion": {
+        "promedio": 4.8,
+        "cantidadCalificaciones": 24
+      }
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "pageSize": 20,
+    "pageNumber": 1,
+    "totalPages": 1
+  }
+}

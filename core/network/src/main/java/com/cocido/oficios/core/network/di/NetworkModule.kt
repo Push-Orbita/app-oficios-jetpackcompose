@@ -2,6 +2,15 @@ package com.cocido.oficios.core.network.di
 
 import com.cocido.oficios.core.network.BuildConfig
 import com.cocido.oficios.core.network.api.DemoApiService
+import com.cocido.oficios.core.network.api.auth.AuthApi
+import com.cocido.oficios.core.network.api.catalog.CatalogApi
+import com.cocido.oficios.core.network.api.profile.ClientProfileApi
+import com.cocido.oficios.core.network.api.profile.IdentityDocumentApi
+import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
+import com.cocido.oficios.core.network.api.profile.WorkCertificateApi
+import com.cocido.oficios.core.network.api.search.WorkerSearchApi
+import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
+import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -11,7 +20,6 @@ import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
@@ -31,17 +39,19 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
+    ): OkHttpClient {
         val builder = OkHttpClient.Builder()
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .authenticator(tokenAuthenticator)
+            .addInterceptor(authInterceptor)
 
         if (BuildConfig.DEBUG) {
-            val loggingInterceptor = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-            builder.addInterceptor(loggingInterceptor)
+            builder.addInterceptor(SanitizedLoggingInterceptor())
         }
 
         return builder.build()
@@ -49,7 +59,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(
+    @ApiRetrofit
+    fun provideApiRetrofit(
         okHttpClient: OkHttpClient,
         json: Json,
     ): Retrofit {
@@ -63,7 +74,72 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideDemoApiService(retrofit: Retrofit): DemoApiService {
+    @DemoRetrofit
+    fun provideDemoRetrofit(json: Json): Retrofit {
+        val contentType = "application/json".toMediaType()
+        val demoClient = OkHttpClient.Builder()
+            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(SanitizedLoggingInterceptor())
+                }
+            }
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.DEMO_BASE_URL)
+            .client(demoClient)
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthApi(@ApiRetrofit retrofit: Retrofit): AuthApi {
+        return retrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCatalogApi(@ApiRetrofit retrofit: Retrofit): CatalogApi {
+        return retrofit.create(CatalogApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProviderProfileApi(@ApiRetrofit retrofit: Retrofit): ProviderProfileApi {
+        return retrofit.create(ProviderProfileApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideClientProfileApi(@ApiRetrofit retrofit: Retrofit): ClientProfileApi {
+        return retrofit.create(ClientProfileApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideIdentityDocumentApi(@ApiRetrofit retrofit: Retrofit): IdentityDocumentApi {
+        return retrofit.create(IdentityDocumentApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkCertificateApi(@ApiRetrofit retrofit: Retrofit): WorkCertificateApi {
+        return retrofit.create(WorkCertificateApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkerSearchApi(@ApiRetrofit retrofit: Retrofit): WorkerSearchApi {
+        return retrofit.create(WorkerSearchApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDemoApiService(@DemoRetrofit retrofit: Retrofit): DemoApiService {
         return retrofit.create(DemoApiService::class.java)
     }
 }

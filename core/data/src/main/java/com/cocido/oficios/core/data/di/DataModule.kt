@@ -4,8 +4,32 @@ import com.cocido.oficios.core.common.dispatcher.DefaultDispatcherProvider
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.logging.AppLogger
 import com.cocido.oficios.core.data.logging.AndroidAppLogger
+import com.cocido.oficios.core.data.local.RecentSearchDataStore
+import com.cocido.oficios.core.data.register.RegisterTradeDraftDataStore
+import com.cocido.oficios.core.data.repository.AuthRepositoryImpl
+import com.cocido.oficios.core.data.repository.CatalogRepositoryImpl
 import com.cocido.oficios.core.data.repository.HomeRepositoryImpl
+import com.cocido.oficios.core.data.repository.ClientProfileRepositoryImpl
+import com.cocido.oficios.core.data.repository.IdentityDocumentRepositoryImpl
+import com.cocido.oficios.core.data.repository.OnboardingRepositoryImpl
+import com.cocido.oficios.core.data.repository.ProviderProfileRepositoryImpl
+import com.cocido.oficios.core.data.repository.WorkCertificateRepositoryImpl
+import com.cocido.oficios.core.data.repository.WorkerSearchRepositoryImpl
+import com.cocido.oficios.core.data.session.SessionManager
+import com.cocido.oficios.core.data.session.SessionPreferencesRepositoryImpl
+import com.cocido.oficios.domain.repository.AuthRepository
+import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
+import com.cocido.oficios.domain.repository.ClientProfileRepository
+import com.cocido.oficios.domain.repository.IdentityDocumentRepository
+import com.cocido.oficios.domain.repository.OnboardingRepository
+import com.cocido.oficios.domain.repository.ProviderProfileRepository
+import com.cocido.oficios.domain.repository.RecentSearchRepository
+import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.repository.SessionPreferencesRepository
+import com.cocido.oficios.domain.repository.SessionRepository
+import com.cocido.oficios.domain.repository.WorkCertificateRepository
+import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -22,6 +46,78 @@ abstract class DataModule {
     abstract fun bindHomeRepository(
         impl: HomeRepositoryImpl,
     ): HomeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        impl: AuthRepositoryImpl,
+    ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindOnboardingRepository(
+        impl: OnboardingRepositoryImpl,
+    ): OnboardingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSessionRepository(
+        impl: SessionManager,
+    ): SessionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSessionPreferencesRepository(
+        impl: SessionPreferencesRepositoryImpl,
+    ): SessionPreferencesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCatalogRepository(
+        impl: CatalogRepositoryImpl,
+    ): CatalogRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRegisterTradeDraftRepository(
+        impl: RegisterTradeDraftDataStore,
+    ): RegisterTradeDraftRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProviderProfileRepository(
+        impl: ProviderProfileRepositoryImpl,
+    ): ProviderProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindClientProfileRepository(
+        impl: ClientProfileRepositoryImpl,
+    ): ClientProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindIdentityDocumentRepository(
+        impl: IdentityDocumentRepositoryImpl,
+    ): IdentityDocumentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkCertificateRepository(
+        impl: WorkCertificateRepositoryImpl,
+    ): WorkCertificateRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkerSearchRepository(
+        impl: WorkerSearchRepositoryImpl,
+    ): WorkerSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRecentSearchRepository(
+        impl: RecentSearchDataStore,
+    ): RecentSearchRepository
 }
 
 @Module

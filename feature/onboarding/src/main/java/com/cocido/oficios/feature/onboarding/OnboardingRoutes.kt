@@ -1,0 +1,197 @@
+package com.cocido.oficios.feature.onboarding
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.domain.model.InitialDestination
+import com.cocido.oficios.domain.model.OnboardingStep
+import com.cocido.oficios.feature.onboarding.client.ClientOnboardingViewModel
+import com.cocido.oficios.feature.onboarding.components.OnboardingChecklistRouteHost
+import com.cocido.oficios.feature.onboarding.provider.ProviderOnboardingViewModel
+import com.cocido.oficios.feature.onboarding.provider.ProviderPendingViewModel
+import com.cocido.oficios.feature.onboarding.provider.ProviderRejectedViewModel
+import com.cocido.oficios.feature.onboarding.session.LogoutViewModel
+import com.cocido.oficios.feature.onboarding.session.OnboardingLogoutEffect
+import com.cocido.oficios.feature.onboarding.navigation.OnboardingStepNavigator
+
+@Composable
+fun ClientOnboardingRoute(
+    onLoggedOut: () -> Unit,
+    onNavigateToStep: (String) -> Unit,
+    onNavigateFromGate: (InitialDestination) -> Unit,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ClientOnboardingViewModel = hiltViewModel(),
+    logoutViewModel: LogoutViewModel = hiltViewModel(),
+) {
+    OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+    val completionPhase by viewModel.completionPhase.collectAsStateWithLifecycle()
+
+    ReloadOnResume { viewModel.load() }
+
+    OnboardingChecklistRouteHost(
+        completionPhase = completionPhase,
+        effects = viewModel.effects,
+        onNavigate = onNavigateFromGate,
+        modifier = modifier,
+        submittingMessage = null,
+    ) {
+        ClientOnboardingChecklistScreen(
+            uiState = uiState,
+            onRetry = viewModel::load,
+            onLogout = logoutViewModel::logout,
+            onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
+            isLoggingOut = isLoggingOut,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+fun ProviderOnboardingRoute(
+    onLoggedOut: () -> Unit,
+    onNavigateToStep: (String) -> Unit,
+    onNavigateFromGate: (InitialDestination) -> Unit,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ProviderOnboardingViewModel = hiltViewModel(),
+    logoutViewModel: LogoutViewModel = hiltViewModel(),
+) {
+    OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+    val completionPhase by viewModel.completionPhase.collectAsStateWithLifecycle()
+    val completionError by viewModel.completionError.collectAsStateWithLifecycle()
+    val kycBannerMessage by viewModel.kycBannerMessage.collectAsStateWithLifecycle()
+
+    ReloadOnResume { viewModel.load() }
+
+    OnboardingChecklistRouteHost(
+        completionPhase = completionPhase,
+        effects = viewModel.effects,
+        onNavigate = onNavigateFromGate,
+        modifier = modifier,
+        submittingMessage = stringResource(R.string.onboarding_finalize_submitting),
+    ) {
+        ProviderOnboardingChecklistScreen(
+            uiState = uiState,
+            onRetry = viewModel::load,
+            onLogout = logoutViewModel::logout,
+            onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
+            onFinalizeProfile = viewModel::finalizeProfile,
+            finalizeError = completionError ?: kycBannerMessage,
+            onDismissBanner = viewModel::dismissKycBanner,
+            isLoggingOut = isLoggingOut,
+            isFinalizing = false,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+fun ProviderPendingRoute(
+    onLoggedOut: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ProviderPendingViewModel = hiltViewModel(),
+    logoutViewModel: LogoutViewModel = hiltViewModel(),
+) {
+    OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+
+    ProviderPendingApprovalScreen(
+        uiState = uiState,
+        onRetry = viewModel::load,
+        onLogout = logoutViewModel::logout,
+        isLoggingOut = isLoggingOut,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun ProviderRejectedRoute(
+    onFixProfile: () -> Unit,
+    onLoggedOut: () -> Unit,
+    onNavigateToStep: (String) -> Unit,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ProviderRejectedViewModel = hiltViewModel(),
+    logoutViewModel: LogoutViewModel = hiltViewModel(),
+) {
+    OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+
+    ReloadOnResume { viewModel.load() }
+
+    ProviderRejectedScreen(
+        uiState = uiState,
+        onRetry = viewModel::load,
+        onFixProfile = onFixProfile,
+        onLogout = logoutViewModel::logout,
+        onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
+        isLoggingOut = isLoggingOut,
+        modifier = modifier,
+    )
+}
+
+private fun navigateToStep(step: OnboardingStep, onNavigateToStep: (String) -> Unit) {
+    OnboardingStepNavigator.routeForStep(step.id)?.let(onNavigateToStep)
+}
+
+@Composable
+private fun ReloadOnResume(onReload: () -> Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) onReload()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+}
+
+@Composable
+fun ClientBlockedRoute(
+    onLoggedOut: () -> Unit,
+    modifier: Modifier = Modifier,
+    logoutViewModel: LogoutViewModel = hiltViewModel(),
+) {
+    OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
+    val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+
+    AccountStatusScreen(
+        title = stringResource(R.string.onboarding_blocked_title),
+        subtitle = stringResource(R.string.onboarding_blocked_subtitle),
+        onLogout = logoutViewModel::logout,
+        isLoggingOut = isLoggingOut,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun ClientInactiveRoute(
+    onLoggedOut: () -> Unit,
+    modifier: Modifier = Modifier,
+    logoutViewModel: LogoutViewModel = hiltViewModel(),
+) {
+    OnboardingLogoutEffect(onLoggedOut = onLoggedOut, logoutViewModel = logoutViewModel)
+    val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
+
+    AccountStatusScreen(
+        title = stringResource(R.string.onboarding_inactive_title),
+        subtitle = stringResource(R.string.onboarding_inactive_subtitle),
+        onLogout = logoutViewModel::logout,
+        isLoggingOut = isLoggingOut,
+        modifier = modifier,
+    )
+}
