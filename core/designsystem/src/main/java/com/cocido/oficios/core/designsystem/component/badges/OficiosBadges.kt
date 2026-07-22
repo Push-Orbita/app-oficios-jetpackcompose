@@ -91,7 +91,7 @@ fun OficiosNotificationBadge(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Badges", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Badges", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun BadgesPreview() {
     OficiosTheme {

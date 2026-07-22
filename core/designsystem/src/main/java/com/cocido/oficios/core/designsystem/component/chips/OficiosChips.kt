@@ -164,7 +164,7 @@ private fun statusColors(status: OrderStatus): Pair<Color, Color> = when (status
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Chips", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Chips", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ChipsPreview() {
     OficiosTheme {

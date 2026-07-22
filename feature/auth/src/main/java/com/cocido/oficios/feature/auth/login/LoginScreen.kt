@@ -140,7 +140,7 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun LoginScreenPreview() {
     OficiosTheme {
@@ -148,7 +148,7 @@ private fun LoginScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38, name = "Login error")
+@Preview(showBackground = true, backgroundColor = 0xFF00358B, name = "Login error")
 @Composable
 private fun LoginScreenErrorPreview() {
     OficiosTheme {

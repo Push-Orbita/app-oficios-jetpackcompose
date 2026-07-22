@@ -239,13 +239,13 @@ fun OficiosSuccessState(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Loading State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Loading State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun LoadingPreview() {
     OficiosTheme { OficiosLoadingState(message = "Cargando pedidos…") }
 }
 
-@Preview(name = "Empty State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Empty State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun EmptyPreview() {
     OficiosTheme {
@@ -259,7 +259,7 @@ private fun EmptyPreview() {
     }
 }
 
-@Preview(name = "Error State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Error State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ErrorPreview() {
     OficiosTheme {
@@ -272,7 +272,7 @@ private fun ErrorPreview() {
     }
 }
 
-@Preview(name = "Success State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Success State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun SuccessPreview() {
     OficiosTheme {

@@ -103,7 +103,7 @@ fun <T> OficiosAutocompleteField(
     }
 }
 
-@Preview(name = "Autocomplete Field", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Autocomplete Field", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun AutocompleteFieldPreview() {
     OficiosTheme {

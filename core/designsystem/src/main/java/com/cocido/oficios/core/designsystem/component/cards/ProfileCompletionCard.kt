@@ -79,7 +79,7 @@ fun ProfileCompletionCard(
     }
 }
 
-@Preview(name = "Profile Completion Card", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Profile Completion Card", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ProfileCompletionCardPreview() {
     OficiosTheme {

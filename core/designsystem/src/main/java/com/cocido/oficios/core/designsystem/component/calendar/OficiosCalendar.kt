@@ -243,7 +243,7 @@ fun OficiosScheduleSlot(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Calendar Days", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Calendar Days", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun CalendarDaysPreview() {
     OficiosTheme {
@@ -260,7 +260,7 @@ private fun CalendarDaysPreview() {
     }
 }
 
-@Preview(name = "Schedule Slots", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Schedule Slots", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ScheduleSlotsPreview() {
     OficiosTheme {

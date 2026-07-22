@@ -59,6 +59,17 @@
     <string name="home_worker_reviews_empty_title">Sin reseñas aún</string>
     <string name="home_worker_reviews_empty_description">Cuando finalicen trabajos, los clientes podrán dejar calificaciones.</string>
     <string name="home_worker_load_more_reviews">Ver más reseñas</string>
+    <string name="home_worker_rate">Calificar</string>
+    <string name="home_worker_report_profile">Denunciar Perfil</string>
+    <string name="provider_home_benefits_title">Beneficios</string>
+    <string name="provider_home_agenda_title">Agenda</string>
+    <string name="provider_home_view_full_agenda">Ver agenda completa</string>
+    <string name="provider_home_previous_month">Mes anterior</string>
+    <string name="provider_home_next_month">Mes siguiente</string>
+    <string name="provider_home_upcoming_shifts_title">Próximos turnos</string>
+    <string name="provider_home_upcoming_shifts_empty_title">Todavía no tenés turnos agendados</string>
+    <string name="provider_home_upcoming_shifts_empty_description">Configurá tu agenda para que los clientes puedan reservar turnos con vos.</string>
+    <string name="provider_home_active_booking_label">AHORA · %1$s con %2$s</string>
     <string name="home_worker_hire_stub_title">Contratar</string>
     <string name="home_worker_hire_stub_description">La contratación estará disponible pronto (ID: %1$d).</string>
 </resources>

@@ -13,6 +13,8 @@ import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
 import com.cocido.oficios.feature.home.navigation.homeScreen
+import com.cocido.oficios.feature.home.navigation.providerHomeScreen
+import com.cocido.oficios.feature.onboarding.navigation.OnboardingDestination
 import com.cocido.oficios.feature.onboarding.navigation.onboardingGraph
 import com.cocido.oficios.feature.settings.navigation.SettingsDestination
 import com.cocido.oficios.feature.settings.navigation.settingsScreen
@@ -117,6 +119,17 @@ fun AppNavHost(
             navController = navController,
             onNavigateToSettings = {
                 navController.navigate(SettingsDestination.route)
+            },
+            onShowMessage = showMessage,
+        )
+        providerHomeScreen(
+            onNavigateToSettings = {
+                navController.navigate(SettingsDestination.route)
+            },
+            onNavigateToCompleteProfile = {
+                navController.navigate(OnboardingDestination.PROVIDER_CHECKLIST) {
+                    launchSingleTop = true
+                }
             },
             onShowMessage = showMessage,
         )

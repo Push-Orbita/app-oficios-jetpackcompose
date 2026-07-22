@@ -149,7 +149,7 @@ private fun OficiosBottomNavItem(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Bottom Navigation", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Bottom Navigation", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun BottomNavPreview() {
     OficiosTheme {

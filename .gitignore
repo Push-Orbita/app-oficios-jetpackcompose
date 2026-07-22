@@ -49,3 +49,9 @@ Thumbs.db
 
 # Log
 *.log
+
+# Heap dumps
+*.hprof
+
+# VS Code (some contributors use it alongside Android Studio)
+.vscode/

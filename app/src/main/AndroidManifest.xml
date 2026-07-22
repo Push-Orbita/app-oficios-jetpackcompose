@@ -40,6 +40,11 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="kyc_revision" />
 
+        <!-- Wired now for later map screens (Fase 6); no maps-compose dependency added yet. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

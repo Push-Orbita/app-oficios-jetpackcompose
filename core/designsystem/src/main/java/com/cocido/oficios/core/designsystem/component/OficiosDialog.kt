@@ -97,7 +97,7 @@ fun OficiosDialog(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Dialog Normal", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Dialog Normal", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun DialogPreview() {
     OficiosTheme {
@@ -111,7 +111,7 @@ private fun DialogPreview() {
     }
 }
 
-@Preview(name = "Dialog Dangerous", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Dialog Dangerous", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun DialogDangerousPreview() {
     OficiosTheme {

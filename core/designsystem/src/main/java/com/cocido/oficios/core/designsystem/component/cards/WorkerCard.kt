@@ -132,7 +132,7 @@ fun WorkerCard(
     }
 }
 
-@Preview(name = "Worker Card", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Worker Card", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun WorkerCardPreview() {
     OficiosTheme {

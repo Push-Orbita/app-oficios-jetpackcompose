@@ -1,0 +1,141 @@
+package com.cocido.oficios.feature.home.providerhome
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.cards.BenefitCard
+import com.cocido.oficios.core.designsystem.component.cards.ProfileCompletionCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.domain.model.ProviderHomeContent
+import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
+import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
+import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
+import com.cocido.oficios.feature.home.R
+
+@Composable
+fun ProviderHomeScreen(
+    uiState: ProviderHomeUiState,
+    selectedTab: ClientHomeTab,
+    onEvent: (ProviderHomeEvent) -> Unit,
+    onTabSelected: (ClientHomeTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OficiosScaffold(
+        modifier = modifier,
+        bottomBar = {
+            ClientHomeBottomBar(
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected,
+            )
+        },
+    ) { paddingValues ->
+        when (uiState) {
+            ProviderHomeUiState.Loading -> {
+                OficiosLoadingState(
+                    modifier = Modifier.padding(paddingValues),
+                    message = stringResource(R.string.home_loading),
+                )
+            }
+            is ProviderHomeUiState.Error -> {
+                OficiosErrorState(
+                    title = stringResource(R.string.home_error_title),
+                    description = uiState.message,
+                    onRetry = { onEvent(ProviderHomeEvent.Retry) },
+                    modifier = Modifier.padding(paddingValues),
+                )
+            }
+            is ProviderHomeUiState.Success -> {
+                ProviderHomeSuccessContent(
+                    content = uiState.content,
+                    onEvent = onEvent,
+                    modifier = Modifier.padding(paddingValues),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProviderHomeSuccessContent(
+    content: ProviderHomeContent,
+    onEvent: (ProviderHomeEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        ProviderHomeHeader(
+            userName = content.userDisplayName,
+            isVerified = content.isVerified,
+            specialtyLabel = content.primarySpecialtyLabel,
+            onNotificationsClick = { onEvent(ProviderHomeEvent.OpenNotifications) },
+        )
+
+        // Banner "AHORA": condicional, solo si hay un servicio en curso (Fase 3 / Pedidos
+        // todavía no wireado, así que hasActiveBooking es siempre false por ahora).
+        // if (content.hasActiveBooking) { ProviderActiveBookingBanner(...) }
+
+        if (content.benefits.isNotEmpty()) {
+            ProviderBenefitsSection(content = content)
+        }
+
+        ProfileCompletionCard(
+            completionPercent = content.profileCompletionPercent,
+            onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
+            missingItems = content.missingProfileItems,
+        )
+
+        ProviderAgendaSection(
+            onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
+        )
+    }
+}
+
+@Composable
+private fun ProviderBenefitsSection(
+    content: ProviderHomeContent,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+    ) {
+        Text(
+            text = stringResource(R.string.provider_home_benefits_title),
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        ) {
+            items(content.benefits) { benefit ->
+                BenefitCard(
+                    title = benefit.title,
+                    description = benefit.description,
+                    discount = benefit.discountLabel,
+                    modifier = Modifier.width(300.dp),
+                )
+            }
+        }
+    }
+}

@@ -5,6 +5,9 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.data.mapper.toHomeCategoryItems
 import com.cocido.oficios.domain.model.ClientHomeContent
 import com.cocido.oficios.domain.model.HomeCategoryItem
+import com.cocido.oficios.domain.model.ProviderBenefit
+import com.cocido.oficios.domain.model.ProviderHomeContent
+import com.cocido.oficios.domain.model.ProviderProfileStatus
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.model.User
@@ -13,6 +16,8 @@ import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
+import com.cocido.oficios.domain.repository.OnboardingRepository
+import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
@@ -23,6 +28,8 @@ class HomeRepositoryImpl @Inject constructor(
     private val catalogRepository: CatalogRepository,
     private val recentSearchRepository: RecentSearchRepository,
     private val workerSearchRepository: WorkerSearchRepository,
+    private val onboardingRepository: OnboardingRepository,
+    private val providerProfileRepository: ProviderProfileRepository,
     private val dispatcherProvider: DispatcherProvider,
 ) : HomeRepository {
 
@@ -49,6 +56,73 @@ class HomeRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun getProviderHome(): AppResult<ProviderHomeContent> {
+        return withContext(dispatcherProvider.io) {
+            when (val userResult = authRepository.getCurrentUser()) {
+                is AppResult.Error -> userResult
+                is AppResult.Success -> {
+                    when (val statusResult = onboardingRepository.getProviderProfileStatus()) {
+                        is AppResult.Error -> statusResult
+                        is AppResult.Success -> {
+                            val status = statusResult.data
+                            val missingItems = onboardingRepository
+                                .getProviderRequiredSteps(status)
+                                .map { it.title }
+                            val primarySpecialtyLabel = loadPrimarySpecialtyLabel()
+                            AppResult.Success(
+                                ProviderHomeContent(
+                                    userDisplayName = listOf(userResult.data.firstName, userResult.data.lastName)
+                                        .filter { it.isNotBlank() }
+                                        .joinToString(" "),
+                                    isVerified = status.isIdentityVerified,
+                                    primarySpecialtyLabel = primarySpecialtyLabel,
+                                    profileCompletionPercent = status.toCompletionPercent(),
+                                    missingProfileItems = missingItems,
+                                    benefits = staticProviderBenefits(),
+                                    hasActiveBooking = false,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun loadPrimarySpecialtyLabel(): String? {
+        return when (val syncResult = providerProfileRepository.loadProviderProfileForSync()) {
+            is AppResult.Success -> syncResult.data.tradeDraft?.let { "${it.categoryName} · ${it.rubroName}" }
+            is AppResult.Error -> null
+        }
+    }
+
+    /**
+     * El backend no expone un porcentaje numérico de completitud (solo flags booleanos),
+     * así que se deriva un valor aproximado en incrementos de 25% a partir de los 4 hitos
+     * reales que sí devuelve `trabajador-oficio/me/estado-perfil`.
+     */
+    private fun ProviderProfileStatus.toCompletionPercent(): Int {
+        val milestones = listOf(isIdentityVerified, isProfileComplete, isConfigurationComplete, isOperational)
+        val completed = milestones.count { it }
+        return (completed * 100) / milestones.size
+    }
+
+    /**
+     * Contenido estático: el swagger real (apioficios.pushsoftware.com.ar/api-json) no tiene
+     * ningún tag de "beneficios" — se deja este placeholder local hasta que el backend lo exponga.
+     */
+    private fun staticProviderBenefits(): List<ProviderBenefit> = listOf(
+        ProviderBenefit(
+            title = "Ferretería El Clavo",
+            description = "Descuento en materiales de construcción para trabajadores registrados.",
+            discountLabel = "10% OFF",
+        ),
+        ProviderBenefit(
+            title = "Seguro de responsabilidad civil",
+            description = "Cobertura preferencial para trabajadores de oficio activos.",
+        ),
+    )
 
     override suspend fun getCategories(): AppResult<List<HomeCategoryItem>> {
         return withContext(dispatcherProvider.io) {
