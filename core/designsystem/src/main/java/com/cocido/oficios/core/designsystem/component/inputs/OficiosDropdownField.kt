@@ -80,7 +80,7 @@ fun OficiosDropdownField(
     }
 }
 
-@Preview(name = "Dropdown Field", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Dropdown Field", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun DropdownFieldPreview() {
     OficiosTheme {

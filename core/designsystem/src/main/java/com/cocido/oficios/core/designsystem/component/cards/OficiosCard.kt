@@ -73,7 +73,7 @@ fun OficiosCard(
     }
 }
 
-@Preview(name = "Oficios Card", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Oficios Card", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun OficiosCardPreview() {
     OficiosTheme {

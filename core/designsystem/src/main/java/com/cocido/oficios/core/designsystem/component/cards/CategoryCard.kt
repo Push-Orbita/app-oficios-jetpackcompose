@@ -57,7 +57,7 @@ fun CategoryCard(
     }
 }
 
-@Preview(name = "Category Card", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Category Card", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun CategoryCardPreview() {
     OficiosTheme {

@@ -60,7 +60,7 @@ fun OficiosLogo(
     )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38, name = "With title")
+@Preview(showBackground = true, backgroundColor = 0xFF00358B, name = "With title")
 @Composable
 private fun OficiosLogoWithTitlePreview() {
     OficiosTheme {
@@ -68,7 +68,7 @@ private fun OficiosLogoWithTitlePreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38, name = "Icon only")
+@Preview(showBackground = true, backgroundColor = 0xFF00358B, name = "Icon only")
 @Composable
 private fun OficiosLogoIconPreview() {
     OficiosTheme {

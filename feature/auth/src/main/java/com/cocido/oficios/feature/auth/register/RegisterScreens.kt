@@ -248,7 +248,7 @@ fun RegisterFormScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun RegisterFormPreview() {
     OficiosTheme {
@@ -260,7 +260,7 @@ private fun RegisterFormPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun RegisterRolePreview() {
     OficiosTheme { RegisterRoleSelectionScreen({}, {}, {}) }

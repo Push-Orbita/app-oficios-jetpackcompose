@@ -67,7 +67,7 @@ fun OficiosAvatar(
     }
 }
 
-@Preview(name = "Oficios Avatar", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Oficios Avatar", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun OficiosAvatarPreview() {
     OficiosTheme {

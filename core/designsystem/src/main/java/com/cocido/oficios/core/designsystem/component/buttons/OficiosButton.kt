@@ -23,10 +23,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorError
-import com.cocido.oficios.core.designsystem.theme.OficiosColorPrimary
-import com.cocido.oficios.core.designsystem.theme.OficiosColorPrimaryBorder
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -65,18 +64,21 @@ fun OficiosButton(
     }
 
     val (containerColor, contentColor, border, shadowColor) = when (variant) {
+        // Botón primario — Figma: fondo rgb(0,109,239), sombra 0px 4px 10px rgba(0,0,0,.15)
         OficiosButtonVariant.Primary -> ButtonColors(
-            container = OficiosColorPrimary,
+            container = OficiosColorAction,
             content = OficiosColorWhite,
-            border = BorderStroke(1.dp, OficiosColorPrimaryBorder),
-            shadow = OficiosColorPrimary.copy(alpha = 0.15f),
+            border = BorderStroke(1.dp, Color.Transparent),
+            shadow = Color.Black.copy(alpha = 0.15f),
         )
+        // Botón secundario — Figma: fondo blanco, texto rgb(0,53,139)
         OficiosButtonVariant.Secondary -> ButtonColors(
             container = OficiosColorWhite,
             content = OficiosColorBackground,
             border = BorderStroke(1.dp, Color(0xFFE2E2E2)),
-            shadow = OficiosColorWhite.copy(alpha = 0.10f),
+            shadow = Color.Black.copy(alpha = 0.15f),
         )
+        // Botón outline — Figma: transparente + box-shadow inset 1px rgb(0,77,168)
         OficiosButtonVariant.Outlined -> ButtonColors(
             container = Color.Transparent,
             content = MaterialTheme.colorScheme.onSurface,
@@ -93,27 +95,25 @@ fun OficiosButton(
             container = OficiosColorError,
             content = MaterialTheme.colorScheme.onError,
             border = BorderStroke(1.dp, OficiosColorError.copy(alpha = 0.5f)),
-            shadow = OficiosColorError.copy(alpha = 0.15f),
+            shadow = Color.Black.copy(alpha = 0.15f),
         )
         OficiosButtonVariant.Success -> ButtonColors(
             container = OficiosColorSuccess,
             content = Color.White,
             border = BorderStroke(1.dp, OficiosColorSuccess.copy(alpha = 0.5f)),
-            shadow = OficiosColorSuccess.copy(alpha = 0.15f),
+            shadow = Color.Black.copy(alpha = 0.15f),
         )
     }
 
     val isInteractive = enabled && !loading
     val (disabledContainerColor, disabledContentColor) = when (variant) {
-        OficiosButtonVariant.Primary -> OficiosColorPrimary.copy(alpha = OficiosAlpha.disabled) to
+        OficiosButtonVariant.Primary -> OficiosColorAction.copy(alpha = OficiosAlpha.disabled) to
             OficiosColorWhite.copy(alpha = OficiosAlpha.high)
         else -> containerColor.copy(alpha = OficiosAlpha.disabled) to
             contentColor.copy(alpha = OficiosAlpha.disabled)
     }
     val activeBorder = when {
         isInteractive -> border
-        variant == OficiosButtonVariant.Primary ->
-            BorderStroke(1.dp, OficiosColorPrimaryBorder.copy(alpha = OficiosAlpha.disabled))
         variant == OficiosButtonVariant.Secondary ->
             BorderStroke(1.dp, Color(0xFFE2E2E2).copy(alpha = OficiosAlpha.disabled))
         else -> border
@@ -193,7 +193,7 @@ private data class ButtonColors(
     val shadow: Color,
 )
 
-@Preview(name = "Primary Button", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Primary Button", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun PrimaryButtonPreview() {
     OficiosTheme {
@@ -203,7 +203,7 @@ private fun PrimaryButtonPreview() {
     }
 }
 
-@Preview(name = "Secondary Prominent", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Secondary Prominent", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun SecondaryButtonPreview() {
     OficiosTheme {

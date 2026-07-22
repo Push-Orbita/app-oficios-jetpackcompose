@@ -76,7 +76,7 @@ fun WorkGalleryCard(
     }
 }
 
-@Preview(name = "Work Gallery Card", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Work Gallery Card", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun WorkGalleryCardPreview() {
     OficiosTheme {

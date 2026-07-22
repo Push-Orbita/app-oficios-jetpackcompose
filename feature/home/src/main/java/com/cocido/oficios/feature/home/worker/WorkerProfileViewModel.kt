@@ -50,6 +50,14 @@ class WorkerProfileViewModel @Inject constructor(
             WorkerProfileEvent.Retry -> loadInitial()
             WorkerProfileEvent.Back -> emitEffect(WorkerProfileEffect.NavigateBack)
             WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
+            WorkerProfileEvent.RateClicked -> emitEffect(
+                WorkerProfileEffect.ShowMessage(
+                    "Vas a poder calificar a este trabajador cuando termines un pedido con él",
+                ),
+            )
+            WorkerProfileEvent.ReportProfileClicked -> emitEffect(
+                WorkerProfileEffect.ShowMessage("La denuncia de perfiles va a estar disponible próximamente"),
+            )
             WorkerProfileEvent.LoadNextReviews -> loadNextReviews()
         }
     }
