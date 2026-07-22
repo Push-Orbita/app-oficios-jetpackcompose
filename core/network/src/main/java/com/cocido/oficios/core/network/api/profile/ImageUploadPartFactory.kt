@@ -7,6 +7,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 
+private const val SELFIE_PART_FIELD = "selfieArchivo"
+private const val SELFIE_FILE_PREFIX = "selfie"
+
 internal fun validateDniImageFile(file: File, sideLabel: String) {
     if (!file.exists() || file.length() == 0L) {
         throw ClientValidationException("La imagen del $sideLabel está vacía. Volvé a cargarla.")
@@ -18,6 +21,15 @@ internal fun validateDniImageFile(file: File, sideLabel: String) {
             "Formato no válido para $sideLabel. Aceptados: ${DniImageUploadContract.ACCEPTED_FORMATS_LABEL}",
         )
     }
+}
+
+internal fun createSelfieImagePart(file: File): MultipartBody.Part {
+    validateDniImageFile(file, sideLabel = "selfie")
+    return createDniImagePart(
+        fieldName = SELFIE_PART_FIELD,
+        fileNamePrefix = SELFIE_FILE_PREFIX,
+        file = file,
+    )
 }
 
 internal fun createDniImagePart(

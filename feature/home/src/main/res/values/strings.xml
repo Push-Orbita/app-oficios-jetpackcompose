@@ -48,4 +48,17 @@
     <string name="home_worker_view_profile">Ver perfil</string>
     <string name="home_worker_stub_title">Perfil del trabajador</string>
     <string name="home_worker_stub_description">La ficha completa estará disponible pronto (ID: %1$d).</string>
+    <string name="home_worker_hire">Contratar</string>
+    <string name="home_worker_profile_loading">Cargando perfil del trabajador…</string>
+    <string name="home_worker_profile_error_title">No pudimos cargar el perfil del trabajador</string>
+    <string name="home_worker_specialties_title">Especialidades</string>
+    <string name="home_worker_availability_title">Disponibilidad</string>
+    <string name="home_worker_gallery_title">Galería</string>
+    <string name="home_worker_certificates_title">Certificados</string>
+    <string name="home_worker_reviews_title">Reseñas</string>
+    <string name="home_worker_reviews_empty_title">Sin reseñas aún</string>
+    <string name="home_worker_reviews_empty_description">Cuando finalicen trabajos, los clientes podrán dejar calificaciones.</string>
+    <string name="home_worker_load_more_reviews">Ver más reseñas</string>
+    <string name="home_worker_hire_stub_title">Contratar</string>
+    <string name="home_worker_hire_stub_description">La contratación estará disponible pronto (ID: %1$d).</string>
 </resources>

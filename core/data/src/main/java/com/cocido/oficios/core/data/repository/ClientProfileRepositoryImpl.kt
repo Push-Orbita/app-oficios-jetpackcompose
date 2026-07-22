@@ -21,8 +21,19 @@ class ClientProfileRepositoryImpl @Inject constructor(
     override suspend fun saveDomicilio(request: ClientDomicilioRequest): AppResult<Unit> =
         remoteDataSource.createDomicilio(request.toDto()).map { }
 
-    override suspend fun saveContacto(request: ClientContactoRequest): AppResult<Unit> =
-        remoteDataSource.createContacto(request.toDto()).map { }
+    override suspend fun saveContacto(request: ClientContactoRequest): AppResult<Long> =
+        remoteDataSource.createContacto(request.toDto()).map { it.id }
+
+    override suspend fun sendPhoneVerificationCode(contactId: Long) =
+        remoteDataSource.sendPhoneVerificationCode(contactId).map { response ->
+            com.cocido.oficios.domain.model.PhoneVerificationSendResult(
+                message = response.message,
+                resendCooldownSeconds = response.proximoReenvioEnSegundos,
+            )
+        }
+
+    override suspend fun verifyPhoneCode(contactId: Long, code: String) =
+        remoteDataSource.verifyPhoneCode(contactId, code).map { }
 
     override suspend fun getMyDomicilios(): AppResult<List<ClientDomicilio>> =
         remoteDataSource.getMyDomicilios().map { response ->

@@ -6,6 +6,7 @@ import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
+import com.cocido.oficios.domain.usecase.profile.GetProviderDocumentoUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +67,15 @@ class ProviderDniViewModelTest {
         job.cancel()
     }
 
+    private fun identityRepository() = object : IdentityDocumentRepository {
+        override suspend fun uploadDniImages(frontImagePath: String, backImagePath: String) =
+            AppResult.Success(Unit)
+        override suspend fun uploadSelfie(imagePath: String) = AppResult.Success(Unit)
+        override suspend fun replaceSelfie(documentId: Long, imagePath: String) = AppResult.Success(Unit)
+        override suspend fun getMyDniDocuments() = AppResult.Success(null)
+        override suspend fun getMySelfieDocument() = AppResult.Success(null)
+    }
+
     private fun createViewModel(): ProviderDniViewModel = ProviderDniViewModel(
         updateProviderDniNumberUseCase = UpdateProviderDniNumberUseCase(
             object : ProviderProfileRepository {
@@ -79,18 +89,21 @@ class ProviderDniViewModelTest {
                 override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
             },
         ),
-        uploadProviderDniImagesUseCase = UploadProviderDniImagesUseCase(
-            object : IdentityDocumentRepository {
-                override suspend fun uploadDniImages(frontImagePath: String, backImagePath: String) =
-                    AppResult.Success(Unit)
-                override suspend fun getMyDniDocuments() = AppResult.Success(null)
-            },
-        ),
+        uploadProviderDniImagesUseCase = UploadProviderDniImagesUseCase(identityRepository()),
         getProviderDniDocumentsUseCase = com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase(
-            object : IdentityDocumentRepository {
-                override suspend fun uploadDniImages(frontImagePath: String, backImagePath: String) =
+            identityRepository(),
+        ),
+        getProviderDocumentoUseCase = GetProviderDocumentoUseCase(
+            object : ProviderProfileRepository {
+                override suspend fun updateProfessionalInfo(request: ProviderProfessionalInfoRequest) =
                     AppResult.Success(Unit)
-                override suspend fun getMyDniDocuments() = AppResult.Success(null)
+                override suspend fun submitRubroFull(request: ProviderRubroFullRequest) =
+                    AppResult.Success(Unit)
+                override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) =
+                    AppResult.Success(Unit)
+                override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                override suspend fun loadProviderProfileForSync() =
+                    AppResult.Success(ProviderProfileSync(tradeDraft = null, documento = "12345678"))
             },
         ),
         uploadWorkCertificateUseCase = com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase(

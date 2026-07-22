@@ -15,7 +15,15 @@ class IdentityDocumentRemoteDataSource @Inject constructor(
         identityDocumentUploadDataSource.uploadDniImages(frontImagePath, backImagePath)
     }
 
-    suspend fun searchDocuments() = safeApiCall {
-        identityDocumentApi.searchDocuments()
+    suspend fun uploadSelfie(imagePath: String) = safeApiCall {
+        identityDocumentUploadDataSource.uploadSelfie(imagePath)
+    }
+
+    suspend fun replaceSelfie(documentId: Long, imagePath: String) = safeApiCall {
+        identityDocumentUploadDataSource.replaceSelfie(documentId, imagePath)
+    }
+
+    suspend fun searchDocuments(tipoDocumento: String? = null) = safeApiCall {
+        identityDocumentApi.searchDocuments(tipoDocumento = tipoDocumento)
     }
 }

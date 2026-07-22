@@ -38,8 +38,34 @@ data class ContactoSinPersonaDto(
     val id: Long,
     val nombre: String,
     val telefonoWhatsapp: String,
+    val telefonoVerificado: Boolean = false,
     val email: String? = null,
     val favorito: Boolean = false,
+)
+
+@Serializable
+data class CreateContactoResponseDto(
+    val id: Long,
+)
+
+@Serializable
+data class EnviarCodigoTelefonoResponseDto(
+    val message: String,
+    val canal: String = "whatsapp",
+    val enviado: Boolean = true,
+    val expiraEnMinutos: Int = 10,
+    val proximoReenvioEnSegundos: Int? = null,
+)
+
+@Serializable
+data class VerifyTelefonoCodigoRequestDto(
+    val codigo: String,
+)
+
+@Serializable
+data class VerificarTelefonoCodigoResponseDto(
+    val message: String,
+    val contacto: ContactoSinPersonaDto? = null,
 )
 
 @Serializable
@@ -62,10 +88,14 @@ data class ImgDocumentoGroupDto(
 @Serializable
 data class ImgDocumentoItemDto(
     val id: Long? = null,
+    val tipoDocumento: String? = null,
     val frenteUrl: String? = null,
     val reversoUrl: String? = null,
+    val selfieUrl: String? = null,
     val frenteEstado: String? = null,
     val reversoEstado: String? = null,
+    val selfieEstado: String? = null,
     val frenteNombreArchivo: String? = null,
     val reversoNombreArchivo: String? = null,
+    val motivoRechazo: String? = null,
 )

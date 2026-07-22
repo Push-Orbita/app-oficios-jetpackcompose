@@ -9,13 +9,20 @@ object OnboardingDestination {
     const val CLIENT_BLOCKED = "onboarding/client-blocked"
     const val CLIENT_INACTIVE = "onboarding/client-inactive"
     const val VERIFY_EMAIL = "onboarding/verify-email"
+    const val VERIFY_PHONE = "onboarding/verify-phone/{contactId}?telefono={telefono}"
     const val CLIENT_CONTACT_DOMICILIO = "onboarding/client/contact-domicilio"
     const val CLIENT_DOMICILIO = "onboarding/client/domicilio"
     const val CLIENT_CONTACTO = "onboarding/client/contacto"
     const val PROVIDER_DNI = "onboarding/provider/dni"
+    const val PROVIDER_SELFIE = "onboarding/provider/selfie"
     const val PROVIDER_PROFESSIONAL_INFO = "onboarding/provider/professional-info"
     const val PROVIDER_RUBROS = "onboarding/provider/rubros"
     const val PROVIDER_AVAILABILITY = "onboarding/provider/availability"
     const val PROVIDER_PAYMENT_METHODS = "onboarding/provider/payment-methods"
     const val PROVIDER_LOCAL = "onboarding/provider/local"
+
+    fun verifyPhoneRoute(contactId: Long, telefono: String = ""): String {
+        val encodedPhone = java.net.URLEncoder.encode(telefono, Charsets.UTF_8.name())
+        return "onboarding/verify-phone/$contactId?telefono=$encodedPhone"
+    }
 }

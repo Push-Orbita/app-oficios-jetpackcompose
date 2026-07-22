@@ -18,6 +18,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
+import com.cocido.oficios.domain.usecase.profile.GetProviderDocumentoUseCase
 import com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase
 import com.cocido.oficios.domain.usecase.profile.GetWorkCertificatesUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
@@ -66,6 +67,7 @@ class ProviderDniViewModel @Inject constructor(
     private val updateProviderDniNumberUseCase: UpdateProviderDniNumberUseCase,
     private val uploadProviderDniImagesUseCase: UploadProviderDniImagesUseCase,
     private val getProviderDniDocumentsUseCase: GetProviderDniDocumentsUseCase,
+    private val getProviderDocumentoUseCase: GetProviderDocumentoUseCase,
     private val uploadWorkCertificateUseCase: UploadWorkCertificateUseCase,
     private val getWorkCertificatesUseCase: GetWorkCertificatesUseCase,
 ) : ViewModel() {
@@ -82,6 +84,9 @@ class ProviderDniViewModel @Inject constructor(
     private fun preloadDocuments() {
         viewModelScope.launch {
             _uiState.update { it.copy(isPreloading = true) }
+            getProviderDocumentoUseCase()?.let { documento ->
+                _uiState.update { it.copy(documento = documento) }
+            }
             when (val dniResult = getProviderDniDocumentsUseCase()) {
                 is AppResult.Success -> dniResult.data?.let { docs ->
                     _uiState.update {

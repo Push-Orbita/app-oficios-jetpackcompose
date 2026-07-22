@@ -1,6 +1,8 @@
 # Módulo 3 — FCM y staging (acción manual)
 
-No hay `google-services.json` en el repo. La app usa **polling al reanudar** el checklist proveedor para detectar cambios de `identidadVerificada`.
+No hay `google-services.json` real en el repo para producción. La app incluye un **stub** en `app/google-services.json` para compilar; reemplazalo antes de probar push en dispositivo.
+
+La app usa **polling al reanudar** el checklist proveedor como respaldo si FCM falla.
 
 ## Para habilitar push KYC
 

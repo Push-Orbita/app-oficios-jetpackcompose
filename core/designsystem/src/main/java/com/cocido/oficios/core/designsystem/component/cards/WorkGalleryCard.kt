@@ -18,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.AsyncImage
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -38,7 +40,6 @@ fun WorkGalleryCard(
     val clickableModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
 
     Column(modifier = modifier) {
-        // Imagen — placeholder hasta integrar Coil
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,12 +49,21 @@ fun WorkGalleryCard(
                 .then(clickableModifier),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Image,
-                contentDescription = null,
-                tint = OficiosColorMutedText,
-                modifier = Modifier.size(OficiosComponentSize.iconLg),
-            )
+            if (!imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = caption,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Image,
+                    contentDescription = null,
+                    tint = OficiosColorMutedText,
+                    modifier = Modifier.size(OficiosComponentSize.iconLg),
+                )
+            }
         }
         if (caption != null) {
             Text(

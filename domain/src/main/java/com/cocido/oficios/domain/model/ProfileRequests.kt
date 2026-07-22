@@ -31,8 +31,14 @@ data class ClientContacto(
     val id: Long,
     val nombre: String,
     val telefonoWhatsapp: String,
+    val telefonoVerificado: Boolean = false,
     val email: String?,
     val favorito: Boolean,
+)
+
+data class PhoneVerificationSendResult(
+    val message: String,
+    val resendCooldownSeconds: Int?,
 )
 
 data class ClientContactoRequest(

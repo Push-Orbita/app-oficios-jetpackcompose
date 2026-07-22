@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.domain.usecase.auth.ApplyLoginSessionPreferenceUseCase
 import com.cocido.oficios.domain.usecase.auth.LoginUseCase
+import com.cocido.oficios.core.common.contract.DeviceTokenRegistrar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,6 +30,7 @@ sealed interface LoginEffect {
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val applyLoginSessionPreferenceUseCase: ApplyLoginSessionPreferenceUseCase,
+    private val deviceTokenRegistrar: DeviceTokenRegistrar,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -82,6 +84,7 @@ class LoginViewModel @Inject constructor(
             ) {
                 is AppResult.Success -> {
                     applyLoginSessionPreferenceUseCase(_uiState.value.rememberMe)
+                    deviceTokenRegistrar.syncCurrentToken()
                     _uiState.update { it.copy(isLoading = false) }
                     emitEffect(LoginEffect.NavigateToOnboarding)
                 }

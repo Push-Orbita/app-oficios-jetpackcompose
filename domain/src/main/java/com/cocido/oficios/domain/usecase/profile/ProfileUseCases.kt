@@ -131,7 +131,7 @@ class SaveClientDomicilioUseCase @Inject constructor(
 class SaveClientContactoUseCase @Inject constructor(
     private val clientProfileRepository: ClientProfileRepository,
 ) {
-    suspend operator fun invoke(request: ClientContactoRequest): AppResult<Unit> =
+    suspend operator fun invoke(request: ClientContactoRequest): AppResult<Long> =
         clientProfileRepository.saveContacto(request)
 }
 
@@ -174,6 +174,51 @@ class GetProviderDniDocumentsUseCase @Inject constructor(
     private val identityDocumentRepository: IdentityDocumentRepository,
 ) {
     suspend operator fun invoke() = identityDocumentRepository.getMyDniDocuments()
+}
+
+class UploadProviderSelfieUseCase @Inject constructor(
+    private val identityDocumentRepository: IdentityDocumentRepository,
+) {
+    suspend operator fun invoke(imagePath: String): AppResult<Unit> =
+        identityDocumentRepository.uploadSelfie(imagePath)
+}
+
+class ReplaceProviderSelfieUseCase @Inject constructor(
+    private val identityDocumentRepository: IdentityDocumentRepository,
+) {
+    suspend operator fun invoke(documentId: Long, imagePath: String): AppResult<Unit> =
+        identityDocumentRepository.replaceSelfie(documentId, imagePath)
+}
+
+class GetProviderSelfieUseCase @Inject constructor(
+    private val identityDocumentRepository: IdentityDocumentRepository,
+) {
+    suspend operator fun invoke() = identityDocumentRepository.getMySelfieDocument()
+}
+
+class GetProviderDocumentoUseCase @Inject constructor(
+    private val providerProfileRepository: ProviderProfileRepository,
+) {
+    suspend operator fun invoke(): String? = when (
+        val result = providerProfileRepository.loadProviderProfileForSync()
+    ) {
+        is AppResult.Success -> result.data.documento
+        is AppResult.Error -> null
+    }
+}
+
+class SendContactPhoneVerificationCodeUseCase @Inject constructor(
+    private val clientProfileRepository: ClientProfileRepository,
+) {
+    suspend operator fun invoke(contactId: Long) =
+        clientProfileRepository.sendPhoneVerificationCode(contactId)
+}
+
+class VerifyContactPhoneCodeUseCase @Inject constructor(
+    private val clientProfileRepository: ClientProfileRepository,
+) {
+    suspend operator fun invoke(contactId: Long, code: String): AppResult<Unit> =
+        clientProfileRepository.verifyPhoneCode(contactId, code)
 }
 
 class UploadWorkCertificateUseCase @Inject constructor(

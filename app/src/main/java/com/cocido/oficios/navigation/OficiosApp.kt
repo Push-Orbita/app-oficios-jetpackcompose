@@ -2,6 +2,7 @@ package com.cocido.oficios.navigation
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -20,7 +21,16 @@ import com.cocido.oficios.feature.settings.navigation.settingsScreen
 fun OficiosApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
+    pendingPushRoute: String? = null,
+    onPushRouteConsumed: () -> Unit = {},
 ) {
+    LaunchedEffect(pendingPushRoute) {
+        val route = pendingPushRoute ?: return@LaunchedEffect
+        navController.navigate(route) {
+            launchSingleTop = true
+        }
+        onPushRouteConsumed()
+    }
     AppNavHost(
         navController = navController,
         modifier = modifier,
@@ -87,6 +97,14 @@ fun AppNavHost(
             },
             onNavigateToStep = { route ->
                 navController.navigate(route)
+            },
+            onNavigateToVerifyPhone = { contactId, telefono ->
+                navController.navigate(
+                    com.cocido.oficios.feature.onboarding.navigation.OnboardingDestination.verifyPhoneRoute(
+                        contactId = contactId,
+                        telefono = telefono,
+                    ),
+                )
             },
             onStepCompleted = {
                 navController.popBackStack()

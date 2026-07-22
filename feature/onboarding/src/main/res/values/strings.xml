@@ -108,6 +108,18 @@
     <string name="onboarding_image_picker_camera">Tomar foto</string>
     <string name="onboarding_image_picker_gallery">Elegir de galería</string>
     <string name="onboarding_image_picker_cancel">Cancelar</string>
+    <string name="onboarding_step_verify_phone_title">Verificar teléfono</string>
+    <string name="onboarding_step_verify_phone_subtitle">Ingresá el código de 6 dígitos que enviamos a %1$s por WhatsApp.</string>
+    <string name="onboarding_step_verify_phone_code_label">Código de verificación</string>
+    <string name="onboarding_step_verify_phone_resend">Reenviar código</string>
+    <string name="onboarding_step_verify_phone_resend_cooldown">Reenviar código en %1$d s</string>
+    <string name="onboarding_step_verify_phone_resending">Enviando código…</string>
+    <string name="onboarding_step_verify_phone_submit">Verificar teléfono</string>
+    <string name="onboarding_step_selfie_title">Foto de rostro</string>
+    <string name="onboarding_step_selfie_hint">Subí una selfie con buena luz, sin anteojos ni gorro, mostrando tu rostro completo.</string>
+    <string name="onboarding_step_selfie_card_title">Tu selfie</string>
+    <string name="onboarding_step_selfie_card_subtitle">Tocá para tomar o elegir una foto</string>
+    <string name="onboarding_step_selfie_submit">Enviar selfie</string>
     <string name="onboarding_home_client_subtitle">Bienvenido a Oficios</string>
     <string name="onboarding_home_provider_subtitle">Tu perfil está listo para operar</string>
 </resources>

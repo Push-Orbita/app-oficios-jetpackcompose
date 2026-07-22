@@ -56,4 +56,20 @@ class IdentityDocumentApiIntegrationTest {
         assertTrue(body.contains("Content-Type: image/jpeg"))
         assertTrue(body.contains("Content-Type: image/png"))
     }
+
+    @Test
+    fun `upload selfie sends multipart aligned with backend contract`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        val selfieFile = File.createTempFile("selfie", ".jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
+        uploadDataSource.uploadSelfie(selfieFile.absolutePath)
+
+        val request = server.takeRequest()
+        val body = request.body.readUtf8()
+
+        assertEquals("POST", request.method)
+        assertTrue(request.path?.startsWith("/img-documento/subir-documento-selfie") == true)
+        assertTrue(body.contains("name=\"selfieArchivo\""))
+        selfieFile.delete()
+    }
 }

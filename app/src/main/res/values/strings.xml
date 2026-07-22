@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Oficios</string>
+    <string name="notification_channel_kyc_name">Revisión de documentación</string>
 </resources>

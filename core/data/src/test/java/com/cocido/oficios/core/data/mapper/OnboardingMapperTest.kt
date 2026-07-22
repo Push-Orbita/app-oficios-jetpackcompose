@@ -114,4 +114,38 @@ class OnboardingMapperTest {
         assertTrue(steps.any { it.id == "metodos_pago" })
     }
 
+    @Test
+    fun `maps provider selfie steps`() {
+        val steps = ProviderProfileStatus(
+            accountStatus = AccountStatus.PENDING_APPROVAL,
+            isConfigurationComplete = false,
+            isProfileComplete = false,
+            isOperational = false,
+            isIdentityVerified = false,
+            missingSteps = listOf("selfie_imagen", "selfie_pendiente_revision"),
+        ).toOnboardingSteps()
+
+        assertTrue(steps.any { it.id == "selfie_imagen" })
+        assertEquals(
+            OnboardingStepStatus.IN_REVIEW,
+            steps.first { it.id == "selfie_pendiente_revision" }.status,
+        )
+    }
+
+    @Test
+    fun `maps client phone verification step`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = false,
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = true,
+                tieneContacto = true,
+                telefonoVerificado = false,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        val steps = status.toOnboardingSteps()
+
+        assertTrue(steps.any { it.id == "telefono_verificado" })
+    }
+
 }

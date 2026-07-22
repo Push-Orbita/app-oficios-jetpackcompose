@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.auth.login
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.contract.DeviceTokenRegistrar
 import com.cocido.oficios.domain.repository.SessionPreferencesRepository
 import com.cocido.oficios.domain.repository.UserPreferencesRepository
 import com.cocido.oficios.domain.usecase.auth.ApplyLoginSessionPreferenceUseCase
@@ -54,6 +55,9 @@ class LoginViewModelTest {
                 override suspend fun setRememberSession(remember: Boolean) = Unit
             },
         ),
+        deviceTokenRegistrar = object : DeviceTokenRegistrar {
+            override suspend fun syncCurrentToken() = Unit
+        },
     )
 
     @Test

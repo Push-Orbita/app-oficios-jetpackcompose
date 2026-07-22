@@ -1,0 +1,8 @@
+package com.cocido.oficios.feature.home.worker
+
+sealed interface WorkerProfileEffect {
+    data object NavigateBack : WorkerProfileEffect
+    data class NavigateToHire(val workerId: Long) : WorkerProfileEffect
+    data class ShowMessage(val message: String) : WorkerProfileEffect
+}
+
