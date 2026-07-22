@@ -34,6 +34,7 @@ class ProviderProfileRepositoryImpl @Inject constructor(
             ProviderProfileSync(
                 tradeDraft = profile.toRegisterTradeDraft(),
                 paymentMethods = profile.metodosPago,
+                documento = profile.documento,
             )
         }
 }

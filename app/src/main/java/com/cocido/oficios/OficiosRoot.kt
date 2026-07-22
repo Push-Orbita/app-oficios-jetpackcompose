@@ -2,6 +2,7 @@ package com.cocido.oficios
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -15,6 +16,7 @@ fun OficiosRoot(
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val pendingPushRoute by viewModel.pendingPushRoute.collectAsStateWithLifecycle()
     val darkTheme = when (themeMode) {
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
@@ -22,6 +24,9 @@ fun OficiosRoot(
     }
 
     OficiosTheme(darkTheme = darkTheme) {
-        OficiosApp()
+        OficiosApp(
+            pendingPushRoute = pendingPushRoute,
+            onPushRouteConsumed = viewModel::consumePushRoute,
+        )
     }
 }

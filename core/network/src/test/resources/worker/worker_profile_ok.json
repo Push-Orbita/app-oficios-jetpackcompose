@@ -1,0 +1,229 @@
+{
+  "id": 6,
+  "usuario": {
+    "id": 8,
+    "email": "matiasbritez.sh@gmail.com",
+    "fotoPerfil": null,
+    "emailVerificado": true,
+    "persona": {
+      "id": 8,
+      "nombres": "Matias",
+      "apellido": "britez 2"
+    },
+    "rolUsuario": {
+      "id": 1,
+      "nombre": "TRABAJADOR_DE_OFICIOS"
+    }
+  },
+  "estado": "VALIDADO",
+  "documento": "43453548",
+  "rubros": [
+    {
+      "id": 8,
+      "rubro": {
+        "id": 9,
+        "nombre": "Peluquería canina",
+        "plazoCancelacionHorasDefault": 24,
+        "categoria": {
+          "id": 4,
+          "nombre": "Mascotas"
+        }
+      },
+      "principal": true,
+      "subRubros": [
+        {
+          "id": 18,
+          "subRubro": {
+            "id": 23,
+            "nombre": "Baño y corte"
+          },
+          "lugarDomicilio": true,
+          "lugarLocal": false,
+          "requiereTurnos": false,
+          "plazoCancelacionHoras": null,
+          "slotsTurno": []
+        },
+        {
+          "id": 17,
+          "subRubro": {
+            "id": 24,
+            "nombre": "Corte de raza específica"
+          },
+          "lugarDomicilio": true,
+          "lugarLocal": false,
+          "requiereTurnos": false,
+          "plazoCancelacionHoras": null,
+          "slotsTurno": []
+        }
+      ],
+      "diasLaborales": [
+        {
+          "id": 20,
+          "diaInicio": "LUNES",
+          "diaFin": "LUNES",
+          "horariosLaborales": [
+            {
+              "id": 20,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "diaInicio": "MARTES",
+          "diaFin": "MARTES",
+          "horariosLaborales": [
+            {
+              "id": 21,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "diaInicio": "MIERCOLES",
+          "diaFin": "MIERCOLES",
+          "horariosLaborales": [
+            {
+              "id": 22,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "diaInicio": "JUEVES",
+          "diaFin": "JUEVES",
+          "horariosLaborales": [
+            {
+              "id": 23,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "diaInicio": "VIERNES",
+          "diaFin": "VIERNES",
+          "horariosLaborales": [
+            {
+              "id": 24,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "rubro": {
+        "id": 9,
+        "nombre": "Peluquería canina",
+        "plazoCancelacionHorasDefault": 24,
+        "categoria": {
+          "id": 4,
+          "nombre": "Mascotas"
+        }
+      },
+      "principal": true,
+      "subRubros": [
+        {
+          "id": 20,
+          "subRubro": {
+            "id": 23,
+            "nombre": "Baño y corte"
+          },
+          "lugarDomicilio": true,
+          "lugarLocal": false,
+          "requiereTurnos": false,
+          "plazoCancelacionHoras": null,
+          "slotsTurno": []
+        },
+        {
+          "id": 19,
+          "subRubro": {
+            "id": 24,
+            "nombre": "Corte de raza específica"
+          },
+          "lugarDomicilio": true,
+          "lugarLocal": false,
+          "requiereTurnos": false,
+          "plazoCancelacionHoras": null,
+          "slotsTurno": []
+        }
+      ],
+      "diasLaborales": [
+        {
+          "id": 25,
+          "diaInicio": "LUNES",
+          "diaFin": "LUNES",
+          "horariosLaborales": [
+            {
+              "id": 25,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "diaInicio": "MARTES",
+          "diaFin": "MARTES",
+          "horariosLaborales": [
+            {
+              "id": 26,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "diaInicio": "MIERCOLES",
+          "diaFin": "MIERCOLES",
+          "horariosLaborales": [
+            {
+              "id": 27,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "diaInicio": "JUEVES",
+          "diaFin": "JUEVES",
+          "horariosLaborales": [
+            {
+              "id": 28,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "diaInicio": "VIERNES",
+          "diaFin": "VIERNES",
+          "horariosLaborales": [
+            {
+              "id": 29,
+              "horaInicio": "09:00:00",
+              "horaFin": "18:00:00"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reputacion": null,
+  "certificados": [],
+  "galeriaTrabajos": [],
+  "domicilios": []
+}
+

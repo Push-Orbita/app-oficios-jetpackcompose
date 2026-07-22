@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.search
+package com.cocido.oficios.feature.home.worker.hire
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.R
 
 @Composable
-fun WorkerStubScreen(
+fun WorkerHireStubScreen(
     workerId: Long,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -31,12 +31,12 @@ fun WorkerStubScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = stringResource(R.string.home_worker_stub_title),
+                text = stringResource(R.string.home_worker_hire_stub_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
             )
             Text(
-                text = stringResource(R.string.home_worker_stub_description, workerId),
+                text = stringResource(R.string.home_worker_hire_stub_description, workerId),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -47,3 +47,4 @@ fun WorkerStubScreen(
         }
     }
 }
+

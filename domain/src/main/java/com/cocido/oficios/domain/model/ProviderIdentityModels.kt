@@ -9,6 +9,13 @@ data class ProviderDniDocuments(
     val backFileName: String?,
 )
 
+data class ProviderSelfieDocument(
+    val id: Long?,
+    val url: String?,
+    val status: String?,
+    val rejectionReason: String?,
+)
+
 data class WorkCertificateInfo(
     val id: Long,
     val name: String,

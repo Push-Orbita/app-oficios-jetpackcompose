@@ -19,6 +19,17 @@ class ClientProfileRemoteDataSource @Inject constructor(
         clientProfileApi.createContacto(request)
     }
 
+    suspend fun sendPhoneVerificationCode(contactId: Long) = safeApiCall {
+        clientProfileApi.sendPhoneVerificationCode(contactId)
+    }
+
+    suspend fun verifyPhoneCode(contactId: Long, code: String) = safeApiCall {
+        clientProfileApi.verifyPhoneCode(
+            contactId = contactId,
+            request = com.cocido.oficios.core.network.api.profile.dto.VerifyTelefonoCodigoRequestDto(codigo = code),
+        )
+    }
+
     suspend fun getMyDomicilios() = safeApiCall {
         clientProfileApi.getMyDomicilios()
     }

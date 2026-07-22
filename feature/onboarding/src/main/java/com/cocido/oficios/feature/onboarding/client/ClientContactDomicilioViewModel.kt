@@ -50,6 +50,10 @@ data class ClientContactDomicilioUiState(
 
 sealed interface ClientContactDomicilioEffect {
     data object Saved : ClientContactDomicilioEffect
+    data class NavigateToPhoneVerification(
+        val contactId: Long,
+        val telefono: String,
+    ) : ClientContactDomicilioEffect
 }
 
 @HiltViewModel
@@ -60,6 +64,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
     private val getClientDomiciliosUseCase: GetClientDomiciliosUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val pendingClientOnboardingStore: PendingClientOnboardingStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientContactDomicilioUiState())
@@ -166,12 +171,9 @@ class ClientContactDomicilioViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false, error = contactoResult.error.userMessage()) }
                     return@launch
                 }
-                is AppResult.Success -> Unit
-            }
-
-            when (
-                val domicilioResult = saveClientDomicilioUseCase(
-                    ClientDomicilioRequest(
+                is AppResult.Success -> {
+                    val contactId = contactoResult.data
+                    val domicilioRequest = ClientDomicilioRequest(
                         barrioId = barrioId,
                         personaId = personaId,
                         nombre = "Domicilio principal",
@@ -180,19 +182,37 @@ class ClientContactDomicilioViewModel @Inject constructor(
                         piso = state.piso.trim().ifBlank { null },
                         departamento = state.departamento.trim().ifBlank { null },
                         favorito = true,
-                    ),
-                )
-            ) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(ClientContactDomicilioEffect.Saved)
-                }
-                is AppResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = "Contacto guardado, pero el domicilio falló: ${domicilioResult.error.userMessage()}",
+                    )
+                    val existingContact = when (val contacts = getClientContactosUseCase()) {
+                        is AppResult.Success -> contacts.data.firstOrNull { it.id == contactId }
+                            ?: contacts.data.firstOrNull { it.favorito }
+                        is AppResult.Error -> null
+                    }
+                    val phoneVerified = existingContact?.telefonoVerificado == true
+                    if (!phoneVerified) {
+                        pendingClientOnboardingStore.pendingDomicilio = domicilioRequest
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.emit(
+                            ClientContactDomicilioEffect.NavigateToPhoneVerification(
+                                contactId = contactId,
+                                telefono = state.telefono.trim(),
+                            ),
                         )
+                        return@launch
+                    }
+                    when (val domicilioResult = saveClientDomicilioUseCase(domicilioRequest)) {
+                        is AppResult.Success -> {
+                            _uiState.update { it.copy(isLoading = false) }
+                            _effects.emit(ClientContactDomicilioEffect.Saved)
+                        }
+                        is AppResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = "Contacto guardado, pero el domicilio falló: ${domicilioResult.error.userMessage()}",
+                                )
+                            }
+                        }
                     }
                 }
             }

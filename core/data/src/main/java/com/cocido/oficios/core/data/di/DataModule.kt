@@ -11,10 +11,12 @@ import com.cocido.oficios.core.data.repository.CatalogRepositoryImpl
 import com.cocido.oficios.core.data.repository.HomeRepositoryImpl
 import com.cocido.oficios.core.data.repository.ClientProfileRepositoryImpl
 import com.cocido.oficios.core.data.repository.IdentityDocumentRepositoryImpl
+import com.cocido.oficios.core.data.repository.NotificationsRepositoryImpl
 import com.cocido.oficios.core.data.repository.OnboardingRepositoryImpl
 import com.cocido.oficios.core.data.repository.ProviderProfileRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkCertificateRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkerSearchRepositoryImpl
+import com.cocido.oficios.core.data.repository.WorkerProfileRepositoryImpl
 import com.cocido.oficios.core.data.session.SessionManager
 import com.cocido.oficios.core.data.session.SessionPreferencesRepositoryImpl
 import com.cocido.oficios.domain.repository.AuthRepository
@@ -22,6 +24,7 @@ import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
 import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
+import com.cocido.oficios.domain.repository.NotificationsRepository
 import com.cocido.oficios.domain.repository.OnboardingRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
@@ -29,6 +32,7 @@ import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.repository.SessionPreferencesRepository
 import com.cocido.oficios.domain.repository.SessionRepository
 import com.cocido.oficios.domain.repository.WorkCertificateRepository
+import com.cocido.oficios.domain.repository.WorkerProfileRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import dagger.Binds
 import dagger.Module
@@ -103,6 +107,12 @@ abstract class DataModule {
 
     @Binds
     @Singleton
+    abstract fun bindNotificationsRepository(
+        impl: NotificationsRepositoryImpl,
+    ): NotificationsRepository
+
+    @Binds
+    @Singleton
     abstract fun bindWorkCertificateRepository(
         impl: WorkCertificateRepositoryImpl,
     ): WorkCertificateRepository
@@ -112,6 +122,12 @@ abstract class DataModule {
     abstract fun bindWorkerSearchRepository(
         impl: WorkerSearchRepositoryImpl,
     ): WorkerSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkerProfileRepository(
+        impl: WorkerProfileRepositoryImpl,
+    ): WorkerProfileRepository
 
     @Binds
     @Singleton

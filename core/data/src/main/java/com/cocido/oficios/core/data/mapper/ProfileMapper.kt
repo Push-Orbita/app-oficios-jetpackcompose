@@ -97,6 +97,7 @@ fun ContactoSinPersonaDto.toDomain() = ClientContacto(
     id = id,
     nombre = nombre,
     telefonoWhatsapp = telefonoWhatsapp,
+    telefonoVerificado = telefonoVerificado,
     email = email,
     favorito = favorito,
 )

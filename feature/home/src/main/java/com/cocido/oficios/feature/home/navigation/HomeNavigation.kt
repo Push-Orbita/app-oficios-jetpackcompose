@@ -9,8 +9,9 @@ import androidx.navigation.navigation
 import com.cocido.oficios.feature.home.CategoriesRoute
 import com.cocido.oficios.feature.home.HomeRoute
 import com.cocido.oficios.feature.home.rubros.RubrosRoute
+import com.cocido.oficios.feature.home.worker.WorkerProfileRoute
+import com.cocido.oficios.feature.home.worker.hire.WorkerHireStubRoute
 import com.cocido.oficios.feature.home.search.SearchResultsRoute
-import com.cocido.oficios.feature.home.search.WorkerStubRoute
 
 fun NavGraphBuilder.homeScreen(
     navController: NavHostController,
@@ -53,7 +54,7 @@ fun NavGraphBuilder.homeScreen(
                     )
                 },
                 onNavigateToWorker = { workerId ->
-                    navController.navigate(HomeDestination.workerStub(workerId))
+                    navController.navigate(HomeDestination.workerProfile(workerId))
                 },
                 onNavigateToSettings = onNavigateToSettings,
                 onShowMessage = onShowMessage,
@@ -112,18 +113,33 @@ fun NavGraphBuilder.homeScreen(
             SearchResultsRoute(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToWorker = { workerId ->
-                    navController.navigate(HomeDestination.workerStub(workerId))
+                    navController.navigate(HomeDestination.workerProfile(workerId))
                 },
                 onShowMessage = onShowMessage,
             )
         }
         composable(
-            route = HomeDestination.workerStub,
+            route = HomeDestination.workerProfile,
             arguments = listOf(
                 navArgument("workerId") { type = NavType.LongType },
             ),
         ) {
-            WorkerStubRoute(onNavigateBack = { navController.popBackStack() })
+            WorkerProfileRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHire = { workerId ->
+                    navController.navigate(HomeDestination.hireStub(workerId))
+                },
+                onShowMessage = onShowMessage,
+            )
+        }
+
+        composable(
+            route = HomeDestination.hireStub,
+            arguments = listOf(
+                navArgument("workerId") { type = NavType.LongType },
+            ),
+        ) {
+            WorkerHireStubRoute(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

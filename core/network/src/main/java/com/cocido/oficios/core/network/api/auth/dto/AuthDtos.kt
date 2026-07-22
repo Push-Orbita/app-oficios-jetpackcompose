@@ -132,6 +132,7 @@ data class ClientePerfilEstadoRequisitosDto(
     val tieneContactoFavorito: Boolean = false,
     val tieneDomicilioFavorito: Boolean = false,
     val emailVerificado: Boolean = false,
+    val telefonoVerificado: Boolean = false,
 )
 
 @Serializable

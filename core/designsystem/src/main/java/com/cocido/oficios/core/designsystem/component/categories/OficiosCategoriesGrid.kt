@@ -2,14 +2,12 @@ package com.cocido.oficios.core.designsystem.component.categories
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.CleaningServices
@@ -63,23 +61,30 @@ fun OficiosCategoriesGrid(
     modifier: Modifier = Modifier,
     selectedCategoryId: Long? = null,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
-        contentPadding = PaddingValues(bottom = OficiosSpacing.md),
     ) {
-        items(categories, key = { it.id }) { category ->
-            OficiosCategoryCard(
-                title = category.label,
-                icon = CategoryIconResolver.iconFor(category.id, category.label),
-                selected = category.id == selectedCategoryId,
-                onClick = { onCategoryClick(category) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(172.dp),
-            )
+        categories.chunked(2).forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+            ) {
+                rowItems.forEach { category ->
+                    OficiosCategoryCard(
+                        title = category.label,
+                        icon = CategoryIconResolver.iconFor(category.id, category.label),
+                        selected = category.id == selectedCategoryId,
+                        onClick = { onCategoryClick(category) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(172.dp),
+                    )
+                }
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }

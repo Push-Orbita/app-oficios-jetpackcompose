@@ -15,6 +15,7 @@ fun ClientePerfilEstadoDto.toDomain(accountStatus: AccountStatus): ClientProfile
     hasContact = requisitos?.tieneContacto == true,
     hasAddress = requisitos?.tieneDomicilio == true,
     emailVerified = requisitos?.emailVerificado == true,
+    phoneVerified = requisitos?.telefonoVerificado == true,
     accountStatus = accountStatus,
 )
 
@@ -81,6 +82,18 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
             ),
         )
     }
+    val needsPhoneVerification = missingSteps.contains("telefono_verificado") ||
+        (hasContact && !phoneVerified)
+    if (needsPhoneVerification) {
+        add(
+            OnboardingStep(
+                id = "telefono_verificado",
+                title = "Verificar teléfono",
+                description = "Confirmá tu número de WhatsApp con el código que te enviamos.",
+                status = OnboardingStepStatus.PENDING,
+            ),
+        )
+    }
 }
 
 fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
@@ -89,6 +102,9 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         "dni_imagenes",
         "dni_pendiente_revision",
         "dni_rechazado",
+        "selfie_imagen",
+        "selfie_pendiente_revision",
+        "selfie_rechazada",
         "email_verificado",
     )
     val stepMap = mapOf(
@@ -96,6 +112,9 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         "dni_imagenes" to ("Fotos del DNI" to "Subí las imágenes de tu documento."),
         "dni_pendiente_revision" to ("DNI en revisión" to "Tu documentación está siendo revisada."),
         "dni_rechazado" to ("DNI rechazado" to "Volvé a cargar tu documentación."),
+        "selfie_imagen" to ("Foto de rostro" to "Subí una selfie para validar tu identidad."),
+        "selfie_pendiente_revision" to ("Selfie en revisión" to "Tu foto de rostro está siendo revisada."),
+        "selfie_rechazada" to ("Selfie rechazada" to "Volvé a cargar tu foto de rostro."),
         "descripcion" to ("Descripción profesional" to "Contá qué servicios ofrecés."),
         "experiencia" to ("Experiencia" to "Indicá tu experiencia en el rubro."),
         "rubro_principal" to ("Rubro y especialidades" to "Seleccioná tu rubro y las especialidades que ofrecés."),
@@ -114,7 +133,7 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         if (missing == "subrubros" && missingSteps.contains("rubro_principal")) return@forEach
         val (title, description) = stepMap[missing] ?: (missing to "Completá este paso.")
         val status = when (missing) {
-            "dni_pendiente_revision" -> OnboardingStepStatus.IN_REVIEW
+            "dni_pendiente_revision", "selfie_pendiente_revision" -> OnboardingStepStatus.IN_REVIEW
             else -> OnboardingStepStatus.PENDING
         }
         add(

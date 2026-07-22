@@ -9,6 +9,9 @@ import com.cocido.oficios.core.network.api.profile.IdentityDocumentApi
 import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
 import com.cocido.oficios.core.network.api.profile.WorkCertificateApi
 import com.cocido.oficios.core.network.api.search.WorkerSearchApi
+import com.cocido.oficios.core.network.api.worker.WorkerProfileApi
+import com.cocido.oficios.core.network.api.worker.WorkerReviewsApi
+import com.cocido.oficios.core.network.api.notifications.NotificationsApi
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -135,6 +138,24 @@ object NetworkModule {
     @Singleton
     fun provideWorkerSearchApi(@ApiRetrofit retrofit: Retrofit): WorkerSearchApi {
         return retrofit.create(WorkerSearchApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkerProfileApi(@ApiRetrofit retrofit: Retrofit): WorkerProfileApi {
+        return retrofit.create(WorkerProfileApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationsApi(@ApiRetrofit retrofit: Retrofit): NotificationsApi {
+        return retrofit.create(NotificationsApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkerReviewsApi(@ApiRetrofit retrofit: Retrofit): WorkerReviewsApi {
+        return retrofit.create(WorkerReviewsApi::class.java)
     }
 
     @Provides

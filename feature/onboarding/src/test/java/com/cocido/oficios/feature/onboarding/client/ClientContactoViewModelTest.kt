@@ -59,7 +59,10 @@ class ClientContactoViewModelTest {
         saveClientContactoUseCase = SaveClientContactoUseCase(
             object : ClientProfileRepository {
                 override suspend fun saveDomicilio(request: ClientDomicilioRequest) = AppResult.Success(Unit)
-                override suspend fun saveContacto(request: ClientContactoRequest) = AppResult.Success(Unit)
+                override suspend fun saveContacto(request: ClientContactoRequest) = AppResult.Success(1L)
+                override suspend fun sendPhoneVerificationCode(contactId: Long) =
+                    AppResult.Success(com.cocido.oficios.domain.model.PhoneVerificationSendResult("ok", null))
+                override suspend fun verifyPhoneCode(contactId: Long, code: String) = AppResult.Success(Unit)
                 override suspend fun getMyDomicilios() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ClientDomicilio>())
                 override suspend fun getMyContactos() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ClientContacto>())
             },

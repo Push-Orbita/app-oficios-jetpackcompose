@@ -38,6 +38,7 @@ import com.cocido.oficios.feature.onboarding.client.ClientContactoUiState
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioUiState
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.feature.onboarding.provider.ProviderDniUiState
+import com.cocido.oficios.feature.onboarding.provider.ProviderSelfieUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderLocalUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderPaymentMethodsUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoUiState
@@ -261,8 +262,8 @@ fun ProviderDniStepScreen(
     )
 
     val canSubmit = uiState.documento.isNotBlank() &&
-        uiState.frontImagePath != null &&
-        uiState.backImagePath != null
+        (uiState.frontImagePath != null || uiState.frontRemoteLoaded) &&
+        (uiState.backImagePath != null || uiState.backRemoteLoaded)
 
     OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
         Column(
@@ -301,13 +302,13 @@ fun ProviderDniStepScreen(
                 DniImageUploadCard(
                     title = stringResource(R.string.onboarding_step_dni_front_title),
                     subtitle = stringResource(R.string.onboarding_step_dni_front_subtitle),
-                    isLoaded = uiState.frontImagePath != null,
+                    isLoaded = uiState.frontImagePath != null || uiState.frontRemoteLoaded,
                     onClick = frontPicker.requestImage,
                 )
                 DniImageUploadCard(
                     title = stringResource(R.string.onboarding_step_dni_back_title),
                     subtitle = stringResource(R.string.onboarding_step_dni_back_subtitle),
-                    isLoaded = uiState.backImagePath != null,
+                    isLoaded = uiState.backImagePath != null || uiState.backRemoteLoaded,
                     onClick = backPicker.requestImage,
                 )
                 OficiosButton(
@@ -319,6 +320,50 @@ fun ProviderDniStepScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ProviderSelfieStepScreen(
+    uiState: ProviderSelfieUiState,
+    onImageSelected: (String?) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
+    val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
+    val galleryLabel = stringResource(R.string.onboarding_image_picker_gallery)
+    val cancelLabel = stringResource(R.string.onboarding_image_picker_cancel)
+
+    val selfiePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onImageSelected,
+    )
+
+    OnboardingStepScaffold(
+        title = stringResource(R.string.onboarding_step_selfie_title),
+        error = uiState.error,
+        isLoading = uiState.isLoading || uiState.isPreloading,
+        canSubmit = uiState.imagePath != null,
+        submitText = stringResource(R.string.onboarding_step_selfie_submit),
+        onSubmit = onSubmit,
+    ) {
+        Text(
+            text = stringResource(R.string.onboarding_step_selfie_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (uiState.rejectionReason != null) {
+            OficiosInlineAlert(message = uiState.rejectionReason)
+        }
+        DniImageUploadCard(
+            title = stringResource(R.string.onboarding_step_selfie_card_title),
+            subtitle = stringResource(R.string.onboarding_step_selfie_card_subtitle),
+            isLoaded = uiState.imagePath != null || uiState.remoteLoaded,
+            onClick = selfiePicker.requestImage,
+        )
     }
 }
 
