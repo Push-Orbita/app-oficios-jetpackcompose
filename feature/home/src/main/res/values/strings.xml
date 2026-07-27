@@ -4,6 +4,9 @@
     <string name="home_retry">Reintentar</string>
     <string name="home_error_title">No pudimos cargar el inicio</string>
     <string name="home_search_hint">¿En qué podemos ayudarte?</string>
+    <string name="home_my_orders_title">Mis pedidos</string>
+    <string name="home_my_orders_description">Revisá el estado de los servicios que solicitaste.</string>
+    <string name="home_my_orders_cta">Ver mis pedidos</string>
     <string name="home_search_categories_hint">¿Qué oficio estás buscando?</string>
     <string name="home_recent_title">Recientes</string>
     <string name="home_featured_workers_title">Trabajadores destacados</string>
@@ -70,6 +73,4 @@
     <string name="provider_home_upcoming_shifts_empty_title">Todavía no tenés turnos agendados</string>
     <string name="provider_home_upcoming_shifts_empty_description">Configurá tu agenda para que los clientes puedan reservar turnos con vos.</string>
     <string name="provider_home_active_booking_label">AHORA · %1$s con %2$s</string>
-    <string name="home_worker_hire_stub_title">Contratar</string>
-    <string name="home_worker_hire_stub_description">La contratación estará disponible pronto (ID: %1$d).</string>
 </resources>

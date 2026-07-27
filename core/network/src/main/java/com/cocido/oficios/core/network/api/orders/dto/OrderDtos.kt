@@ -1,0 +1,154 @@
+package com.cocido.oficios.core.network.api.orders.dto
+
+import com.cocido.oficios.core.network.api.auth.dto.UsuarioDto
+import com.cocido.oficios.core.network.api.catalog.dto.RubroDto
+import com.cocido.oficios.core.network.api.catalog.dto.SubRubroDto
+import com.cocido.oficios.core.network.api.profile.dto.ContactoSinPersonaDto
+import com.cocido.oficios.core.network.api.profile.dto.DomicilioSinPersonaDto
+import kotlinx.serialization.Serializable
+
+// ---------------------------------------------------------------------------
+// Solicitud de servicio — POST /solicitud-servicio y acciones sobre una existente.
+// Campos y estados confirmados contra apioficios.pushsoftware.com.ar/api-json
+// (tags "Solicitud de servicio", "Contrapropuesta", "Booking (cita)",
+// "Tracking (en camino / llegada)", "Calificaciones").
+// ---------------------------------------------------------------------------
+
+@Serializable
+data class CreateSolicitudServicioRequestDto(
+    val trabajadorOficioSubRubroId: Long,
+    val domicilioId: Long,
+    val contactoId: Long,
+    val fechaPropuestaInicio: String,
+    val fechaPropuestaFin: String,
+    val descripcion: String? = null,
+)
+
+@Serializable
+data class RechazarSolicitudRequestDto(
+    val motivoRechazo: String,
+)
+
+@Serializable
+data class CancelarSolicitudRequestDto(
+    val motivoCancelacion: String? = null,
+)
+
+@Serializable
+data class UpdateSolicitudEstadoRequestDto(
+    val estado: String,
+)
+
+@Serializable
+data class CreateContrapropuestaRequestDto(
+    val fechaPropuestaInicio: String,
+    val fechaPropuestaFin: String,
+    val nuevoPrecio: Double? = null,
+)
+
+@Serializable
+data class MarcarTrackingRequestDto(
+    val estado: String,
+    val lat: String,
+    val lng: String,
+)
+
+@Serializable
+data class CreateCalificacionRequestDto(
+    val bookingId: Long,
+    val calidad: Int,
+    val puntualidad: Int,
+    val comentario: String? = null,
+)
+
+@Serializable
+data class TrabajadorOficioSimpleDto(
+    val id: Long,
+    val usuario: UsuarioDto? = null,
+    val estado: String? = null,
+    val documento: String? = null,
+)
+
+@Serializable
+data class ClienteSimpleDto(
+    val id: Long,
+    val usuario: UsuarioDto? = null,
+    val estado: String? = null,
+    val documento: String? = null,
+)
+
+@Serializable
+data class SlotTurnoEnBookingDto(
+    val id: Long,
+    val inicio: String? = null,
+    val fin: String? = null,
+)
+
+@Serializable
+data class BookingSimpleDto(
+    val id: Long,
+    val inicioConfirmado: String? = null,
+    val finConfirmado: String? = null,
+    val tipo: String? = null,
+    val estado: String,
+    val domicilioTexto: String? = null,
+    val contactoTexto: String? = null,
+    val slotTurno: SlotTurnoEnBookingDto? = null,
+    val fechaLimiteCancelacion: String? = null,
+    val puedeCancelar: Boolean = false,
+)
+
+@Serializable
+data class ContrapropuestaDto(
+    val id: Long,
+    val fechaPropuestaInicio: String,
+    val fechaPropuestaFin: String,
+    val nuevoPrecio: Double? = null,
+    val estado: String,
+)
+
+@Serializable
+data class SolicitudServicioDto(
+    val id: Long,
+    val cliente: ClienteSimpleDto? = null,
+    val trabajadorOficio: TrabajadorOficioSimpleDto? = null,
+    val rubro: RubroDto? = null,
+    val subRubro: SubRubroDto? = null,
+    val domicilio: DomicilioSinPersonaDto? = null,
+    val contacto: ContactoSinPersonaDto? = null,
+    val estado: String,
+    val descripcion: String? = null,
+    val motivoRechazo: String? = null,
+    val booking: BookingSimpleDto? = null,
+    val contrapropuestas: List<ContrapropuestaDto> = emptyList(),
+)
+
+@Serializable
+data class SolicitudServicioSimpleDto(
+    val id: Long,
+    val cliente: ClienteSimpleDto? = null,
+    val rubro: RubroDto? = null,
+    val subRubro: SubRubroDto? = null,
+    val domicilio: DomicilioSinPersonaDto? = null,
+    val contacto: ContactoSinPersonaDto? = null,
+    val estado: String,
+    val descripcion: String? = null,
+    val booking: BookingSimpleDto? = null,
+)
+
+@Serializable
+data class SolicitudServicioSearchResponseDto(
+    val trabajador: TrabajadorOficioSimpleDto? = null,
+    val solicitudes: List<SolicitudServicioSimpleDto> = emptyList(),
+)
+
+@Serializable
+data class BookingDto(
+    val id: Long,
+    val solicitudServicio: SolicitudServicioDto? = null,
+    val inicioConfirmado: String? = null,
+    val finConfirmado: String? = null,
+    val tipo: String? = null,
+    val estado: String,
+    val puedeCancelar: Boolean = false,
+)

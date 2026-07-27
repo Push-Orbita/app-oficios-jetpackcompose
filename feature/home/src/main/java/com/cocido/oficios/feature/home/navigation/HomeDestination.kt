@@ -12,7 +12,6 @@ object HomeDestination {
             "&query={query}&rubroLabel={rubroLabel}&subRubroLabel={subRubroLabel}" +
             "&barrioLabel={barrioLabel}&categoryId={categoryId}&categoryLabel={categoryLabel}"
     const val workerProfile = "home/worker/{workerId}"
-    const val hireStub = "home/hire/{workerId}"
 
     fun rubros(categoryId: Long, categoryName: String): String =
         "home/rubros/$categoryId?categoryName=${Uri.encode(categoryName)}"
@@ -41,6 +40,4 @@ object HomeDestination {
     }
 
     fun workerProfile(workerId: Long): String = "home/worker/$workerId"
-
-    fun hireStub(workerId: Long): String = "home/hire/$workerId"
 }

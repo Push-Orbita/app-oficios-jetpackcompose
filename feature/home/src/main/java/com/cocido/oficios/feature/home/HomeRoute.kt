@@ -29,6 +29,7 @@ fun HomeRoute(
     ) -> Unit,
     onNavigateToWorker: (Long) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToMyOrders: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -53,6 +54,7 @@ fun HomeRoute(
                     effect.query,
                 )
                 is HomeEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
+                HomeEffect.NavigateToMyOrders -> onNavigateToMyOrders()
                 HomeEffect.NavigateToSettings -> {
                     selectedTab = ClientHomeTab.AJUSTES
                     onNavigateToSettings()

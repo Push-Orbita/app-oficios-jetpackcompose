@@ -19,6 +19,15 @@ data class WorkerSpecialty(
     val servesAtHome: Boolean,
     val servesAtLocal: Boolean,
     val isPrimary: Boolean,
+    // Ids reales de trabajador-oficio-subrubro — necesarios para crear una solicitud de
+    // servicio (POST /solicitud-servicio requiere trabajadorOficioSubRubroId). subRubroNames
+    // se mantiene tal cual para no romper las pantallas que ya lo consumen solo para mostrar texto.
+    val subRubros: List<WorkerSubRubroOption> = emptyList(),
+)
+
+data class WorkerSubRubroOption(
+    val id: Long,
+    val name: String,
 )
 
 data class WorkerAvailability(

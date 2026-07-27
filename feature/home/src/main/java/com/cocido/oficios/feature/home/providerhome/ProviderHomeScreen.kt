@@ -21,9 +21,11 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.providerhome.components.ProviderActiveBookingBanner
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
 import com.cocido.oficios.feature.home.R
@@ -91,9 +93,18 @@ private fun ProviderHomeSuccessContent(
             onNotificationsClick = { onEvent(ProviderHomeEvent.OpenNotifications) },
         )
 
-        // Banner "AHORA": condicional, solo si hay un servicio en curso (Fase 3 / Pedidos
-        // todavía no wireado, así que hasActiveBooking es siempre false por ahora).
-        // if (content.hasActiveBooking) { ProviderActiveBookingBanner(...) }
+        // Banner "AHORA": condicional, solo si hay un servicio en curso ahora mismo
+        // (booking en estado EN_CURSO entre las solicitudes del trabajador).
+        if (content.hasActiveBooking) {
+            val activeOrder = content.upcomingOrders.firstOrNull { it.bookingStatus == BookingStatus.IN_PROGRESS }
+            if (activeOrder != null) {
+                ProviderActiveBookingBanner(
+                    clientName = activeOrder.counterpartName,
+                    serviceTitle = activeOrder.subRubroLabel,
+                    onClick = { onEvent(ProviderHomeEvent.OrderClicked(activeOrder.id)) },
+                )
+            }
+        }
 
         if (content.benefits.isNotEmpty()) {
             ProviderBenefitsSection(content = content)
@@ -107,6 +118,8 @@ private fun ProviderHomeSuccessContent(
 
         ProviderAgendaSection(
             onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
+            upcomingOrders = content.upcomingOrders,
+            onOrderClick = { onEvent(ProviderHomeEvent.OrderClicked(it)) },
         )
     }
 }

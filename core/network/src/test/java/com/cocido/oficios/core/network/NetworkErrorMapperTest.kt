@@ -23,4 +23,23 @@ class NetworkErrorMapperTest {
             parseErrorMessage(body),
         )
     }
+
+    @Test
+    fun `parseErrorMessage extracts text when errorDetails message is an array`() {
+        val body = """
+            {
+              "error": true,
+              "errorDetails": {
+                "message": ["Ingresá solo el número local, sin + ni código de país. Ejemplo: 3705246344"],
+                "error": "Bad Request",
+                "statusCode": 400
+              }
+            }
+        """.trimIndent()
+
+        assertEquals(
+            "Ingresá solo el número local, sin + ni código de país. Ejemplo: 3705246344",
+            parseErrorMessage(body),
+        )
+    }
 }

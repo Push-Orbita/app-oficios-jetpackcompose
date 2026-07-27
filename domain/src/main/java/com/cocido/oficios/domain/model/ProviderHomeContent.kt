@@ -8,6 +8,7 @@ data class ProviderHomeContent(
     val missingProfileItems: List<String>,
     val benefits: List<ProviderBenefit> = emptyList(),
     val hasActiveBooking: Boolean = false,
+    val upcomingOrders: List<ServiceOrderListItem> = emptyList(),
 )
 
 data class ProviderBenefit(

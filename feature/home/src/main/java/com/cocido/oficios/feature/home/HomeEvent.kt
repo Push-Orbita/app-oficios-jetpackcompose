@@ -15,6 +15,7 @@ sealed interface HomeEvent {
     data class WorkerViewProfile(val workerId: Long) : HomeEvent
     data object WorkerContact : HomeEvent
     data object SeeAllWorkers : HomeEvent
+    data object OpenMyOrders : HomeEvent
     data object NavigateToSettings : HomeEvent
     data object NavigateToProfile : HomeEvent
     data object NavigateToFavorites : HomeEvent
@@ -49,6 +50,7 @@ sealed interface HomeEffect {
         val query: String? = null,
     ) : HomeEffect
     data class NavigateToWorker(val workerId: Long) : HomeEffect
+    data object NavigateToMyOrders : HomeEffect
 }
 
 sealed interface CategoriesEffect {
