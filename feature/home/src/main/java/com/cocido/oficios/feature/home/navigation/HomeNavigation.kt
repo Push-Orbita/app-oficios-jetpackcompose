@@ -10,7 +10,6 @@ import com.cocido.oficios.feature.home.CategoriesRoute
 import com.cocido.oficios.feature.home.HomeRoute
 import com.cocido.oficios.feature.home.rubros.RubrosRoute
 import com.cocido.oficios.feature.home.worker.WorkerProfileRoute
-import com.cocido.oficios.feature.home.worker.hire.WorkerHireStubRoute
 import com.cocido.oficios.feature.home.search.SearchResultsRoute
 
 fun NavGraphBuilder.homeScreen(
@@ -57,6 +56,7 @@ fun NavGraphBuilder.homeScreen(
                     navController.navigate(HomeDestination.workerProfile(workerId))
                 },
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToMyOrders = { navController.navigate(OrdersDestination.ordersList) },
                 onShowMessage = onShowMessage,
             )
         }
@@ -127,19 +127,10 @@ fun NavGraphBuilder.homeScreen(
             WorkerProfileRoute(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHire = { workerId ->
-                    navController.navigate(HomeDestination.hireStub(workerId))
+                    navController.navigate(OrdersDestination.createOrder(workerId))
                 },
                 onShowMessage = onShowMessage,
             )
-        }
-
-        composable(
-            route = HomeDestination.hireStub,
-            arguments = listOf(
-                navArgument("workerId") { type = NavType.LongType },
-            ),
-        ) {
-            WorkerHireStubRoute(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

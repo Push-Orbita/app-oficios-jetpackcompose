@@ -93,7 +93,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     nombre = contacto?.nombre.orEmpty(),
-                    telefono = contacto?.telefonoWhatsapp.orEmpty(),
+                    telefono = contacto?.telefonoWhatsapp?.removePrefix("+54").orEmpty(),
                     email = contacto?.email.orEmpty(),
                     barrioQuery = domicilio?.barrioName.orEmpty(),
                     selectedBarrioId = domicilio?.barrioId?.takeIf { id -> id > 0L },

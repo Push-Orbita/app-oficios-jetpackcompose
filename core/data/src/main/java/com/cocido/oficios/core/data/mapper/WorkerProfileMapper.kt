@@ -109,12 +109,17 @@ private fun com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubr
     val subRubroNames = subRubros.mapNotNull { it.subRubro?.nombre }
     val servesAtHome = subRubros.any { it.lugarDomicilio }
     val servesAtLocal = subRubros.any { it.lugarLocal }
+    val subRubroOptions = subRubros.mapNotNull { subRubro ->
+        val name = subRubro.subRubro?.nombre ?: return@mapNotNull null
+        com.cocido.oficios.domain.model.WorkerSubRubroOption(id = subRubro.id, name = name)
+    }
     return WorkerSpecialty(
         rubroName = rubroName,
         subRubroNames = subRubroNames,
         servesAtHome = servesAtHome,
         servesAtLocal = servesAtLocal,
         isPrimary = principal,
+        subRubros = subRubroOptions,
     )
 }
 

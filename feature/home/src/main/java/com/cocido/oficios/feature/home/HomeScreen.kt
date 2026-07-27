@@ -13,6 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.cards.OficiosActionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -96,6 +97,12 @@ private fun HomeSuccessContent(
             onSearch = { onEvent(HomeEvent.SearchSubmitted(searchQuery)) },
             placeholder = stringResource(R.string.home_search_hint),
             onMicClick = { onEvent(HomeEvent.VoiceSearch) },
+        )
+        OficiosActionCard(
+            title = stringResource(R.string.home_my_orders_title),
+            description = stringResource(R.string.home_my_orders_description),
+            primaryActionLabel = stringResource(R.string.home_my_orders_cta),
+            onPrimaryAction = { onEvent(HomeEvent.OpenMyOrders) },
         )
         if (content.featuredWorkers.isNotEmpty()) {
             HomeFeaturedWorkersSection(

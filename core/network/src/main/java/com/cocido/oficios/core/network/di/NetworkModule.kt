@@ -12,6 +12,7 @@ import com.cocido.oficios.core.network.api.search.WorkerSearchApi
 import com.cocido.oficios.core.network.api.worker.WorkerProfileApi
 import com.cocido.oficios.core.network.api.worker.WorkerReviewsApi
 import com.cocido.oficios.core.network.api.notifications.NotificationsApi
+import com.cocido.oficios.core.network.api.orders.OrdersApi
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -156,6 +157,12 @@ object NetworkModule {
     @Singleton
     fun provideWorkerReviewsApi(@ApiRetrofit retrofit: Retrofit): WorkerReviewsApi {
         return retrofit.create(WorkerReviewsApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOrdersApi(@ApiRetrofit retrofit: Retrofit): OrdersApi {
+        return retrofit.create(OrdersApi::class.java)
     }
 
     @Provides

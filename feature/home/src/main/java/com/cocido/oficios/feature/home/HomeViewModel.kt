@@ -50,6 +50,7 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.WorkerViewProfile -> emitEffect(HomeEffect.NavigateToWorker(event.workerId))
             HomeEvent.WorkerContact -> emitComingSoon()
             HomeEvent.SeeAllWorkers -> emitEffect(HomeEffect.NavigateToSearchResults())
+            HomeEvent.OpenMyOrders -> emitEffect(HomeEffect.NavigateToMyOrders)
         }
     }
 

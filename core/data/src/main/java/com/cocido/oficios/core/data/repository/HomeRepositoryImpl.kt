@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
 import com.cocido.oficios.domain.repository.OnboardingRepository
+import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
@@ -30,6 +31,7 @@ class HomeRepositoryImpl @Inject constructor(
     private val workerSearchRepository: WorkerSearchRepository,
     private val onboardingRepository: OnboardingRepository,
     private val providerProfileRepository: ProviderProfileRepository,
+    private val orderRepository: OrderRepository,
     private val dispatcherProvider: DispatcherProvider,
 ) : HomeRepository {
 
@@ -70,6 +72,7 @@ class HomeRepositoryImpl @Inject constructor(
                                 .getProviderRequiredSteps(status)
                                 .map { it.title }
                             val primarySpecialtyLabel = loadPrimarySpecialtyLabel()
+                            val upcomingOrders = loadUpcomingWorkerOrders()
                             AppResult.Success(
                                 ProviderHomeContent(
                                     userDisplayName = listOf(userResult.data.firstName, userResult.data.lastName)
@@ -80,7 +83,10 @@ class HomeRepositoryImpl @Inject constructor(
                                     profileCompletionPercent = status.toCompletionPercent(),
                                     missingProfileItems = missingItems,
                                     benefits = staticProviderBenefits(),
-                                    hasActiveBooking = false,
+                                    hasActiveBooking = upcomingOrders.any {
+                                        it.bookingStatus == com.cocido.oficios.domain.model.BookingStatus.IN_PROGRESS
+                                    },
+                                    upcomingOrders = upcomingOrders,
                                 ),
                             )
                         }
@@ -94,6 +100,20 @@ class HomeRepositoryImpl @Inject constructor(
         return when (val syncResult = providerProfileRepository.loadProviderProfileForSync()) {
             is AppResult.Success -> syncResult.data.tradeDraft?.let { "${it.categoryName} · ${it.rubroName}" }
             is AppResult.Error -> null
+        }
+    }
+
+    private suspend fun loadUpcomingWorkerOrders(): List<com.cocido.oficios.domain.model.ServiceOrderListItem> {
+        return when (val result = orderRepository.getWorkerOrders()) {
+            is AppResult.Success -> result.data
+                .filter {
+                    it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.PENDING ||
+                        it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.COUNTER_OFFER ||
+                        (it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.ACCEPTED &&
+                            it.bookingStatus != com.cocido.oficios.domain.model.BookingStatus.FINISHED)
+                }
+                .take(UPCOMING_ORDERS_PREVIEW_SIZE)
+            is AppResult.Error -> emptyList()
         }
     }
 
@@ -182,5 +202,6 @@ class HomeRepositoryImpl @Inject constructor(
 
     private companion object {
         const val FEATURED_WORKERS_PAGE_SIZE = 5
+        const val UPCOMING_ORDERS_PREVIEW_SIZE = 3
     }
 }

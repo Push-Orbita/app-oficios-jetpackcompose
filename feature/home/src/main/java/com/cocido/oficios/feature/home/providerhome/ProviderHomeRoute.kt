@@ -17,6 +17,8 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 fun ProviderHomeRoute(
     onNavigateToSettings: () -> Unit,
     onNavigateToCompleteProfile: () -> Unit,
+    onNavigateToOrdersList: () -> Unit,
+    onNavigateToOrderDetail: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProviderHomeViewModel = hiltViewModel(),
@@ -33,6 +35,8 @@ fun ProviderHomeRoute(
                     onNavigateToSettings()
                 }
                 ProviderHomeEffect.NavigateToCompleteProfile -> onNavigateToCompleteProfile()
+                ProviderHomeEffect.NavigateToOrdersList -> onNavigateToOrdersList()
+                is ProviderHomeEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 is ProviderHomeEffect.ShowMessage -> onShowMessage(effect.message)
                 ProviderHomeEffect.ShowComingSoon -> onShowMessage(comingSoon)
             }

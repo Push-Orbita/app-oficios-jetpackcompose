@@ -4,7 +4,10 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.toAppError
 import java.io.IOException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -42,21 +45,30 @@ private fun HttpException.toHttpAppError(): AppError {
 
 internal fun parseErrorMessage(body: String): String? {
     if (body.isBlank()) return null
-    return runCatching {
-        val json = errorJson.parseToJsonElement(body)
-        if (json !is JsonObject) return@runCatching null
+    val json = runCatching { errorJson.parseToJsonElement(body) }.getOrNull() as? JsonObject
+        ?: return null
 
-        val candidates = listOfNotNull(
-            parseNestedDetail(json["errorDetails"]?.jsonObject?.get("details")?.jsonPrimitive?.content),
-            json["errorDetails"]?.jsonObject?.get("message")?.jsonPrimitive?.content,
-            json["message"]?.jsonPrimitive?.content,
-            json["detail"]?.jsonPrimitive?.content,
-            json["error"]?.jsonPrimitive?.takeIf { it.isString }?.content,
-        )
+    val candidates = listOfNotNull(
+        runCatching {
+            parseNestedDetail(json["errorDetails"]?.jsonObject?.get("details")?.jsonPrimitive?.content)
+        }.getOrNull(),
+        runCatching { json["errorDetails"]?.jsonObject?.get("message")?.let(::extractMessageText) }.getOrNull(),
+        runCatching { json["message"]?.let(::extractMessageText) }.getOrNull(),
+        runCatching { json["detail"]?.jsonPrimitive?.content }.getOrNull(),
+        runCatching { json["error"]?.jsonPrimitive?.takeIf { it.isString }?.content }.getOrNull(),
+    )
 
-        candidates.firstOrNull { isUserFacingErrorMessage(it) }
-    }.getOrNull()
+    return candidates.firstOrNull { isUserFacingErrorMessage(it) }
 }
+
+private fun extractMessageText(element: JsonElement): String? = runCatching {
+    when (element) {
+        is JsonArray -> element.mapNotNull { it.jsonPrimitive.contentOrNull }
+            .filter { it.isNotBlank() }
+            .joinToString(separator = " ")
+        else -> element.jsonPrimitive.contentOrNull
+    }
+}.getOrNull()
 
 private fun parseNestedDetail(details: String?): String? {
     if (details.isNullOrBlank()) return null

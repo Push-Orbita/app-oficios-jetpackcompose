@@ -35,7 +35,9 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.orders.ServiceOrderStatusLabel
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -52,6 +54,8 @@ import java.util.Locale
 fun ProviderAgendaSection(
     onViewFullAgenda: () -> Unit,
     modifier: Modifier = Modifier,
+    upcomingOrders: List<ServiceOrderListItem> = emptyList(),
+    onOrderClick: (Long) -> Unit = {},
 ) {
     var visibleMonth by remember { mutableStateOf(YearMonth.now()) }
     val today = remember { LocalDate.now() }
@@ -137,13 +141,33 @@ fun ProviderAgendaSection(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        OficiosCard {
-            OficiosEmptyState(
-                title = stringResource(R.string.provider_home_upcoming_shifts_empty_title),
-                description = stringResource(R.string.provider_home_upcoming_shifts_empty_description),
-                icon = Icons.Outlined.EventBusy,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        if (upcomingOrders.isEmpty()) {
+            OficiosCard {
+                OficiosEmptyState(
+                    title = stringResource(R.string.provider_home_upcoming_shifts_empty_title),
+                    description = stringResource(R.string.provider_home_upcoming_shifts_empty_description),
+                    icon = Icons.Outlined.EventBusy,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
+                upcomingOrders.forEach { order ->
+                    OficiosCard(onClick = { onOrderClick(order.id) }) {
+                        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
+                            ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
+                            Text(
+                                text = order.counterpartName.ifBlank { order.subRubroLabel },
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            order.scheduledLabel?.let {
+                                Text(text = it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ import com.cocido.oficios.core.data.repository.ClientProfileRepositoryImpl
 import com.cocido.oficios.core.data.repository.IdentityDocumentRepositoryImpl
 import com.cocido.oficios.core.data.repository.NotificationsRepositoryImpl
 import com.cocido.oficios.core.data.repository.OnboardingRepositoryImpl
+import com.cocido.oficios.core.data.repository.OrderRepositoryImpl
 import com.cocido.oficios.core.data.repository.ProviderProfileRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkCertificateRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkerSearchRepositoryImpl
@@ -26,6 +27,7 @@ import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
 import com.cocido.oficios.domain.repository.NotificationsRepository
 import com.cocido.oficios.domain.repository.OnboardingRepository
+import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
@@ -134,6 +136,12 @@ abstract class DataModule {
     abstract fun bindRecentSearchRepository(
         impl: RecentSearchDataStore,
     ): RecentSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindOrderRepository(
+        impl: OrderRepositoryImpl,
+    ): OrderRepository
 }
 
 @Module
