@@ -6,6 +6,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.usecase.profile.SaveClientContactoUseCase
+import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -55,7 +56,7 @@ class ClientContactoViewModel @Inject constructor(
                 val result = saveClientContactoUseCase(
                     ClientContactoRequest(
                         nombre = state.nombre.trim(),
-                        telefonoWhatsapp = state.telefono.trim(),
+                        telefonoWhatsapp = AuthValidators.normalizeArgentinePhone(state.telefono),
                         email = state.email.trim().ifBlank { null },
                         favorito = true,
                     ),

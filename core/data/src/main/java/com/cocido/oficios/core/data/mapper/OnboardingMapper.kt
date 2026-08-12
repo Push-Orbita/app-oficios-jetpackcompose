@@ -51,25 +51,44 @@ fun String.toClientAccountStatus(): AccountStatus = when (uppercase()) {
 }
 
 fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
+    // "domicilio", "contacto" y "telefono_verificado" llevan todos a la misma pantalla
+    // (Contacto y domicilio, que además dispara la verificación de teléfono al guardar).
+    // Para que el checklist no muestre tareas que en la práctica son un solo trámite,
+    // el aviso de "falta verificar tu WhatsApp" se agrega al primer card pendiente de
+    // ese grupo en vez de mostrarse siempre como una tarjeta aparte.
+    val needsPhoneVerification = missingSteps.contains("telefono_verificado") ||
+        (hasContact && !phoneVerified)
+    var phoneVerificationMerged = false
+
     if (!hasAddress) {
         add(
             OnboardingStep(
                 id = "domicilio",
                 title = "Domicilio",
-                description = "Agregá al menos un domicilio para contratar servicios.",
+                description = if (needsPhoneVerification) {
+                    "Agregá tu dirección y confirmá tu WhatsApp para poder contratar servicios."
+                } else {
+                    "Agregá al menos un domicilio para contratar servicios."
+                },
                 status = OnboardingStepStatus.PENDING,
             ),
         )
+        phoneVerificationMerged = needsPhoneVerification
     }
     if (!hasContact) {
         add(
             OnboardingStep(
                 id = "contacto",
                 title = "Contacto",
-                description = "Agregá al menos un contacto para recibir notificaciones.",
+                description = if (needsPhoneVerification && !phoneVerificationMerged) {
+                    "Agregá tu contacto y confirmá tu WhatsApp para recibir notificaciones."
+                } else {
+                    "Agregá al menos un contacto para recibir notificaciones."
+                },
                 status = OnboardingStepStatus.PENDING,
             ),
         )
+        phoneVerificationMerged = phoneVerificationMerged || needsPhoneVerification
     }
     if (!emailVerified) {
         add(
@@ -82,9 +101,7 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
             ),
         )
     }
-    val needsPhoneVerification = missingSteps.contains("telefono_verificado") ||
-        (hasContact && !phoneVerified)
-    if (needsPhoneVerification) {
+    if (needsPhoneVerification && !phoneVerificationMerged) {
         add(
             OnboardingStep(
                 id = "telefono_verificado",

@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun VerifyPhoneRoute(
     onVerified: () -> Unit,
+    onEditNumber: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: VerifyPhoneViewModel = hiltViewModel()
@@ -24,6 +25,7 @@ fun VerifyPhoneRoute(
         onCodeChanged = viewModel::onCodeChanged,
         onResend = viewModel::resendCode,
         onSubmit = viewModel::submit,
+        onEditNumber = onEditNumber,
         modifier = modifier,
     )
 }

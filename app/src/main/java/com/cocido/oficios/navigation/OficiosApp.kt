@@ -102,12 +102,20 @@ fun AppNavHost(
                 navController.navigate(route)
             },
             onNavigateToVerifyPhone = { contactId, telefono ->
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
                 navController.navigate(
                     com.cocido.oficios.feature.onboarding.navigation.OnboardingDestination.verifyPhoneRoute(
                         contactId = contactId,
                         telefono = telefono,
                     ),
-                )
+                ) {
+                    // Reemplaza la pantalla de Contacto y domicilio en el back stack:
+                    // su guardado pendiente ya lo maneja VerifyPhoneViewModel, así que
+                    // "volver" desde la verificación debe ir al checklist, no repetir el formulario.
+                    if (currentRoute != null) {
+                        popUpTo(currentRoute) { inclusive = true }
+                    }
+                }
             },
             onStepCompleted = {
                 navController.popBackStack()

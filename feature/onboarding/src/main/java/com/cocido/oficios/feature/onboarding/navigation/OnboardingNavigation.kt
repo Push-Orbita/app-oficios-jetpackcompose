@@ -85,7 +85,10 @@ fun NavGraphBuilder.onboardingGraph(
             },
         ),
     ) {
-        VerifyPhoneRoute(onVerified = onStepCompleted)
+        VerifyPhoneRoute(
+            onVerified = onStepCompleted,
+            onEditNumber = { onNavigateToStep(OnboardingDestination.CLIENT_CONTACT_DOMICILIO) },
+        )
     }
     composable(OnboardingDestination.CLIENT_CONTACT_DOMICILIO) {
         ClientContactDomicilioRoute(
