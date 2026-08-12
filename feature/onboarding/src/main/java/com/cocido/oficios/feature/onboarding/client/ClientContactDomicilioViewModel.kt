@@ -12,7 +12,10 @@ import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.GetClientContactosUseCase
 import com.cocido.oficios.domain.usecase.profile.GetClientDomiciliosUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientContactoUseCase
+import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
+import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
+import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -29,6 +32,7 @@ import kotlinx.coroutines.launch
 data class ClientContactDomicilioUiState(
     val nombre: String = "",
     val telefono: String = "",
+    val selectedCountry: PhoneCountryOption = PhoneCountryOptions.ARGENTINA,
     val email: String = "",
     val barrioQuery: String = "",
     val barrioOptions: List<CatalogOption> = emptyList(),
@@ -93,7 +97,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     nombre = contacto?.nombre.orEmpty(),
-                    telefono = contacto?.telefonoWhatsapp?.removePrefix("+54").orEmpty(),
+                    telefono = contacto?.telefonoWhatsapp?.let(AuthValidators::normalizeArgentinePhone).orEmpty(),
                     email = contacto?.email.orEmpty(),
                     barrioQuery = domicilio?.barrioName.orEmpty(),
                     selectedBarrioId = domicilio?.barrioId?.takeIf { id -> id > 0L },
@@ -109,6 +113,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
 
     fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
     fun onTelefonoChanged(value: String) = _uiState.update { it.copy(telefono = value, error = null) }
+    fun onCountrySelected(value: PhoneCountryOption) = _uiState.update { it.copy(selectedCountry = value) }
     fun onEmailChanged(value: String) = _uiState.update { it.copy(email = value, error = null) }
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
     fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
@@ -161,7 +166,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
                 val contactoResult = saveClientContactoUseCase(
                     ClientContactoRequest(
                         nombre = state.nombre.trim(),
-                        telefonoWhatsapp = state.telefono.trim(),
+                        telefonoWhatsapp = AuthValidators.normalizeArgentinePhone(state.telefono),
                         email = state.email.trim().ifBlank { null },
                         favorito = true,
                     ),
@@ -195,7 +200,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
                         _effects.emit(
                             ClientContactDomicilioEffect.NavigateToPhoneVerification(
                                 contactId = contactId,
-                                telefono = state.telefono.trim(),
+                                telefono = AuthValidators.normalizeArgentinePhone(state.telefono),
                             ),
                         )
                         return@launch

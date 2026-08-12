@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.auth.forgot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.auth.ForgotPasswordUseCase
@@ -99,8 +100,16 @@ class ForgotPasswordViewModel @Inject constructor(
                     _effects.emit(ForgotPasswordEffect.NavigateToReset)
                 }
                 is AppResult.Error -> {
+                    // No confirmamos/negamos si el email existe (evita enumeración de cuentas):
+                    // mismo mensaje genérico tanto si el email no está registrado como si hubo
+                    // cualquier otro rechazo del backend relacionado a la cuenta.
+                    val message = when (result.error) {
+                        is AppError.Unauthorized, is AppError.NotFound ->
+                            "Si el correo está registrado, vas a recibir instrucciones para recuperar tu contraseña."
+                        else -> result.error.userMessage()
+                    }
                     _uiState.update {
-                        it.copy(isLoading = false, generalError = result.error.userMessage())
+                        it.copy(isLoading = false, generalError = message)
                     }
                 }
             }

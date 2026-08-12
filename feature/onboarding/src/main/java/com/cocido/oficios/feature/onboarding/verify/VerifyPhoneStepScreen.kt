@@ -19,6 +19,7 @@ fun VerifyPhoneStepScreen(
     onCodeChanged: (String) -> Unit,
     onResend: () -> Unit,
     onSubmit: () -> Unit,
+    onEditNumber: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OnboardingStepScaffold(
@@ -65,6 +66,13 @@ fun VerifyPhoneStepScreen(
                     else -> stringResource(R.string.onboarding_step_verify_phone_resend)
                 },
             )
+        }
+        TextButton(
+            onClick = onEditNumber,
+            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(text = stringResource(R.string.onboarding_step_verify_phone_edit_number))
         }
     }
 }

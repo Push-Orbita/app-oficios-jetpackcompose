@@ -43,6 +43,7 @@ fun ClientContactDomicilioRoute(
         uiState = uiState,
         onNombreChanged = viewModel::onNombreChanged,
         onTelefonoChanged = viewModel::onTelefonoChanged,
+        onCountrySelected = viewModel::onCountrySelected,
         onEmailChanged = viewModel::onEmailChanged,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
         onBarrioSelected = viewModel::onBarrioSelected,

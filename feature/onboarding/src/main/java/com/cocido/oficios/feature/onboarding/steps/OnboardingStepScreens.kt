@@ -27,7 +27,9 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAler
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
+import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -85,6 +87,7 @@ fun ClientContactDomicilioStepScreen(
     uiState: ClientContactDomicilioUiState,
     onNombreChanged: (String) -> Unit,
     onTelefonoChanged: (String) -> Unit,
+    onCountrySelected: (PhoneCountryOption) -> Unit,
     onEmailChanged: (String) -> Unit,
     onBarrioQueryChanged: (String) -> Unit,
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
@@ -116,9 +119,11 @@ fun ClientContactDomicilioStepScreen(
             onValueChange = onNombreChanged,
             label = stringResource(R.string.onboarding_step_contact_nombre_label),
         )
-        OficiosTextField(
+        OficiosPhoneField(
             value = uiState.telefono,
             onValueChange = onTelefonoChanged,
+            selectedCountry = uiState.selectedCountry,
+            onCountrySelected = onCountrySelected,
             label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
         )
         OficiosTextField(

@@ -148,4 +148,24 @@ class OnboardingMapperTest {
         assertTrue(steps.any { it.id == "telefono_verificado" })
     }
 
+    @Test
+    fun `merges phone verification into the domicilio card instead of a separate one`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = false,
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = false,
+                tieneContacto = true,
+                telefonoVerificado = false,
+                emailVerificado = true,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        val steps = status.toOnboardingSteps()
+
+        assertEquals(1, steps.size)
+        assertEquals("domicilio", steps[0].id)
+        assertFalse(steps.any { it.id == "telefono_verificado" })
+        assertTrue(steps[0].description.contains("WhatsApp"))
+    }
+
 }
