@@ -19,6 +19,7 @@ fun ProviderHomeRoute(
     onNavigateToCompleteProfile: () -> Unit,
     onNavigateToOrdersList: () -> Unit,
     onNavigateToOrderDetail: (Long) -> Unit,
+    onNavigateToAgenda: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProviderHomeViewModel = hiltViewModel(),
@@ -36,6 +37,7 @@ fun ProviderHomeRoute(
                 }
                 ProviderHomeEffect.NavigateToCompleteProfile -> onNavigateToCompleteProfile()
                 ProviderHomeEffect.NavigateToOrdersList -> onNavigateToOrdersList()
+                ProviderHomeEffect.NavigateToAgenda -> onNavigateToAgenda()
                 is ProviderHomeEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 is ProviderHomeEffect.ShowMessage -> onShowMessage(effect.message)
                 ProviderHomeEffect.ShowComingSoon -> onShowMessage(comingSoon)

@@ -57,9 +57,8 @@
     <string name="auth_register_trade_trade_hint">Seleccione un rubro</string>
     <string name="auth_register_trade_trade_label">Rubro</string>
     <string name="auth_register_trade_specializations_label">Especializado en:</string>
-    <string name="auth_register_trade_other_specialization">Otro:</string>
-    <string name="auth_register_trade_other_hint">Completar abajo</string>
-    <string name="auth_register_trade_other_input_hint">Ingresar otro</string>
+    <string name="auth_register_trade_description_label">Contanos más sobre lo que ofrecés (opcional)</string>
+    <string name="auth_register_trade_description_hint">Ej: también hago tinturas personalizadas, trabajo a domicilio los fines de semana, etc.</string>
     <string name="auth_register_trade_experience_label">Rango de Experiencia:</string>
     <string name="auth_register_trade_experience_hint">Seleccione un rango</string>
     <string name="auth_register_trade_neighborhood_label">Barrio:</string>

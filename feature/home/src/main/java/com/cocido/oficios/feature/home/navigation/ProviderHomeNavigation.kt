@@ -22,6 +22,7 @@ fun NavGraphBuilder.providerHomeScreen(
                 onNavigateToCompleteProfile = onNavigateToCompleteProfile,
                 onNavigateToOrdersList = { navController.navigate(OrdersDestination.ordersList) },
                 onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
+                onNavigateToAgenda = { navController.navigate(AgendaDestination.list) },
                 onShowMessage = onShowMessage,
             )
         }

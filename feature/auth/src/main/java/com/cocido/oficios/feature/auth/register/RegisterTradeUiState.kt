@@ -66,11 +66,8 @@ data class RegisterTradeUiState(
         get() = tradeOptions.firstOrNull { it.id == selectedTradeId }?.label.orEmpty()
 
     val isTradeEnabled: Boolean get() = selectedCategoryId != null && !isLoadingTrades
-    val isOtherSpecializationVisible: Boolean get() = OTHER_SPECIALIZATION_ID in selectedSpecializations
 
     companion object {
-        const val OTHER_SPECIALIZATION_ID = "other"
-
         val defaultExperienceRanges = listOf(
             "0 a 2 años",
             "3 a 5 años",

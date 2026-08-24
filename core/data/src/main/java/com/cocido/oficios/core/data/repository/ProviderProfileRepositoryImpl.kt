@@ -4,10 +4,12 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.map
 import com.cocido.oficios.core.data.mapper.toDto
 import com.cocido.oficios.core.data.mapper.toRegisterTradeDraft
+import com.cocido.oficios.core.data.mapper.toSubRubroOptions
 import com.cocido.oficios.core.data.remote.ProviderProfileRemoteDataSource
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.ProviderSubRubroOption
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,4 +39,7 @@ class ProviderProfileRepositoryImpl @Inject constructor(
                 documento = profile.documento,
             )
         }
+
+    override suspend fun getMySubRubros(): AppResult<List<ProviderSubRubroOption>> =
+        remoteDataSource.getProviderProfile().map { it.toSubRubroOptions() }
 }

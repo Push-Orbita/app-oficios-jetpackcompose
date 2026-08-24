@@ -120,5 +120,7 @@ class SyncRegisterTradeDraftFromProfileUseCaseTest {
                     paymentMethods = paymentMethods,
                 ),
             )
+
+        override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
     }
 }

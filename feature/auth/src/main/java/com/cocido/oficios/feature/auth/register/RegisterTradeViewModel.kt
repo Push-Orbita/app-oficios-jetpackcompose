@@ -220,9 +220,7 @@ class RegisterTradeViewModel @Inject constructor(
         val categoryId = state.selectedCategoryId ?: return
         val rubroId = state.selectedTradeId ?: return
 
-        val subRubroIds = state.selectedSpecializations
-            .filter { it != OTHER_SPECIALIZATION_ID }
-            .mapNotNull { it.toLongOrNull() }
+        val subRubroIds = state.selectedSpecializations.mapNotNull { it.toLongOrNull() }
 
         viewModelScope.launch {
             registerTradeDraftRepository.save(
@@ -232,9 +230,7 @@ class RegisterTradeViewModel @Inject constructor(
                     rubroId = rubroId,
                     rubroName = state.selectedTrade,
                     subRubroIds = subRubroIds,
-                    otherSpecialization = state.otherSpecialization.takeIf {
-                        OTHER_SPECIALIZATION_ID in state.selectedSpecializations && it.isNotBlank()
-                    },
+                    otherSpecialization = state.otherSpecialization.trim().ifBlank { null },
                     experienceRange = state.selectedExperienceRange,
                     neighborhoodQuery = state.neighborhoodQuery,
                     barrioId = state.selectedBarrioId,
@@ -277,8 +273,7 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     private fun RegisterTradeUiState.validated(): RegisterTradeUiState {
-        val hasSpecialization = selectedSpecializations.isNotEmpty() &&
-            (OTHER_SPECIALIZATION_ID !in selectedSpecializations || otherSpecialization.isNotBlank())
+        val hasSpecialization = selectedSpecializations.isNotEmpty()
         val canContinue = selectedCategoryId != null &&
             selectedTradeId != null &&
             hasSpecialization &&
@@ -296,8 +291,4 @@ class RegisterTradeViewModel @Inject constructor(
         mapIndexed { currentIndex, item ->
             if (currentIndex == index) transform(item) else item
         }
-
-    private companion object {
-        const val OTHER_SPECIALIZATION_ID = RegisterTradeUiState.OTHER_SPECIALIZATION_ID
-    }
 }
