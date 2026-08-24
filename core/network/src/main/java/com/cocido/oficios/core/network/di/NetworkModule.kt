@@ -2,6 +2,7 @@ package com.cocido.oficios.core.network.di
 
 import com.cocido.oficios.core.network.BuildConfig
 import com.cocido.oficios.core.network.api.DemoApiService
+import com.cocido.oficios.core.network.api.agenda.AgendaApi
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.catalog.CatalogApi
 import com.cocido.oficios.core.network.api.profile.ClientProfileApi
@@ -163,6 +164,12 @@ object NetworkModule {
     @Singleton
     fun provideOrdersApi(@ApiRetrofit retrofit: Retrofit): OrdersApi {
         return retrofit.create(OrdersApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAgendaApi(@ApiRetrofit retrofit: Retrofit): AgendaApi {
+        return retrofit.create(AgendaApi::class.java)
     }
 
     @Provides

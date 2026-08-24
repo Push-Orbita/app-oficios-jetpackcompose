@@ -35,7 +35,7 @@ class ProviderHomeViewModel @Inject constructor(
             ProviderHomeEvent.Retry -> loadHome()
             ProviderHomeEvent.OpenNotifications -> emitEffect(ProviderHomeEffect.ShowComingSoon)
             ProviderHomeEvent.CompleteProfileClicked -> emitEffect(ProviderHomeEffect.NavigateToCompleteProfile)
-            ProviderHomeEvent.ViewFullAgendaClicked -> emitEffect(ProviderHomeEffect.NavigateToOrdersList)
+            ProviderHomeEvent.ViewFullAgendaClicked -> emitEffect(ProviderHomeEffect.NavigateToAgenda)
             is ProviderHomeEvent.OrderClicked -> emitEffect(ProviderHomeEffect.NavigateToOrderDetail(event.orderId))
             ProviderHomeEvent.NavigateToSettings -> emitEffect(ProviderHomeEffect.NavigateToSettings)
             ProviderHomeEvent.NavigateToProfile -> emitEffect(ProviderHomeEffect.ShowComingSoon)

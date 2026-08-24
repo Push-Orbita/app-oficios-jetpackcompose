@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.ProviderSubRubroOption
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 
 interface ProviderProfileRepository {
@@ -12,4 +13,5 @@ interface ProviderProfileRepository {
     suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest): AppResult<Unit>
     suspend fun finalizeProfile(): AppResult<Unit>
     suspend fun loadProviderProfileForSync(): AppResult<ProviderProfileSync>
+    suspend fun getMySubRubros(): AppResult<List<ProviderSubRubroOption>>
 }

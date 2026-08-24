@@ -157,6 +157,8 @@ class SubmitRegisterTradeDraftUseCaseTest {
 
         override suspend fun loadProviderProfileForSync(): AppResult<ProviderProfileSync> =
             AppResult.Success(ProviderProfileSync(tradeDraft = tradeDraft, paymentMethods = tradeDraft?.paymentMethods.orEmpty()))
+
+        override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
     }
 
     private class FakeCatalogRepository(

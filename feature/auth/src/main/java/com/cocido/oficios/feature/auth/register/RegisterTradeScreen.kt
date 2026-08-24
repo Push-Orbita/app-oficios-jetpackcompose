@@ -94,10 +94,9 @@ fun RegisterTradeScreen(
                 options = uiState.specializationOptions,
                 isLoading = uiState.isLoadingSpecializations,
                 selected = uiState.selectedSpecializations,
-                otherValue = uiState.otherSpecialization,
-                showOtherField = uiState.isOtherSpecializationVisible,
+                descriptionValue = uiState.otherSpecialization,
                 onToggle = { id, checked -> onEvent(RegisterTradeEvent.SpecializationToggled(id, checked)) },
-                onOtherChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
+                onDescriptionChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
             )
         }
 
@@ -293,65 +292,49 @@ private fun RegisterTradeSpecializationsSection(
     options: List<CatalogOption>,
     isLoading: Boolean,
     selected: Set<String>,
-    otherValue: String,
-    showOtherField: Boolean,
+    descriptionValue: String,
     onToggle: (String, Boolean) -> Unit,
-    onOtherChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.none),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
-        Text(
-            text = stringResource(R.string.auth_register_trade_specializations_label),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.none)) {
+            Text(
+                text = stringResource(R.string.auth_register_trade_specializations_label),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            if (isLoading) {
+                Text(
+                    text = stringResource(R.string.auth_register_trade_loading_specializations),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OficiosColorMutedText,
+                )
+            }
+            options.forEach { option ->
+                val optionId = option.id.toString()
+                OficiosCheckbox(
+                    checked = optionId in selected,
+                    onCheckedChange = { onToggle(optionId, it) },
+                    label = option.label,
+                    enabled = !isLoading,
+                    compactRow = true,
+                )
+            }
+        }
+
+        // Campo libre y siempre visible: el catálogo de especializaciones es fijo,
+        // pero un trabajador puede ofrecer varias cosas más allá de esas casillas.
+        // No reemplaza a las especializaciones (que son las que se usan para que
+        // los clientes lo encuentren en la búsqueda) — es información adicional.
+        OficiosTextField(
+            value = descriptionValue,
+            onValueChange = onDescriptionChanged,
+            label = stringResource(R.string.auth_register_trade_description_label),
+            placeholder = stringResource(R.string.auth_register_trade_description_hint),
+            singleLine = false,
         )
-        if (isLoading) {
-            Text(
-                text = stringResource(R.string.auth_register_trade_loading_specializations),
-                style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorMutedText,
-            )
-        }
-        options.forEach { option ->
-            val optionId = option.id.toString()
-            OficiosCheckbox(
-                checked = optionId in selected,
-                onCheckedChange = { onToggle(optionId, it) },
-                label = option.label,
-                enabled = !isLoading,
-                compactRow = true,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = OficiosComponentSize.checkboxRowMinHeight),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OficiosCheckbox(
-                checked = RegisterTradeUiState.OTHER_SPECIALIZATION_ID in selected,
-                onCheckedChange = {
-                    onToggle(RegisterTradeUiState.OTHER_SPECIALIZATION_ID, it)
-                },
-                label = stringResource(R.string.auth_register_trade_other_specialization),
-                expandWidth = false,
-                compactRow = true,
-            )
-            Text(
-                text = " ${stringResource(R.string.auth_register_trade_other_hint)}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorMutedText,
-            )
-        }
-        if (showOtherField) {
-            OficiosTextField(
-                value = otherValue,
-                onValueChange = onOtherChanged,
-                label = "",
-                placeholder = stringResource(R.string.auth_register_trade_other_input_hint),
-            )
-        }
     }
 }

@@ -12,6 +12,7 @@ import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
+import com.cocido.oficios.feature.home.navigation.agendaScreen
 import com.cocido.oficios.feature.home.navigation.homeScreen
 import com.cocido.oficios.feature.home.navigation.ordersScreen
 import com.cocido.oficios.feature.home.navigation.providerHomeScreen
@@ -144,6 +145,10 @@ fun AppNavHost(
             onShowMessage = showMessage,
         )
         ordersScreen(
+            navController = navController,
+            onShowMessage = showMessage,
+        )
+        agendaScreen(
             navController = navController,
             onShowMessage = showMessage,
         )
