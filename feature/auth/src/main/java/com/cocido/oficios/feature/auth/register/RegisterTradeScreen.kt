@@ -27,6 +27,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRegisterTradeTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthRegisterLayout
 
@@ -36,6 +37,8 @@ fun RegisterTradeScreen(
     onEvent: (RegisterTradeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    ConfirmDiscardOnSystemBack(hasUnsavedChanges = uiState.selectedCategoryId != null)
+
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading || uiState.isLoadingCatalog,

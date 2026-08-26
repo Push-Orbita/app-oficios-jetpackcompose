@@ -33,6 +33,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioUiState
@@ -98,6 +99,11 @@ fun ClientContactDomicilioStepScreen(
     onDepartamentoChanged: (String) -> Unit,
     onSubmit: () -> Unit,
 ) {
+    val hasUnsavedChanges = uiState.barrioQuery.isNotBlank() ||
+        uiState.calle.isNotBlank() ||
+        uiState.numero.isNotBlank()
+    ConfirmDiscardOnSystemBack(hasUnsavedChanges = hasUnsavedChanges)
+
     OnboardingStepScaffold(
         title = stringResource(R.string.onboarding_step_contact_domicilio_title),
         error = uiState.error,
