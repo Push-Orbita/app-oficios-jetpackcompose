@@ -76,7 +76,9 @@ fun AppNavHost(
                 navController.navigate(AuthDestination.REGISTER_CLIENT)
             },
             onNavigateToRegisterTrade = {
-                navController.navigate(AuthDestination.REGISTER_TRADE)
+                navController.navigate(AuthDestination.REGISTER_TRADE) {
+                    popUpTo(AuthDestination.REGISTER_PROVIDER) { inclusive = true }
+                }
             },
             onNavigateToRegisterProvider = {
                 navController.navigate(AuthDestination.REGISTER_PROVIDER)

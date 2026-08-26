@@ -12,7 +12,6 @@ import com.cocido.oficios.core.designsystem.component.OficiosDialog
 private const val DISCARD_CHANGES_TITLE = "¿Salir sin guardar?"
 private const val DISCARD_CHANGES_MESSAGE = "Vas a perder los datos que ingresaste en este formulario."
 private const val DISCARD_CHANGES_CONFIRM = "Salir"
-private const val DISCARD_CHANGES_DISMISS = "Seguir editando"
 
 @Composable
 private fun DiscardChangesDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
@@ -20,7 +19,6 @@ private fun DiscardChangesDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         title = DISCARD_CHANGES_TITLE,
         message = DISCARD_CHANGES_MESSAGE,
         confirmLabel = DISCARD_CHANGES_CONFIRM,
-        dismissLabel = DISCARD_CHANGES_DISMISS,
         isDangerous = true,
         onConfirm = onConfirm,
         onDismiss = onDismiss,

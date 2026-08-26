@@ -39,7 +39,7 @@ fun NavGraphBuilder.authGraph(
     composable(AuthDestination.REGISTER_ROLE) {
         RegisterRoleSelectionRoute(
             onSelectClient = onNavigateToRegisterClient,
-            onSelectProvider = onNavigateToRegisterTrade,
+            onSelectProvider = onNavigateToRegisterProvider,
             onNavigateToLogin = onNavigateToLogin,
             onContactSupport = onContactSupport,
         )
@@ -54,12 +54,12 @@ fun NavGraphBuilder.authGraph(
     }
     composable(AuthDestination.REGISTER_TRADE) {
         RegisterTradeRoute(
-            onNavigateToProviderRegister = onNavigateToRegisterProvider,
+            onNavigateToOnboarding = onNavigateToOnboarding,
         )
     }
     composable(AuthDestination.REGISTER_PROVIDER) {
         RegisterProviderRoute(
-            onNavigateToOnboarding = onNavigateToOnboarding,
+            onNavigateToTradeSetup = onNavigateToRegisterTrade,
             onNavigateToLogin = onNavigateToLogin,
             onNavigateToTerms = onNavigateToTerms,
             onContactSupport = onContactSupport,
