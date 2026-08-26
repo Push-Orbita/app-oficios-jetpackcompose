@@ -97,5 +97,5 @@ data class RegisterTradeUiState(
 }
 
 sealed interface RegisterTradeEffect {
-    data object NavigateToProviderRegister : RegisterTradeEffect
+    data object NavigateToOnboarding : RegisterTradeEffect
 }

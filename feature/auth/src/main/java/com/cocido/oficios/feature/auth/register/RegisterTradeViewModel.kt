@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -31,6 +32,7 @@ class RegisterTradeViewModel @Inject constructor(
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val submitRegisterTradeDraftUseCase: SubmitRegisterTradeDraftUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterTradeUiState())
@@ -105,7 +107,7 @@ class RegisterTradeViewModel @Inject constructor(
                 if (event.checked) updated.add(event.method) else updated.remove(event.method)
                 it.copy(selectedPaymentMethods = updated)
             }
-            RegisterTradeEvent.Continue -> continueToProviderRegister()
+            RegisterTradeEvent.Continue -> continueToOnboarding()
             RegisterTradeEvent.RetryLoadCatalog -> loadCategories()
         }
     }
@@ -215,7 +217,7 @@ class RegisterTradeViewModel @Inject constructor(
         }
     }
 
-    private fun continueToProviderRegister() {
+    private fun continueToOnboarding() {
         val state = _uiState.value
         val categoryId = state.selectedCategoryId ?: return
         val rubroId = state.selectedTradeId ?: return
@@ -243,7 +245,13 @@ class RegisterTradeViewModel @Inject constructor(
                         .map { RegisterTradeTimeSlotDraft(from = it.from, to = it.to) },
                 ),
             )
-            _effects.emit(RegisterTradeEffect.NavigateToProviderRegister)
+            // Intento inmediato: casi siempre falla porque el DNI todavía no está aprobado
+            // en este punto (recién se sube en onboarding); el checklist reintenta esto
+            // mismo una vez que la identidad quede verificada (ProviderOnboardingViewModel).
+            _uiState.update { it.copy(isLoading = true) }
+            submitRegisterTradeDraftUseCase(requireDraft = true)
+            _uiState.update { it.copy(isLoading = false) }
+            _effects.emit(RegisterTradeEffect.NavigateToOnboarding)
         }
     }
 

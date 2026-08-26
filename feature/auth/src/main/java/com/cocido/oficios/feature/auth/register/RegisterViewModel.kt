@@ -7,8 +7,8 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
-import com.cocido.oficios.domain.usecase.auth.CompleteProviderRegistrationUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
+import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -26,7 +26,7 @@ enum class RegisterMode { CLIENT, PROVIDER }
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerClientUseCase: RegisterClientUseCase,
-    private val completeProviderRegistrationUseCase: CompleteProviderRegistrationUseCase,
+    private val registerProviderUseCase: RegisterProviderUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterFormUiState())
@@ -108,7 +108,7 @@ class RegisterViewModel @Inject constructor(
                 }
                 RegisterMode.PROVIDER -> {
                     when (
-                        val result = completeProviderRegistrationUseCase(
+                        val result = registerProviderUseCase(
                             RegisterProviderRequest(
                                 firstName = firstName,
                                 lastName = lastName,
@@ -119,13 +119,8 @@ class RegisterViewModel @Inject constructor(
                         )
                     ) {
                         is AppResult.Success -> {
-                            _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    generalError = result.data.profileSyncMessage,
-                                )
-                            }
-                            _effects.emit(RegisterEffect.NavigateToOnboarding)
+                            _uiState.update { it.copy(isLoading = false) }
+                            _effects.emit(RegisterEffect.NavigateToTradeSetup)
                         }
                         is AppResult.Error -> {
                             _uiState.update {

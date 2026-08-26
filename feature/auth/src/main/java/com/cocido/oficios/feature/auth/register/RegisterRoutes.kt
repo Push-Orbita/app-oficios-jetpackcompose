@@ -26,7 +26,7 @@ fun RegisterRoleSelectionRoute(
 
 @Composable
 fun RegisterTradeRoute(
-    onNavigateToProviderRegister: () -> Unit,
+    onNavigateToOnboarding: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RegisterTradeViewModel = hiltViewModel(),
 ) {
@@ -35,7 +35,7 @@ fun RegisterTradeRoute(
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
-                RegisterTradeEffect.NavigateToProviderRegister -> onNavigateToProviderRegister()
+                RegisterTradeEffect.NavigateToOnboarding -> onNavigateToOnboarding()
             }
         }
     }
@@ -69,7 +69,7 @@ fun RegisterClientRoute(
 
 @Composable
 fun RegisterProviderRoute(
-    onNavigateToOnboarding: () -> Unit,
+    onNavigateToTradeSetup: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToTerms: () -> Unit = {},
     onContactSupport: () -> Unit = {},
@@ -78,7 +78,8 @@ fun RegisterProviderRoute(
 ) {
     RegisterFormRoute(
         mode = RegisterMode.PROVIDER,
-        onNavigateToOnboarding = onNavigateToOnboarding,
+        onNavigateToOnboarding = {},
+        onNavigateToTradeSetup = onNavigateToTradeSetup,
         onNavigateToLogin = onNavigateToLogin,
         onNavigateToTerms = onNavigateToTerms,
         onContactSupport = onContactSupport,
@@ -91,6 +92,7 @@ fun RegisterProviderRoute(
 private fun RegisterFormRoute(
     mode: RegisterMode,
     onNavigateToOnboarding: () -> Unit,
+    onNavigateToTradeSetup: () -> Unit = {},
     onNavigateToLogin: () -> Unit,
     onNavigateToTerms: () -> Unit,
     onContactSupport: () -> Unit,
@@ -107,6 +109,7 @@ private fun RegisterFormRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 RegisterEffect.NavigateToOnboarding -> onNavigateToOnboarding()
+                RegisterEffect.NavigateToTradeSetup -> onNavigateToTradeSetup()
                 RegisterEffect.NavigateToLogin -> onNavigateToLogin()
                 RegisterEffect.NavigateToTerms -> onNavigateToTerms()
             }
