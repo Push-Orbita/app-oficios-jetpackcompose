@@ -460,8 +460,16 @@ fun ProviderProfessionalInfoStepScreen(
         canSubmit = uiState.descripcion.isNotBlank() && uiState.experiencia.isNotBlank(),
         onSubmit = onSubmit,
     ) {
-        OficiosTextField(value = uiState.descripcion, onValueChange = onDescripcionChanged, label = "Descripción")
-        OficiosTextField(value = uiState.experiencia, onValueChange = onExperienciaChanged, label = "Experiencia")
+        OficiosTextField(
+            value = uiState.descripcion,
+            onValueChange = onDescripcionChanged,
+            label = stringResource(R.string.onboarding_step_professional_description_label),
+        )
+        OficiosTextField(
+            value = uiState.experiencia,
+            onValueChange = onExperienciaChanged,
+            label = stringResource(R.string.onboarding_step_professional_experience_label),
+        )
     }
 }
 
@@ -486,8 +494,8 @@ fun ProviderRubrosStepScreen(
             onOptionSelected = { label ->
                 uiState.categoryOptions.find { it.label == label }?.let { onCategorySelected(it.id) }
             },
-            label = "Categoría",
-            placeholder = "Seleccionar",
+            label = stringResource(R.string.onboarding_step_rubros_category_label),
+            placeholder = stringResource(R.string.onboarding_step_rubros_select_placeholder),
             usePlaceholderOnly = true,
         )
         OficiosDropdownField(
@@ -496,8 +504,8 @@ fun ProviderRubrosStepScreen(
             onOptionSelected = { label ->
                 uiState.tradeOptions.find { it.label == label }?.let { onTradeSelected(it.id) }
             },
-            label = "Rubro",
-            placeholder = "Seleccionar",
+            label = stringResource(R.string.onboarding_step_rubros_trade_label),
+            placeholder = stringResource(R.string.onboarding_step_rubros_select_placeholder),
             usePlaceholderOnly = true,
         )
         uiState.specializationOptions.forEach { option ->

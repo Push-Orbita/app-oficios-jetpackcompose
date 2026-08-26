@@ -25,6 +25,7 @@ sealed interface HomeEvent {
 sealed interface CategoriesEvent {
     data object Retry : CategoriesEvent
     data object Back : CategoriesEvent
+    data object OpenNotifications : CategoriesEvent
     data class CategorySelected(val category: HomeCategoryItem) : CategoriesEvent
     data class SearchSubmitted(val query: String) : CategoriesEvent
     data object VoiceSearch : CategoriesEvent

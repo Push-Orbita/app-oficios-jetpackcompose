@@ -8,22 +8,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -187,6 +186,13 @@ private fun OrderDetailContent(
                 }
             }
 
+            // pendingCounterOffer nulo con status COUNTER_OFFER sería un dato inconsistente
+            // del backend (la contrapropuesta debería venir siempre en ese estado) — igual se
+            // cubre para no dejar la pantalla en blanco si llega a pasar.
+            order.status == ServiceRequestStatus.COUNTER_OFFER -> {
+                InfoText("No pudimos cargar el detalle de la contrapropuesta. Volvé a intentar más tarde.")
+            }
+
             order.status == ServiceRequestStatus.ACCEPTED -> when (order.bookingStatus) {
                 BookingStatus.CONFIRMED -> {
                     InfoText("Pedido confirmado")
@@ -229,7 +235,18 @@ private fun OrderDetailContent(
                         )
                     }
                 }
-                else -> Unit
+                // bookingStatus fuera de lo esperado para un pedido ACCEPTED (ej. PENDING o
+                // CANCELLED) sería inconsistente, pero se muestra algo accionable en vez de
+                // dejar la pantalla en blanco.
+                else -> {
+                    InfoText("No pudimos determinar el estado actual de este pedido.")
+                    OficiosButton(
+                        text = "Reintentar",
+                        onClick = { onEvent(OrderDetailEvent.Retry) },
+                        variant = OficiosButtonVariant.Outlined,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             order.status == ServiceRequestStatus.CANCELLED -> {
@@ -238,6 +255,10 @@ private fun OrderDetailContent(
 
             order.status == ServiceRequestStatus.EXPIRED -> {
                 InfoText("La solicitud expiró")
+            }
+
+            else -> {
+                InfoText("No pudimos determinar el estado de este pedido, contactá soporte.")
             }
         }
     }
@@ -255,19 +276,17 @@ private fun OrderDetailContent(
     }
 
     if (showCancelDialog) {
-        AlertDialog(
-            onDismissRequest = { showCancelDialog = false },
-            title = { Text("Cancelar solicitud") },
-            text = { Text("¿Seguro que querés cancelar esta solicitud?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    onEvent(OrderDetailEvent.CancelBeforeAcceptance)
-                    showCancelDialog = false
-                }) { Text("Sí, cancelar") }
+        OficiosDialog(
+            title = "Cancelar solicitud",
+            message = "¿Seguro que querés cancelar esta solicitud?",
+            confirmLabel = "Sí, cancelar",
+            dismissLabel = "Volver",
+            isDangerous = true,
+            onConfirm = {
+                onEvent(OrderDetailEvent.CancelBeforeAcceptance)
+                showCancelDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) { Text("Volver") }
-            },
+            onDismiss = { showCancelDialog = false },
         )
     }
 }
@@ -285,21 +304,20 @@ private fun ReasonDialog(
     onDismiss: () -> Unit,
 ) {
     var reason by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            OutlinedTextField(
+    OficiosDialog(
+        title = title,
+        message = "Contanos el motivo para que la otra persona lo vea.",
+        confirmLabel = confirmLabel,
+        isDangerous = true,
+        confirmEnabled = reason.isNotBlank(),
+        onConfirm = { onConfirm(reason) },
+        onDismiss = onDismiss,
+        content = {
+            OficiosTextField(
                 value = reason,
                 onValueChange = { reason = it },
-                label = { Text("Motivo") },
+                label = "Motivo",
             )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(reason) }, enabled = reason.isNotBlank()) { Text(confirmLabel) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
         },
     )
 }

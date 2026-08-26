@@ -83,7 +83,7 @@ fun CategoriesScreen(
                                 contentDescription = stringResource(R.string.home_back),
                             )
                         }
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { onEvent(CategoriesEvent.OpenNotifications) }) {
                             Icon(
                                 imageVector = Icons.Outlined.Notifications,
                                 contentDescription = stringResource(R.string.home_notifications),

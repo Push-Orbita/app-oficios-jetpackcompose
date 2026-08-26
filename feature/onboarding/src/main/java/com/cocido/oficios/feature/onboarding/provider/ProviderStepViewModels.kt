@@ -538,6 +538,7 @@ class ProviderLocalViewModel @Inject constructor(
     private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderLocalUiState())
@@ -594,6 +595,10 @@ class ProviderLocalViewModel @Inject constructor(
         if (!state.canSubmit) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
+            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
+                _uiState.update { it.copy(isLoading = false, error = message) }
+                return@launch
+            }
             val draft = registerTradeDraftRepository.get()
             if (draft == null || draft.subRubroIds.isEmpty()) {
                 _uiState.update { it.copy(isLoading = false, error = "Completá primero rubro y subrubros") }

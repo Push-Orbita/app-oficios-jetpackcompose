@@ -43,7 +43,7 @@ fun WorkerProfileScreen(
         modifier = modifier,
         topBar = {
             OficiosBackTopBar(
-                title = stringResource(R.string.home_worker_stub_title),
+                title = stringResource(R.string.home_worker_profile_title),
                 onBack = { onEvent(WorkerProfileEvent.Back) },
             )
         },

@@ -44,6 +44,8 @@ fun OficiosDialog(
     modifier: Modifier = Modifier,
     dismissLabel: String = "Cancelar",
     isDangerous: Boolean = false,
+    confirmEnabled: Boolean = true,
+    content: (@Composable () -> Unit)? = null,
 ) {
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -70,6 +72,10 @@ fun OficiosDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (content != null) {
+                    Spacer(Modifier.height(OficiosSpacing.sm))
+                    content()
+                }
                 Spacer(Modifier.height(OficiosSpacing.lg))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -85,6 +91,7 @@ fun OficiosDialog(
                         text = confirmLabel,
                         onClick = onConfirm,
                         modifier = Modifier.weight(1f),
+                        enabled = confirmEnabled,
                         variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Primary,
                     )
                 }

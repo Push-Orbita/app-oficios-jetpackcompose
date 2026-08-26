@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -54,6 +56,11 @@ fun SearchResultsScreen(
         ) {
             SearchResultsHeader(
                 searchQuery = searchQuery,
+                activeFilterCount = when (uiState) {
+                    is SearchResultsUiState.Empty -> uiState.filterChips.size
+                    is SearchResultsUiState.Success -> uiState.filterChips.size
+                    else -> 0
+                },
                 onEvent = onEvent,
             )
             when (uiState) {
@@ -113,6 +120,7 @@ fun SearchResultsScreen(
 @Composable
 private fun SearchResultsHeader(
     searchQuery: String,
+    activeFilterCount: Int,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
     Row(
@@ -137,10 +145,22 @@ private fun SearchResultsHeader(
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = { onEvent(SearchResultsEvent.OpenFilters) }) {
-            Icon(
-                imageVector = Icons.Outlined.FilterList,
-                contentDescription = stringResource(R.string.home_search_filters),
-            )
+            BadgedBox(
+                badge = {
+                    if (activeFilterCount > 0) {
+                        Badge { Text(activeFilterCount.toString()) }
+                    }
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.FilterList,
+                    contentDescription = if (activeFilterCount > 0) {
+                        stringResource(R.string.home_search_filters_with_count, activeFilterCount)
+                    } else {
+                        stringResource(R.string.home_search_filters)
+                    },
+                )
+            }
         }
     }
 }

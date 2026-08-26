@@ -70,7 +70,12 @@
     <string name="onboarding_step_contacto_title">Agregar contacto</string>
     <string name="onboarding_step_dni_title">Documentación DNI</string>
     <string name="onboarding_step_professional_title">Información profesional</string>
+    <string name="onboarding_step_professional_description_label">Descripción</string>
+    <string name="onboarding_step_professional_experience_label">Experiencia</string>
     <string name="onboarding_step_rubros_title">Rubro y especialidades</string>
+    <string name="onboarding_step_rubros_category_label">Categoría</string>
+    <string name="onboarding_step_rubros_trade_label">Rubro</string>
+    <string name="onboarding_step_rubros_select_placeholder">Seleccionar</string>
     <string name="onboarding_step_availability_title">Días y horarios laborales</string>
     <string name="onboarding_step_availability_work_days">Días laborables</string>
     <string name="onboarding_step_availability_schedule">Horarios</string>
