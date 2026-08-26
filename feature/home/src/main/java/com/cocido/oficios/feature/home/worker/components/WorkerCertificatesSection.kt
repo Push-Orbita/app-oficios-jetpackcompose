@@ -35,9 +35,6 @@ fun WorkerCertificatesSection(
         certificates.forEach { cert ->
             CertificateCard(
                 title = cert.name,
-                issuedBy = "Oficios",
-                expiryDate = null,
-                isVerified = false,
                 modifier = Modifier.padding(top = OficiosSpacing.sm),
             )
         }

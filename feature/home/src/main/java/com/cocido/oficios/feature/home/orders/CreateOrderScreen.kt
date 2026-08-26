@@ -19,6 +19,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.domain.model.ClientDomicilio
 
 @Composable
@@ -28,10 +29,17 @@ fun CreateOrderScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hasUnsavedChanges = uiState is CreateOrderUiState.Success &&
+        (uiState.description.isNotBlank() || uiState.proposedDateTime != null)
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = hasUnsavedChanges,
+        onConfirmExit = onNavigateBack,
+    )
+
     OficiosScaffold(
         modifier = modifier,
         topBar = {
-            OficiosBackTopBar(title = "Contratar", onBack = onNavigateBack)
+            OficiosBackTopBar(title = "Contratar", onBack = handleBack)
         },
     ) { paddingValues ->
         when (uiState) {
