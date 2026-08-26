@@ -37,6 +37,7 @@ class CategoriesViewModel @Inject constructor(
         when (event) {
             CategoriesEvent.Retry -> loadCategories()
             CategoriesEvent.Back -> emitEffect(CategoriesEffect.NavigateBack)
+            CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.ShowComingSoon)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
             is CategoriesEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             CategoriesEvent.VoiceSearch -> emitEffect(CategoriesEffect.ShowComingSoon)

@@ -33,6 +33,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.CatalogOption
@@ -177,6 +178,14 @@ fun HomeCategoriesGrid(
     showSeeAll: Boolean = true,
     onSeeAllClick: () -> Unit = {},
 ) {
+    if (categories.isEmpty()) {
+        OficiosEmptyState(
+            title = stringResource(R.string.home_categories_empty_title),
+            description = stringResource(R.string.home_categories_empty_description),
+            modifier = modifier.fillMaxWidth(),
+        )
+        return
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxWidth(),
@@ -215,6 +224,14 @@ fun HomeRubrosGrid(
     onRubroClick: (CatalogOption) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (rubros.isEmpty()) {
+        OficiosEmptyState(
+            title = stringResource(R.string.home_rubros_empty_title),
+            description = stringResource(R.string.home_rubros_empty_description),
+            modifier = modifier.fillMaxWidth(),
+        )
+        return
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxWidth(),

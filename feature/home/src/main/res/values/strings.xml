@@ -25,6 +25,10 @@
     <string name="home_voice_search">Búsqueda por voz</string>
     <string name="home_back">Volver</string>
     <string name="home_categories_see_all">Ver todos</string>
+    <string name="home_categories_empty_title">Sin categorías por ahora</string>
+    <string name="home_categories_empty_description">Todavía no hay categorías cargadas. Probá de nuevo más tarde.</string>
+    <string name="home_rubros_empty_title">Sin rubros por ahora</string>
+    <string name="home_rubros_empty_description">Todavía no hay rubros cargados para esta categoría.</string>
     <string name="home_coming_soon">Próximamente</string>
     <string name="home_open_settings">Abrir ajustes</string>
     <string name="home_rubros_loading">Cargando rubros…</string>
@@ -34,6 +38,7 @@
     <string name="home_search_results_empty_description">Probá ajustar los filtros o buscar otro rubro.</string>
     <string name="home_search_results_empty_query_description">No encontramos trabajadores para "%1$s". Probá con otras palabras o ajustá los filtros.</string>
     <string name="home_search_filters">Filtros</string>
+    <string name="home_search_filters_with_count">Filtros (%1$d activos)</string>
     <string name="home_filter_category">Categoría</string>
     <string name="home_filter_category_hint">Seleccioná una categoría</string>
     <string name="home_filter_rubro">Especialidad</string>
@@ -49,8 +54,7 @@
     <string name="home_filter_apply">Aplicar</string>
     <string name="home_worker_contact">Contactar</string>
     <string name="home_worker_view_profile">Ver perfil</string>
-    <string name="home_worker_stub_title">Perfil del trabajador</string>
-    <string name="home_worker_stub_description">La ficha completa estará disponible pronto (ID: %1$d).</string>
+    <string name="home_worker_profile_title">Perfil del trabajador</string>
     <string name="home_worker_hire">Contratar</string>
     <string name="home_worker_profile_loading">Cargando perfil del trabajador…</string>
     <string name="home_worker_profile_error_title">No pudimos cargar el perfil del trabajador</string>
@@ -63,6 +67,8 @@
     <string name="home_worker_reviews_empty_description">Cuando finalicen trabajos, los clientes podrán dejar calificaciones.</string>
     <string name="home_worker_load_more_reviews">Ver más reseñas</string>
     <string name="home_worker_rate">Calificar</string>
+    <string name="home_worker_rate_unavailable">Vas a poder calificar a este trabajador cuando termines un pedido con él</string>
+    <string name="home_worker_report_coming_soon">La denuncia de perfiles va a estar disponible próximamente</string>
     <string name="home_worker_report_profile">Denunciar Perfil</string>
     <string name="provider_home_benefits_title">Beneficios</string>
     <string name="provider_home_agenda_title">Agenda</string>

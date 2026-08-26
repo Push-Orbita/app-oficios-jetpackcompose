@@ -108,6 +108,8 @@ fun ProviderPendingRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
 
+    ReloadOnResume { viewModel.load() }
+
     ProviderPendingApprovalScreen(
         uiState = uiState,
         onRetry = viewModel::load,
