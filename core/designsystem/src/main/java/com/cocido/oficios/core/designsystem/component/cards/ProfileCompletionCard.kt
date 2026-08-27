@@ -32,6 +32,8 @@ fun ProfileCompletionCard(
     modifier: Modifier = Modifier,
     missingItems: List<String> = emptyList(),
 ) {
+    if (completionPercent >= 100) return
+
     OficiosCard(modifier = modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Row(

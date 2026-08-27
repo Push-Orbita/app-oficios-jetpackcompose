@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -144,9 +145,24 @@ private fun AgendaConfigContent(
                 )
             }
             items(uiState.sessions, key = { it.id }) { session ->
-                SessionRow(session = session, onDeleteClick = { onEvent(AgendaConfigEvent.DeleteSession(session.id)) })
+                SessionRow(
+                    session = session,
+                    onDeleteClick = { onEvent(AgendaConfigEvent.RequestDeleteSession(session.id)) },
+                )
             }
         }
+    }
+
+    if (uiState.sessionPendingDeleteId != null) {
+        OficiosDialog(
+            title = "Eliminar configuración",
+            message = "¿Querés eliminar esta duración de turnos? Los horarios ya creados no se modificarán.",
+            confirmLabel = "Eliminar",
+            confirmEnabled = !uiState.isDeleting,
+            onConfirm = { onEvent(AgendaConfigEvent.ConfirmDeleteSession) },
+            onDismiss = { onEvent(AgendaConfigEvent.DismissDeleteSession) },
+            isDangerous = true,
+        )
     }
 }
 

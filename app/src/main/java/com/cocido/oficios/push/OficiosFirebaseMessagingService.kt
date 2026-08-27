@@ -1,16 +1,20 @@
 package com.cocido.oficios.push
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.cocido.oficios.MainActivity
 import com.cocido.oficios.R
 import com.cocido.oficios.core.common.navigation.PushNavigationCoordinator
+import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.usecase.notifications.MarkNotificationReadUseCase
 import com.cocido.oficios.feature.onboarding.navigation.OnboardingDeepLinkMapper
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -21,7 +25,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import com.cocido.oficios.core.common.result.AppResult
 
 @AndroidEntryPoint
 class OficiosFirebaseMessagingService : FirebaseMessagingService() {
@@ -69,6 +72,16 @@ class OficiosFirebaseMessagingService : FirebaseMessagingService() {
         deepLink: String?,
         internalRoute: String?,
     ) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
         ensureChannel()
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

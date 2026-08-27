@@ -9,6 +9,7 @@ import com.cocido.oficios.domain.model.AgendaSessionConfig
 import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import com.cocido.oficios.domain.repository.AgendaRepository
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -18,11 +19,26 @@ class AgendaRepositoryImpl @Inject constructor(
     private val dispatcherProvider: DispatcherProvider,
 ) : AgendaRepository {
 
-    override suspend fun getSlotsForSubRubro(subRubroId: Long): AppResult<List<AgendaSlot>> =
+    override suspend fun getSlotsForSubRubro(
+        subRubroId: Long,
+        fromIso: String?,
+        toIso: String?,
+    ): AppResult<List<AgendaSlot>> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.searchSlots(subRubroId).map { response ->
+            remoteDataSource.searchSlots(subRubroId, fromIso, toIso).map { response ->
                 response.data.flatMap { grupo -> grupo.slotsTurnos.map { it.toDomain() } }
             }
+        }
+
+    override suspend fun updateSlot(params: UpdateAgendaSlotParams): AppResult<Unit> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.updateSlot(
+                id = params.slotId,
+                subRubroId = params.subRubroId,
+                inicio = params.startIso,
+                fin = params.endIso,
+                autoAceptacion = params.autoAcceptance,
+            ).map { }
         }
 
     override suspend fun createSlot(params: CreateAgendaSlotParams): AppResult<Long> =

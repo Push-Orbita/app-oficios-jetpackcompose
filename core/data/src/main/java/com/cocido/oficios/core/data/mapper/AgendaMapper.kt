@@ -25,6 +25,7 @@ fun SlotTurnoAgendaDto.toDomain(): AgendaSlot = AgendaSlot(
     end = OffsetDateTime.parse(fin).atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime(),
     status = estado.toAgendaSlotStatus(),
     autoAcceptance = autoAceptacion,
+    bookingId = bookingId,
 )
 
 fun SesionDto.toDomain(): AgendaSessionConfig = AgendaSessionConfig(
