@@ -6,7 +6,6 @@ import com.cocido.oficios.core.network.api.agenda.dto.SesionDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotTurnoAgendaDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotsAgrupadoPorTrabajadorDto
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
-import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -26,7 +25,7 @@ interface AgendaApi {
     suspend fun createSlot(@Body request: CreateSlotTurnoRequestDto): SlotTurnoAgendaDto
 
     @DELETE("agenda/slot/{id}")
-    suspend fun deleteSlot(@Path("id") id: Long): JsonElement
+    suspend fun deleteSlot(@Path("id") id: Long)
 
     @GET("sesion/por-subrubro/{trabajadorOficioSubRubroId}")
     suspend fun getSesionesPorSubRubro(
@@ -37,5 +36,5 @@ interface AgendaApi {
     suspend fun createSesion(@Body request: CreateSesionRequestDto): SesionDto
 
     @DELETE("sesion/{id}")
-    suspend fun deleteSesion(@Path("id") id: Long): JsonElement
+    suspend fun deleteSesion(@Path("id") id: Long)
 }
