@@ -41,6 +41,10 @@ class TokenDataStore @Inject constructor(
 
     fun getUserLastName(): String? = prefs.getString(KEY_USER_LAST_NAME, null)
 
+    fun getUserPersonaId(): Long? = prefs.getLong(KEY_USER_PERSONA_ID, -1L).takeIf { it >= 0L }
+
+    fun getUserProfilePhotoUrl(): String? = prefs.getString(KEY_USER_PROFILE_PHOTO_URL, null)
+
     fun isEmailVerified(): Boolean = prefs.getBoolean(KEY_EMAIL_VERIFIED, false)
 
     fun getClientRoleId(): Long? {
@@ -67,6 +71,8 @@ class TokenDataStore @Inject constructor(
         firstName: String,
         lastName: String,
         emailVerified: Boolean,
+        personaId: Long? = null,
+        profilePhotoUrl: String? = null,
         accessTokenExpiresAtMillis: Long? = null,
     ) {
         prefs.edit()
@@ -79,6 +85,8 @@ class TokenDataStore @Inject constructor(
             .putString(KEY_USER_LAST_NAME, lastName)
             .putBoolean(KEY_EMAIL_VERIFIED, emailVerified)
             .apply {
+                if (personaId != null) putLong(KEY_USER_PERSONA_ID, personaId) else remove(KEY_USER_PERSONA_ID)
+                if (profilePhotoUrl != null) putString(KEY_USER_PROFILE_PHOTO_URL, profilePhotoUrl) else remove(KEY_USER_PROFILE_PHOTO_URL)
                 if (accessTokenExpiresAtMillis != null) {
                     putLong(KEY_ACCESS_TOKEN_EXPIRES_AT, accessTokenExpiresAtMillis)
                 } else {
@@ -120,6 +128,26 @@ class TokenDataStore @Inject constructor(
             .apply()
     }
 
+    fun updateCachedUser(
+        email: String,
+        firstName: String,
+        lastName: String,
+        emailVerified: Boolean,
+        personaId: Long? = null,
+        profilePhotoUrl: String? = null,
+    ) {
+        prefs.edit()
+            .putString(KEY_USER_EMAIL, email)
+            .putString(KEY_USER_FIRST_NAME, firstName)
+            .putString(KEY_USER_LAST_NAME, lastName)
+            .putBoolean(KEY_EMAIL_VERIFIED, emailVerified)
+            .apply {
+                if (personaId != null) putLong(KEY_USER_PERSONA_ID, personaId) else remove(KEY_USER_PERSONA_ID)
+                if (profilePhotoUrl != null) putString(KEY_USER_PROFILE_PHOTO_URL, profilePhotoUrl) else remove(KEY_USER_PROFILE_PHOTO_URL)
+            }
+            .apply()
+    }
+
     fun saveRoleIds(clientRoleId: Long?, providerRoleId: Long?) {
         prefs.edit().apply {
             if (clientRoleId != null) putLong(KEY_CLIENT_ROLE_ID, clientRoleId)
@@ -148,6 +176,8 @@ class TokenDataStore @Inject constructor(
         const val KEY_USER_EMAIL = "user_email"
         const val KEY_USER_FIRST_NAME = "user_first_name"
         const val KEY_USER_LAST_NAME = "user_last_name"
+        const val KEY_USER_PERSONA_ID = "user_persona_id"
+        const val KEY_USER_PROFILE_PHOTO_URL = "user_profile_photo_url"
         const val KEY_EMAIL_VERIFIED = "email_verified"
         const val KEY_CLIENT_ROLE_ID = "client_role_id"
         const val KEY_PROVIDER_ROLE_ID = "provider_role_id"

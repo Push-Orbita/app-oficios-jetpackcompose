@@ -8,9 +8,14 @@ import com.cocido.oficios.core.network.api.profile.dto.MisContactosResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.MisDomiciliosResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.VerifyTelefonoCodigoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.VerificarTelefonoCodigoResponseDto
+import com.cocido.oficios.core.network.api.profile.dto.UpdateContactoRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.UpdateDomicilioRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.UpdateFavoriteRequestDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -25,6 +30,11 @@ interface ClientProfileApi {
     @POST("domicilios")
     suspend fun createDomicilio(
         @Body request: CreateDomicilioRequestDto,
+    ): JsonElement
+
+    @POST("domicilios/mi")
+    suspend fun createMyDomicilio(
+        @Body request: UpdateDomicilioRequestDto,
     ): JsonElement
 
     @POST("contacto")
@@ -42,4 +52,34 @@ interface ClientProfileApi {
         @Path("id") contactId: Long,
         @Body request: VerifyTelefonoCodigoRequestDto,
     ): VerificarTelefonoCodigoResponseDto
+
+    @PATCH("domicilios/{id}")
+    suspend fun updateDomicilio(
+        @Path("id") id: Long,
+        @Body request: UpdateDomicilioRequestDto,
+    ): JsonElement
+
+    @DELETE("domicilios/{id}")
+    suspend fun deleteDomicilio(@Path("id") id: Long): JsonElement
+
+    @PATCH("domicilios/{id}/favorito")
+    suspend fun setFavoriteDomicilio(
+        @Path("id") id: Long,
+        @Body request: UpdateFavoriteRequestDto,
+    ): JsonElement
+
+    @PATCH("contacto/{id}")
+    suspend fun updateContacto(
+        @Path("id") id: Long,
+        @Body request: UpdateContactoRequestDto,
+    ): JsonElement
+
+    @DELETE("contacto/{id}")
+    suspend fun deleteContacto(@Path("id") id: Long): JsonElement
+
+    @PATCH("contacto/{id}/favorito")
+    suspend fun setFavoriteContacto(
+        @Path("id") id: Long,
+        @Body request: UpdateFavoriteRequestDto,
+    ): JsonElement
 }

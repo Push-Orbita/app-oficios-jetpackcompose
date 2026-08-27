@@ -11,6 +11,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun SettingsRoute(
     onNavigateBack: () -> Unit,
     onLoggedOut: () -> Unit,
+    onNavigateToPersonalData: () -> Unit,
+    onNavigateToClientData: () -> Unit,
+    onNavigateToProfessionalData: () -> Unit,
+    onNavigateToServices: () -> Unit,
+    onNavigateToPortfolio: () -> Unit,
+    onNavigateToChangePassword: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -19,6 +25,19 @@ fun SettingsRoute(
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLoggedOut()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                SettingsEffect.NavigateToPersonalData -> onNavigateToPersonalData()
+                SettingsEffect.NavigateToClientData -> onNavigateToClientData()
+                SettingsEffect.NavigateToProfessionalData -> onNavigateToProfessionalData()
+                SettingsEffect.NavigateToServices -> onNavigateToServices()
+                SettingsEffect.NavigateToPortfolio -> onNavigateToPortfolio()
+                SettingsEffect.NavigateToChangePassword -> onNavigateToChangePassword()
+            }
+        }
     }
 
     SettingsScreen(
