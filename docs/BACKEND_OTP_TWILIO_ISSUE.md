@@ -73,7 +73,7 @@ El `POST /contacto` que creó el contacto `id=10` usó el **mismo token**, en la
 # 1. Login (obtener token)
 curl -X POST 'https://apioficios.pushsoftware.com.ar/auth/login' \
   -H 'Content-Type: application/json' \
-  -d '{"email":"cliente.prueba.oficios@gmail.com","contrasena":"Prueba123456"}'
+  -d '{"email":"<EMAIL_DE_PRUEBA>","contrasena":"<CONTRASENA_DE_PRUEBA>"}'
 # → copiar "access_token" de la respuesta
 
 # 2. Crear un contacto de prueba nuevo (sin historial de cooldown)

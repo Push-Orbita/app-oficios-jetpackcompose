@@ -30,4 +30,37 @@ class WorkCertificateUploadDataSource @Inject constructor(
             certificadoArchivo = part,
         )
     }
+
+    suspend fun updateCertificate(
+        id: Long,
+        name: String,
+        currentUrl: String?,
+        filePath: String?,
+    ): CertificadoTrabajoDto {
+        val filePart = filePath?.let { path ->
+            val file = File(path)
+            require(file.exists() && file.length() > 0L) { "No se encontró el archivo del certificado" }
+            MultipartBody.Part.createFormData(
+                "certificadoArchivoNuevo",
+                file.name,
+                file.asRequestBody(certificateMediaType(file)),
+            )
+        }
+        return workCertificateApi.updateCertificate(
+            id = id,
+            nombre = name.toRequestBody("text/plain".toMediaTypeOrNull()),
+            certificadoArchivoNuevo = filePart,
+            urlArchivoActual = if (filePart == null) {
+                require(!currentUrl.isNullOrBlank()) { "Falta la URL actual del certificado" }
+                currentUrl.toRequestBody("text/plain".toMediaTypeOrNull())
+            } else {
+                null
+            },
+        )
+    }
+
+    private fun certificateMediaType(file: File) = when (file.extension.lowercase()) {
+        "pdf" -> "application/pdf"
+        else -> "image/*"
+    }.toMediaTypeOrNull()
 }

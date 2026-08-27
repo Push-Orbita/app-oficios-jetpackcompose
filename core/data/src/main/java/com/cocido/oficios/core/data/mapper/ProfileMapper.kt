@@ -8,6 +8,8 @@ import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubru
 import com.cocido.oficios.core.network.api.profile.dto.CreateHorarioLaboralRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateSubrubroRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.UpdateContactoRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.UpdateDomicilioRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.ContactoSinPersonaDto
 import com.cocido.oficios.core.network.api.profile.dto.DomicilioSinPersonaDto
 import com.cocido.oficios.domain.model.ClientContacto
@@ -17,6 +19,8 @@ import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.UpdateClientContactoRequest
+import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 
 fun ProviderProfessionalInfoRequest.toDto() = UpdateTrabajadorPerfilProfesionalRequestDto(
     descripcion = descripcion,
@@ -40,6 +44,26 @@ fun ClientDomicilioRequest.toDto() = CreateDomicilioRequestDto(
 )
 
 fun ClientContactoRequest.toDto() = CreateContactoRequestDto(
+    nombre = nombre,
+    telefonoWhatsapp = telefonoWhatsapp,
+    email = email,
+    favorito = favorito,
+)
+
+fun UpdateClientDomicilioRequest.toDto() = UpdateDomicilioRequestDto(
+    barrioId = barrioId,
+    nombre = nombre,
+    calle = calle,
+    numero = numero,
+    casaTorre = casaTorre,
+    departamento = departamento,
+    piso = piso,
+    latitud = latitud,
+    longitud = longitud,
+    favorito = favorito,
+)
+
+fun UpdateClientContactoRequest.toDto() = UpdateContactoRequestDto(
     nombre = nombre,
     telefonoWhatsapp = telefonoWhatsapp,
     email = email,

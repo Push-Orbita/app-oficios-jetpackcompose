@@ -2,6 +2,8 @@ package com.cocido.oficios.core.network.di
 
 import com.cocido.oficios.core.network.BuildConfig
 import com.cocido.oficios.core.network.api.DemoApiService
+import com.cocido.oficios.core.network.api.account.AccountApi
+import com.cocido.oficios.core.network.api.account.WorkGalleryApi
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.catalog.CatalogApi
@@ -105,6 +107,16 @@ object NetworkModule {
     fun provideAuthApi(@ApiRetrofit retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideAccountApi(@ApiRetrofit retrofit: Retrofit): AccountApi =
+        retrofit.create(AccountApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideWorkGalleryApi(@ApiRetrofit retrofit: Retrofit): WorkGalleryApi =
+        retrofit.create(WorkGalleryApi::class.java)
 
     @Provides
     @Singleton

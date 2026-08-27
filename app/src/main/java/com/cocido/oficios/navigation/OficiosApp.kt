@@ -155,8 +155,13 @@ fun AppNavHost(
             onShowMessage = showMessage,
         )
         settingsScreen(
+            navController = navController,
             onNavigateBack = { navController.popBackStack() },
             onLoggedOut = { navController.navigateToLoginClearingBackStack() },
+            onShowMessage = showMessage,
+            onNavigateToVerifyPhone = { contactId, telefono ->
+                navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))
+            },
         )
     }
 }

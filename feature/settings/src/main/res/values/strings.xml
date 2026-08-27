@@ -7,4 +7,26 @@
     <string name="settings_theme_dark">Oscuro</string>
     <string name="settings_logout">Cerrar sesión</string>
     <string name="settings_session_section">Sesión</string>
+    <string name="settings_profile_section">Mi perfil</string>
+    <string name="settings_security_section">Seguridad y privacidad</string>
+    <string name="settings_personal_data">Datos personales</string>
+    <string name="settings_personal_data_description">Nombre, correo y foto de perfil</string>
+    <string name="settings_client_data">Contactos y domicilios</string>
+    <string name="settings_client_data_description">Administrá dónde y cómo querés que te contacten</string>
+    <string name="settings_professional_data">Presentación profesional</string>
+    <string name="settings_professional_data_description">Descripción, experiencia y medios de cobro</string>
+    <string name="settings_services">Servicios que ofrecés</string>
+    <string name="settings_services_description">Rubros, especialidades, modalidades y horarios</string>
+    <string name="settings_portfolio">Galería y certificados</string>
+    <string name="settings_portfolio_description">Mostrá trabajos reales y documentación profesional</string>
+    <string name="settings_change_password">Cambiar contraseña</string>
+    <string name="settings_change_password_description">Actualizá tu acceso de forma segura</string>
+    <string name="settings_delete_account">Eliminar cuenta</string>
+    <string name="settings_delete_account_unavailable">Disponible cuando el backend incorpore eliminación propia segura</string>
+    <string name="settings_verified_email">Correo verificado</string>
+    <string name="settings_pending_email">Correo pendiente de verificación</string>
+    <string name="settings_provider_role">Trabajador de oficio</string>
+    <string name="settings_client_role">Cliente</string>
+    <string name="settings_load_error_title">No pudimos cargar tu cuenta</string>
+    <string name="settings_loading">Cargando tu cuenta…</string>
 </resources>

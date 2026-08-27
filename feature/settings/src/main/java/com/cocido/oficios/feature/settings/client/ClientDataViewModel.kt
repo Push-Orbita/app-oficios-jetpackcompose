@@ -1,0 +1,325 @@
+package com.cocido.oficios.feature.settings.client
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.ClientContactoRequest
+import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.UpdateClientContactoRequest
+import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
+import com.cocido.oficios.domain.usecase.account.AccountUseCases
+import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.validation.AuthValidators
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+@HiltViewModel
+class ClientDataViewModel @Inject constructor(
+    private val accountUseCases: AccountUseCases,
+    private val searchBarriosUseCase: SearchBarriosUseCase,
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(ClientDataUiState())
+    val uiState = _uiState.asStateFlow()
+    private val _effects = Channel<ClientDataEffect>(Channel.BUFFERED)
+    val effects = _effects.receiveAsFlow()
+    private var barrioSearchJob: Job? = null
+
+    init { load() }
+
+    fun onEvent(event: ClientDataEvent) {
+        when (event) {
+            ClientDataEvent.Retry -> load()
+            ClientDataEvent.Back -> emit(ClientDataEffect.NavigateBack)
+            ClientDataEvent.CloseEditor -> closeEditor()
+            ClientDataEvent.AddContact -> openContact()
+            is ClientDataEvent.EditContact -> openContact(event.contact)
+            ClientDataEvent.AddDomicilio -> openDomicilio()
+            is ClientDataEvent.EditDomicilio -> openDomicilio(event.domicilio)
+            is ClientDataEvent.ContactNameChanged -> update { it.copy(contactName = event.value, errorMessage = null) }
+            is ClientDataEvent.ContactPhoneChanged -> update { it.copy(contactPhone = event.value, errorMessage = null) }
+            is ClientDataEvent.ContactEmailChanged -> update { it.copy(contactEmail = event.value, errorMessage = null) }
+            is ClientDataEvent.ContactFavoriteChanged -> update { it.copy(contactFavorite = event.value) }
+            ClientDataEvent.SaveContact -> saveContact()
+            is ClientDataEvent.AddressNameChanged -> update { it.copy(addressName = event.value) }
+            is ClientDataEvent.BarrioQueryChanged -> searchBarrio(event.value)
+            is ClientDataEvent.BarrioSelected -> update {
+                it.copy(barrioId = event.option.id, barrioQuery = event.option.label, barrioSuggestions = emptyList())
+            }
+            is ClientDataEvent.StreetChanged -> update { it.copy(street = event.value) }
+            is ClientDataEvent.NumberChanged -> update { it.copy(number = event.value) }
+            is ClientDataEvent.FloorChanged -> update { it.copy(floor = event.value) }
+            is ClientDataEvent.ApartmentChanged -> update { it.copy(apartment = event.value) }
+            is ClientDataEvent.HouseTowerChanged -> update { it.copy(houseTower = event.value) }
+            is ClientDataEvent.AddressFavoriteChanged -> update { it.copy(addressFavorite = event.value) }
+            ClientDataEvent.SaveDomicilio -> saveDomicilio()
+            is ClientDataEvent.ToggleContactFavorite -> toggleContactFavorite(event.id, event.favorite)
+            is ClientDataEvent.ToggleDomicilioFavorite -> toggleDomicilioFavorite(event.id, event.favorite)
+            is ClientDataEvent.RequestDelete -> update { it.copy(pendingDelete = event.target) }
+            ClientDataEvent.ConfirmDelete -> confirmDelete()
+            ClientDataEvent.DismissDelete -> update { it.copy(pendingDelete = null) }
+        }
+    }
+
+    private fun load() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val result = coroutineScope {
+                val profile = async { accountUseCases.getProfile() }
+                val contacts = async { accountUseCases.getContactos() }
+                val domicilios = async { accountUseCases.getDomicilios() }
+                Triple(profile.await(), contacts.await(), domicilios.await())
+            }
+            val profile = result.first
+            val contacts = result.second
+            val domicilios = result.third
+            val error = listOf(profile, contacts, domicilios).filterIsInstance<AppResult.Error>().firstOrNull()
+            if (error != null) {
+                _uiState.update { it.copy(isLoading = false, isSaving = false, errorMessage = error.error.userMessage()) }
+                return@launch
+            }
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    isSaving = false,
+                    personaId = (profile as AppResult.Success).data.user.personaId,
+                    contacts = (contacts as AppResult.Success).data,
+                    domicilios = (domicilios as AppResult.Success).data,
+                    errorMessage = null,
+                )
+            }
+        }
+    }
+
+    private fun openContact(contact: com.cocido.oficios.domain.model.ClientContacto? = null) {
+        _uiState.update {
+            it.copy(
+                mode = ClientDataMode.CONTACT,
+                editingId = contact?.id,
+                contactName = contact?.nombre.orEmpty(),
+                contactPhone = contact?.telefonoWhatsapp?.let(AuthValidators::normalizeArgentinePhone).orEmpty(),
+                contactEmail = contact?.email.orEmpty(),
+                contactFavorite = contact?.favorito ?: it.contacts.isEmpty(),
+                originalPhone = contact?.telefonoWhatsapp?.let(AuthValidators::normalizeArgentinePhone).orEmpty(),
+                originalPhoneVerified = contact?.telefonoVerificado ?: false,
+                isSaving = false,
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun openDomicilio(domicilio: com.cocido.oficios.domain.model.ClientDomicilio? = null) {
+        _uiState.update {
+            it.copy(
+                mode = ClientDataMode.DOMICILIO,
+                editingId = domicilio?.id,
+                addressName = domicilio?.nombre.orEmpty(),
+                barrioQuery = domicilio?.barrioName.orEmpty(),
+                barrioId = domicilio?.barrioId?.takeIf { id -> id > 0L },
+                street = domicilio?.calle.orEmpty(),
+                number = domicilio?.numero.orEmpty(),
+                floor = domicilio?.piso.orEmpty(),
+                apartment = domicilio?.departamento.orEmpty(),
+                houseTower = domicilio?.casaTorre.orEmpty(),
+                addressFavorite = domicilio?.favorito ?: it.domicilios.isEmpty(),
+                barrioSuggestions = emptyList(),
+                isSaving = false,
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun closeEditor() {
+        barrioSearchJob?.cancel()
+        _uiState.update {
+            it.copy(mode = ClientDataMode.LIST, editingId = null, errorMessage = null, barrioSuggestions = emptyList())
+        }
+    }
+
+    private fun saveContact() {
+        val state = _uiState.value
+        val phone = AuthValidators.normalizeArgentinePhone(state.contactPhone)
+        val error = when {
+            state.contactName.isBlank() -> "Ingresá un nombre para identificar este contacto."
+            phone.length !in 10..11 -> "Ingresá un número argentino de 10 u 11 dígitos, sin +54."
+            state.contactEmail.isNotBlank() && AuthValidators.validateEmail(state.contactEmail.trim()) != null ->
+                "Ingresá un correo válido o dejalo vacío."
+            else -> null
+        }
+        if (error != null) {
+            update { it.copy(errorMessage = error) }
+            return
+        }
+        viewModelScope.launch {
+            update { it.copy(isSaving = true, errorMessage = null) }
+            val id = state.editingId
+            val result = if (id == null) {
+                accountUseCases.createContacto(
+                    ClientContactoRequest(
+                        nombre = state.contactName.trim(),
+                        telefonoWhatsapp = phone,
+                        email = state.contactEmail.trim().ifBlank { null },
+                        favorito = state.contactFavorite,
+                    ),
+                )
+            } else {
+                accountUseCases.updateContacto(
+                    id,
+                    UpdateClientContactoRequest(
+                        nombre = state.contactName.trim(),
+                        telefonoWhatsapp = phone,
+                        email = state.contactEmail.trim().ifBlank { null },
+                        favorito = state.contactFavorite,
+                    ),
+                ).let { updateResult ->
+                    when (updateResult) {
+                        is AppResult.Success -> AppResult.Success(id)
+                        is AppResult.Error -> updateResult
+                    }
+                }
+            }
+            when (result) {
+                is AppResult.Success -> {
+                    val needsVerification = !state.originalPhoneVerified || phone != state.originalPhone
+                    closeEditor()
+                    load()
+                    if (needsVerification) {
+                        emit(ClientDataEffect.VerifyPhone(result.data, phone))
+                    } else {
+                        emit(ClientDataEffect.ShowMessage("Contacto actualizado."))
+                    }
+                }
+                is AppResult.Error -> update {
+                    it.copy(isSaving = false, errorMessage = result.error.userMessage())
+                }
+            }
+        }
+    }
+
+    private fun saveDomicilio() {
+        val state = _uiState.value
+        val barrioId = state.barrioId
+        val personaId = state.personaId
+        val error = when {
+            barrioId == null -> "Seleccioná un barrio de la lista."
+            state.street.isBlank() -> "Ingresá la calle."
+            state.number.isBlank() -> "Ingresá la altura."
+            state.editingId == null && personaId == null -> "No pudimos identificar a qué cuenta pertenece el domicilio."
+            else -> null
+        }
+        if (error != null) {
+            update { it.copy(errorMessage = error) }
+            return
+        }
+        viewModelScope.launch {
+            update { it.copy(isSaving = true, errorMessage = null) }
+            val result = if (state.editingId == null) {
+                accountUseCases.createDomicilio(
+                    ClientDomicilioRequest(
+                        barrioId = barrioId!!,
+                        personaId = personaId!!,
+                        nombre = state.addressName.trim().ifBlank { null },
+                        calle = state.street.trim(),
+                        numero = state.number.trim(),
+                        casaTorre = state.houseTower.trim().ifBlank { null },
+                        departamento = state.apartment.trim().ifBlank { null },
+                        piso = state.floor.trim().ifBlank { null },
+                        favorito = state.addressFavorite,
+                    ),
+                )
+            } else {
+                accountUseCases.updateDomicilio(
+                    state.editingId,
+                    UpdateClientDomicilioRequest(
+                        barrioId = barrioId!!,
+                        nombre = state.addressName.trim().ifBlank { null },
+                        calle = state.street.trim(),
+                        numero = state.number.trim(),
+                        casaTorre = state.houseTower.trim().ifBlank { null },
+                        departamento = state.apartment.trim().ifBlank { null },
+                        piso = state.floor.trim().ifBlank { null },
+                        favorito = state.addressFavorite,
+                    ),
+                )
+            }
+            when (result) {
+                is AppResult.Success -> {
+                    closeEditor()
+                    load()
+                    emit(ClientDataEffect.ShowMessage("Domicilio guardado."))
+                }
+                is AppResult.Error -> update {
+                    it.copy(isSaving = false, errorMessage = result.error.userMessage())
+                }
+            }
+        }
+    }
+
+    private fun searchBarrio(query: String) {
+        update { it.copy(barrioQuery = query, barrioId = null, errorMessage = null) }
+        barrioSearchJob?.cancel()
+        if (query.trim().length < 2) {
+            update { it.copy(barrioSuggestions = emptyList()) }
+            return
+        }
+        barrioSearchJob = viewModelScope.launch {
+            delay(250)
+            when (val result = searchBarriosUseCase(query.trim())) {
+                is AppResult.Success -> update { it.copy(barrioSuggestions = result.data) }
+                is AppResult.Error -> update { it.copy(barrioSuggestions = emptyList()) }
+            }
+        }
+    }
+
+    private fun toggleContactFavorite(id: Long, favorite: Boolean) = runAction(
+        action = { accountUseCases.setFavoriteContacto(id, favorite) },
+        successMessage = if (favorite) "Contacto principal actualizado." else "Contacto desmarcado.",
+    )
+
+    private fun toggleDomicilioFavorite(id: Long, favorite: Boolean) = runAction(
+        action = { accountUseCases.setFavoriteDomicilio(id, favorite) },
+        successMessage = if (favorite) "Domicilio principal actualizado." else "Domicilio desmarcado.",
+    )
+
+    private fun confirmDelete() {
+        val target = _uiState.value.pendingDelete ?: return
+        runAction(
+            action = {
+                when (target) {
+                    is ClientDataDeleteTarget.Contact -> accountUseCases.deleteContacto(target.id)
+                    is ClientDataDeleteTarget.Domicilio -> accountUseCases.deleteDomicilio(target.id)
+                }
+            },
+            successMessage = "Se eliminó ${target.label}.",
+        )
+        update { it.copy(pendingDelete = null) }
+    }
+
+    private fun runAction(action: suspend () -> AppResult<Unit>, successMessage: String) {
+        viewModelScope.launch {
+            update { it.copy(isSaving = true, errorMessage = null) }
+            when (val result = action()) {
+                is AppResult.Success -> {
+                    load()
+                    emit(ClientDataEffect.ShowMessage(successMessage))
+                }
+                is AppResult.Error -> update {
+                    it.copy(isSaving = false, errorMessage = result.error.userMessage())
+                }
+            }
+        }
+    }
+
+    private fun update(block: (ClientDataUiState) -> ClientDataUiState) = _uiState.update(block)
+    private fun emit(effect: ClientDataEffect) { viewModelScope.launch { _effects.send(effect) } }
+}
