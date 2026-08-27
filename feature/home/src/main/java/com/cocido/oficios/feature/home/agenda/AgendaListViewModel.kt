@@ -4,11 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AgendaSlotStatus
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
+import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.GetMySubRubrosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.YearMonth
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -32,6 +38,8 @@ class AgendaListViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<AgendaListEffect>()
     val effects: SharedFlow<AgendaListEffect> = _effects.asSharedFlow()
 
+    private var slotsJob: Job? = null
+
     init {
         load()
     }
@@ -39,16 +47,25 @@ class AgendaListViewModel @Inject constructor(
     fun onEvent(event: AgendaListEvent) {
         when (event) {
             AgendaListEvent.Retry -> load()
+            AgendaListEvent.RetrySlots -> refreshSlots()
             is AgendaListEvent.SubRubroSelected -> selectSubRubro(event.subRubroId)
-            AgendaListEvent.OpenCreateSlot -> updateSuccess { it.copy(showCreateSlotForm = true) }
-            AgendaListEvent.DismissCreateSlot -> updateSuccess {
-                it.copy(showCreateSlotForm = false, newSlotStart = null, newSlotEnd = null, newSlotAutoAcceptance = false)
+            is AgendaListEvent.ViewModeChanged -> updateSuccess { it.copy(viewMode = event.mode) }
+            AgendaListEvent.PreviousPeriod -> movePeriod(forward = false)
+            AgendaListEvent.NextPeriod -> movePeriod(forward = true)
+            AgendaListEvent.GoToToday -> goToToday()
+            is AgendaListEvent.DateSelected -> selectDate(event.date)
+            AgendaListEvent.OpenCreateSlot -> openCreateSlot()
+            is AgendaListEvent.OpenEditSlot -> openEditSlot(event.slotId)
+            AgendaListEvent.DismissSlotForm -> dismissSlotForm()
+            is AgendaListEvent.SlotStartSelected -> selectSlotStart(event.dateTime)
+            is AgendaListEvent.SlotEndSelected -> updateSuccess {
+                it.copy(slotEnd = event.dateTime, formIssue = null, formBackendError = null)
             }
-            is AgendaListEvent.NewSlotStartSelected -> updateSuccess { it.copy(newSlotStart = event.dateTime) }
-            is AgendaListEvent.NewSlotEndSelected -> updateSuccess { it.copy(newSlotEnd = event.dateTime) }
-            is AgendaListEvent.NewSlotAutoAcceptanceChanged -> updateSuccess { it.copy(newSlotAutoAcceptance = event.value) }
-            AgendaListEvent.SubmitNewSlot -> submitNewSlot()
-            is AgendaListEvent.RequestDeleteSlot -> updateSuccess { it.copy(slotPendingDeleteId = event.slotId) }
+            is AgendaListEvent.SlotAutoAcceptanceChanged -> updateSuccess {
+                it.copy(slotAutoAcceptance = event.value, formBackendError = null)
+            }
+            AgendaListEvent.SubmitSlot -> submitSlot()
+            is AgendaListEvent.RequestDeleteSlot -> requestDeleteSlot(event.slotId)
             AgendaListEvent.DismissDeleteSlot -> updateSuccess { it.copy(slotPendingDeleteId = null) }
             AgendaListEvent.ConfirmDeleteSlot -> confirmDeleteSlot()
             AgendaListEvent.OpenConfig -> emitEffect(AgendaListEffect.NavigateToConfig)
@@ -57,77 +74,232 @@ class AgendaListViewModel @Inject constructor(
 
     private fun load() {
         viewModelScope.launch {
-            _uiState.update { AgendaListUiState.Loading }
+            _uiState.value = AgendaListUiState.Loading
             when (val result = getMySubRubrosUseCase()) {
                 is AppResult.Success -> {
-                    val options = result.data
+                    val options = result.data.filter { it.requiresTurns }
                     val firstId = options.firstOrNull()?.id
-                    _uiState.update {
-                        AgendaListUiState.Success(subRubroOptions = options, selectedSubRubroId = firstId)
-                    }
-                    if (firstId != null) loadSlots(firstId)
+                    _uiState.value = AgendaListUiState.Success(
+                        subRubroOptions = options,
+                        selectedSubRubroId = firstId,
+                    )
+                    if (firstId != null) loadSlots(firstId, YearMonth.now())
                 }
-                is AppResult.Error -> _uiState.update { AgendaListUiState.Error(result.error.userMessage()) }
+                is AppResult.Error -> _uiState.value = AgendaListUiState.Error(result.error.userMessage())
             }
         }
     }
 
     private fun selectSubRubro(subRubroId: Long) {
-        updateSuccess { it.copy(selectedSubRubroId = subRubroId) }
-        loadSlots(subRubroId)
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        updateSuccess {
+            it.copy(
+                selectedSubRubroId = subRubroId,
+                slots = emptyList(),
+                showSlotForm = false,
+                editingSlotId = null,
+            )
+        }
+        loadSlots(subRubroId, state.visibleMonth)
     }
 
-    private fun loadSlots(subRubroId: Long) {
-        viewModelScope.launch {
-            updateSuccess { it.copy(isLoadingSlots = true, error = null) }
-            when (val result = agendaUseCases.getSlotsForSubRubro(subRubroId)) {
+    private fun selectDate(date: LocalDate) {
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        val newMonth = YearMonth.from(date)
+        updateSuccess { it.copy(selectedDate = date, visibleMonth = newMonth) }
+        if (newMonth != state.visibleMonth) state.selectedSubRubroId?.let { loadSlots(it, newMonth) }
+    }
+
+    private fun goToToday() {
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        val today = LocalDate.now()
+        val month = YearMonth.from(today)
+        updateSuccess { it.copy(selectedDate = today, visibleMonth = month) }
+        if (month != state.visibleMonth) state.selectedSubRubroId?.let { loadSlots(it, month) }
+    }
+
+    private fun movePeriod(forward: Boolean) {
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        when (state.viewMode) {
+            AgendaViewMode.MONTH -> {
+                val month = if (forward) state.visibleMonth.plusMonths(1) else state.visibleMonth.minusMonths(1)
+                val selectedDay = state.selectedDate.dayOfMonth.coerceAtMost(month.lengthOfMonth())
+                updateSuccess { it.copy(visibleMonth = month, selectedDate = month.atDay(selectedDay)) }
+                state.selectedSubRubroId?.let { loadSlots(it, month) }
+            }
+            AgendaViewMode.WEEK -> {
+                val date = if (forward) state.selectedDate.plusWeeks(1) else state.selectedDate.minusWeeks(1)
+                selectDate(date)
+            }
+        }
+    }
+
+    private fun refreshSlots() {
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        state.selectedSubRubroId?.let { loadSlots(it, state.visibleMonth) }
+    }
+
+    private fun selectSlotStart(dateTime: LocalDateTime) {
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        val targetMonth = YearMonth.from(dateTime)
+        val adjustedEnd = if (state.slotEnd == null || !state.slotEnd.isAfter(dateTime)) {
+            dateTime.plusHours(DEFAULT_SLOT_HOURS)
+        } else {
+            state.slotEnd
+        }
+        updateSuccess {
+            it.copy(
+                slotStart = dateTime,
+                slotEnd = adjustedEnd,
+                selectedDate = dateTime.toLocalDate(),
+                visibleMonth = targetMonth,
+                formIssue = null,
+                formBackendError = null,
+            )
+        }
+        if (targetMonth != state.visibleMonth) {
+            state.selectedSubRubroId?.let { loadSlots(it, targetMonth) }
+        }
+    }
+
+    private fun loadSlots(subRubroId: Long, month: YearMonth) {
+        slotsJob?.cancel()
+        slotsJob = viewModelScope.launch {
+            updateSuccess { it.copy(isLoadingSlots = true, slotsError = null) }
+            val zone = ZoneId.systemDefault()
+            val from = month.atDay(1).atStartOfDay(zone).toInstant().toString()
+            val to = month.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone).toInstant().toString()
+            when (val result = agendaUseCases.getSlotsForSubRubro(subRubroId, from, to)) {
                 is AppResult.Success -> updateSuccess {
                     it.copy(isLoadingSlots = false, slots = result.data.sortedBy { slot -> slot.start })
                 }
                 is AppResult.Error -> updateSuccess {
-                    it.copy(isLoadingSlots = false, error = result.error.userMessage())
+                    it.copy(isLoadingSlots = false, slotsError = result.error.userMessage())
                 }
             }
         }
     }
 
-    private fun submitNewSlot() {
+    private fun openCreateSlot() {
+        val state = _uiState.value as? AgendaListUiState.Success ?: return
+        val now = LocalDateTime.now()
+        val chosenDate = state.selectedDate.coerceAtLeast(now.toLocalDate())
+        val start = if (chosenDate == now.toLocalDate()) {
+            now.withMinute(0).withSecond(0).withNano(0).plusHours(1)
+        } else {
+            chosenDate.atTime(DEFAULT_START_HOUR, 0)
+        }
+        updateSuccess {
+            it.copy(
+                showSlotForm = true,
+                editingSlotId = null,
+                selectedDate = chosenDate,
+                visibleMonth = YearMonth.from(chosenDate),
+                slotStart = start,
+                slotEnd = start.plusHours(DEFAULT_SLOT_HOURS),
+                slotAutoAcceptance = false,
+                formIssue = null,
+                formBackendError = null,
+            )
+        }
+    }
+
+    private fun openEditSlot(slotId: Long) {
+        val slot = (_uiState.value as? AgendaListUiState.Success)?.slots?.firstOrNull { it.id == slotId } ?: return
+        if (slot.status != AgendaSlotStatus.DISPONIBLE || slot.end.isBefore(LocalDateTime.now())) return
+        updateSuccess {
+            it.copy(
+                showSlotForm = true,
+                editingSlotId = slot.id,
+                selectedDate = slot.start.toLocalDate(),
+                visibleMonth = YearMonth.from(slot.start),
+                slotStart = slot.start,
+                slotEnd = slot.end,
+                slotAutoAcceptance = slot.autoAcceptance,
+                formIssue = null,
+                formBackendError = null,
+            )
+        }
+    }
+
+    private fun dismissSlotForm() {
+        updateSuccess {
+            it.copy(
+                showSlotForm = false,
+                editingSlotId = null,
+                slotStart = null,
+                slotEnd = null,
+                slotAutoAcceptance = false,
+                isSavingSlot = false,
+                formIssue = null,
+                formBackendError = null,
+            )
+        }
+    }
+
+    private fun submitSlot() {
         val state = _uiState.value as? AgendaListUiState.Success ?: return
         val subRubroId = state.selectedSubRubroId ?: return
-        val start = state.newSlotStart ?: return
-        val end = state.newSlotEnd ?: return
-        if (!end.isAfter(start)) return
+        val start = state.slotStart
+        val end = state.slotEnd
+        val issue = when {
+            start == null || end == null -> AgendaSlotFormIssue.MISSING_DATE
+            start.isBefore(LocalDateTime.now()) -> AgendaSlotFormIssue.PAST_DATE
+            else -> state.derivedFormIssue
+        }
+        if (issue != null) {
+            updateSuccess { it.copy(formIssue = issue) }
+            return
+        }
+        checkNotNull(start)
+        checkNotNull(end)
 
         viewModelScope.launch {
-            updateSuccess { it.copy(isSavingSlot = true) }
+            updateSuccess { it.copy(isSavingSlot = true, formIssue = null, formBackendError = null) }
             val zone = ZoneId.systemDefault()
-            val result = agendaUseCases.createSlot(
-                CreateAgendaSlotParams(
-                    subRubroId = subRubroId,
-                    startIso = start.atZone(zone).toInstant().toString(),
-                    endIso = end.atZone(zone).toInstant().toString(),
-                    autoAcceptance = state.newSlotAutoAcceptance,
-                ),
-            )
+            val result: AppResult<Unit> = if (state.editingSlotId == null) {
+                when (
+                    val createResult = agendaUseCases.createSlot(
+                        CreateAgendaSlotParams(
+                            subRubroId = subRubroId,
+                            startIso = start.atZone(zone).toInstant().toString(),
+                            endIso = end.atZone(zone).toInstant().toString(),
+                            autoAcceptance = state.slotAutoAcceptance,
+                        ),
+                    )
+                ) {
+                    is AppResult.Success -> AppResult.Success(Unit)
+                    is AppResult.Error -> AppResult.Error(createResult.error)
+                }
+            } else {
+                agendaUseCases.updateSlot(
+                    UpdateAgendaSlotParams(
+                        slotId = state.editingSlotId,
+                        subRubroId = subRubroId,
+                        startIso = start.atZone(zone).toInstant().toString(),
+                        endIso = end.atZone(zone).toInstant().toString(),
+                        autoAcceptance = state.slotAutoAcceptance,
+                    ),
+                )
+            }
             when (result) {
                 is AppResult.Success -> {
-                    updateSuccess {
-                        it.copy(
-                            isSavingSlot = false,
-                            showCreateSlotForm = false,
-                            newSlotStart = null,
-                            newSlotEnd = null,
-                            newSlotAutoAcceptance = false,
-                        )
-                    }
-                    emitEffect(AgendaListEffect.ShowMessage("Turno creado"))
-                    loadSlots(subRubroId)
+                    val wasEditing = state.editingSlotId != null
+                    dismissSlotForm()
+                    emitEffect(AgendaListEffect.ShowMessage(if (wasEditing) "Turno actualizado" else "Turno creado"))
+                    loadSlots(subRubroId, YearMonth.from(start))
                 }
-                is AppResult.Error -> {
-                    updateSuccess { it.copy(isSavingSlot = false) }
-                    emitEffect(AgendaListEffect.ShowMessage(result.error.userMessage()))
+                is AppResult.Error -> updateSuccess {
+                    it.copy(isSavingSlot = false, formBackendError = result.error.userMessage())
                 }
             }
+        }
+    }
+
+    private fun requestDeleteSlot(slotId: Long) {
+        val slot = (_uiState.value as? AgendaListUiState.Success)?.slots?.firstOrNull { it.id == slotId } ?: return
+        if (slot.status == AgendaSlotStatus.DISPONIBLE && slot.end.isAfter(LocalDateTime.now())) {
+            updateSuccess { it.copy(slotPendingDeleteId = slotId) }
         }
     }
 
@@ -141,7 +313,7 @@ class AgendaListViewModel @Inject constructor(
             when (val result = agendaUseCases.deleteSlot(slotId)) {
                 is AppResult.Success -> {
                     emitEffect(AgendaListEffect.ShowMessage("Turno eliminado"))
-                    loadSlots(subRubroId)
+                    loadSlots(subRubroId, state.visibleMonth)
                 }
                 is AppResult.Error -> emitEffect(AgendaListEffect.ShowMessage(result.error.userMessage()))
             }
@@ -154,5 +326,10 @@ class AgendaListViewModel @Inject constructor(
 
     private fun emitEffect(effect: AgendaListEffect) {
         viewModelScope.launch { _effects.emit(effect) }
+    }
+
+    private companion object {
+        const val DEFAULT_START_HOUR = 9
+        const val DEFAULT_SLOT_HOURS = 1L
     }
 }

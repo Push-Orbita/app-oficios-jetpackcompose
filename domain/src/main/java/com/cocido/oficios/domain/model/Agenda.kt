@@ -12,6 +12,7 @@ data class AgendaSlot(
     val end: LocalDateTime,
     val status: AgendaSlotStatus,
     val autoAcceptance: Boolean,
+    val bookingId: Long? = null,
 )
 
 data class AgendaSessionConfig(
@@ -30,6 +31,14 @@ data class ProviderSubRubroOption(
 )
 
 data class CreateAgendaSlotParams(
+    val subRubroId: Long,
+    val startIso: String,
+    val endIso: String,
+    val autoAcceptance: Boolean,
+)
+
+data class UpdateAgendaSlotParams(
+    val slotId: Long,
     val subRubroId: Long,
     val startIso: String,
     val endIso: String,
