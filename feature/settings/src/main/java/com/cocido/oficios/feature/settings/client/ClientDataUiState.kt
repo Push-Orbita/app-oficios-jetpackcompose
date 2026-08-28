@@ -36,6 +36,9 @@ data class ClientDataUiState(
     val floor: String = "",
     val apartment: String = "",
     val houseTower: String = "",
+    val addressLatitude: Double? = null,
+    val addressLongitude: Double? = null,
+    val isLocating: Boolean = false,
     val addressFavorite: Boolean = false,
     val errorMessage: String? = null,
     val isSaving: Boolean = false,
@@ -63,6 +66,9 @@ sealed interface ClientDataEvent {
     data class FloorChanged(val value: String) : ClientDataEvent
     data class ApartmentChanged(val value: String) : ClientDataEvent
     data class HouseTowerChanged(val value: String) : ClientDataEvent
+    data class MapLocationSelected(val latitude: Double, val longitude: Double) : ClientDataEvent
+    data object UseCurrentLocation : ClientDataEvent
+    data object LocationPermissionDenied : ClientDataEvent
     data class AddressFavoriteChanged(val value: Boolean) : ClientDataEvent
     data object SaveDomicilio : ClientDataEvent
     data class ToggleContactFavorite(val id: Long, val favorite: Boolean) : ClientDataEvent

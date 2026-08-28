@@ -54,6 +54,17 @@ data class MarcarTrackingRequestDto(
 )
 
 @Serializable
+data class TrackingBookingDto(
+    val id: Long,
+    val bookingId: Long,
+    val trabajadorOficioId: Long,
+    val estado: String,
+    val lat: String,
+    val lng: String,
+    val createdAt: String,
+)
+
+@Serializable
 data class CreateCalificacionRequestDto(
     val bookingId: Long,
     val calidad: Int,

@@ -46,6 +46,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.map.OficiosLocationPicker
 import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientDomicilio
 
@@ -321,7 +322,7 @@ private fun DomicilioEditor(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
-            "Guardá una etiqueta clara, como “Casa” o “Trabajo”. La ubicación en mapa se agregará en la fase de Mapas.",
+            "Guardá una etiqueta clara, como “Casa” o “Trabajo”, y confirmá la entrada en el mapa para evitar confusiones.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -371,6 +372,17 @@ private fun DomicilioEditor(
             value = uiState.houseTower,
             onValueChange = { onEvent(ClientDataEvent.HouseTowerChanged(it)) },
             label = "Casa o torre (opcional)",
+        )
+        OficiosLocationPicker(
+            latitude = uiState.addressLatitude,
+            longitude = uiState.addressLongitude,
+            onLocationSelected = { latitude, longitude ->
+                onEvent(ClientDataEvent.MapLocationSelected(latitude, longitude))
+            },
+            onUseCurrentLocation = { onEvent(ClientDataEvent.UseCurrentLocation) },
+            onPermissionDenied = { onEvent(ClientDataEvent.LocationPermissionDenied) },
+            enabled = !uiState.isSaving,
+            isLocating = uiState.isLocating,
         )
         OficiosCheckbox(
             checked = uiState.addressFavorite,

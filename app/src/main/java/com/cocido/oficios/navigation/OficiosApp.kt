@@ -20,6 +20,7 @@ import com.cocido.oficios.feature.onboarding.navigation.OnboardingDestination
 import com.cocido.oficios.feature.onboarding.navigation.onboardingGraph
 import com.cocido.oficios.feature.settings.navigation.SettingsDestination
 import com.cocido.oficios.feature.settings.navigation.settingsScreen
+import com.cocido.oficios.tracking.BookingTrackingService
 
 @Composable
 fun OficiosApp(
@@ -124,6 +125,7 @@ fun AppNavHost(
                 navController.popBackStack()
             },
             onLoggedOut = {
+                BookingTrackingService.stop(context)
                 navController.navigateToLoginClearingBackStack()
             },
         )
@@ -149,6 +151,8 @@ fun AppNavHost(
         ordersScreen(
             navController = navController,
             onShowMessage = showMessage,
+            onStartTracking = { bookingId -> BookingTrackingService.start(context, bookingId) },
+            onStopTracking = { BookingTrackingService.stop(context) },
         )
         agendaScreen(
             navController = navController,
@@ -157,7 +161,10 @@ fun AppNavHost(
         settingsScreen(
             navController = navController,
             onNavigateBack = { navController.popBackStack() },
-            onLoggedOut = { navController.navigateToLoginClearingBackStack() },
+            onLoggedOut = {
+                BookingTrackingService.stop(context)
+                navController.navigateToLoginClearingBackStack()
+            },
             onShowMessage = showMessage,
             onNavigateToVerifyPhone = { contactId, telefono ->
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))

@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -96,6 +97,7 @@ class AddServiceViewModel @Inject constructor(
     private val getRubros: GetRubrosByCategoryUseCase,
     private val getSubRubros: GetSubRubrosByRubroUseCase,
     private val searchBarrios: SearchBarriosUseCase,
+    private val getCurrentLocation: GetCurrentLocationUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddServiceUiState())
     val uiState = _uiState.asStateFlow()
@@ -125,6 +127,13 @@ class AddServiceViewModel @Inject constructor(
                 it.copy(localBarrioId = event.option.id, localBarrioQuery = event.option.label, localBarrioSuggestions = emptyList())
             }
             is AddServiceEvent.LocalStreetChanged -> update { it.copy(localStreet = event.value) }
+            is AddServiceEvent.LocalMapLocationSelected -> update {
+                it.copy(localLatitude = event.latitude, localLongitude = event.longitude, errorMessage = null)
+            }
+            AddServiceEvent.UseCurrentLocation -> useCurrentLocation()
+            AddServiceEvent.LocationPermissionDenied -> update {
+                it.copy(errorMessage = "Permití la ubicación o marcá manualmente la entrada de tu local en el mapa.")
+            }
             is AddServiceEvent.WorkDayToggled -> update {
                 it.copy(workDays = it.workDays.toggled(event.day, event.checked), errorMessage = null)
             }
@@ -176,6 +185,7 @@ class AddServiceViewModel @Inject constructor(
             AddServiceStep.MODALITY -> when {
                 !state.servesAtClientHome && !state.servesAtLocal -> "Elegí al menos una modalidad de atención."
                 state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Completá el barrio y la calle de tu local."
+                state.servesAtLocal && (state.localLatitude == null || state.localLongitude == null) -> "Marcá la entrada de tu local en el mapa."
                 else -> null
             }
             AddServiceStep.SCHEDULE -> when {
@@ -206,6 +216,8 @@ class AddServiceViewModel @Inject constructor(
                 barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccioná el barrio de tu local.") },
                 calle = state.localStreet.trim(),
                 nombre = state.localName.trim().ifBlank { null },
+                latitud = state.localLatitude,
+                longitud = state.localLongitude,
             ) else null
             val request = ProviderRubroFullRequest(
                 rubroId = rubroId,
@@ -234,6 +246,24 @@ class AddServiceViewModel @Inject constructor(
             when (val result = searchBarrios(query.trim())) {
                 is AppResult.Success -> update { it.copy(localBarrioSuggestions = result.data) }
                 is AppResult.Error -> update { it.copy(localBarrioSuggestions = emptyList()) }
+            }
+        }
+    }
+
+    private fun useCurrentLocation() {
+        viewModelScope.launch {
+            update { it.copy(isLocating = true, errorMessage = null) }
+            when (val result = getCurrentLocation()) {
+                is AppResult.Success -> update {
+                    it.copy(
+                        isLocating = false,
+                        localLatitude = result.data.latitude,
+                        localLongitude = result.data.longitude,
+                    )
+                }
+                is AppResult.Error -> update {
+                    it.copy(isLocating = false, errorMessage = result.error.userMessage())
+                }
             }
         }
     }

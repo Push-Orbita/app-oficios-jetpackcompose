@@ -26,6 +26,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.map.OficiosTrackingMap
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.UserRole
@@ -69,6 +70,7 @@ private fun OrderDetailContent(
 ) {
     val order = state.order
     val isWorker = state.viewerRole == UserRole.PROVIDER
+    val canShowPrivateDetails = !isWorker || order.status == ServiceRequestStatus.ACCEPTED
     var showRejectDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
 
@@ -102,13 +104,38 @@ private fun OrderDetailContent(
                 order.scheduledLabel?.let {
                     Text(text = "Fecha propuesta: $it", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Text(text = order.addressLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (order.contactName.isNotBlank()) {
+                Text(
+                    text = if (canShowPrivateDetails) order.addressLabel else "La dirección exacta estará disponible cuando aceptes el pedido.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (canShowPrivateDetails && order.contactName.isNotBlank()) {
                     Text(
                         text = "Contacto: ${order.contactName} · ${order.contactPhone}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+        }
+
+        val addressLatitude = order.addressLatitude
+        val addressLongitude = order.addressLongitude
+        if (canShowPrivateDetails && addressLatitude != null && addressLongitude != null) {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
+                Text(
+                    text = if (state.tracking != null && !isWorker) "Seguimiento del trabajador" else "Ubicación del servicio",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                OficiosTrackingMap(
+                    destinationLatitude = addressLatitude,
+                    destinationLongitude = addressLongitude,
+                    workerLatitude = if (!isWorker) state.tracking?.location?.latitude else null,
+                    workerLongitude = if (!isWorker) state.tracking?.location?.longitude else null,
+                )
+                if (!isWorker && order.bookingStatus == BookingStatus.EN_ROUTE && state.tracking == null) {
+                    InfoText("Esperando la primera actualización de ubicación del trabajador.")
                 }
             }
         }

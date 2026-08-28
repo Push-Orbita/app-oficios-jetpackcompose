@@ -2,6 +2,7 @@ package com.cocido.oficios.core.data.repository
 
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.map
 import com.cocido.oficios.core.data.mapper.toDomain
 import com.cocido.oficios.core.data.mapper.toListItem
@@ -10,6 +11,8 @@ import com.cocido.oficios.core.network.api.orders.dto.CreateSolicitudServicioReq
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.BookingTracking
+import com.cocido.oficios.domain.model.GeoPoint
 import com.cocido.oficios.domain.repository.OrderRepository
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -86,16 +89,34 @@ class OrderRepositoryImpl @Inject constructor(
             remoteDataSource.cancelarSolicitudPendiente(orderId).map { }
         }
 
-    override suspend fun markEnRoute(bookingId: Long): AppResult<Unit> =
+    override suspend fun getBookingTracking(bookingId: Long): AppResult<BookingTracking?> =
         withContext(dispatcherProvider.io) {
-            // Sin fuente de ubicación real todavía (Maps/GPS es Fase 6) — placeholder hasta entonces.
-            remoteDataSource.marcarTracking(bookingId, "EN_CAMINO", PLACEHOLDER_LAT, PLACEHOLDER_LNG).map { }
+            remoteDataSource.getTracking(bookingId).map { it?.toDomain() }
         }
 
-    override suspend fun markArrived(bookingId: Long): AppResult<Unit> =
-        withContext(dispatcherProvider.io) {
-            remoteDataSource.marcarTracking(bookingId, "LLEGUE", PLACEHOLDER_LAT, PLACEHOLDER_LNG).map { }
+    override suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit> {
+        if (!location.isValid) return AppResult.Error(AppError.Validation("No pudimos obtener una ubicación válida."))
+        return withContext(dispatcherProvider.io) {
+            remoteDataSource.marcarTracking(
+                bookingId,
+                "EN_CAMINO",
+                location.latitude.toString(),
+                location.longitude.toString(),
+            ).map { }
         }
+    }
+
+    override suspend fun markArrived(bookingId: Long, location: GeoPoint): AppResult<Unit> {
+        if (!location.isValid) return AppResult.Error(AppError.Validation("No pudimos obtener una ubicación válida."))
+        return withContext(dispatcherProvider.io) {
+            remoteDataSource.marcarTracking(
+                bookingId,
+                "LLEGUE",
+                location.latitude.toString(),
+                location.longitude.toString(),
+            ).map { }
+        }
+    }
 
     override suspend fun finalizeBooking(bookingId: Long): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
@@ -109,10 +130,5 @@ class OrderRepositoryImpl @Inject constructor(
         comment: String?,
     ): AppResult<Unit> = withContext(dispatcherProvider.io) {
         remoteDataSource.crearCalificacion(bookingId, quality, punctuality, comment).map { }
-    }
-
-    private companion object {
-        const val PLACEHOLDER_LAT = "0"
-        const val PLACEHOLDER_LNG = "0"
     }
 }

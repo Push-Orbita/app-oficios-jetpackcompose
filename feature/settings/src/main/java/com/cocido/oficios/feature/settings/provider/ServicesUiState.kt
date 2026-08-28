@@ -47,6 +47,9 @@ data class AddServiceUiState(
     val localBarrioId: Long? = null,
     val localBarrioSuggestions: List<CatalogOption> = emptyList(),
     val localStreet: String = "",
+    val localLatitude: Double? = null,
+    val localLongitude: Double? = null,
+    val isLocating: Boolean = false,
     val workDays: Set<String> = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
     val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
     val paymentMethods: Set<String> = emptySet(),
@@ -71,6 +74,9 @@ sealed interface AddServiceEvent {
     data class LocalBarrioChanged(val value: String) : AddServiceEvent
     data class LocalBarrioSelected(val option: CatalogOption) : AddServiceEvent
     data class LocalStreetChanged(val value: String) : AddServiceEvent
+    data class LocalMapLocationSelected(val latitude: Double, val longitude: Double) : AddServiceEvent
+    data object UseCurrentLocation : AddServiceEvent
+    data object LocationPermissionDenied : AddServiceEvent
     data class WorkDayToggled(val day: String, val checked: Boolean) : AddServiceEvent
     data class TimeFromChanged(val index: Int, val value: String) : AddServiceEvent
     data class TimeToChanged(val index: Int, val value: String) : AddServiceEvent

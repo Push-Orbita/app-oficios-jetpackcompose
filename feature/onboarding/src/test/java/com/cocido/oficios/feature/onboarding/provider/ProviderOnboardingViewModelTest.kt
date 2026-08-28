@@ -79,6 +79,7 @@ class ProviderOnboardingViewModelTest {
             ) = AppResult.Success(Unit)
             override suspend fun finalizeProfile() = AppResult.Success(Unit)
             override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
+            override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
         }
         val viewModel = ProviderOnboardingViewModel(
             getOnboardingStatusUseCase = GetOnboardingStatusUseCase(FakeOnboardingRepository()),
@@ -120,6 +121,7 @@ class ProviderOnboardingViewModelTest {
                     ) = AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = AppResult.Success(Unit)
                     override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                    override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                 },
             ),
             resolveInitialDestinationUseCase = ResolveInitialDestinationUseCase(
@@ -262,6 +264,7 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun finalizeProfile() = AppResult.Success(Unit).also { finalizeCalled = true }
                     override suspend fun loadProviderProfileForSync() =
                         AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                    override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                 },
                 registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
                     override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
@@ -284,6 +287,7 @@ class ProviderOnboardingViewModelTest {
                         override suspend fun finalizeProfile() = AppResult.Success(Unit)
                         override suspend fun loadProviderProfileForSync() =
                             AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                        override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                     },
                     registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
                         override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
@@ -314,6 +318,7 @@ class ProviderOnboardingViewModelTest {
                             override suspend fun finalizeProfile() = AppResult.Success(Unit)
                             override suspend fun loadProviderProfileForSync() =
                                 AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                            override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                         },
                         registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
                             override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
@@ -337,6 +342,7 @@ class ProviderOnboardingViewModelTest {
                     override suspend fun finalizeProfile() = AppResult.Success(Unit).also { finalizeCalled = true }
                     override suspend fun loadProviderProfileForSync() =
                         AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                    override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                 },
             ),
             resolveInitialDestinationUseCase = ResolveInitialDestinationUseCase(

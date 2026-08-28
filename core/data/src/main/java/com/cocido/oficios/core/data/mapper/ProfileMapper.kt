@@ -114,6 +114,8 @@ fun DomicilioSinPersonaDto.toDomain() = ClientDomicilio(
     casaTorre = casaTorre,
     departamento = departamento,
     piso = piso,
+    latitud = latitud,
+    longitud = longitud,
     favorito = favorito,
 )
 
