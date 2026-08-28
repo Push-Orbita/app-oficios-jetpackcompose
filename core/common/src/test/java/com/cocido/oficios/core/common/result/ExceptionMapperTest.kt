@@ -16,7 +16,7 @@ class ExceptionMapperTest {
 
         assertTrue(error is AppError.Network)
         assertEquals(
-            "Secure connection could not be established",
+            "No pudimos establecer una conexión segura. Intentá nuevamente más tarde.",
             error.userMessage(),
         )
     }
@@ -36,6 +36,18 @@ class ExceptionMapperTest {
         assertTrue(error is AppError.Unknown)
         assertEquals(
             "Algo salió mal. Intentá de nuevo.",
+            error.userMessage(),
+        )
+    }
+
+    @Test
+    fun `backend implementation details never reach the user`() {
+        val error = AppError.Validation(
+            "El trabajador ya tiene un rubro principal configurado. Use POST /full/secundario.",
+        )
+
+        assertEquals(
+            "No pudimos guardar los cambios. Revisá los datos e intentá nuevamente.",
             error.userMessage(),
         )
     }

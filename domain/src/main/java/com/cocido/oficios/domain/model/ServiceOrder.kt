@@ -35,6 +35,8 @@ data class ServiceOrder(
     val status: ServiceRequestStatus,
     val description: String,
     val addressLabel: String,
+    val addressLatitude: Double? = null,
+    val addressLongitude: Double? = null,
     val contactName: String,
     val contactPhone: String,
     val rejectionReason: String? = null,
@@ -45,6 +47,14 @@ data class ServiceOrder(
     val canCancelBooking: Boolean = false,
     val pendingCounterOffer: CounterOffer? = null,
     val alreadyRated: Boolean = false,
+)
+
+data class BookingTracking(
+    val bookingId: Long,
+    val workerId: Long,
+    val status: String,
+    val location: GeoPoint,
+    val updatedAtIso: String,
 )
 
 data class CounterOffer(

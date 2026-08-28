@@ -37,6 +37,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.map.OficiosLocationPicker
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 
@@ -233,6 +234,16 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             placeholder = "Buscá y seleccioná el barrio",
         )
         OficiosTextField(state.localStreet, { onEvent(AddServiceEvent.LocalStreetChanged(it)) }, "Calle y altura")
+        OficiosLocationPicker(
+            latitude = state.localLatitude,
+            longitude = state.localLongitude,
+            onLocationSelected = { latitude, longitude ->
+                onEvent(AddServiceEvent.LocalMapLocationSelected(latitude, longitude))
+            },
+            onUseCurrentLocation = { onEvent(AddServiceEvent.UseCurrentLocation) },
+            onPermissionDenied = { onEvent(AddServiceEvent.LocationPermissionDenied) },
+            isLocating = state.isLocating,
+        )
     }
 }
 
@@ -268,6 +279,13 @@ private fun ReviewStep(state: AddServiceUiState) {
             Text(state.workDays.map(::dayLabel).joinToString())
             Text(state.timeSlots.joinToString { "${it.from}–${it.to}" })
             Text(state.paymentMethods.map(::paymentLabel).joinToString())
+            if (state.servesAtLocal) {
+                Text(
+                    if (state.localLatitude != null && state.localLongitude != null) "Ubicación del local confirmada" else "Ubicación del local pendiente",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OficiosColorSecondaryText,
+                )
+            }
         }
     }
     Text("Revisá todo antes de publicar. Después podrás gestionar los turnos desde Agenda.", style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)

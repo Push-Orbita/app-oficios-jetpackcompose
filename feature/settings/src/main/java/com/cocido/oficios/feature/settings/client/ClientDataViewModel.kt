@@ -10,6 +10,7 @@ import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 class ClientDataViewModel @Inject constructor(
     private val accountUseCases: AccountUseCases,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ClientDataUiState())
     val uiState = _uiState.asStateFlow()
@@ -61,6 +63,17 @@ class ClientDataViewModel @Inject constructor(
             is ClientDataEvent.FloorChanged -> update { it.copy(floor = event.value) }
             is ClientDataEvent.ApartmentChanged -> update { it.copy(apartment = event.value) }
             is ClientDataEvent.HouseTowerChanged -> update { it.copy(houseTower = event.value) }
+            is ClientDataEvent.MapLocationSelected -> update {
+                it.copy(
+                    addressLatitude = event.latitude,
+                    addressLongitude = event.longitude,
+                    errorMessage = null,
+                )
+            }
+            ClientDataEvent.UseCurrentLocation -> useCurrentLocation()
+            ClientDataEvent.LocationPermissionDenied -> update {
+                it.copy(errorMessage = "Para usar tu ubicación, permití el acceso cuando Android te lo solicite. También podés marcar el punto manualmente.")
+            }
             is ClientDataEvent.AddressFavoriteChanged -> update { it.copy(addressFavorite = event.value) }
             ClientDataEvent.SaveDomicilio -> saveDomicilio()
             is ClientDataEvent.ToggleContactFavorite -> toggleContactFavorite(event.id, event.favorite)
@@ -131,6 +144,9 @@ class ClientDataViewModel @Inject constructor(
                 floor = domicilio?.piso.orEmpty(),
                 apartment = domicilio?.departamento.orEmpty(),
                 houseTower = domicilio?.casaTorre.orEmpty(),
+                addressLatitude = domicilio?.latitud,
+                addressLongitude = domicilio?.longitud,
+                isLocating = false,
                 addressFavorite = domicilio?.favorito ?: it.domicilios.isEmpty(),
                 barrioSuggestions = emptyList(),
                 isSaving = false,
@@ -234,6 +250,8 @@ class ClientDataViewModel @Inject constructor(
                         casaTorre = state.houseTower.trim().ifBlank { null },
                         departamento = state.apartment.trim().ifBlank { null },
                         piso = state.floor.trim().ifBlank { null },
+                        latitud = state.addressLatitude,
+                        longitud = state.addressLongitude,
                         favorito = state.addressFavorite,
                     ),
                 )
@@ -248,6 +266,8 @@ class ClientDataViewModel @Inject constructor(
                         casaTorre = state.houseTower.trim().ifBlank { null },
                         departamento = state.apartment.trim().ifBlank { null },
                         piso = state.floor.trim().ifBlank { null },
+                        latitud = state.addressLatitude,
+                        longitud = state.addressLongitude,
                         favorito = state.addressFavorite,
                     ),
                 )
@@ -277,6 +297,24 @@ class ClientDataViewModel @Inject constructor(
             when (val result = searchBarriosUseCase(query.trim())) {
                 is AppResult.Success -> update { it.copy(barrioSuggestions = result.data) }
                 is AppResult.Error -> update { it.copy(barrioSuggestions = emptyList()) }
+            }
+        }
+    }
+
+    private fun useCurrentLocation() {
+        viewModelScope.launch {
+            update { it.copy(isLocating = true, errorMessage = null) }
+            when (val result = getCurrentLocationUseCase()) {
+                is AppResult.Success -> update {
+                    it.copy(
+                        isLocating = false,
+                        addressLatitude = result.data.latitude,
+                        addressLongitude = result.data.longitude,
+                    )
+                }
+                is AppResult.Error -> update {
+                    it.copy(isLocating = false, errorMessage = result.error.userMessage())
+                }
             }
         }
     }

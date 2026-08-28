@@ -75,6 +75,10 @@ class OrderRemoteDataSource @Inject constructor(
         ordersApi.marcarTracking(bookingId, MarcarTrackingRequestDto(estado = estado, lat = lat, lng = lng))
     }
 
+    suspend fun getTracking(bookingId: Long) = safeApiCall {
+        ordersApi.getTracking(bookingId)
+    }
+
     suspend fun crearCalificacion(bookingId: Long, calidad: Int, puntualidad: Int, comentario: String?) = safeApiCall {
         ordersApi.crearCalificacion(
             CreateCalificacionRequestDto(bookingId = bookingId, calidad = calidad, puntualidad = puntualidad, comentario = comentario),

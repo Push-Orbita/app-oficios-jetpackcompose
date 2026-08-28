@@ -35,6 +35,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
+import com.cocido.oficios.core.ui.map.OficiosLocationPicker
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioUiState
 import com.cocido.oficios.feature.onboarding.client.ClientContactoUiState
@@ -97,6 +98,9 @@ fun ClientContactDomicilioStepScreen(
     onNumeroChanged: (String) -> Unit,
     onPisoChanged: (String) -> Unit,
     onDepartamentoChanged: (String) -> Unit,
+    onMapLocationSelected: (Double, Double) -> Unit,
+    onUseCurrentLocation: () -> Unit,
+    onLocationPermissionDenied: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     val hasUnsavedChanges = uiState.barrioQuery.isNotBlank() ||
@@ -180,6 +184,14 @@ fun ClientContactDomicilioStepScreen(
                 modifier = Modifier.weight(1f),
             )
         }
+        OficiosLocationPicker(
+            latitude = uiState.latitud,
+            longitude = uiState.longitud,
+            onLocationSelected = onMapLocationSelected,
+            onUseCurrentLocation = onUseCurrentLocation,
+            onPermissionDenied = onLocationPermissionDenied,
+            isLocating = uiState.isLocating,
+        )
     }
 }
 
@@ -191,6 +203,9 @@ fun ClientDomicilioStepScreen(
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
     onNumeroChanged: (String) -> Unit,
+    onMapLocationSelected: (Double, Double) -> Unit,
+    onUseCurrentLocation: () -> Unit,
+    onLocationPermissionDenied: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -219,6 +234,14 @@ fun ClientDomicilioStepScreen(
             value = uiState.numero,
             onValueChange = onNumeroChanged,
             label = stringResource(R.string.onboarding_step_numero_label),
+        )
+        OficiosLocationPicker(
+            latitude = uiState.latitud,
+            longitude = uiState.longitud,
+            onLocationSelected = onMapLocationSelected,
+            onUseCurrentLocation = onUseCurrentLocation,
+            onPermissionDenied = onLocationPermissionDenied,
+            isLocating = uiState.isLocating,
         )
     }
 }
@@ -684,13 +707,16 @@ fun ProviderLocalStepScreen(
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
+    onMapLocationSelected: (Double, Double) -> Unit,
+    onUseCurrentLocation: () -> Unit,
+    onLocationPermissionDenied: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
         title = stringResource(R.string.onboarding_step_local_title),
         error = uiState.error,
         isLoading = uiState.isLoading,
-        canSubmit = uiState.selectedBarrioId != null && uiState.calle.isNotBlank(),
+        canSubmit = uiState.canSubmit,
         onSubmit = onSubmit,
     ) {
         OficiosAutocompleteField(
@@ -704,5 +730,13 @@ fun ProviderLocalStepScreen(
             onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
         OficiosTextField(value = uiState.calle, onValueChange = onCalleChanged, label = stringResource(R.string.onboarding_step_calle_label))
+        OficiosLocationPicker(
+            latitude = uiState.latitud,
+            longitude = uiState.longitud,
+            onLocationSelected = onMapLocationSelected,
+            onUseCurrentLocation = onUseCurrentLocation,
+            onPermissionDenied = onLocationPermissionDenied,
+            isLocating = uiState.isLocating,
+        )
     }
 }

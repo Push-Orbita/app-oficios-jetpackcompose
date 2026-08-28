@@ -14,8 +14,10 @@ import com.cocido.oficios.domain.model.UserSession
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.ClientProfileRepository
+import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -96,6 +98,17 @@ class ClientDomicilioViewModelTest {
                     AppResult.Success(emptyList<CatalogOption>())
                 override suspend fun searchBarrios(query: String) =
                     AppResult.Success(listOf(CatalogOption(1, "Centro")))
+            },
+        ),
+        getCurrentLocationUseCase = GetCurrentLocationUseCase(
+            object : LocationRepository {
+                override suspend fun getCurrentLocation(requirePrecise: Boolean) =
+                    AppResult.Success(com.cocido.oficios.domain.model.GeoPoint(-26.1849, -58.1731))
+
+                override fun observeLocations(intervalMillis: Long) =
+                    kotlinx.coroutines.flow.flowOf(
+                        AppResult.Success(com.cocido.oficios.domain.model.GeoPoint(-26.1849, -58.1731)),
+                    )
             },
         ),
     )

@@ -25,6 +25,8 @@ data class ClientDomicilio(
     val departamento: String?,
     val piso: String?,
     val favorito: Boolean,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
 )
 
 data class ClientContacto(

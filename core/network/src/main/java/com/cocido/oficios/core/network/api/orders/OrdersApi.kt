@@ -12,6 +12,7 @@ import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSearchResponseDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
 import com.cocido.oficios.core.network.api.orders.dto.UpdateSolicitudEstadoRequestDto
+import com.cocido.oficios.core.network.api.orders.dto.TrackingBookingDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -78,7 +79,12 @@ interface OrdersApi {
     suspend fun marcarTracking(
         @Path("bookingId") bookingId: Long,
         @Body request: MarcarTrackingRequestDto,
-    ): JsonElement
+    ): TrackingBookingDto
+
+    @GET("tracking-booking/booking/{bookingId}")
+    suspend fun getTracking(
+        @Path("bookingId") bookingId: Long,
+    ): TrackingBookingDto?
 
     @POST("calificaciones")
     suspend fun crearCalificacion(

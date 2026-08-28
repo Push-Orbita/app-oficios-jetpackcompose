@@ -64,6 +64,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
+    implementation(project(":core:location"))
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))
     implementation(project(":core:database"))
@@ -87,6 +88,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.kotlinx.coroutines.android)
     ksp(libs.hilt.compiler)
 
     implementation(platform(libs.firebase.bom))

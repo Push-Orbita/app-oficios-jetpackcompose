@@ -19,6 +19,8 @@ import com.cocido.oficios.feature.home.orders.RateWorkerRoute
 fun NavGraphBuilder.ordersScreen(
     navController: NavHostController,
     onShowMessage: (String) -> Unit,
+    onStartTracking: (Long) -> Unit,
+    onStopTracking: () -> Unit,
 ) {
     composable(
         route = OrdersDestination.createOrder,
@@ -46,6 +48,8 @@ fun NavGraphBuilder.ordersScreen(
                 navController.navigate(OrdersDestination.rateWorker(bookingId, workerName))
             },
             onShowMessage = onShowMessage,
+            onStartTracking = onStartTracking,
+            onStopTracking = onStopTracking,
         )
     }
 

@@ -4,12 +4,15 @@ import com.cocido.oficios.core.network.api.orders.dto.BookingSimpleDto
 import com.cocido.oficios.core.network.api.orders.dto.ContrapropuestaDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
+import com.cocido.oficios.core.network.api.orders.dto.TrackingBookingDto
+import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.CounterOffer
 import com.cocido.oficios.domain.model.CounterOfferStatus
 import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.model.GeoPoint
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -96,6 +99,8 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         status = estado.toRequestStatus(),
         description = descripcion.orEmpty(),
         addressLabel = domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre),
+        addressLatitude = domicilio?.latitud,
+        addressLongitude = domicilio?.longitud,
         contactName = contacto?.nombre.orEmpty(),
         contactPhone = contacto?.telefonoWhatsapp.orEmpty(),
         rejectionReason = motivoRechazo,
@@ -105,6 +110,20 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         bookingType = booking?.tipo,
         canCancelBooking = booking?.puedeCancelar ?: false,
         pendingCounterOffer = pendingCounterOffer,
+    )
+}
+
+fun TrackingBookingDto.toDomain(): BookingTracking? {
+    val latitude = lat.toDoubleOrNull() ?: return null
+    val longitude = lng.toDoubleOrNull() ?: return null
+    val point = GeoPoint(latitude, longitude)
+    if (!point.isValid) return null
+    return BookingTracking(
+        bookingId = bookingId,
+        workerId = trabajadorOficioId,
+        status = estado,
+        location = point,
+        updatedAtIso = createdAt,
     )
 }
 

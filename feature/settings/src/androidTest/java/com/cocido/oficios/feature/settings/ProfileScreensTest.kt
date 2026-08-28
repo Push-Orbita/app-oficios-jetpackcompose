@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performScrollTo
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.AccountProfile
@@ -59,6 +60,33 @@ class ProfileScreensTest {
         composeRule.onNodeWithText("El número se valida por WhatsApp. Argentina usa +54 y vos ingresás solo el número local, por ejemplo 9 370 5219109.").assertIsDisplayed()
         composeRule.onNodeWithText("10 u 11 dígitos, sin +54").assertIsDisplayed()
         composeRule.onNodeWithText("Guardar y verificar").assertIsDisplayed()
+    }
+
+    @Test
+    fun clientAddressEditor_showsMapAndConfirmedCoordinates() {
+        composeRule.setContent {
+            OficiosTheme {
+                ClientDataScreen(
+                    uiState = ClientDataUiState(
+                        isLoading = false,
+                        mode = ClientDataMode.DOMICILIO,
+                        addressLatitude = -26.18490,
+                        addressLongitude = -58.17310,
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Mapa para seleccionar la ubicación")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Ubicación confirmada", substring = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Usar mi ubicación")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test

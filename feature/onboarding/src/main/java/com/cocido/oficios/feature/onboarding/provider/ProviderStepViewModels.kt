@@ -26,6 +26,7 @@ import com.cocido.oficios.domain.usecase.profile.SubmitSecondaryProviderRubroUse
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
+import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -526,10 +527,13 @@ data class ProviderLocalUiState(
     val calle: String = "",
     val numero: String = "",
     val nombre: String = "Local comercial",
+    val latitud: Double? = null,
+    val longitud: Double? = null,
+    val isLocating: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 ) {
-    val canSubmit: Boolean get() = selectedBarrioId != null && calle.isNotBlank()
+    val canSubmit: Boolean get() = selectedBarrioId != null && calle.isNotBlank() && latitud != null && longitud != null
 }
 
 @HiltViewModel
@@ -539,6 +543,7 @@ class ProviderLocalViewModel @Inject constructor(
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderLocalUiState())
@@ -588,6 +593,29 @@ class ProviderLocalViewModel @Inject constructor(
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
     fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
     fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
+    fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
+        it.copy(latitud = latitude, longitud = longitude, error = null)
+    }
+    fun onLocationPermissionDenied() = _uiState.update {
+        it.copy(error = "Permití la ubicación o marcá manualmente la entrada de tu local en el mapa.")
+    }
+    fun useCurrentLocation() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocating = true, error = null) }
+            when (val result = getCurrentLocationUseCase()) {
+                is AppResult.Success -> _uiState.update {
+                    it.copy(
+                        isLocating = false,
+                        latitud = result.data.latitude,
+                        longitud = result.data.longitude,
+                    )
+                }
+                is AppResult.Error -> _uiState.update {
+                    it.copy(isLocating = false, error = result.error.userMessage())
+                }
+            }
+        }
+    }
 
     fun submit() {
         val state = _uiState.value
@@ -617,6 +645,8 @@ class ProviderLocalViewModel @Inject constructor(
                     barrioId = barrioId,
                     calle = streetLine,
                     nombre = state.nombre.trim().ifBlank { "Local comercial" },
+                    latitud = state.latitud,
+                    longitud = state.longitud,
                 ),
             )
             when (val result = submitProviderRubroFullUseCase(request)) {
@@ -641,7 +671,6 @@ data class ProviderPaymentMethodsUiState(
 @HiltViewModel
 class ProviderPaymentMethodsViewModel @Inject constructor(
     private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
-    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
@@ -682,17 +711,41 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
             if (updatedDraft != null) {
                 registerTradeDraftRepository.save(updatedDraft)
             }
-            val result = if (updatedDraft != null && updatedDraft.subRubroIds.isNotEmpty()) {
-                submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())
-            } else {
-                updateProviderProfessionalInfoUseCase(
-                    ProviderProfessionalInfoRequest(paymentMethods = methods),
-                )
-            }
+            // Los métodos de pago pertenecen al perfil profesional y cuentan con un PATCH
+            // específico. Reenviar POST /trabajador-oficio-rubro/full intentaba crear por
+            // segunda vez el rubro principal y exponía al usuario un conflicto técnico.
+            val result = updateProviderProfessionalInfoUseCase(
+                ProviderProfessionalInfoRequest(paymentMethods = methods),
+            )
             when (result) {
                 is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(ProviderStepEffect.Saved)
+                    // El backend llegó a responder 200 sin persistir metodosPago. No se
+                    // navega con un falso éxito: se confirma contra estado-perfil.
+                    when (val status = getOnboardingStatusUseCase.getProviderStatus()) {
+                        is AppResult.Success -> {
+                            if ("metodos_pago" in status.data.missingSteps) {
+                                _uiState.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        error = "No pudimos confirmar que tus métodos de pago se hayan guardado. " +
+                                            "Tu selección sigue disponible; intentá nuevamente en unos minutos.",
+                                    )
+                                }
+                            } else {
+                                _uiState.update { it.copy(isLoading = false) }
+                                _effects.emit(ProviderStepEffect.Saved)
+                            }
+                        }
+                        is AppResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = "Guardamos la solicitud, pero no pudimos verificar el resultado. " +
+                                        "Revisá tu conexión e intentá nuevamente.",
+                                )
+                            }
+                        }
+                    }
                 }
                 is AppResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
