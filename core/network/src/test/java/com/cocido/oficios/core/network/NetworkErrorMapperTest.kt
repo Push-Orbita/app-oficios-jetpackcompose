@@ -89,4 +89,17 @@ class NetworkErrorMapperTest {
 
         assertEquals("DB02", parseErrorCode(body))
     }
+
+    @Test
+    fun `parseErrorCode reads SE01 server error`() {
+        val body = """
+            {
+              "statusCode": 500,
+              "message": "Internal server error",
+              "code": "SE01"
+            }
+        """.trimIndent()
+
+        assertEquals("SE01", parseErrorCode(body))
+    }
 }
