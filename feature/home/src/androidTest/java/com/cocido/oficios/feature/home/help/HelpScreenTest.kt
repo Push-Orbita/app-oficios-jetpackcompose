@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.home.help
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.home.TestHostActivity
@@ -28,7 +29,7 @@ class HelpScreenTest {
         }
 
         composeTestRule.onNodeWithText("Ayuda").assertIsDisplayed()
-        composeTestRule.onNodeWithText("¿Cómo contrato a un trabajador?").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Contactar").assertIsDisplayed()
+        composeTestRule.onNodeWithText("¿Cómo contrato a un trabajador?").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Contactar").performScrollTo().assertIsDisplayed()
     }
 }
