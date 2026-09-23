@@ -11,6 +11,13 @@ No hay `google-services.json` real en el repo para producción. La app incluye u
 
 La app usa **polling al reanudar** el checklist proveedor como respaldo si FCM falla o no está disponible.
 
+## v1 sin Firebase (no bloquea release)
+
+Push notifications no funcionarán en dispositivo hasta que DevOps provea `google-services.json` real. Sin embargo:
+- **Inbox polling funciona**: el usuario ve notificaciones al abrir la app
+- **No hay crash**: la app detecta el stub y desactiva registro de token
+- Cuando se reemplace el stub por config real, push funcionará sin cambios de código
+
 ## Producción — checklist DevOps
 
 1. Crear proyecto Firebase **Oficios Formosa** y app Android `com.cocido.oficios`.
