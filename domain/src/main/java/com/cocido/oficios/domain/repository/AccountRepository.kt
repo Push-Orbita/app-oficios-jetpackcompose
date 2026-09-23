@@ -1,6 +1,7 @@
 package com.cocido.oficios.domain.repository
 
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.domain.model.AccountDeletionRequest
 import com.cocido.oficios.domain.model.AccountProfile
 import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
@@ -8,6 +9,7 @@ import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.RequestAccountDeletionParams
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
@@ -43,4 +45,8 @@ interface AccountRepository {
     suspend fun getGallery(): AppResult<List<WorkGalleryItem>>
     suspend fun uploadGallery(filePaths: List<String>): AppResult<List<WorkGalleryItem>>
     suspend fun deleteGalleryItem(id: Long): AppResult<Unit>
+
+    suspend fun getCurrentDeletionRequest(): AppResult<AccountDeletionRequest?>
+    suspend fun requestAccountDeletion(params: RequestAccountDeletionParams): AppResult<AccountDeletionRequest>
+    suspend fun cancelAccountDeletion(): AppResult<AccountDeletionRequest>
 }

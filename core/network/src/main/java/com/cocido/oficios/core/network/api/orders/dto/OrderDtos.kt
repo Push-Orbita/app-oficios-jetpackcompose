@@ -19,8 +19,9 @@ data class CreateSolicitudServicioRequestDto(
     val trabajadorOficioSubRubroId: Long,
     val domicilioId: Long,
     val contactoId: Long,
-    val fechaPropuestaInicio: String,
-    val fechaPropuestaFin: String,
+    val slotTurnoId: Long? = null,
+    val fechaPropuestaInicio: String? = null,
+    val fechaPropuestaFin: String? = null,
     val descripcion: String? = null,
 )
 
@@ -107,6 +108,7 @@ data class BookingSimpleDto(
     val slotTurno: SlotTurnoEnBookingDto? = null,
     val fechaLimiteCancelacion: String? = null,
     val puedeCancelar: Boolean = false,
+    val codigoFinalizacion: String? = null,
 )
 
 @Serializable
@@ -138,6 +140,7 @@ data class SolicitudServicioDto(
 data class SolicitudServicioSimpleDto(
     val id: Long,
     val cliente: ClienteSimpleDto? = null,
+    val trabajadorOficio: TrabajadorOficioSimpleDto? = null,
     val rubro: RubroDto? = null,
     val subRubro: SubRubroDto? = null,
     val domicilio: DomicilioSinPersonaDto? = null,
@@ -151,6 +154,11 @@ data class SolicitudServicioSimpleDto(
 data class SolicitudServicioSearchResponseDto(
     val trabajador: TrabajadorOficioSimpleDto? = null,
     val solicitudes: List<SolicitudServicioSimpleDto> = emptyList(),
+)
+
+@Serializable
+data class FinalizeBookingRequestDto(
+    val code: String? = null,
 )
 
 @Serializable

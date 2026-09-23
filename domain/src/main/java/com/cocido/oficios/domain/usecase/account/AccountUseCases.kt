@@ -4,6 +4,7 @@ import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.RequestAccountDeletionParams
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
@@ -49,4 +50,9 @@ class AccountUseCases @Inject constructor(
     suspend fun getGallery() = repository.getGallery()
     suspend fun uploadGallery(filePaths: List<String>) = repository.uploadGallery(filePaths)
     suspend fun deleteGalleryItem(id: Long) = repository.deleteGalleryItem(id)
+
+    suspend fun getCurrentDeletionRequest() = repository.getCurrentDeletionRequest()
+    suspend fun requestAccountDeletion(params: RequestAccountDeletionParams) =
+        repository.requestAccountDeletion(params)
+    suspend fun cancelAccountDeletion() = repository.cancelAccountDeletion()
 }

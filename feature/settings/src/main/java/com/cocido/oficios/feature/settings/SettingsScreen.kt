@@ -210,9 +210,8 @@ private fun SettingsContent(
             SettingsActionRow(
                 icon = Icons.Outlined.DeleteForever,
                 title = stringResource(R.string.settings_delete_account),
-                description = stringResource(R.string.settings_delete_account_unavailable),
-                enabled = false,
-                onClick = {},
+                description = stringResource(R.string.settings_delete_account_description),
+                onClick = { onEvent(SettingsEvent.OpenDeleteAccount) },
             )
         }
 

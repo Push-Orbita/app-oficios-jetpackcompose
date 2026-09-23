@@ -3,19 +3,25 @@ package com.cocido.oficios.feature.home.worker
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
+import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 private const val REVIEWS_PAGE_SIZE = 10
 
@@ -24,6 +30,8 @@ class WorkerProfileViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getWorkerProfileUseCase: GetWorkerProfileUseCase,
     private val getWorkerReviewsUseCase: GetWorkerReviewsUseCase,
+    private val getFavoriteStatusUseCase: GetFavoriteStatusUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -51,7 +59,11 @@ class WorkerProfileViewModel @Inject constructor(
             WorkerProfileEvent.Back -> emitEffect(WorkerProfileEffect.NavigateBack)
             WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
             WorkerProfileEvent.RateClicked -> emitEffect(WorkerProfileEffect.ShowRatingUnavailable)
-            WorkerProfileEvent.ReportProfileClicked -> emitEffect(WorkerProfileEffect.ShowReportComingSoon)
+            WorkerProfileEvent.ReportProfileClicked -> {
+                val profile = (uiState.value as? WorkerProfileUiState.Success)?.profile ?: return
+                emitEffect(WorkerProfileEffect.NavigateToReport(workerId, profile.displayName))
+            }
+            WorkerProfileEvent.FavoriteClicked -> toggleFavorite()
             WorkerProfileEvent.LoadNextReviews -> loadNextReviews()
         }
     }
@@ -59,21 +71,33 @@ class WorkerProfileViewModel @Inject constructor(
     private fun loadInitial() {
         viewModelScope.launch {
             _uiState.update { WorkerProfileUiState.Loading }
-
-            when (val profileResult = getWorkerProfileUseCase(workerId)) {
-                is AppResult.Success -> {
-                    val profile = profileResult.data
-                    loadReviewsAndSetSuccess(profile, pageNumber = 1)
-                }
-
-                is AppResult.Error -> {
-                    _uiState.update { WorkerProfileUiState.Error(profileResult.error.userMessage()) }
+            coroutineScope {
+                val profileDeferred = async { getWorkerProfileUseCase(workerId) }
+                val favoriteDeferred = async { getFavoriteStatusUseCase(workerId) }
+                when (val profileResult = profileDeferred.await()) {
+                    is AppResult.Success -> {
+                        val favoriteFlags = favoriteDeferred.await().toFavoriteFlags()
+                        loadReviewsAndSetSuccess(
+                            profile = profileResult.data,
+                            pageNumber = 1,
+                            canFavorite = favoriteFlags.canFavorite,
+                            isFavorite = favoriteFlags.isFavorite,
+                        )
+                    }
+                    is AppResult.Error -> {
+                        _uiState.update { WorkerProfileUiState.Error(profileResult.error.userMessage()) }
+                    }
                 }
             }
         }
     }
 
-    private suspend fun loadReviewsAndSetSuccess(profile: com.cocido.oficios.domain.model.WorkerProfile, pageNumber: Int) {
+    private suspend fun loadReviewsAndSetSuccess(
+        profile: WorkerProfile,
+        pageNumber: Int,
+        canFavorite: Boolean,
+        isFavorite: Boolean,
+    ) {
         when (val reviewsResult = getWorkerReviewsUseCase(workerId, pageNumber, REVIEWS_PAGE_SIZE)) {
             is AppResult.Success -> {
                 val paged = reviewsResult.data
@@ -87,10 +111,11 @@ class WorkerProfileViewModel @Inject constructor(
                         hasMoreReviews = paged.hasMore,
                         reviewsPageNumber = paged.pageNumber,
                         totalReviewsPages = paged.totalPages,
+                        canFavorite = canFavorite,
+                        isFavorite = isFavorite,
                     )
                 }
             }
-
             is AppResult.Error -> {
                 _uiState.update {
                     WorkerProfileUiState.Success(
@@ -98,7 +123,50 @@ class WorkerProfileViewModel @Inject constructor(
                         reviews = emptyList(),
                         isLoadingReviews = false,
                         hasMoreReviews = false,
+                        canFavorite = canFavorite,
+                        isFavorite = isFavorite,
                     )
+                }
+            }
+        }
+    }
+
+    private fun toggleFavorite() {
+        val state = uiState.value as? WorkerProfileUiState.Success ?: return
+        if (!state.canFavorite || state.isTogglingFavorite) return
+        val previous = state.isFavorite
+        _uiState.update { current ->
+            if (current is WorkerProfileUiState.Success) {
+                current.copy(isFavorite = !previous, isTogglingFavorite = true)
+            } else {
+                current
+            }
+        }
+        viewModelScope.launch {
+            when (val result = toggleFavoriteUseCase(workerId, currentlyFavorite = previous)) {
+                is AppResult.Success -> {
+                    _uiState.update { current ->
+                        if (current is WorkerProfileUiState.Success) {
+                            current.copy(isTogglingFavorite = false)
+                        } else {
+                            current
+                        }
+                    }
+                    emitEffect(
+                        WorkerProfileEffect.ShowMessage(
+                            if (previous) "Lo sacamos de Favoritos." else "Lo guardamos en Favoritos.",
+                        ),
+                    )
+                }
+                is AppResult.Error -> {
+                    _uiState.update { current ->
+                        if (current is WorkerProfileUiState.Success) {
+                            current.copy(isFavorite = previous, isTogglingFavorite = false)
+                        } else {
+                            current
+                        }
+                    }
+                    emitEffect(WorkerProfileEffect.ShowMessage(result.error.userMessage()))
                 }
             }
         }
@@ -135,7 +203,6 @@ class WorkerProfileViewModel @Inject constructor(
                         } else current
                     }
                 }
-
                 is AppResult.Error -> {
                     _uiState.update { current ->
                         if (current is WorkerProfileUiState.Success) current.copy(isLoadingReviews = false) else current
@@ -151,3 +218,15 @@ class WorkerProfileViewModel @Inject constructor(
     }
 }
 
+private data class FavoriteFlags(
+    val canFavorite: Boolean,
+    val isFavorite: Boolean,
+)
+
+private fun AppResult<com.cocido.oficios.domain.model.FavoriteStatus>.toFavoriteFlags(): FavoriteFlags = when (this) {
+    is AppResult.Success -> FavoriteFlags(canFavorite = true, isFavorite = data.isFavorite)
+    is AppResult.Error -> FavoriteFlags(
+        canFavorite = error !is AppError.Forbidden,
+        isFavorite = false,
+    )
+}

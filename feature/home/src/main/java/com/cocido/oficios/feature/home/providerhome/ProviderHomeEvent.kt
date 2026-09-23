@@ -19,5 +19,8 @@ sealed interface ProviderHomeEffect {
     data object NavigateToAgenda : ProviderHomeEffect
     data class NavigateToOrderDetail(val orderId: Long) : ProviderHomeEffect
     data class ShowMessage(val message: String) : ProviderHomeEffect
-    data object ShowComingSoon : ProviderHomeEffect
+    data object NavigateToProfile : ProviderHomeEffect
+    data object NavigateToFavorites : ProviderHomeEffect
+    data object NavigateToHelp : ProviderHomeEffect
+    data object NavigateToNotifications : ProviderHomeEffect
 }

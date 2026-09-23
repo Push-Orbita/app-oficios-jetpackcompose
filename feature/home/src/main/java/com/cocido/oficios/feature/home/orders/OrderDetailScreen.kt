@@ -73,6 +73,7 @@ private fun OrderDetailContent(
     val canShowPrivateDetails = !isWorker || order.status == ServiceRequestStatus.ACCEPTED
     var showRejectDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
+    var showFinalizeDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -245,12 +246,19 @@ private fun OrderDetailContent(
                 }
                 BookingStatus.IN_PROGRESS -> {
                     InfoText("Servicio en curso")
-                    OficiosButton(
-                        text = "Finalizar servicio",
-                        onClick = { onEvent(OrderDetailEvent.Finalize) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !state.isActionInProgress,
-                    )
+                    if (!isWorker) {
+                        CompletionCodeCard(
+                            code = order.completionCode,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    } else {
+                        OficiosButton(
+                            text = "Terminar pedido",
+                            onClick = { showFinalizeDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !state.isActionInProgress,
+                        )
+                    }
                 }
                 BookingStatus.FINISHED -> {
                     InfoText("Pedido finalizado")
@@ -316,11 +324,82 @@ private fun OrderDetailContent(
             onDismiss = { showCancelDialog = false },
         )
     }
+
+    if (showFinalizeDialog) {
+        FinalizeCodeDialog(
+            onConfirm = { code ->
+                onEvent(OrderDetailEvent.FinalizeWithCode(code))
+                showFinalizeDialog = false
+            },
+            onDismiss = { showFinalizeDialog = false },
+        )
+    }
 }
 
 @Composable
 private fun InfoText(text: String) {
     Text(text = text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
+private fun CompletionCodeCard(
+    code: String?,
+    modifier: Modifier = Modifier,
+) {
+    OficiosCard(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(OficiosSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+        ) {
+            Text(
+                text = "Código de finalización",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (code.isNullOrBlank()) {
+                Text(
+                    text = "Tu código aparecerá acá cuando el servicio esté en curso. Compartilo con el trabajador al finalizar.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Text(
+                    text = code,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "Mostrá este código al trabajador para confirmar que el servicio se realizó.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FinalizeCodeDialog(
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var code by remember { mutableStateOf("") }
+    OficiosDialog(
+        title = "Terminar pedido",
+        message = "Pedile al cliente el código de finalización e ingresalo para cerrar el servicio.",
+        confirmLabel = "Finalizar",
+        dismissLabel = "Cancelar",
+        confirmEnabled = code.length == 6,
+        onConfirm = { onConfirm(code.trim()) },
+        onDismiss = onDismiss,
+        content = {
+            OficiosTextField(
+                value = code,
+                onValueChange = { if (it.length <= 6) code = it.filter { ch -> ch.isDigit() } },
+                label = "Código de 6 dígitos",
+            )
+        },
+    )
 }
 
 @Composable

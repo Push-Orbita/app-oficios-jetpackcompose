@@ -9,4 +9,5 @@ object SettingsDestination {
     const val addService = "settings/services/add"
     const val portfolio = "settings/portfolio"
     const val changePassword = "settings/change-password"
+    const val deleteAccount = "settings/delete-account"
 }

@@ -22,7 +22,16 @@
     <string name="settings_change_password">Cambiar contraseña</string>
     <string name="settings_change_password_description">Actualizá tu acceso de forma segura</string>
     <string name="settings_delete_account">Eliminar cuenta</string>
-    <string name="settings_delete_account_unavailable">Disponible cuando el backend incorpore eliminación propia segura</string>
+    <string name="settings_delete_account_description">Darse de baja con un período de gracia de 3 días</string>
+    <string name="settings_delete_account_intro">Esta acción programa la baja de tu cuenta. Tenés 3 días para cancelarla si cambiás de opinión. Escribí ELIMINAR para confirmar.</string>
+    <string name="settings_delete_account_password">Contraseña actual</string>
+    <string name="settings_delete_account_confirmation">Escribí ELIMINAR</string>
+    <string name="settings_delete_account_submit">Eliminar mi cuenta</string>
+    <string name="settings_delete_account_load_error">No pudimos consultar el estado de tu cuenta</string>
+    <string name="settings_delete_account_grace_title">Tu baja está programada</string>
+    <string name="settings_delete_account_grace_body">Vamos a eliminar tu cuenta el %1$s (hora de Formosa). Si cambiás de opinión, cancelá la solicitud antes de esa fecha.</string>
+    <string name="settings_delete_account_grace_body_generic">Tu cuenta se va a eliminar en los próximos 3 días. Si cambiás de opinión, cancelá la solicitud ahora.</string>
+    <string name="settings_delete_account_cancel">Cancelar la baja</string>
     <string name="settings_verified_email">Correo verificado</string>
     <string name="settings_pending_email">Correo pendiente de verificación</string>
     <string name="settings_provider_role">Trabajador de oficio</string>

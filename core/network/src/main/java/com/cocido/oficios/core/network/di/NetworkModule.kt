@@ -16,6 +16,8 @@ import com.cocido.oficios.core.network.api.worker.WorkerProfileApi
 import com.cocido.oficios.core.network.api.worker.WorkerReviewsApi
 import com.cocido.oficios.core.network.api.notifications.NotificationsApi
 import com.cocido.oficios.core.network.api.orders.OrdersApi
+import com.cocido.oficios.core.network.api.safety.ReportsApi
+import com.cocido.oficios.core.network.api.social.FavoritesApi
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -182,6 +184,18 @@ object NetworkModule {
     @Singleton
     fun provideAgendaApi(@ApiRetrofit retrofit: Retrofit): AgendaApi {
         return retrofit.create(AgendaApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFavoritesApi(@ApiRetrofit retrofit: Retrofit): FavoritesApi {
+        return retrofit.create(FavoritesApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReportsApi(@ApiRetrofit retrofit: Retrofit): ReportsApi {
+        return retrofit.create(ReportsApi::class.java)
     }
 
     @Provides

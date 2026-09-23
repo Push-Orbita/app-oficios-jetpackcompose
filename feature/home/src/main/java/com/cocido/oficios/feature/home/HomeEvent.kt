@@ -13,7 +13,7 @@ sealed interface HomeEvent {
     data object VoiceSearch : HomeEvent
     data class RecentSearchSelected(val entry: RecentSearchEntry) : HomeEvent
     data class WorkerViewProfile(val workerId: Long) : HomeEvent
-    data object WorkerContact : HomeEvent
+    data class WorkerContact(val workerId: Long) : HomeEvent
     data object SeeAllWorkers : HomeEvent
     data object OpenMyOrders : HomeEvent
     data object NavigateToSettings : HomeEvent
@@ -28,7 +28,6 @@ sealed interface CategoriesEvent {
     data object OpenNotifications : CategoriesEvent
     data class CategorySelected(val category: HomeCategoryItem) : CategoriesEvent
     data class SearchSubmitted(val query: String) : CategoriesEvent
-    data object VoiceSearch : CategoriesEvent
 }
 
 sealed interface HomeEffect {
@@ -37,6 +36,7 @@ sealed interface HomeEffect {
     data object NavigateToProfile : HomeEffect
     data object NavigateToFavorites : HomeEffect
     data object NavigateToHelp : HomeEffect
+    data object NavigateToNotifications : HomeEffect
     data object ContactSupport : HomeEffect
     data class ShowMessage(val message: String) : HomeEffect
     data object ShowComingSoon : HomeEffect
@@ -51,13 +51,14 @@ sealed interface HomeEffect {
         val query: String? = null,
     ) : HomeEffect
     data class NavigateToWorker(val workerId: Long) : HomeEffect
+    data class NavigateToHire(val workerId: Long) : HomeEffect
     data object NavigateToMyOrders : HomeEffect
 }
 
 sealed interface CategoriesEffect {
     data object NavigateBack : CategoriesEffect
     data class ShowMessage(val message: String) : CategoriesEffect
-    data object ShowComingSoon : CategoriesEffect
+    data object NavigateToNotifications : CategoriesEffect
     data class NavigateToRubros(val categoryId: Long, val categoryName: String) : CategoriesEffect
     data class NavigateToSearchResults(val query: String) : CategoriesEffect
 }

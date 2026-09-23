@@ -42,4 +42,51 @@ class NetworkErrorMapperTest {
             parseErrorMessage(body),
         )
     }
+
+    @Test
+    fun `parseErrorCode reads errorDetails code`() {
+        val body = """
+            {
+              "error": true,
+              "errorDetails": {
+                "code": "COMPLETION_CODE_REQUIRED",
+                "message": ["code must be a string"]
+              }
+            }
+        """.trimIndent()
+
+        assertEquals("COMPLETION_CODE_REQUIRED", parseErrorCode(body))
+    }
+
+    @Test
+    fun `parseErrorMessage ignores must be technical array entries`() {
+        val body = """
+            {
+              "error": true,
+              "errorDetails": {
+                "code": "COMPLETION_CODE_REQUIRED",
+                "message": ["code must be a string"]
+              }
+            }
+        """.trimIndent()
+
+        assertEquals("COMPLETION_CODE_REQUIRED", parseErrorCode(body))
+        assertEquals(null, parseErrorMessage(body))
+    }
+
+    @Test
+    fun `parseErrorCode reads DB02 database outage`() {
+        val body = """
+            {
+              "error": true,
+              "errorDetails": {
+                "code": "DB02",
+                "message": "La consulta a la base de datos falló.",
+                "details": "Unknown database 'oficiosdev'"
+              }
+            }
+        """.trimIndent()
+
+        assertEquals("DB02", parseErrorCode(body))
+    }
 }

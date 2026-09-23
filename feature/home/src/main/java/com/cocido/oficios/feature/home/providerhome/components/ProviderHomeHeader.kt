@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -36,6 +37,7 @@ fun ProviderHomeHeader(
     userName: String,
     isVerified: Boolean,
     specialtyLabel: String?,
+    unreadNotificationCount: Int = 0,
     onNotificationsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -87,22 +89,24 @@ fun ProviderHomeHeader(
                 }
             }
         }
-        IconButton(
-            onClick = onNotificationsClick,
-            modifier = Modifier
-                .size(OficiosComponentSize.avatarSm)
-                .clip(RoundedCornerShape(OficiosSpacing.sm))
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(OficiosSpacing.sm),
-                ),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = stringResource(R.string.home_notifications),
-                tint = MaterialTheme.colorScheme.onBackground,
-            )
+        OficiosNotificationBadge(count = unreadNotificationCount) {
+            IconButton(
+                onClick = onNotificationsClick,
+                modifier = Modifier
+                    .size(OficiosComponentSize.avatarSm)
+                    .clip(RoundedCornerShape(OficiosSpacing.sm))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(OficiosSpacing.sm),
+                    ),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = stringResource(R.string.home_notifications),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
         }
     }
 }

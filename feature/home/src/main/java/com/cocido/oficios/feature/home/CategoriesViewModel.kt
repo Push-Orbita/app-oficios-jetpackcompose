@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.usecase.GetHomeCategoriesUseCase
 import com.cocido.oficios.domain.usecase.TrackRecentCategoryUseCase
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -21,26 +22,39 @@ import kotlinx.coroutines.launch
 class CategoriesViewModel @Inject constructor(
     private val getHomeCategoriesUseCase: GetHomeCategoriesUseCase,
     private val trackRecentCategoryUseCase: TrackRecentCategoryUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CategoriesUiState>(CategoriesUiState.Loading)
     val uiState: StateFlow<CategoriesUiState> = _uiState.asStateFlow()
+
+    private val _unreadNotificationCount = MutableStateFlow(0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
     private val _effects = Channel<CategoriesEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
     init {
         loadCategories()
+        refreshUnreadCount()
+    }
+
+    fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.update { result.data }
+                is AppResult.Error -> Unit
+            }
+        }
     }
 
     fun onEvent(event: CategoriesEvent) {
         when (event) {
             CategoriesEvent.Retry -> loadCategories()
             CategoriesEvent.Back -> emitEffect(CategoriesEffect.NavigateBack)
-            CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.ShowComingSoon)
+            CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.NavigateToNotifications)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
             is CategoriesEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            CategoriesEvent.VoiceSearch -> emitEffect(CategoriesEffect.ShowComingSoon)
         }
     }
 

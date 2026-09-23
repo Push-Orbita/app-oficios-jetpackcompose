@@ -81,7 +81,9 @@ class SearchResultsViewModel @Inject constructor(
             is SearchResultsEvent.WorkerViewProfile -> {
                 emitEffect(SearchResultsEffect.NavigateToWorker(event.worker.id))
             }
-            SearchResultsEvent.WorkerContact -> emitEffect(SearchResultsEffect.ShowComingSoon)
+            is SearchResultsEvent.WorkerContact -> {
+                emitEffect(SearchResultsEffect.NavigateToHire(event.worker.id))
+            }
             is SearchResultsEvent.FilterCategorySelected -> onFilterCategorySelected(event.category)
             is SearchResultsEvent.FilterRubroSelected -> onFilterRubroSelected(event.rubro)
             is SearchResultsEvent.FilterSubRubroSelected -> onFilterSubRubroSelected(event.subRubro)
@@ -447,7 +449,7 @@ sealed interface SearchResultsEvent {
     data object QuerySubmitted : SearchResultsEvent
     data object VoiceSearch : SearchResultsEvent
     data class WorkerViewProfile(val worker: WorkerSummary) : SearchResultsEvent
-    data object WorkerContact : SearchResultsEvent
+    data class WorkerContact(val worker: WorkerSummary) : SearchResultsEvent
     data class FilterCategorySelected(val category: CatalogOption) : SearchResultsEvent
     data class FilterRubroSelected(val rubro: CatalogOption) : SearchResultsEvent
     data class FilterSubRubroSelected(val subRubro: CatalogOption) : SearchResultsEvent
@@ -463,6 +465,7 @@ sealed interface SearchResultsEvent {
 sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect
     data class NavigateToWorker(val workerId: Long) : SearchResultsEffect
+    data class NavigateToHire(val workerId: Long) : SearchResultsEffect
     data object ShowComingSoon : SearchResultsEffect
     data class ShowMessage(val message: String) : SearchResultsEffect
 }

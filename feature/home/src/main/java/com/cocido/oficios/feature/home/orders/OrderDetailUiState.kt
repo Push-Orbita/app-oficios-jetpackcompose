@@ -28,6 +28,7 @@ sealed interface OrderDetailEvent {
     data class LocationPermissionGranted(val action: TrackingLocationAction) : OrderDetailEvent
     data class LocationPermissionDenied(val action: TrackingLocationAction) : OrderDetailEvent
     data object Finalize : OrderDetailEvent
+    data class FinalizeWithCode(val code: String) : OrderDetailEvent
     data object GoToRate : OrderDetailEvent
 }
 

@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,23 +23,28 @@ import kotlinx.coroutines.launch
 class HomeViewModel @Inject constructor(
     private val getClientHomeUseCase: GetClientHomeUseCase,
     private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private val _unreadNotificationCount = MutableStateFlow(0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
     private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
     init {
         loadHome()
+        refreshUnreadCount()
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.Retry -> loadHome()
             HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
-            HomeEvent.OpenNotifications -> emitComingSoon()
+            HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             HomeEvent.ContactSupport -> emitEffect(HomeEffect.ContactSupport)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             HomeEvent.VoiceSearch -> emitComingSoon()
@@ -48,9 +54,18 @@ class HomeViewModel @Inject constructor(
             HomeEvent.NavigateToFavorites -> emitEffect(HomeEffect.NavigateToFavorites)
             HomeEvent.NavigateToHelp -> emitEffect(HomeEffect.NavigateToHelp)
             is HomeEvent.WorkerViewProfile -> emitEffect(HomeEffect.NavigateToWorker(event.workerId))
-            HomeEvent.WorkerContact -> emitComingSoon()
+            is HomeEvent.WorkerContact -> emitEffect(HomeEffect.NavigateToHire(event.workerId))
             HomeEvent.SeeAllWorkers -> emitEffect(HomeEffect.NavigateToSearchResults())
             HomeEvent.OpenMyOrders -> emitEffect(HomeEffect.NavigateToMyOrders)
+        }
+    }
+
+    fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.update { result.data }
+                is AppResult.Error -> Unit
+            }
         }
     }
 

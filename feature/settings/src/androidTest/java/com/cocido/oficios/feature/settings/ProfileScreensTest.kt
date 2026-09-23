@@ -1,7 +1,6 @@
 package com.cocido.oficios.feature.settings
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -27,7 +26,7 @@ class ProfileScreensTest {
     @get:Rule val composeRule = createAndroidComposeRule<TestHostActivity>()
 
     @Test
-    fun settings_providerShowsProfessionalSectionsAndSafeDeleteDisabled() {
+    fun settings_providerShowsProfessionalSectionsAndDeleteAccount() {
         composeRule.setContent {
             OficiosTheme {
                 SettingsScreen(
@@ -44,7 +43,7 @@ class ProfileScreensTest {
         }
         composeRule.onNodeWithText("Servicios que ofrecés").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Galería y certificados").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Eliminar cuenta").performScrollTo().assertIsDisplayed().assertIsNotEnabled()
+        composeRule.onNodeWithText("Eliminar cuenta").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -122,5 +121,21 @@ class ProfileScreensTest {
             }
         }
         composeRule.onNodeWithText("Documento cargado · sin validación administrativa informada").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun deleteAccount_formAsksPasswordAndEliminar() {
+        composeRule.setContent {
+            OficiosTheme {
+                com.cocido.oficios.feature.settings.account.DeleteAccountScreen(
+                    uiState = com.cocido.oficios.feature.settings.account.DeleteAccountUiState(isLoading = false),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Eliminar cuenta").assertIsDisplayed()
+        composeRule.onNodeWithText("Contraseña actual").assertIsDisplayed()
+        composeRule.onNodeWithText("Escribí ELIMINAR").assertIsDisplayed()
+        composeRule.onNodeWithText("Eliminar mi cuenta").assertIsDisplayed()
     }
 }

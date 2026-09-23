@@ -1,21 +1,31 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+-keepattributes *Annotation*, InnerClasses, EnclosingMethod, Signature, RuntimeVisibleAnnotations
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+-keep class com.cocido.oficios.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+-if class *
+-keepclasseswithmembers class <1> {
+    @kotlinx.serialization.SerialName <fields>;
+}
+
+-keep,includedescriptorclasses class com.cocido.oficios.**$$serializer { *; }
+-keepclassmembers class com.cocido.oficios.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.cocido.oficios.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+-dontwarn org.conscrypt.**
+-dontwarn okhttp3.internal.platform.**

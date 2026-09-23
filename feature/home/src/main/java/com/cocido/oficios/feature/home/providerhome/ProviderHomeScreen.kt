@@ -33,6 +33,7 @@ import com.cocido.oficios.feature.home.R
 @Composable
 fun ProviderHomeScreen(
     uiState: ProviderHomeUiState,
+    unreadNotificationCount: Int,
     selectedTab: ClientHomeTab,
     onEvent: (ProviderHomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
@@ -65,6 +66,7 @@ fun ProviderHomeScreen(
             is ProviderHomeUiState.Success -> {
                 ProviderHomeSuccessContent(
                     content = uiState.content,
+                    unreadNotificationCount = unreadNotificationCount,
                     onEvent = onEvent,
                     modifier = Modifier.padding(paddingValues),
                 )
@@ -76,6 +78,7 @@ fun ProviderHomeScreen(
 @Composable
 private fun ProviderHomeSuccessContent(
     content: ProviderHomeContent,
+    unreadNotificationCount: Int,
     onEvent: (ProviderHomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -90,6 +93,7 @@ private fun ProviderHomeSuccessContent(
             userName = content.userDisplayName,
             isVerified = content.isVerified,
             specialtyLabel = content.primarySpecialtyLabel,
+            unreadNotificationCount = unreadNotificationCount,
             onNotificationsClick = { onEvent(ProviderHomeEvent.OpenNotifications) },
         )
 

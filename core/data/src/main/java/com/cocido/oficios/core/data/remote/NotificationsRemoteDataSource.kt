@@ -23,4 +23,16 @@ class NotificationsRemoteDataSource @Inject constructor(
     suspend fun markAsRead(notificationId: Long) = safeApiCall {
         notificationsApi.markAsRead(notificationId)
     }
+
+    suspend fun getNotifications(
+        pageNumber: Int,
+        pageSize: Int,
+        soloNoLeidas: Boolean,
+    ) = safeApiCall {
+        notificationsApi.getNotifications(
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            soloNoLeidas = soloNoLeidas.takeIf { it },
+        )
+    }
 }

@@ -71,7 +71,21 @@ class OrderDetailViewModel @Inject constructor(
                     "Para compartir el recorrido necesitamos ubicación precisa. Podés habilitarla desde los ajustes del teléfono.",
                 ),
             )
-            OrderDetailEvent.Finalize -> withBookingId { runAction { orderUseCases.finalizeBooking(it) } }
+            OrderDetailEvent.Finalize -> Unit
+            is OrderDetailEvent.FinalizeWithCode -> {
+                val code = event.code.trim()
+                if (code.length != 6) {
+                    emitEffect(
+                        OrderDetailEffect.ShowMessage(
+                            "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
+                        ),
+                    )
+                    return
+                }
+                withBookingId {
+                    runAction { orderUseCases.finalizeBooking(it, code) }
+                }
+            }
             OrderDetailEvent.GoToRate -> {
                 val state = uiState.value as? OrderDetailUiState.Success ?: return
                 val bookingId = state.order.bookingId ?: return

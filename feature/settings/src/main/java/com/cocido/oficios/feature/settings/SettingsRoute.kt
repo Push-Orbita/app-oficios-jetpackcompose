@@ -17,6 +17,7 @@ fun SettingsRoute(
     onNavigateToServices: () -> Unit,
     onNavigateToPortfolio: () -> Unit,
     onNavigateToChangePassword: () -> Unit,
+    onNavigateToDeleteAccount: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -36,6 +37,7 @@ fun SettingsRoute(
                 SettingsEffect.NavigateToServices -> onNavigateToServices()
                 SettingsEffect.NavigateToPortfolio -> onNavigateToPortfolio()
                 SettingsEffect.NavigateToChangePassword -> onNavigateToChangePassword()
+                SettingsEffect.NavigateToDeleteAccount -> onNavigateToDeleteAccount()
             }
         }
     }

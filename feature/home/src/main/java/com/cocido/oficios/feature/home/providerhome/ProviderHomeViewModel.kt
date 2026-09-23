@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.GetProviderHomeUseCase
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -18,29 +19,43 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class ProviderHomeViewModel @Inject constructor(
     private val getProviderHomeUseCase: GetProviderHomeUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProviderHomeUiState>(ProviderHomeUiState.Loading)
     val uiState: StateFlow<ProviderHomeUiState> = _uiState.asStateFlow()
+
+    private val _unreadNotificationCount = MutableStateFlow(0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
     private val _effects = Channel<ProviderHomeEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
     init {
         loadHome()
+        refreshUnreadCount()
     }
 
     fun onEvent(event: ProviderHomeEvent) {
         when (event) {
             ProviderHomeEvent.Retry -> loadHome()
-            ProviderHomeEvent.OpenNotifications -> emitEffect(ProviderHomeEffect.ShowComingSoon)
+            ProviderHomeEvent.OpenNotifications -> emitEffect(ProviderHomeEffect.NavigateToNotifications)
             ProviderHomeEvent.CompleteProfileClicked -> emitEffect(ProviderHomeEffect.NavigateToCompleteProfile)
             ProviderHomeEvent.ViewFullAgendaClicked -> emitEffect(ProviderHomeEffect.NavigateToAgenda)
             is ProviderHomeEvent.OrderClicked -> emitEffect(ProviderHomeEffect.NavigateToOrderDetail(event.orderId))
             ProviderHomeEvent.NavigateToSettings -> emitEffect(ProviderHomeEffect.NavigateToSettings)
-            ProviderHomeEvent.NavigateToProfile -> emitEffect(ProviderHomeEffect.ShowComingSoon)
-            ProviderHomeEvent.NavigateToFavorites -> emitEffect(ProviderHomeEffect.ShowComingSoon)
-            ProviderHomeEvent.NavigateToHelp -> emitEffect(ProviderHomeEffect.ShowComingSoon)
+            ProviderHomeEvent.NavigateToProfile -> emitEffect(ProviderHomeEffect.NavigateToProfile)
+            ProviderHomeEvent.NavigateToFavorites -> emitEffect(ProviderHomeEffect.NavigateToFavorites)
+            ProviderHomeEvent.NavigateToHelp -> emitEffect(ProviderHomeEffect.NavigateToHelp)
+        }
+    }
+
+    fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.update { result.data }
+                is AppResult.Error -> Unit
+            }
         }
     }
 

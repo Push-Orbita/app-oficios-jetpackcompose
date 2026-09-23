@@ -110,6 +110,7 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         bookingType = booking?.tipo,
         canCancelBooking = booking?.puedeCancelar ?: false,
         pendingCounterOffer = pendingCounterOffer,
+        completionCode = booking?.codigoFinalizacion,
     )
 }
 
@@ -128,17 +129,19 @@ fun TrackingBookingDto.toDomain(): BookingTracking? {
 }
 
 /**
- * `SolicitudServicioSimpleDto` (usado tanto en "mis-solicitudes-cliente" como en el
- * "search" del trabajador) solo trae el `cliente` — nunca el `trabajadorOficio`. Para el
- * cliente viendo su propia lista, ese `cliente` es él mismo, así que no sirve como
- * "contraparte"; se usa el subrubro como texto de la tarjeta. Para el trabajador viendo
- * solicitudes entrantes, `cliente` sí es la contraparte real. Gap de backend: no hay forma
- * de mostrar el nombre del trabajador en la lista del cliente sin pedir cada detalle.
+ * `SolicitudServicioSimpleDto` puede no traer `trabajadorOficio` (BACK-ORDERS-003).
+ * Si falta, el listado del cliente usa el subrubro como contraparte.
  */
 fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrderListItem {
     val clientPersona = cliente?.usuario?.persona
     val clientName = listOfNotNull(clientPersona?.nombres, clientPersona?.apellido).joinToString(" ")
-    val counterpart = if (isWorkerViewing) clientName.ifBlank { subRubro?.nombre.orEmpty() } else subRubro?.nombre.orEmpty()
+    val workerPersona = trabajadorOficio?.usuario?.persona
+    val workerName = listOfNotNull(workerPersona?.nombres, workerPersona?.apellido).joinToString(" ")
+    val counterpart = if (isWorkerViewing) {
+        clientName.ifBlank { subRubro?.nombre.orEmpty() }
+    } else {
+        workerName.ifBlank { subRubro?.nombre.orEmpty() }
+    }
     return ServiceOrderListItem(
         id = id,
         counterpartName = counterpart,

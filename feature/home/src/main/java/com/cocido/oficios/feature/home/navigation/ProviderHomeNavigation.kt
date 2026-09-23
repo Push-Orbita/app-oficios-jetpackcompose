@@ -19,6 +19,10 @@ fun NavGraphBuilder.providerHomeScreen(
         composable(ProviderHomeDestination.inicio) {
             ProviderHomeRoute(
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToPersonalData = { navController.navigateToPersonalData() },
+                onNavigateToHelp = { navController.navigateToHelp() },
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
                 onNavigateToCompleteProfile = onNavigateToCompleteProfile,
                 onNavigateToOrdersList = { navController.navigate(OrdersDestination.ordersList) },
                 onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },

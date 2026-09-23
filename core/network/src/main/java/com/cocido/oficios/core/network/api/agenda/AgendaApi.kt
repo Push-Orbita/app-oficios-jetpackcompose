@@ -17,6 +17,13 @@ import retrofit2.http.Query
 
 interface AgendaApi {
 
+    @GET("agenda/slot/disponibles")
+    suspend fun getSlotsDisponibles(
+        @Query("trabajadorOficioSubRubroId") subRubroId: Long,
+        @Query("fechaDesde") fechaDesde: String,
+        @Query("fechaHasta") fechaHasta: String,
+    ): List<SlotTurnoAgendaDto>
+
     @GET("agenda/slot/search")
     suspend fun searchSlots(
         @Query("trabajadorOficioSubRubroId") subRubroId: Long,

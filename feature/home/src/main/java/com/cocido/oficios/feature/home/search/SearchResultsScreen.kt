@@ -141,7 +141,6 @@ private fun SearchResultsHeader(
             onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
             onSearch = { onEvent(SearchResultsEvent.QuerySubmitted) },
             placeholder = stringResource(R.string.home_search_hint),
-            onMicClick = { onEvent(SearchResultsEvent.VoiceSearch) },
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = { onEvent(SearchResultsEvent.OpenFilters) }) {
@@ -234,7 +233,7 @@ private fun WorkersList(
                 isVerified = worker.isVerified,
                 contactLabel = stringResource(R.string.home_worker_contact),
                 viewProfileLabel = stringResource(R.string.home_worker_view_profile),
-                onContact = { onEvent(SearchResultsEvent.WorkerContact) },
+                onContact = { onEvent(SearchResultsEvent.WorkerContact(worker)) },
                 onViewProfile = { onEvent(SearchResultsEvent.WorkerViewProfile(worker)) },
             )
         }

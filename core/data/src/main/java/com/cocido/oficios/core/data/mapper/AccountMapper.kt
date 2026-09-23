@@ -1,6 +1,9 @@
 package com.cocido.oficios.core.data.mapper
 
+import com.cocido.oficios.core.network.api.account.dto.AccountDeletionRequestDto
 import com.cocido.oficios.core.network.api.account.dto.WorkGalleryDto
+import com.cocido.oficios.domain.model.AccountDeletionRequest
+import com.cocido.oficios.domain.model.AccountDeletionStatus
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
 import com.cocido.oficios.core.network.api.profile.dto.CertificadoTrabajoDto
 import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
@@ -56,4 +59,17 @@ fun CertificadoTrabajoDto.toDomainItem() = WorkCertificateItem(
     id = id,
     name = nombre,
     fileUrl = urlArchivo,
+)
+
+fun AccountDeletionRequestDto.toDomain(): AccountDeletionRequest = AccountDeletionRequest(
+    requestId = requestId,
+    status = when (status.uppercase()) {
+        "PENDING_GRACE_PERIOD" -> AccountDeletionStatus.PENDING_GRACE_PERIOD
+        "CANCELLED" -> AccountDeletionStatus.CANCELLED
+        "COMPLETED" -> AccountDeletionStatus.COMPLETED
+        else -> AccountDeletionStatus.UNKNOWN
+    },
+    requestedAtIso = requestedAt,
+    scheduledForIso = scheduledFor,
+    canCancelUntilIso = canCancelUntil,
 )

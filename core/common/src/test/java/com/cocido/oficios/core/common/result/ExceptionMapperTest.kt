@@ -51,4 +51,14 @@ class ExceptionMapperTest {
             error.userMessage(),
         )
     }
+
+    @Test
+    fun `database outage uses service unavailable copy`() {
+        val error = AppError.Validation("La consulta a la base de datos falló.")
+
+        assertEquals(
+            "El servicio no está disponible en este momento. Intentá más tarde.",
+            error.userMessage(),
+        )
+    }
 }
