@@ -158,11 +158,12 @@ private val knownBackendMessages = mapOf(
     "AGENDA_SLOT_NOT_AVAILABLE" to "Ese horario ya no se puede reservar.",
     "COMPLETION_CODE_RATE_LIMITED" to "Esperá un momento para reenviar el código.",
     "DB02" to "El servicio no está disponible en este momento. Intentá más tarde.",
+    "SE01" to "El servicio no está disponible en este momento. Intentá más tarde.",
 )
 
 private fun messageForBackendCode(code: String?, parsed: String?): String? {
     knownBackendMessages[code]?.let { return it }
-    if (code?.startsWith("DB") == true) {
+    if (code?.startsWith("DB") == true || code?.startsWith("SE") == true) {
         return "El servicio no está disponible en este momento. Intentá más tarde."
     }
     knownBackendMessages.entries.firstOrNull { parsed?.contains(it.key) == true }?.let { return it.value }
