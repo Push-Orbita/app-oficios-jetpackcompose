@@ -1,5 +1,4 @@
 import java.util.Properties
-import org.json.JSONObject
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,8 +20,9 @@ val firebaseEnabled: Boolean = run {
     val googleServicesFile = file("google-services.json")
     if (!googleServicesFile.exists()) return@run false
     try {
-        val json = JSONObject(googleServicesFile.readText())
-        val projectId = json.optJSONObject("project_info")?.optString("project_id", "") ?: ""
+        val parsed = groovy.json.JsonSlurper().parseText(googleServicesFile.readText())
+        val projectInfo = (parsed as? Map<*, *>)?.get("project_info") as? Map<*, *>
+        val projectId = projectInfo?.get("project_id")?.toString() ?: ""
         !projectId.contains("stub", ignoreCase = true) && projectId.isNotBlank()
     } catch (_: Exception) {
         false
