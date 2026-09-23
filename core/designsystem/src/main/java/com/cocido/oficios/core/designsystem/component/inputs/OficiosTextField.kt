@@ -48,6 +48,8 @@ fun OficiosTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
+    minLines: Int = 1,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
 ) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
 
@@ -68,6 +70,8 @@ fun OficiosTextField(
         isError = isError,
         supportingText = supportingText?.let { { Text(text = it, style = MaterialTheme.typography.labelSmall) } },
         singleLine = singleLine,
+        minLines = if (singleLine) 1 else minLines.coerceAtLeast(1),
+        maxLines = if (singleLine) 1 else maxLines.coerceAtLeast(minLines.coerceAtLeast(1)),
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,

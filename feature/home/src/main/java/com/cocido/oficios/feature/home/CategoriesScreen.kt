@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -37,6 +38,7 @@ fun CategoriesScreen(
     onEvent: (CategoriesEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    unreadNotificationCount: Int = 0,
 ) {
     OficiosScaffold(
         modifier = modifier,
@@ -83,12 +85,14 @@ fun CategoriesScreen(
                                 contentDescription = stringResource(R.string.home_back),
                             )
                         }
-                        IconButton(onClick = { onEvent(CategoriesEvent.OpenNotifications) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Notifications,
-                                contentDescription = stringResource(R.string.home_notifications),
-                                modifier = Modifier.size(OficiosComponentSize.iconMd),
-                            )
+                        OficiosNotificationBadge(count = unreadNotificationCount) {
+                            IconButton(onClick = { onEvent(CategoriesEvent.OpenNotifications) }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Notifications,
+                                    contentDescription = stringResource(R.string.home_notifications),
+                                    modifier = Modifier.size(OficiosComponentSize.iconMd),
+                                )
+                            }
                         }
                     }
                     HomeSearchEntryField(
@@ -96,7 +100,6 @@ fun CategoriesScreen(
                         onQueryChange = { searchQuery = it },
                         onSearch = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
                         placeholder = stringResource(R.string.home_search_categories_hint),
-                        onMicClick = { onEvent(CategoriesEvent.VoiceSearch) },
                     )
                     HomeCategoriesGrid(
                         categories = uiState.categories,

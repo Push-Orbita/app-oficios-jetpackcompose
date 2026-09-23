@@ -44,6 +44,7 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.OpenServices -> emitEffect(SettingsEffect.NavigateToServices)
             SettingsEvent.OpenPortfolio -> emitEffect(SettingsEffect.NavigateToPortfolio)
             SettingsEvent.OpenChangePassword -> emitEffect(SettingsEffect.NavigateToChangePassword)
+            SettingsEvent.OpenDeleteAccount -> emitEffect(SettingsEffect.NavigateToDeleteAccount)
             SettingsEvent.Logout -> logout()
             SettingsEvent.NavigateBack -> Unit
         }

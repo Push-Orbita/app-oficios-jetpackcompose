@@ -47,6 +47,7 @@ data class ServiceOrder(
     val canCancelBooking: Boolean = false,
     val pendingCounterOffer: CounterOffer? = null,
     val alreadyRated: Boolean = false,
+    val completionCode: String? = null,
 )
 
 data class BookingTracking(
@@ -78,7 +79,9 @@ data class CreateServiceRequestParams(
     val trabajadorOficioSubRubroId: Long,
     val domicilioId: Long,
     val contactoId: Long,
-    val proposedStartIso: String,
-    val proposedEndIso: String,
+    val slotTurnoId: Long? = null,
+    val proposedStartIso: String? = null,
+    val proposedEndIso: String? = null,
     val description: String?,
+    val idempotencyKey: String,
 )

@@ -1,17 +1,31 @@
-# Módulo 3 — FCM y staging (acción manual)
+# Módulo 3 — FCM (staging y producción)
+
+## Staging / desarrollo
 
 No hay `google-services.json` real en el repo para producción. La app incluye un **stub** en `app/google-services.json` para compilar; reemplazalo antes de probar push en dispositivo.
 
 La app usa **polling al reanudar** el checklist proveedor como respaldo si FCM falla.
 
-## Para habilitar push KYC
+## Producción — checklist DevOps
 
-1. Crear proyecto Firebase y agregar app Android `com.cocido.oficios`.
+1. Crear proyecto Firebase **Oficios Formosa** y app Android `com.cocido.oficios`.
+2. Descargar `google-services.json` y colocarlo en `app/` (no commitear secretos sensibles si la política del equipo lo prohíbe — usar CI secret).
+3. Verificar plugin Google Services en `app/build.gradle.kts`.
+4. Probar registro token: `POST /notifications/device-token` post-login.
+5. Validar matriz manual: `docs/qa/PUSH_NOTIFICATION_MATRIX.md`.
+
+## Para habilitar push KYC (staging)
+
+1. Crear proyecto Firebase staging y agregar app Android `com.cocido.oficios`.
 2. Colocar `google-services.json` en `app/`.
-3. Agregar plugin Google Services y dependencia FCM.
-4. Implementar registro de token: `POST /notifications/device-token`.
+3. Implementar registro de token: `POST /notifications/device-token` (ya implementado en `FcmDeviceTokenRegistrar`).
+
+## Catálogo de eventos
+
+Ver `docs/backend/FCM_EVENT_CATALOG.md` — coordinar con backend para payloads `type`, `deep_link`, `notificacionId`.
 
 ## Cuentas staging recomendadas
 
 - Cliente de prueba en `apioficios.pushsoftware.com.ar`
 - Proveedor de prueba con flujo DNI pendiente → aprobado (admin)
+

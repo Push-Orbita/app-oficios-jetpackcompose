@@ -49,7 +49,11 @@ fun AppError.userMessage(): String = when (this) {
 
 private fun String.toProfessionalMessage(fallback: String): String {
     val normalized = trim()
-    if (normalized.isBlank() || normalized.containsTechnicalDetail()) return fallback
+    if (normalized.isBlank()) return fallback
+    if (normalized.isInfrastructureFailure()) {
+        return "El servicio no está disponible en este momento. Intentá más tarde."
+    }
+    if (normalized.containsTechnicalDetail()) return fallback
     return when (normalized.lowercase()) {
         "network error", "no internet connection" ->
             "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente."
@@ -63,6 +67,13 @@ private fun String.toProfessionalMessage(fallback: String): String {
 private fun String.containsTechnicalDetail(): Boolean {
     val value = lowercase()
     return technicalMessagePatterns.any(value::contains)
+}
+
+private fun String.isInfrastructureFailure(): Boolean {
+    val value = lowercase()
+    return value.contains("consulta a la base de datos") ||
+        value.contains("unknown database") ||
+        value.contains("base de datos fall")
 }
 
 private val technicalMessagePatterns = listOf(
@@ -79,6 +90,8 @@ private val technicalMessagePatterns = listOf(
     "foreign key",
     "constraint",
     "registro no encontrado en la base de datos",
+    "consulta a la base de datos",
+    "unknown database",
     "use post",
     "use patch",
     "endpoint",

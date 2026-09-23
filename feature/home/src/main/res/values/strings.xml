@@ -68,7 +68,8 @@
     <string name="home_worker_load_more_reviews">Ver más reseñas</string>
     <string name="home_worker_rate">Calificar</string>
     <string name="home_worker_rate_unavailable">Vas a poder calificar a este trabajador cuando termines un pedido con él</string>
-    <string name="home_worker_report_coming_soon">La denuncia de perfiles va a estar disponible próximamente</string>
+    <string name="home_worker_favorite_add">Guardar en favoritos</string>
+    <string name="home_worker_favorite_remove">Sacar de favoritos</string>
     <string name="home_worker_report_profile">Denunciar Perfil</string>
     <string name="provider_home_benefits_title">Beneficios</string>
     <string name="provider_home_agenda_title">Agenda</string>
@@ -79,4 +80,40 @@
     <string name="provider_home_upcoming_shifts_empty_title">Todavía no tenés turnos agendados</string>
     <string name="provider_home_upcoming_shifts_empty_description">Configurá tu agenda para que los clientes puedan reservar turnos con vos.</string>
     <string name="provider_home_active_booking_label">AHORA · %1$s con %2$s</string>
+
+    <string name="help_title">Ayuda</string>
+    <string name="help_intro">Encontrá respuestas a las consultas más frecuentes sobre Oficios Formosa.</string>
+    <string name="help_faq_how_to_hire_question">¿Cómo contrato a un trabajador?</string>
+    <string name="help_faq_how_to_hire_answer">Buscá por categoría o rubro, entrá al perfil del trabajador y tocá Contratar. Completá fecha, domicilio y contacto para enviar la solicitud.</string>
+    <string name="help_faq_verify_phone_question">¿Por qué tengo que verificar mi teléfono?</string>
+    <string name="help_faq_verify_phone_answer">El teléfono verificado permite coordinar el servicio con el trabajador y completar tu perfil de cliente.</string>
+    <string name="help_faq_cancel_order_question">¿Puedo cancelar un pedido?</string>
+    <string name="help_faq_cancel_order_answer">Sí, mientras el pedido esté pendiente o dentro del plazo permitido podés cancelarlo desde Mis pedidos.</string>
+    <string name="help_support_title">¿Necesitás más ayuda?</string>
+    <string name="help_support_message">Para cualquier consulta o duda de asistencia, contactanos a nuestra línea de atención.</string>
+
+    <string name="favorites_empty_title">Todavía no tenés favoritos</string>
+    <string name="favorites_empty_description">Tocá el corazón en el perfil de un trabajador para guardarlo acá y encontrarlo más rápido.</string>
+    <string name="favorites_load_error">No pudimos cargar tus favoritos</string>
+    <string name="favorites_load_more">Ver más</string>
+    <string name="favorites_specialty_fallback">Trabajador de oficio</string>
+
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_empty_title">Sin notificaciones</string>
+    <string name="notifications_empty_description">Cuando tengas novedades sobre pedidos o tu cuenta, las vas a ver acá.</string>
+    <string name="notifications_load_error">No pudimos cargar tus notificaciones</string>
+    <string name="notifications_filter_all">Todas</string>
+    <string name="notifications_filter_unread">No leídas</string>
+    <string name="notifications_mark_read_error">No pudimos marcar la notificación como leída</string>
+    <string name="notifications_load_more">Ver más</string>
+    <string name="notifications_unread_label">Nueva</string>
+
+    <string name="worker_report_title">Denunciar perfil</string>
+    <string name="worker_report_intro">Estás por denunciar el perfil de %1$s. Revisamos cada caso y no compartimos tu identidad con la otra persona.</string>
+    <string name="worker_report_reason_label">Motivo de la denuncia</string>
+    <string name="worker_report_reason_placeholder">Elegí un motivo</string>
+    <string name="worker_report_description_label">¿Qué pasó?</string>
+    <string name="worker_report_description_placeholder">Contanos con detalle qué ocurrió</string>
+    <string name="worker_report_reasons_error_title">No pudimos cargar los motivos</string>
+    <string name="worker_report_submit">Enviar denuncia</string>
 </resources>

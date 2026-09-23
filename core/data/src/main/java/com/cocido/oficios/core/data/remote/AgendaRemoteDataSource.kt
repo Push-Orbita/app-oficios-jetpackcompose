@@ -12,6 +12,10 @@ import javax.inject.Singleton
 class AgendaRemoteDataSource @Inject constructor(
     private val agendaApi: AgendaApi,
 ) {
+    suspend fun getSlotsDisponibles(subRubroId: Long, fromIso: String, toIso: String) = safeApiCall {
+        agendaApi.getSlotsDisponibles(subRubroId, fromIso, toIso)
+    }
+
     suspend fun searchSlots(subRubroId: Long, fromIso: String?, toIso: String?) = safeApiCall {
         agendaApi.searchSlots(subRubroId = subRubroId, fromIso = fromIso, toIso = toIso)
     }

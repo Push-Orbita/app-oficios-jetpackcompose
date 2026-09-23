@@ -12,7 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.calendar.OficiosScheduleSlot
+import com.cocido.oficios.core.designsystem.component.calendar.ScheduleSlotData
+import com.cocido.oficios.core.designsystem.component.calendar.ScheduleSlotState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -21,6 +25,8 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.domain.model.ClientDomicilio
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun CreateOrderScreen(
@@ -127,14 +133,55 @@ private fun CreateOrderForm(
             )
         }
 
+        if (state.isLoadingSlots) {
+            Text(
+                text = "Cargando turnos disponibles…",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            state.slotsErrorMessage?.let { error ->
+                OficiosInlineAlert(message = error)
+            }
+            if (state.availableSlots.isNotEmpty()) {
+                Text(
+                    text = "Turnos disponibles",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                state.availableSlots.forEach { slot ->
+                    val dateLabel = slot.start.format(SLOT_DATE_FORMATTER)
+                    OficiosScheduleSlot(
+                        slot = ScheduleSlotData(
+                            startTime = "$dateLabel ${slot.start.format(SLOT_TIME_FORMATTER)}",
+                            endTime = slot.end.format(SLOT_TIME_FORMATTER),
+                            state = if (state.selectedSlotId == slot.id) {
+                                ScheduleSlotState.Booked
+                            } else {
+                                ScheduleSlotState.Available
+                            },
+                        ),
+                        onClick = { onEvent(CreateOrderEvent.SlotSelected(slot.id)) },
+                    )
+                }
+            } else if (state.selectedSubRubroId != null && state.slotsErrorMessage == null) {
+                Text(
+                    text = "Este trabajador no publicó turnos para las próximas semanas. Podés proponer una fecha.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
         DateTimePickerButton(
-            label = "Elegir fecha y hora",
+            label = "Proponer otra fecha y hora",
             selectedDateTime = state.proposedDateTime,
             onDateTimeSelected = { onEvent(CreateOrderEvent.DateTimeSelected(it)) },
         )
-        if (state.hasAttemptedSubmit && state.proposedDateTime == null) {
+
+        if (state.hasAttemptedSubmit && state.selectedSlotId == null && state.proposedDateTime == null) {
             Text(
-                text = "Elegí una fecha y hora propuesta",
+                text = "Elegí un turno disponible o una fecha y hora propuesta",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -161,3 +208,8 @@ private fun ClientDomicilio.displayLabel(): String =
     listOfNotNull(nombre, listOfNotNull(calle, numero).joinToString(" ").ifBlank { null }, barrioName)
         .joinToString(" · ")
         .ifBlank { "Domicilio #$id" }
+
+private val SLOT_DATE_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("d MMM", Locale.forLanguageTag("es-AR"))
+private val SLOT_TIME_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm")

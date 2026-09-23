@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.cocido.oficios.feature.settings.SettingsRoute
 import com.cocido.oficios.feature.settings.account.ChangePasswordRoute
+import com.cocido.oficios.feature.settings.account.DeleteAccountRoute
 import com.cocido.oficios.feature.settings.account.PersonalDataRoute
 import com.cocido.oficios.feature.settings.client.ClientDataRoute
 import com.cocido.oficios.feature.settings.provider.ProfessionalProfileRoute
@@ -29,6 +30,7 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToServices = { navController.navigate(SettingsDestination.services) },
             onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio) },
             onNavigateToChangePassword = { navController.navigate(SettingsDestination.changePassword) },
+            onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
         )
     }
     composable(SettingsDestination.personalData) {
@@ -59,5 +61,12 @@ fun NavGraphBuilder.settingsScreen(
     }
     composable(SettingsDestination.changePassword) {
         ChangePasswordRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+    }
+    composable(SettingsDestination.deleteAccount) {
+        DeleteAccountRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onLoggedOut = onLoggedOut,
+            onShowMessage = onShowMessage,
+        )
     }
 }

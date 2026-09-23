@@ -55,7 +55,14 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToWorker = { workerId ->
                     navController.navigate(HomeDestination.workerProfile(workerId))
                 },
+                onNavigateToHire = { workerId ->
+                    navController.navigate(OrdersDestination.createOrder(workerId))
+                },
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToPersonalData = { navController.navigateToPersonalData() },
+                onNavigateToHelp = { navController.navigateToHelp() },
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
                 onNavigateToMyOrders = { navController.navigate(OrdersDestination.ordersList) },
                 onShowMessage = onShowMessage,
             )
@@ -70,6 +77,10 @@ fun NavGraphBuilder.homeScreen(
                     navController.navigate(HomeDestination.searchResults(query = query))
                 },
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToPersonalData = { navController.navigateToPersonalData() },
+                onNavigateToHelp = { navController.navigateToHelp() },
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
                 onShowMessage = onShowMessage,
             )
         }
@@ -115,6 +126,9 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToWorker = { workerId ->
                     navController.navigate(HomeDestination.workerProfile(workerId))
                 },
+                onNavigateToHire = { workerId ->
+                    navController.navigate(OrdersDestination.createOrder(workerId))
+                },
                 onShowMessage = onShowMessage,
             )
         }
@@ -129,6 +143,21 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToHire = { workerId ->
                     navController.navigate(OrdersDestination.createOrder(workerId))
                 },
+                onNavigateToReport = { workerId, workerName ->
+                    navController.navigate(HomeDestination.workerReport(workerId, workerName))
+                },
+                onShowMessage = onShowMessage,
+            )
+        }
+        composable(
+            route = HomeDestination.workerReport,
+            arguments = listOf(
+                navArgument("workerId") { type = NavType.LongType },
+                navArgument("workerName") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) {
+            com.cocido.oficios.feature.home.worker.report.WorkerReportRoute(
+                onNavigateBack = { navController.popBackStack() },
                 onShowMessage = onShowMessage,
             )
         }

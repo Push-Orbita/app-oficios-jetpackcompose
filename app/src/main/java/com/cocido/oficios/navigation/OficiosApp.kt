@@ -12,10 +12,13 @@ import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
+import com.cocido.oficios.feature.home.navigation.HomeDestination
+import com.cocido.oficios.feature.home.navigation.OrdersDestination
 import com.cocido.oficios.feature.home.navigation.agendaScreen
 import com.cocido.oficios.feature.home.navigation.homeScreen
 import com.cocido.oficios.feature.home.navigation.ordersScreen
 import com.cocido.oficios.feature.home.navigation.providerHomeScreen
+import com.cocido.oficios.feature.home.navigation.sharedHomeScreens
 import com.cocido.oficios.feature.onboarding.navigation.OnboardingDestination
 import com.cocido.oficios.feature.onboarding.navigation.onboardingGraph
 import com.cocido.oficios.feature.settings.navigation.SettingsDestination
@@ -31,10 +34,14 @@ fun OficiosApp(
 ) {
     LaunchedEffect(pendingPushRoute) {
         val route = pendingPushRoute ?: return@LaunchedEffect
-        navController.navigate(route) {
-            launchSingleTop = true
+        navController.currentBackStackEntryFlow.collect { entry ->
+            val current = entry.destination.route ?: return@collect
+            if (!canConsumePushFrom(current)) return@collect
+            onPushRouteConsumed()
+            navController.navigate(route) {
+                launchSingleTop = true
+            }
         }
-        onPushRouteConsumed()
     }
     AppNavHost(
         navController = navController,
@@ -170,5 +177,28 @@ fun AppNavHost(
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))
             },
         )
+        sharedHomeScreens(
+            navController = navController,
+            onShowMessage = showMessage,
+            onNavigateToWorker = { workerId ->
+                navController.navigate(HomeDestination.workerProfile(workerId)) {
+                    launchSingleTop = true
+                }
+            },
+            onNavigateToHire = { workerId ->
+                navController.navigate(OrdersDestination.createOrder(workerId)) {
+                    launchSingleTop = true
+                }
+            },
+        )
     }
+}
+
+private fun canConsumePushFrom(currentRoute: String): Boolean = when {
+    currentRoute == AuthDestination.SPLASH -> false
+    currentRoute == AuthDestination.LOGIN -> false
+    currentRoute == AuthDestination.FORGOT_PASSWORD -> false
+    currentRoute == AuthDestination.RESET_PASSWORD -> false
+    currentRoute.startsWith("register/") -> false
+    else -> true
 }

@@ -12,13 +12,13 @@ import com.cocido.oficios.feature.home.R
 fun WorkerProfileRoute(
     onNavigateBack: () -> Unit,
     onNavigateToHire: (Long) -> Unit,
+    onNavigateToReport: (Long, String) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: WorkerProfileViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val ratingUnavailableMessage = stringResource(R.string.home_worker_rate_unavailable)
-    val reportComingSoonMessage = stringResource(R.string.home_worker_report_coming_soon)
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -27,7 +27,7 @@ fun WorkerProfileRoute(
                 is WorkerProfileEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 is WorkerProfileEffect.ShowMessage -> onShowMessage(effect.message)
                 WorkerProfileEffect.ShowRatingUnavailable -> onShowMessage(ratingUnavailableMessage)
-                WorkerProfileEffect.ShowReportComingSoon -> onShowMessage(reportComingSoonMessage)
+                is WorkerProfileEffect.NavigateToReport -> onNavigateToReport(effect.workerId, effect.workerName)
             }
         }
     }

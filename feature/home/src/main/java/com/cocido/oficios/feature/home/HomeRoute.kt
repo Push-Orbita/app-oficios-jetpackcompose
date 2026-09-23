@@ -3,16 +3,13 @@ package com.cocido.oficios.feature.home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.ui.intent.openSupportPhone
-import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 
 @Composable
 fun HomeRoute(
@@ -28,15 +25,20 @@ fun HomeRoute(
         query: String?,
     ) -> Unit,
     onNavigateToWorker: (Long) -> Unit,
+    onNavigateToHire: (Long) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToPersonalData: () -> Unit,
+    onNavigateToHelp: () -> Unit,
+    onNavigateToFavorites: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
     onNavigateToMyOrders: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var selectedTab by rememberSaveable { mutableStateOf(ClientHomeTab.INICIO) }
     val comingSoon = stringResource(R.string.home_coming_soon)
 
     LaunchedEffect(viewModel) {
@@ -54,23 +56,13 @@ fun HomeRoute(
                     effect.query,
                 )
                 is HomeEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
+                is HomeEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 HomeEffect.NavigateToMyOrders -> onNavigateToMyOrders()
-                HomeEffect.NavigateToSettings -> {
-                    selectedTab = ClientHomeTab.AJUSTES
-                    onNavigateToSettings()
-                }
-                HomeEffect.NavigateToProfile -> {
-                    selectedTab = ClientHomeTab.PERFIL
-                    onShowMessage(comingSoon)
-                }
-                HomeEffect.NavigateToFavorites -> {
-                    selectedTab = ClientHomeTab.FAVORITOS
-                    onShowMessage(comingSoon)
-                }
-                HomeEffect.NavigateToHelp -> {
-                    selectedTab = ClientHomeTab.AYUDA
-                    onShowMessage(comingSoon)
-                }
+                HomeEffect.NavigateToSettings -> onNavigateToSettings()
+                HomeEffect.NavigateToProfile -> onNavigateToPersonalData()
+                HomeEffect.NavigateToFavorites -> onNavigateToFavorites()
+                HomeEffect.NavigateToHelp -> onNavigateToHelp()
+                HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
                 HomeEffect.ContactSupport -> openSupportPhone(context)
                 is HomeEffect.ShowMessage -> onShowMessage(effect.message)
                 HomeEffect.ShowComingSoon -> onShowMessage(comingSoon)
@@ -78,22 +70,22 @@ fun HomeRoute(
         }
     }
 
-    HomeScreen(
-        uiState = uiState,
-        selectedTab = selectedTab,
-        onEvent = viewModel::onEvent,
-        onTabSelected = { tab ->
-            selectedTab = tab
-            when (tab) {
-                ClientHomeTab.INICIO -> Unit
-                ClientHomeTab.AJUSTES -> onNavigateToSettings()
-                ClientHomeTab.PERFIL -> viewModel.onEvent(HomeEvent.NavigateToProfile)
-                ClientHomeTab.FAVORITOS -> viewModel.onEvent(HomeEvent.NavigateToFavorites)
-                ClientHomeTab.AYUDA -> viewModel.onEvent(HomeEvent.NavigateToHelp)
-            }
-        },
-        modifier = modifier,
-    )
+    ClientHomeTabRouteHost(
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToPersonalData = onNavigateToPersonalData,
+        onNavigateToHelp = onNavigateToHelp,
+        onNavigateToFavorites = onNavigateToFavorites,
+        onVisible = viewModel::refreshUnreadCount,
+    ) { selectedTab, onTabSelected ->
+        HomeScreen(
+            uiState = uiState,
+            unreadNotificationCount = unreadCount,
+            selectedTab = selectedTab,
+            onEvent = viewModel::onEvent,
+            onTabSelected = onTabSelected,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable
@@ -102,13 +94,16 @@ fun CategoriesRoute(
     onNavigateToRubros: (Long, String) -> Unit,
     onNavigateToSearchResults: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToPersonalData: () -> Unit,
+    onNavigateToHelp: () -> Unit,
+    onNavigateToFavorites: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CategoriesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedTab by rememberSaveable { mutableStateOf(ClientHomeTab.INICIO) }
-    val comingSoon = stringResource(R.string.home_coming_soon)
+    val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -117,23 +112,26 @@ fun CategoriesRoute(
                 is CategoriesEffect.NavigateToRubros -> onNavigateToRubros(effect.categoryId, effect.categoryName)
                 is CategoriesEffect.NavigateToSearchResults -> onNavigateToSearchResults(effect.query)
                 is CategoriesEffect.ShowMessage -> onShowMessage(effect.message)
-                CategoriesEffect.ShowComingSoon -> onShowMessage(comingSoon)
+                CategoriesEffect.NavigateToNotifications -> onNavigateToNotifications()
             }
         }
     }
 
-    CategoriesScreen(
-        uiState = uiState,
-        selectedTab = selectedTab,
-        onEvent = viewModel::onEvent,
-        onTabSelected = { tab ->
-            selectedTab = tab
-            when (tab) {
-                ClientHomeTab.INICIO -> onNavigateBack()
-                ClientHomeTab.AJUSTES -> onNavigateToSettings()
-                else -> onShowMessage(comingSoon)
-            }
-        },
-        modifier = modifier,
-    )
+    ClientHomeTabRouteHost(
+        onStay = onNavigateBack,
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToPersonalData = onNavigateToPersonalData,
+        onNavigateToHelp = onNavigateToHelp,
+        onNavigateToFavorites = onNavigateToFavorites,
+        onVisible = viewModel::refreshUnreadCount,
+    ) { selectedTab, onTabSelected ->
+        CategoriesScreen(
+            uiState = uiState,
+            unreadNotificationCount = unreadCount,
+            selectedTab = selectedTab,
+            onEvent = viewModel::onEvent,
+            onTabSelected = onTabSelected,
+            modifier = modifier,
+        )
+    }
 }

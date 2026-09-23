@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Oficios</string>
     <string name="notification_channel_kyc_name">Revisión de documentación</string>
+    <string name="notification_channel_orders_name">Pedidos y solicitudes</string>
+    <string name="notification_channel_booking_name">Reservas confirmadas</string>
+    <string name="notification_channel_tracking_name">Seguimiento en camino</string>
 </resources>

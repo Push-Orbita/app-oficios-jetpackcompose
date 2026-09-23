@@ -5,6 +5,6 @@ sealed interface WorkerProfileEffect {
     data class NavigateToHire(val workerId: Long) : WorkerProfileEffect
     data class ShowMessage(val message: String) : WorkerProfileEffect
     data object ShowRatingUnavailable : WorkerProfileEffect
-    data object ShowReportComingSoon : WorkerProfileEffect
+    data class NavigateToReport(val workerId: Long, val workerName: String) : WorkerProfileEffect
 }
 

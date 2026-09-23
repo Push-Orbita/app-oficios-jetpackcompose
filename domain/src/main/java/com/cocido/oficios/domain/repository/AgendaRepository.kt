@@ -8,6 +8,11 @@ import com.cocido.oficios.domain.model.SaveAgendaSessionParams
 import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 
 interface AgendaRepository {
+    suspend fun getAvailableSlots(
+        subRubroId: Long,
+        fromIso: String,
+        toIso: String,
+    ): AppResult<List<AgendaSlot>>
     suspend fun getSlotsForSubRubro(
         subRubroId: Long,
         fromIso: String? = null,

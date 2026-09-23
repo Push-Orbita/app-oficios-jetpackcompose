@@ -8,6 +8,7 @@ sealed interface SettingsEvent {
     data object OpenServices : SettingsEvent
     data object OpenPortfolio : SettingsEvent
     data object OpenChangePassword : SettingsEvent
+    data object OpenDeleteAccount : SettingsEvent
     data object Logout : SettingsEvent
     data object NavigateBack : SettingsEvent
 }
@@ -19,4 +20,5 @@ sealed interface SettingsEffect {
     data object NavigateToServices : SettingsEffect
     data object NavigateToPortfolio : SettingsEffect
     data object NavigateToChangePassword : SettingsEffect
+    data object NavigateToDeleteAccount : SettingsEffect
 }

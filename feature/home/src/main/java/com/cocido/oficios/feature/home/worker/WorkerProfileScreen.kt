@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +50,35 @@ fun WorkerProfileScreen(
             OficiosBackTopBar(
                 title = stringResource(R.string.home_worker_profile_title),
                 onBack = { onEvent(WorkerProfileEvent.Back) },
+                actions = {
+                    val success = uiState as? WorkerProfileUiState.Success
+                    if (success?.canFavorite == true) {
+                        IconButton(
+                            onClick = { onEvent(WorkerProfileEvent.FavoriteClicked) },
+                            enabled = !success.isTogglingFavorite,
+                        ) {
+                            Icon(
+                                imageVector = if (success.isFavorite) {
+                                    Icons.Filled.Favorite
+                                } else {
+                                    Icons.Filled.FavoriteBorder
+                                },
+                                contentDescription = stringResource(
+                                    if (success.isFavorite) {
+                                        R.string.home_worker_favorite_remove
+                                    } else {
+                                        R.string.home_worker_favorite_add
+                                    },
+                                ),
+                                tint = if (success.isFavorite) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                            )
+                        }
+                    }
+                },
             )
         },
         bottomBar = {

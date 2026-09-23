@@ -30,6 +30,7 @@ import com.cocido.oficios.feature.home.components.HomeSupportSection
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
+    unreadNotificationCount: Int,
     selectedTab: ClientHomeTab,
     onEvent: (HomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
@@ -62,6 +63,7 @@ fun HomeScreen(
             is HomeUiState.Success -> {
                 HomeSuccessContent(
                     content = uiState.content,
+                    unreadNotificationCount = unreadNotificationCount,
                     onEvent = onEvent,
                     modifier = Modifier.padding(paddingValues),
                 )
@@ -73,6 +75,7 @@ fun HomeScreen(
 @Composable
 private fun HomeSuccessContent(
     content: ClientHomeContent,
+    unreadNotificationCount: Int,
     onEvent: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -89,6 +92,7 @@ private fun HomeSuccessContent(
             userName = content.userDisplayName,
             emailVerified = content.emailVerified,
             profilePhotoUrl = content.profilePhotoUrl,
+            unreadNotificationCount = unreadNotificationCount,
             onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
         )
         HomeSearchEntryField(
@@ -96,7 +100,6 @@ private fun HomeSuccessContent(
             onQueryChange = { searchQuery = it },
             onSearch = { onEvent(HomeEvent.SearchSubmitted(searchQuery)) },
             placeholder = stringResource(R.string.home_search_hint),
-            onMicClick = { onEvent(HomeEvent.VoiceSearch) },
         )
         OficiosActionCard(
             title = stringResource(R.string.home_my_orders_title),
@@ -108,7 +111,7 @@ private fun HomeSuccessContent(
             HomeFeaturedWorkersSection(
                 workers = content.featuredWorkers,
                 onViewProfile = { onEvent(HomeEvent.WorkerViewProfile(it.id)) },
-                onContact = { onEvent(HomeEvent.WorkerContact) },
+                onContact = { onEvent(HomeEvent.WorkerContact(it.id)) },
                 onSeeAll = { onEvent(HomeEvent.SeeAllWorkers) },
             )
         }

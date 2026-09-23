@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.orders.dto.CancelarSolicitudRequestDt
 import com.cocido.oficios.core.network.api.orders.dto.CreateCalificacionRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.CreateContrapropuestaRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.CreateSolicitudServicioRequestDto
+import com.cocido.oficios.core.network.api.orders.dto.FinalizeBookingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.MarcarTrackingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.RechazarSolicitudRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.UpdateSolicitudEstadoRequestDto
@@ -16,8 +17,11 @@ import javax.inject.Singleton
 class OrderRemoteDataSource @Inject constructor(
     private val ordersApi: OrdersApi,
 ) {
-    suspend fun createSolicitud(request: CreateSolicitudServicioRequestDto) = safeApiCall {
-        ordersApi.createSolicitud(request)
+    suspend fun createSolicitud(
+        request: CreateSolicitudServicioRequestDto,
+        idempotencyKey: String,
+    ) = safeApiCall {
+        ordersApi.createSolicitud(idempotencyKey, request)
     }
 
     suspend fun getMisSolicitudesCliente() = safeApiCall {
@@ -67,8 +71,8 @@ class OrderRemoteDataSource @Inject constructor(
         ordersApi.getBooking(id)
     }
 
-    suspend fun finalizarBooking(id: Long) = safeApiCall {
-        ordersApi.finalizarBooking(id)
+    suspend fun finalizarBooking(id: Long, code: String) = safeApiCall {
+        ordersApi.finalizarBooking(id, FinalizeBookingRequestDto(code = code))
     }
 
     suspend fun marcarTracking(bookingId: Long, estado: String, lat: String, lng: String) = safeApiCall {

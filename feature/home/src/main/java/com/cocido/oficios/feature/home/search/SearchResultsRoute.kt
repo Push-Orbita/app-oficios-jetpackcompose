@@ -13,6 +13,7 @@ import com.cocido.oficios.feature.home.R
 fun SearchResultsRoute(
     onNavigateBack: () -> Unit,
     onNavigateToWorker: (Long) -> Unit,
+    onNavigateToHire: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchResultsViewModel = hiltViewModel(),
@@ -27,6 +28,7 @@ fun SearchResultsRoute(
             when (effect) {
                 SearchResultsEffect.NavigateBack -> onNavigateBack()
                 is SearchResultsEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
+                is SearchResultsEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 SearchResultsEffect.ShowComingSoon -> onShowMessage(comingSoon)
                 is SearchResultsEffect.ShowMessage -> onShowMessage(effect.message)
             }

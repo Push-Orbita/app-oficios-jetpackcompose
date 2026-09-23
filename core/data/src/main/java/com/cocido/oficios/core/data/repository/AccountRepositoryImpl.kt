@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.data.repository
 
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.map
 import com.cocido.oficios.core.data.mapper.toAccountDetails
@@ -13,11 +14,13 @@ import com.cocido.oficios.core.data.remote.ProviderProfileRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkCertificateRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkGalleryRemoteDataSource
 import com.cocido.oficios.core.data.session.SessionManager
+import com.cocido.oficios.domain.model.AccountDeletionRequest
 import com.cocido.oficios.domain.model.AccountProfile
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.RequestAccountDeletionParams
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
@@ -156,4 +159,25 @@ class AccountRepositoryImpl @Inject constructor(
         galleryRemote.upload(filePaths).map { items -> items.map { it.toDomainItem() } }
 
     override suspend fun deleteGalleryItem(id: Long) = galleryRemote.delete(id).map { Unit }
+
+    override suspend fun getCurrentDeletionRequest(): AppResult<AccountDeletionRequest?> =
+        when (val result = accountRemote.getCurrentDeletionRequest()) {
+            is AppResult.Success -> AppResult.Success(result.data.toDomain())
+            is AppResult.Error -> if (result.error is AppError.NotFound) {
+                AppResult.Success(null)
+            } else {
+                result
+            }
+        }
+
+    override suspend fun requestAccountDeletion(params: RequestAccountDeletionParams) =
+        accountRemote.createDeletionRequest(
+            currentPassword = params.currentPassword,
+            confirmation = params.confirmation,
+            reasonCode = params.reasonCode,
+            idempotencyKey = params.idempotencyKey,
+        ).map { it.toDomain() }
+
+    override suspend fun cancelAccountDeletion() =
+        accountRemote.cancelCurrentDeletionRequest().map { it.toDomain() }
 }

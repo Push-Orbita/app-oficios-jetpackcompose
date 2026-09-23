@@ -6,6 +6,7 @@ sealed interface WorkerProfileEvent {
     data object HireClicked : WorkerProfileEvent
     data object RateClicked : WorkerProfileEvent
     data object ReportProfileClicked : WorkerProfileEvent
+    data object FavoriteClicked : WorkerProfileEvent
     data object LoadNextReviews : WorkerProfileEvent
 }
 

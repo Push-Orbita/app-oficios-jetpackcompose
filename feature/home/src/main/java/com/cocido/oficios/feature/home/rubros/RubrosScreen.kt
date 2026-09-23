@@ -84,7 +84,6 @@ fun RubrosScreen(
                         onQueryChange = { searchQuery = it },
                         onSearch = { onEvent(RubrosEvent.SearchSubmitted(searchQuery)) },
                         placeholder = stringResource(R.string.home_search_rubros_hint),
-                        onMicClick = { onEvent(RubrosEvent.VoiceSearch) },
                     )
                     HomeRubrosGrid(
                         rubros = uiState.rubros,

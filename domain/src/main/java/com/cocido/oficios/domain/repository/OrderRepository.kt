@@ -26,6 +26,6 @@ interface OrderRepository {
     suspend fun getBookingTracking(bookingId: Long): AppResult<BookingTracking?>
     suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit>
     suspend fun markArrived(bookingId: Long, location: GeoPoint): AppResult<Unit>
-    suspend fun finalizeBooking(bookingId: Long): AppResult<Unit>
+    suspend fun finalizeBooking(bookingId: Long, completionCode: String): AppResult<Unit>
     suspend fun submitRating(bookingId: Long, quality: Int, punctuality: Int, comment: String?): AppResult<Unit>
 }

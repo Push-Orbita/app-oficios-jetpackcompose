@@ -29,10 +29,12 @@ class OrderRepositoryImpl @Inject constructor(
                     trabajadorOficioSubRubroId = params.trabajadorOficioSubRubroId,
                     domicilioId = params.domicilioId,
                     contactoId = params.contactoId,
+                    slotTurnoId = params.slotTurnoId,
                     fechaPropuestaInicio = params.proposedStartIso,
                     fechaPropuestaFin = params.proposedEndIso,
                     descripcion = params.description,
                 ),
+                idempotencyKey = params.idempotencyKey,
             ).map { it.id }
         }
 
@@ -118,10 +120,20 @@ class OrderRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun finalizeBooking(bookingId: Long): AppResult<Unit> =
-        withContext(dispatcherProvider.io) {
-            remoteDataSource.finalizarBooking(bookingId).map { }
+    override suspend fun finalizeBooking(bookingId: Long, completionCode: String): AppResult<Unit> {
+        val code = completionCode.trim()
+        if (code.isEmpty()) {
+            return AppResult.Error(
+                AppError.Validation(
+                    message = "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
+                    backendCode = "COMPLETION_CODE_REQUIRED",
+                ),
+            )
         }
+        return withContext(dispatcherProvider.io) {
+            remoteDataSource.finalizarBooking(bookingId, code).map { }
+        }
+    }
 
     override suspend fun submitRating(
         bookingId: Long,

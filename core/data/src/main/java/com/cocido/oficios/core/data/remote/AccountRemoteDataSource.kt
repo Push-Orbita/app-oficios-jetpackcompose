@@ -3,6 +3,7 @@ package com.cocido.oficios.core.data.remote
 import com.cocido.oficios.core.network.api.account.AccountApi
 import com.cocido.oficios.core.network.api.account.AccountProfileUploadDataSource
 import com.cocido.oficios.core.network.api.account.dto.ChangePasswordRequestDto
+import com.cocido.oficios.core.network.api.account.dto.CreateAccountDeletionRequestDto
 import com.cocido.oficios.core.network.safeApiCall
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import javax.inject.Inject
@@ -35,5 +36,29 @@ class AccountRemoteDataSource @Inject constructor(
                 confirmarContrasena = confirmation,
             ),
         )
+    }
+
+    suspend fun getCurrentDeletionRequest() = safeApiCall {
+        api.getCurrentDeletionRequest()
+    }
+
+    suspend fun createDeletionRequest(
+        currentPassword: String,
+        confirmation: String,
+        reasonCode: String,
+        idempotencyKey: String,
+    ) = safeApiCall {
+        api.createDeletionRequest(
+            idempotencyKey = idempotencyKey,
+            request = CreateAccountDeletionRequestDto(
+                currentPassword = currentPassword,
+                reasonCode = reasonCode,
+                confirmation = confirmation,
+            ),
+        )
+    }
+
+    suspend fun cancelCurrentDeletionRequest() = safeApiCall {
+        api.cancelCurrentDeletionRequest()
     }
 }
