@@ -2,9 +2,14 @@
 
 ## Staging / desarrollo
 
-No hay `google-services.json` real en el repo para producción. La app incluye un **stub** en `app/google-services.json` para compilar; reemplazalo antes de probar push en dispositivo.
+No hay `google-services.json` real en el repo para producción. La app incluye un **stub** en `app/google-services.json` para compilar.
 
-La app usa **polling al reanudar** el checklist proveedor como respaldo si FCM falla.
+**Firebase opcional (v1.0):** La app detecta automáticamente si `google-services.json` es stub (contiene `"oficios-stub"` en `project_id`). Cuando es stub:
+- `BuildConfig.FIREBASE_ENABLED = false`
+- `FcmDeviceTokenRegistrar.syncCurrentToken()` retorna inmediatamente sin intentar obtener token
+- La app funciona normalmente sin push — útil para desarrollo local sin Firebase configurado
+
+La app usa **polling al reanudar** el checklist proveedor como respaldo si FCM falla o no está disponible.
 
 ## Producción — checklist DevOps
 
