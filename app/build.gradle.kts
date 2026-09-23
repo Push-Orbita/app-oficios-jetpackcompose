@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.json.JSONObject
 
 plugins {
     alias(libs.plugins.android.application)
@@ -13,6 +14,18 @@ val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
         localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+val firebaseEnabled: Boolean = run {
+    val googleServicesFile = file("google-services.json")
+    if (!googleServicesFile.exists()) return@run false
+    try {
+        val json = JSONObject(googleServicesFile.readText())
+        val projectId = json.optJSONObject("project_info")?.optString("project_id", "") ?: ""
+        !projectId.contains("stub", ignoreCase = true) && projectId.isNotBlank()
+    } catch (_: Exception) {
+        false
     }
 }
 
@@ -33,6 +46,9 @@ android {
 
         // Read from local.properties (never committed) — see MAPS_API_KEY below.
         manifestPlaceholders["mapsApiKey"] = localProperties.getProperty("MAPS_API_KEY", "")
+
+        // Firebase es opcional: false cuando google-services.json es stub o falta.
+        buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
     }
 
     buildTypes {
@@ -57,6 +73,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
