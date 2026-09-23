@@ -144,7 +144,7 @@ function Invoke-OficiosLogin {
         [Parameter(Mandatory = $true)][string]$Email,
         [Parameter(Mandatory = $true)][string]$Password
     )
-    Wait-OficiosText 'Ingrese sus datos'
+    Wait-OficiosText 'Ingrese sus datos' -Contains
     Invoke-OficiosTapEditText 0
     Invoke-OficiosEnterText $Email
     Invoke-OficiosAdb @('shell', 'input', 'keyevent', 'KEYCODE_TAB') | Out-Null
