@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -216,8 +217,8 @@ class AddServiceViewModel @Inject constructor(
                 barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccioná el barrio de tu local.") },
                 calle = state.localStreet.trim(),
                 nombre = state.localName.trim().ifBlank { null },
-                latitud = state.localLatitude,
-                longitud = state.localLongitude,
+                latitud = GeoCoordinates.roundForApi(state.localLatitude),
+                longitud = GeoCoordinates.roundForApi(state.localLongitude),
             ) else null
             val request = ProviderRubroFullRequest(
                 rubroId = rubroId,

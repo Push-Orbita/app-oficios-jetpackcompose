@@ -6,6 +6,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
@@ -250,8 +251,8 @@ class ClientDataViewModel @Inject constructor(
                         casaTorre = state.houseTower.trim().ifBlank { null },
                         departamento = state.apartment.trim().ifBlank { null },
                         piso = state.floor.trim().ifBlank { null },
-                        latitud = state.addressLatitude,
-                        longitud = state.addressLongitude,
+                        latitud = GeoCoordinates.roundForApi(state.addressLatitude),
+                        longitud = GeoCoordinates.roundForApi(state.addressLongitude),
                         favorito = state.addressFavorite,
                     ),
                 )
@@ -266,8 +267,8 @@ class ClientDataViewModel @Inject constructor(
                         casaTorre = state.houseTower.trim().ifBlank { null },
                         departamento = state.apartment.trim().ifBlank { null },
                         piso = state.floor.trim().ifBlank { null },
-                        latitud = state.addressLatitude,
-                        longitud = state.addressLongitude,
+                        latitud = GeoCoordinates.roundForApi(state.addressLatitude),
+                        longitud = GeoCoordinates.roundForApi(state.addressLongitude),
                         favorito = state.addressFavorite,
                     ),
                 )

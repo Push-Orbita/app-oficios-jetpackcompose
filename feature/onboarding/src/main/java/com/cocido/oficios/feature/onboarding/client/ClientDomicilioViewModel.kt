@@ -6,6 +6,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
@@ -136,8 +137,8 @@ class ClientDomicilioViewModel @Inject constructor(
                         nombre = state.nombre,
                         calle = state.calle.trim(),
                         numero = state.numero.trim().ifBlank { null },
-                        latitud = state.latitud,
-                        longitud = state.longitud,
+                        latitud = GeoCoordinates.roundForApi(state.latitud),
+                        longitud = GeoCoordinates.roundForApi(state.longitud),
                         favorito = true,
                     ),
                 )

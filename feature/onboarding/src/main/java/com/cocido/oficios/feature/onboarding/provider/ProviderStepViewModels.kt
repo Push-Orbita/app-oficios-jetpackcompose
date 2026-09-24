@@ -6,6 +6,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.mapper.toRubroFullRequest
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
@@ -662,8 +663,8 @@ class ProviderLocalViewModel @Inject constructor(
                     barrioId = barrioId,
                     calle = streetLine,
                     nombre = state.nombre.trim().ifBlank { "Local comercial" },
-                    latitud = state.latitud,
-                    longitud = state.longitud,
+                    latitud = GeoCoordinates.roundForApi(state.latitud),
+                    longitud = GeoCoordinates.roundForApi(state.longitud),
                 ),
             )
             when (val result = submitProviderRubroFullUseCase(request)) {

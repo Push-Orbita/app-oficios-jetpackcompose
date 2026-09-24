@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.User
@@ -223,8 +224,8 @@ class ClientContactDomicilioViewModel @Inject constructor(
                         numero = state.numero.trim().ifBlank { null },
                         piso = state.piso.trim().ifBlank { null },
                         departamento = state.departamento.trim().ifBlank { null },
-                        latitud = state.latitud,
-                        longitud = state.longitud,
+                        latitud = GeoCoordinates.roundForApi(state.latitud),
+                        longitud = GeoCoordinates.roundForApi(state.longitud),
                         favorito = true,
                     )
                     val existingContact = when (val contacts = getClientContactosUseCase()) {
