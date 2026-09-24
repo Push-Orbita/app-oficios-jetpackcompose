@@ -133,9 +133,10 @@ class OnboardingMapperTest {
     }
 
     @Test
-    fun `maps client phone verification step`() {
+    fun `maps client phone verification step only when listed in faltantes`() {
         val status = ClientePerfilEstadoDto(
             perfilCompleto = false,
+            faltantes = listOf("telefono_verificado"),
             requisitos = ClientePerfilEstadoRequisitosDto(
                 tieneDomicilio = true,
                 tieneContacto = true,
@@ -149,9 +150,44 @@ class OnboardingMapperTest {
     }
 
     @Test
+    fun `does not invent phone step when api omits telefonoVerificado`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = false,
+            faltantes = emptyList(),
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = true,
+                tieneContacto = true,
+                emailVerificado = true,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        val steps = status.toOnboardingSteps()
+
+        assertFalse(status.phoneVerified)
+        assertFalse(steps.any { it.id == "telefono_verificado" })
+        assertTrue(steps.isEmpty())
+    }
+
+    @Test
+    fun `complete client profile returns no steps`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = true,
+            faltantes = listOf("telefono_verificado", "domicilio"),
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = false,
+                tieneContacto = true,
+                telefonoVerificado = false,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        assertTrue(status.toOnboardingSteps().isEmpty())
+    }
+
+    @Test
     fun `merges phone verification into the domicilio card instead of a separate one`() {
         val status = ClientePerfilEstadoDto(
             perfilCompleto = false,
+            faltantes = listOf("telefono_verificado"),
             requisitos = ClientePerfilEstadoRequisitosDto(
                 tieneDomicilio = false,
                 tieneContacto = true,

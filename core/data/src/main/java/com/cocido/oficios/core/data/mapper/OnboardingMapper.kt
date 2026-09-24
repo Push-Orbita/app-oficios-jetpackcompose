@@ -50,15 +50,14 @@ fun String.toClientAccountStatus(): AccountStatus = when (uppercase()) {
     else -> AccountStatus.UNKNOWN
 }
 
-fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
-    // "domicilio", "contacto" y "telefono_verificado" llevan todos a la misma pantalla
-    // (Contacto y domicilio, que además dispara la verificación de teléfono al guardar).
-    // Para que el checklist no muestre tareas que en la práctica son un solo trámite,
-    // el aviso de "falta verificar tu WhatsApp" se agrega al primer card pendiente de
-    // ese grupo en vez de mostrarse siempre como una tarjeta aparte.
-    val needsPhoneVerification = missingSteps.contains("telefono_verificado") ||
-        (hasContact && !phoneVerified)
-    var phoneVerificationMerged = false
+fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
+    if (isComplete) return emptyList()
+    return buildList {
+        // "domicilio", "contacto" y "telefono_verificado" llevan todos a la misma pantalla.
+        // El paso de teléfono solo existe si la API lo lista en faltantes. Un
+        // requisitos.telefonoVerificado omitido no debe inventar "Verificar teléfono".
+        val needsPhoneVerification = missingSteps.contains("telefono_verificado")
+        var phoneVerificationMerged = false
 
     if (!hasAddress) {
         add(
@@ -110,6 +109,7 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
                 status = OnboardingStepStatus.PENDING,
             ),
         )
+    }
     }
 }
 
