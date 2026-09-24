@@ -12,7 +12,9 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -65,6 +67,31 @@ class RegisterViewModelTest {
         viewModel.onEvent(RegisterFormEvent.Submit)
         advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `submit on invalid form reveals field errors`() {
+        val viewModel = createViewModel()
+        viewModel.setMode(RegisterMode.CLIENT)
+        viewModel.onEvent(RegisterFormEvent.FullNameChanged("asdasd"))
+        viewModel.onEvent(RegisterFormEvent.DocumentChanged("12312"))
+        viewModel.onEvent(RegisterFormEvent.EmailChanged("user@test.com"))
+        viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
+        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("secret123"))
+        viewModel.onEvent(RegisterFormEvent.TermsChanged(true))
+
+        assertFalse(viewModel.uiState.value.canSubmit)
+        assertFalse(viewModel.uiState.value.hasAttemptedSubmit)
+
+        viewModel.onEvent(RegisterFormEvent.Submit)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.hasAttemptedSubmit)
+        assertNotNull(state.fullNameError)
+        assertNotNull(state.documentError)
+        assertEquals("Ingresá nombre y apellido", state.fullNameError)
+        assertEquals("Ingresá un DNI válido", state.documentError)
+        assertFalse(state.isLoading)
     }
 
     @Test
