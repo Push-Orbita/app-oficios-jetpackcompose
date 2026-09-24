@@ -23,7 +23,8 @@ fun WorkerGallerySection(
     gallery: List<WorkGalleryItem>,
     modifier: Modifier = Modifier,
 ) {
-    if (gallery.isEmpty()) return
+    val photos = gallery.filter { !it.imageUrl.isNullOrBlank() }
+    if (photos.isEmpty()) return
 
     Column(
         modifier = modifier
@@ -33,12 +34,12 @@ fun WorkerGallerySection(
     ) {
         Text(
             text = stringResource(R.string.home_worker_gallery_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            items(gallery, key = { it.id }) { item ->
+            items(photos, key = { it.id }) { item ->
                 WorkGalleryCard(
                     imageUrl = item.imageUrl,
                     caption = null,

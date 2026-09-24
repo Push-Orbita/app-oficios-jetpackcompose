@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -82,6 +83,7 @@ fun WorkerProfileScreen(
             )
         },
         bottomBar = {
+            Surface(color = MaterialTheme.colorScheme.surface) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -102,6 +104,7 @@ fun WorkerProfileScreen(
                     enabled = uiState is WorkerProfileUiState.Success,
                     variant = OficiosButtonVariant.Primary,
                 )
+            }
             }
         },
     ) { paddingValues ->
@@ -131,7 +134,9 @@ fun WorkerProfileScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(rememberScrollState())
+                        .padding(bottom = OficiosSpacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         WorkerProfileHeader(profile = uiState.profile)

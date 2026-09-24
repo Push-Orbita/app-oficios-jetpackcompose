@@ -17,7 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.core.designsystem.theme.OficiosColorTertiary
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -39,23 +42,42 @@ fun WorkerProfileHeader(
         OficiosAvatar(
             name = profile.displayName,
             imageUrl = profile.avatarUrl,
-            size = OficiosComponentSize.avatarMd,
+            size = OficiosComponentSize.avatarLg,
+            showBorder = true,
         )
 
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+        ) {
+            Text(
+                text = profile.displayName,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            val trade = profile.specialties.firstOrNull { it.isPrimary }?.rubroName
+                ?: profile.specialties.firstOrNull()?.rubroName
+            if (!trade.isNullOrBlank()) {
                 Text(
-                    text = profile.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = trade,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (profile.isVerified) {
-                    Spacer(Modifier.width(OficiosSpacing.xxs))
+            }
+            if (profile.isVerified) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Verified,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(OficiosComponentSize.iconSm),
+                    )
+                    Spacer(Modifier.width(OficiosSpacing.xxs))
+                    Text(
+                        text = stringResource(R.string.home_verified_user),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }

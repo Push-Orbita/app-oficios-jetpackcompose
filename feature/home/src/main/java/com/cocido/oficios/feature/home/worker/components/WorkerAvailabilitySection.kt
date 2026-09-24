@@ -27,7 +27,7 @@ fun WorkerAvailabilitySection(
     ) {
         Text(
             text = stringResource(R.string.home_worker_availability_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
 

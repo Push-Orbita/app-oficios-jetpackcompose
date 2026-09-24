@@ -33,7 +33,7 @@ fun WorkerSpecialtiesSection(
     ) {
         Text(
             text = stringResource(R.string.home_worker_specialties_title),
-            style = androidx.compose.material3.MaterialTheme.typography.headlineLarge,
+            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
             color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
         )
 
