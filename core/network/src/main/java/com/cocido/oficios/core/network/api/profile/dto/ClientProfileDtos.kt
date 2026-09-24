@@ -9,7 +9,7 @@ data class MisDomiciliosResponseDto(
 
 @Serializable
 data class DomicilioSinPersonaDto(
-    val id: Long,
+    val id: Long = 0L,
     val barrio: BarrioDto? = null,
     val nombre: String? = null,
     val calle: String? = null,
@@ -24,7 +24,7 @@ data class DomicilioSinPersonaDto(
 
 @Serializable
 data class BarrioDto(
-    val id: Long,
+    val id: Long = 0L,
     val nombre: String? = null,
 )
 
@@ -35,9 +35,9 @@ data class MisContactosResponseDto(
 
 @Serializable
 data class ContactoSinPersonaDto(
-    val id: Long,
-    val nombre: String,
-    val telefonoWhatsapp: String,
+    val id: Long = 0L,
+    val nombre: String = "",
+    val telefonoWhatsapp: String = "",
     val telefonoVerificado: Boolean = false,
     val email: String? = null,
     val favorito: Boolean = false,

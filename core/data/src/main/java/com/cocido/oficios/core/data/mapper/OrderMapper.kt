@@ -71,8 +71,9 @@ private fun ContrapropuestaDto.toDomain(): CounterOffer = CounterOffer(
 )
 
 private fun BookingSimpleDto.scheduledLabel(): String? {
+    if (id == 0L && inicioConfirmado.isNullOrBlank()) return null
     val start = inicioConfirmado.toDisplayDateLabel()
-    val end = finConfirmado?.let { OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("HH:mm")) }
+    val end = finConfirmado.toDisplayDateLabel()?.substringAfter(", ")?.ifBlank { null }
     return if (start != null && end != null) "$start - $end" else start
 }
 
@@ -104,9 +105,9 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         contactName = contacto?.nombre.orEmpty(),
         contactPhone = contacto?.telefonoWhatsapp.orEmpty(),
         rejectionReason = motivoRechazo,
-        bookingId = booking?.id,
+        bookingId = booking?.id?.takeIf { it != 0L },
         scheduledLabel = booking?.scheduledLabel(),
-        bookingStatus = booking?.estado?.toBookingStatus(),
+        bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
         bookingType = booking?.tipo,
         canCancelBooking = booking?.puedeCancelar ?: false,
         pendingCounterOffer = pendingCounterOffer,
@@ -147,7 +148,7 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
         counterpartName = counterpart,
         subRubroLabel = subRubro?.nombre.orEmpty(),
         status = estado.toRequestStatus(),
-        bookingStatus = booking?.estado?.toBookingStatus(),
+        bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
         scheduledLabel = booking?.scheduledLabel(),
         addressLabel = domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre),
     )
