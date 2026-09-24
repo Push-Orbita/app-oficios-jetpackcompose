@@ -29,6 +29,7 @@ import com.cocido.oficios.feature.home.providerhome.components.ProviderActiveBoo
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.orders.OrdersListRoute
 
 @Composable
 fun ProviderHomeScreen(
@@ -37,6 +38,7 @@ fun ProviderHomeScreen(
     selectedTab: ClientHomeTab,
     onEvent: (ProviderHomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
+    onNavigateToOrderDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OficiosScaffold(
@@ -48,6 +50,15 @@ fun ProviderHomeScreen(
             )
         },
     ) { paddingValues ->
+        if (selectedTab == ClientHomeTab.PEDIDOS) {
+            OrdersListRoute(
+                onNavigateBack = {},
+                onNavigateToOrderDetail = onNavigateToOrderDetail,
+                showBackNavigation = false,
+                modifier = Modifier.padding(paddingValues),
+            )
+            return@OficiosScaffold
+        }
         when (uiState) {
             ProviderHomeUiState.Loading -> {
                 OficiosLoadingState(

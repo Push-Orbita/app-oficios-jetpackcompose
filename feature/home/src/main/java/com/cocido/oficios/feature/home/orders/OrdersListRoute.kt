@@ -12,6 +12,7 @@ fun OrdersListRoute(
     onNavigateBack: () -> Unit,
     onNavigateToOrderDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
     viewModel: OrdersListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -29,5 +30,6 @@ fun OrdersListRoute(
         onEvent = viewModel::onEvent,
         onNavigateBack = onNavigateBack,
         modifier = modifier,
+        showBackNavigation = showBackNavigation,
     )
 }

@@ -27,11 +27,11 @@ fun HomeRoute(
     onNavigateToWorker: (Long) -> Unit,
     onNavigateToHire: (Long) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToPersonalData: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToMyOrders: () -> Unit,
+    onNavigateToOrderDetail: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -59,7 +59,6 @@ fun HomeRoute(
                 is HomeEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 HomeEffect.NavigateToMyOrders -> onNavigateToMyOrders()
                 HomeEffect.NavigateToSettings -> onNavigateToSettings()
-                HomeEffect.NavigateToProfile -> onNavigateToPersonalData()
                 HomeEffect.NavigateToFavorites -> onNavigateToFavorites()
                 HomeEffect.NavigateToHelp -> onNavigateToHelp()
                 HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
@@ -72,7 +71,6 @@ fun HomeRoute(
 
     ClientHomeTabRouteHost(
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToPersonalData = onNavigateToPersonalData,
         onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
         onVisible = viewModel::refreshUnreadCount,
@@ -83,6 +81,7 @@ fun HomeRoute(
             selectedTab = selectedTab,
             onEvent = viewModel::onEvent,
             onTabSelected = onTabSelected,
+            onNavigateToOrderDetail = onNavigateToOrderDetail,
             modifier = modifier,
         )
     }
@@ -94,10 +93,10 @@ fun CategoriesRoute(
     onNavigateToRubros: (Long, String) -> Unit,
     onNavigateToSearchResults: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToPersonalData: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToOrderDetail: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CategoriesViewModel = hiltViewModel(),
@@ -120,7 +119,6 @@ fun CategoriesRoute(
     ClientHomeTabRouteHost(
         onStay = onNavigateBack,
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToPersonalData = onNavigateToPersonalData,
         onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
         onVisible = viewModel::refreshUnreadCount,
@@ -131,6 +129,7 @@ fun CategoriesRoute(
             selectedTab = selectedTab,
             onEvent = viewModel::onEvent,
             onTabSelected = onTabSelected,
+            onNavigateToOrderDetail = onNavigateToOrderDetail,
             modifier = modifier,
         )
     }

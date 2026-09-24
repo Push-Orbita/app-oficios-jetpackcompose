@@ -11,7 +11,6 @@ import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 @Composable
 fun ProviderHomeRoute(
     onNavigateToSettings: () -> Unit,
-    onNavigateToPersonalData: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -35,7 +34,6 @@ fun ProviderHomeRoute(
                 ProviderHomeEffect.NavigateToAgenda -> onNavigateToAgenda()
                 is ProviderHomeEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 is ProviderHomeEffect.ShowMessage -> onShowMessage(effect.message)
-                ProviderHomeEffect.NavigateToProfile -> onNavigateToPersonalData()
                 ProviderHomeEffect.NavigateToFavorites -> onNavigateToFavorites()
                 ProviderHomeEffect.NavigateToHelp -> onNavigateToHelp()
                 ProviderHomeEffect.NavigateToNotifications -> onNavigateToNotifications()
@@ -45,7 +43,6 @@ fun ProviderHomeRoute(
 
     ClientHomeTabRouteHost(
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToPersonalData = onNavigateToPersonalData,
         onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
         onVisible = viewModel::refreshUnreadCount,
@@ -56,6 +53,7 @@ fun ProviderHomeRoute(
             selectedTab = selectedTab,
             onEvent = viewModel::onEvent,
             onTabSelected = onTabSelected,
+            onNavigateToOrderDetail = onNavigateToOrderDetail,
             modifier = modifier,
         )
     }

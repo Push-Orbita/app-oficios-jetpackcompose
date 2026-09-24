@@ -30,6 +30,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
+import com.cocido.oficios.feature.home.orders.OrdersListRoute
 
 @Composable
 fun CategoriesScreen(
@@ -37,6 +38,7 @@ fun CategoriesScreen(
     selectedTab: ClientHomeTab,
     onEvent: (CategoriesEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
+    onNavigateToOrderDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
     unreadNotificationCount: Int = 0,
 ) {
@@ -49,6 +51,15 @@ fun CategoriesScreen(
             )
         },
     ) { paddingValues ->
+        if (selectedTab == ClientHomeTab.PEDIDOS) {
+            OrdersListRoute(
+                onNavigateBack = {},
+                onNavigateToOrderDetail = onNavigateToOrderDetail,
+                showBackNavigation = false,
+                modifier = Modifier.padding(paddingValues),
+            )
+            return@OficiosScaffold
+        }
         when (uiState) {
             CategoriesUiState.Loading -> {
                 OficiosLoadingState(

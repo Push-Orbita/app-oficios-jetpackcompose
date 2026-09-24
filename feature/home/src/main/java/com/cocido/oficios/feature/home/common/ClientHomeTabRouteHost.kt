@@ -13,14 +13,13 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 /**
  * Host único del bottom nav cliente/proveedor.
- * Perfil/Ayuda/Favoritos/Ajustes navegan fuera: al volver, el tab vuelve a Inicio
- * para no dejar el highlight desincronizado del contenido.
+ * Ayuda/Favoritos/Ajustes navegan fuera: al volver, el highlight vuelve a Inicio
+ * salvo que el contenido visible sea Pedidos.
  */
 @Composable
 fun ClientHomeTabRouteHost(
     onStay: () -> Unit = {},
     onNavigateToSettings: () -> Unit,
-    onNavigateToPersonalData: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onVisible: () -> Unit = {},
@@ -32,7 +31,9 @@ fun ClientHomeTabRouteHost(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                selectedTab = ClientHomeTab.INICIO
+                if (selectedTab != ClientHomeTab.PEDIDOS) {
+                    selectedTab = ClientHomeTab.INICIO
+                }
                 onVisible()
             }
         }
@@ -48,7 +49,6 @@ fun ClientHomeTabRouteHost(
             tab = tab,
             onStay = onStay,
             onNavigateToSettings = onNavigateToSettings,
-            onNavigateToPersonalData = onNavigateToPersonalData,
             onNavigateToHelp = onNavigateToHelp,
             onNavigateToFavorites = onNavigateToFavorites,
         )

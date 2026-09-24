@@ -28,32 +28,51 @@ fun OrdersListScreen(
     onEvent: (OrdersListEvent) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
 ) {
+    if (!showBackNavigation) {
+        OrdersListBody(uiState = uiState, onEvent = onEvent, modifier = modifier)
+        return
+    }
     OficiosScaffold(
         modifier = modifier,
         topBar = { OficiosBackTopBar(title = "Mis pedidos", onBack = onNavigateBack) },
     ) { paddingValues ->
-        when (uiState) {
+        OrdersListBody(
+            uiState = uiState,
+            onEvent = onEvent,
+            modifier = Modifier.padding(paddingValues),
+        )
+    }
+}
+
+@Composable
+private fun OrdersListBody(
+    uiState: OrdersListUiState,
+    onEvent: (OrdersListEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    when (uiState) {
             OrdersListUiState.Loading -> OficiosLoadingState(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = modifier.fillMaxSize(),
                 message = "Cargando pedidos…",
             )
             is OrdersListUiState.Error -> OficiosErrorState(
                 title = "No pudimos cargar tus pedidos",
                 description = uiState.message,
                 onRetry = { onEvent(OrdersListEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = modifier.fillMaxSize(),
             )
             is OrdersListUiState.Success -> if (uiState.orders.isEmpty()) {
                 OficiosEmptyState(
                     title = "Todavía no tenés pedidos",
                     description = "Cuando solicités o recibas un pedido, va a aparecer acá.",
                     icon = Icons.Outlined.Inbox,
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    modifier = modifier.fillMaxSize(),
                 )
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    modifier = modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         horizontal = OficiosSpacing.lg,
                         vertical = OficiosSpacing.md,
@@ -65,7 +84,6 @@ fun OrdersListScreen(
                     }
                 }
             }
-        }
     }
 }
 
