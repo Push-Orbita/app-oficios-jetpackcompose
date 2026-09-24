@@ -16,9 +16,11 @@ sealed interface FavoritesEvent {
     data object LoadMore : FavoritesEvent
     data class HireClicked(val workerId: Long) : FavoritesEvent
     data class ProfileClicked(val workerId: Long) : FavoritesEvent
+    data object SearchClicked : FavoritesEvent
 }
 
 sealed interface FavoritesEffect {
     data class NavigateToWorker(val workerId: Long) : FavoritesEffect
     data class NavigateToHire(val workerId: Long) : FavoritesEffect
+    data object NavigateToSearch : FavoritesEffect
 }

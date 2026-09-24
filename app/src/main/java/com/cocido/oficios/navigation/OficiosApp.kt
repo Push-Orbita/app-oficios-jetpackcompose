@@ -190,6 +190,7 @@ fun AppNavHost(
                     launchSingleTop = true
                 }
             },
+            onNavigateToSearch = { navController.popBackStack() },
         )
     }
 }

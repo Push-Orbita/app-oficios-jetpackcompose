@@ -40,6 +40,7 @@ class FavoritesViewModel @Inject constructor(
             }
             is FavoritesEvent.HireClicked -> emitEffect(FavoritesEffect.NavigateToHire(event.workerId))
             is FavoritesEvent.ProfileClicked -> emitEffect(FavoritesEffect.NavigateToWorker(event.workerId))
+            FavoritesEvent.SearchClicked -> emitEffect(FavoritesEffect.NavigateToSearch)
         }
     }
 

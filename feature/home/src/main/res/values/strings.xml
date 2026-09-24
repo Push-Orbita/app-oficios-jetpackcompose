@@ -94,6 +94,7 @@
 
     <string name="favorites_empty_title">Todavía no tenés favoritos</string>
     <string name="favorites_empty_description">Tocá el corazón en el perfil de un trabajador para guardarlo acá y encontrarlo más rápido.</string>
+    <string name="favorites_empty_cta">Buscar oficios</string>
     <string name="favorites_load_error">No pudimos cargar tus favoritos</string>
     <string name="favorites_load_more">Ver más</string>
     <string name="favorites_specialty_fallback">Trabajador de oficio</string>
