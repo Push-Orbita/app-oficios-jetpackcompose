@@ -209,7 +209,7 @@ fun RegisterFormScreen(
                 OficiosButton(
                     text = stringResource(R.string.auth_next_button),
                     onClick = { onEvent(RegisterFormEvent.Submit) },
-                    enabled = uiState.canSubmit && !uiState.isLoading,
+                    enabled = !uiState.isLoading,
                     loading = uiState.isLoading,
                     variant = OficiosButtonVariant.Primary,
                     size = OficiosButtonSize.Compact,
