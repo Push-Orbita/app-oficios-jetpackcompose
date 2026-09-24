@@ -4,11 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 
 @Composable
@@ -38,7 +36,6 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val comingSoon = stringResource(R.string.home_coming_soon)
 
     LaunchedEffect(viewModel) {
@@ -62,7 +59,6 @@ fun HomeRoute(
                 HomeEffect.NavigateToFavorites -> onNavigateToFavorites()
                 HomeEffect.NavigateToHelp -> onNavigateToHelp()
                 HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
-                HomeEffect.ContactSupport -> openSupportPhone(context)
                 is HomeEffect.ShowMessage -> onShowMessage(effect.message)
                 HomeEffect.ShowComingSoon -> onShowMessage(comingSoon)
             }

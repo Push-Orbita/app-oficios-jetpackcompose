@@ -25,7 +25,6 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
 import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
-import com.cocido.oficios.feature.home.components.HomeSupportSection
 import com.cocido.oficios.feature.home.orders.OrdersListRoute
 
 @Composable
@@ -132,9 +131,5 @@ private fun HomeSuccessContent(
                 onSearchClick = { onEvent(HomeEvent.RecentSearchSelected(it)) },
             )
         }
-        HomeSupportSection(
-            onContactClick = { onEvent(HomeEvent.ContactSupport) },
-            modifier = Modifier.padding(top = OficiosSpacing.md),
-        )
     }
 }

@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -321,35 +320,6 @@ fun HomeCategoryCard(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(OficiosComponentSize.iconLg),
-            )
-        }
-    }
-}
-
-@Composable
-fun HomeSupportSection(
-    onContactClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    OficiosCard(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(OficiosSpacing.md),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.home_support_message),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
-            )
-            OficiosButton(
-                text = stringResource(R.string.home_support_contact),
-                onClick = onContactClick,
-                variant = OficiosButtonVariant.Secondary,
             )
         }
     }
