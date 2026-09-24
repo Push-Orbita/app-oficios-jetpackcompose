@@ -45,7 +45,6 @@ class HomeViewModel @Inject constructor(
             HomeEvent.Retry -> loadHome()
             HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
-            HomeEvent.ContactSupport -> emitEffect(HomeEffect.ContactSupport)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             HomeEvent.VoiceSearch -> emitComingSoon()
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
