@@ -122,7 +122,7 @@ fun WorkerReportScreen(
                     text = stringResource(R.string.worker_report_submit),
                     onClick = { onEvent(WorkerReportEvent.Submit) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState.canSubmit,
+                    enabled = !uiState.isSubmitting,
                     loading = uiState.isSubmitting,
                     variant = OficiosButtonVariant.Danger,
                 )

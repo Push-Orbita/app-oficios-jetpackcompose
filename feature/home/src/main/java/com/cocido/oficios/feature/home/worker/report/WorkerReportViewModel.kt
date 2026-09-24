@@ -89,7 +89,18 @@ class WorkerReportViewModel @Inject constructor(
 
     private fun submit() {
         val state = _uiState.value
-        if (!state.canSubmit) return
+        if (!state.canSubmit || state.isSubmitting) {
+            _uiState.update {
+                it.copy(
+                    errorMessage = if (state.selectedReasonCode == null) {
+                        "Elegí un motivo"
+                    } else {
+                        state.descriptionHint
+                    },
+                )
+            }
+            return
+        }
         val reasonCode = state.selectedReasonCode ?: return
         val key = submitIdempotencyKey ?: UUID.randomUUID().toString().also { submitIdempotencyKey = it }
         viewModelScope.launch {
