@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.GetClientContactosUseCase
@@ -99,11 +100,12 @@ class ClientContactDomicilioViewModel @Inject constructor(
                 is AppResult.Success -> result.data.firstOrNull { it.favorito } ?: result.data.firstOrNull()
                 is AppResult.Error -> null
             }
+            val account = (getCurrentUserUseCase() as? AppResult.Success)?.data
             _uiState.update {
                 it.copy(
-                    nombre = contacto?.nombre.orEmpty(),
+                    nombre = contacto?.nombre?.takeIf { name -> name.isNotBlank() } ?: account.displayName(),
                     telefono = contacto?.telefonoWhatsapp?.let(AuthValidators::normalizeArgentinePhone).orEmpty(),
-                    email = contacto?.email.orEmpty(),
+                    email = contacto?.email?.takeIf { mail -> mail.isNotBlank() } ?: account?.email.orEmpty(),
                     barrioQuery = domicilio?.barrioName.orEmpty(),
                     selectedBarrioId = domicilio?.barrioId?.takeIf { id -> id > 0L },
                     calle = domicilio?.calle.orEmpty(),
@@ -261,3 +263,9 @@ class ClientContactDomicilioViewModel @Inject constructor(
         }
     }
 }
+
+private fun User?.displayName(): String =
+    listOfNotNull(this?.firstName, this?.lastName)
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .joinToString(" ")
