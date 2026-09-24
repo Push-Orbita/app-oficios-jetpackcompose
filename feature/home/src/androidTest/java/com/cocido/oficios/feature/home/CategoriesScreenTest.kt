@@ -32,6 +32,7 @@ class CategoriesScreenTest {
                     selectedTab = ClientHomeTab.INICIO,
                     onEvent = { lastEvent = it },
                     onTabSelected = {},
+                    onNavigateToOrderDetail = {},
                 )
             }
         }

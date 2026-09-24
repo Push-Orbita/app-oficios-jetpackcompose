@@ -59,11 +59,11 @@ fun NavGraphBuilder.homeScreen(
                     navController.navigate(OrdersDestination.createOrder(workerId))
                 },
                 onNavigateToSettings = onNavigateToSettings,
-                onNavigateToPersonalData = { navController.navigateToPersonalData() },
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
                 onNavigateToMyOrders = { navController.navigate(OrdersDestination.ordersList) },
+                onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
                 onShowMessage = onShowMessage,
             )
         }
@@ -77,10 +77,10 @@ fun NavGraphBuilder.homeScreen(
                     navController.navigate(HomeDestination.searchResults(query = query))
                 },
                 onNavigateToSettings = onNavigateToSettings,
-                onNavigateToPersonalData = { navController.navigateToPersonalData() },
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
+                onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
                 onShowMessage = onShowMessage,
             )
         }

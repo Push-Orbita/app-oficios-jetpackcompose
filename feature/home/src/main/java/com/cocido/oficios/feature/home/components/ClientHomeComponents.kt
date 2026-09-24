@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Assignment
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
@@ -159,7 +159,7 @@ fun ClientHomeBottomBar(
 ) {
     val items = listOf(
         OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), Icons.Outlined.Home),
-        OficiosNavItem(ClientHomeTab.PERFIL.route, stringResource(R.string.home_nav_perfil), Icons.Outlined.Person),
+        OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), Icons.Outlined.Assignment),
         OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), Icons.Outlined.FavoriteBorder),
         OficiosNavItem(ClientHomeTab.AYUDA.route, stringResource(R.string.home_nav_ayuda), Icons.AutoMirrored.Outlined.HelpOutline),
         OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), Icons.Outlined.Menu),
@@ -176,7 +176,7 @@ fun ClientHomeBottomBar(
 
 enum class ClientHomeTab(val route: String) {
     INICIO("home_tab_inicio"),
-    PERFIL("home_tab_perfil"),
+    PEDIDOS("home_tab_pedidos"),
     FAVORITOS("home_tab_favoritos"),
     AYUDA("home_tab_ayuda"),
     AJUSTES("home_tab_ajustes"),

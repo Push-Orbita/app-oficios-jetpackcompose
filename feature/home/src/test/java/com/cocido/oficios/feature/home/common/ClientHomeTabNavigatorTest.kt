@@ -12,8 +12,8 @@ class ClientHomeTabNavigatorTest {
     }
 
     @Test
-    fun `perfil tab navigates to personal data`() {
-        assertEquals(ClientHomeTabNavigation.PersonalData, ClientHomeTabNavigator.navigationFor(ClientHomeTab.PERFIL))
+    fun `pedidos tab stays so the bottom bar remains visible`() {
+        assertEquals(ClientHomeTabNavigation.Stay, ClientHomeTabNavigator.navigationFor(ClientHomeTab.PEDIDOS))
     }
 
     @Test
@@ -32,15 +32,17 @@ class ClientHomeTabNavigatorTest {
     }
 
     @Test
-    fun `handleTabSelected invokes personal data callback for perfil`() {
-        var personalDataCalled = false
+    fun `handleTabSelected does not leave home for pedidos`() {
+        var stayed = false
+        var settingsCalled = false
         ClientHomeTabNavigator.handleTabSelected(
-            tab = ClientHomeTab.PERFIL,
-            onNavigateToSettings = {},
-            onNavigateToPersonalData = { personalDataCalled = true },
+            tab = ClientHomeTab.PEDIDOS,
+            onStay = { stayed = true },
+            onNavigateToSettings = { settingsCalled = true },
             onNavigateToHelp = {},
             onNavigateToFavorites = {},
         )
-        assertEquals(true, personalDataCalled)
+        assertEquals(true, stayed)
+        assertEquals(false, settingsCalled)
     }
 }

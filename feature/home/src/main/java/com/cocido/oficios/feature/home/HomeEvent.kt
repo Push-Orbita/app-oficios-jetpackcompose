@@ -17,7 +17,6 @@ sealed interface HomeEvent {
     data object SeeAllWorkers : HomeEvent
     data object OpenMyOrders : HomeEvent
     data object NavigateToSettings : HomeEvent
-    data object NavigateToProfile : HomeEvent
     data object NavigateToFavorites : HomeEvent
     data object NavigateToHelp : HomeEvent
 }
@@ -33,7 +32,6 @@ sealed interface CategoriesEvent {
 sealed interface HomeEffect {
     data object NavigateToSearch : HomeEffect
     data object NavigateToSettings : HomeEffect
-    data object NavigateToProfile : HomeEffect
     data object NavigateToFavorites : HomeEffect
     data object NavigateToHelp : HomeEffect
     data object NavigateToNotifications : HomeEffect

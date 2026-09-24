@@ -50,7 +50,6 @@ class HomeViewModel @Inject constructor(
             HomeEvent.VoiceSearch -> emitComingSoon()
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
             HomeEvent.NavigateToSettings -> emitEffect(HomeEffect.NavigateToSettings)
-            HomeEvent.NavigateToProfile -> emitEffect(HomeEffect.NavigateToProfile)
             HomeEvent.NavigateToFavorites -> emitEffect(HomeEffect.NavigateToFavorites)
             HomeEvent.NavigateToHelp -> emitEffect(HomeEffect.NavigateToHelp)
             is HomeEvent.WorkerViewProfile -> emitEffect(HomeEffect.NavigateToWorker(event.workerId))

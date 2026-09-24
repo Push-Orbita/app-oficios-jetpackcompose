@@ -36,12 +36,6 @@ fun NavGraphBuilder.sharedHomeScreens(
     }
 }
 
-fun NavHostController.navigateToPersonalData() {
-    navigate(SharedHomeDestination.personalData) {
-        launchSingleTop = true
-    }
-}
-
 fun NavHostController.navigateToHelp() {
     navigate(SharedHomeDestination.help) {
         launchSingleTop = true
