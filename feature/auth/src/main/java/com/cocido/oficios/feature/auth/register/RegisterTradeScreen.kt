@@ -245,7 +245,7 @@ fun RegisterTradeScreen(
                 onClick = { onEvent(RegisterTradeEvent.Continue) },
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Prominent,
-                enabled = uiState.canContinue && !uiState.isLoading,
+                enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
             )
         }

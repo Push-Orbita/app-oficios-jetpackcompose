@@ -219,6 +219,10 @@ class RegisterTradeViewModel @Inject constructor(
 
     private fun continueToOnboarding() {
         val state = _uiState.value
+        if (!state.canContinue) {
+            _uiState.update { it.copy(catalogError = "Completá los datos del oficio antes de continuar") }
+            return
+        }
         val categoryId = state.selectedCategoryId ?: return
         val rubroId = state.selectedTradeId ?: return
 
