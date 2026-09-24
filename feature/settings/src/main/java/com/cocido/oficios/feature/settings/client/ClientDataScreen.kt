@@ -287,7 +287,7 @@ private fun ContactEditor(
             selectedCountry = PhoneCountryOptions.ARGENTINA,
             onCountrySelected = {},
             label = "WhatsApp",
-            supportingText = "10 u 11 dígitos, sin +54",
+            supportingText = "11 dígitos con el 9",
         )
         OficiosTextField(
             value = uiState.contactEmail,

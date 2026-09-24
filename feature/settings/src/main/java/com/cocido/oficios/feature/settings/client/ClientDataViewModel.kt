@@ -167,7 +167,7 @@ class ClientDataViewModel @Inject constructor(
         val phone = AuthValidators.normalizeArgentinePhone(state.contactPhone)
         val error = when {
             state.contactName.isBlank() -> "Ingresá un nombre para identificar este contacto."
-            phone.length !in 10..11 -> "Ingresá un número argentino de 10 u 11 dígitos, sin +54."
+            phone.length != 11 || !phone.startsWith("9") -> "Ingresá el celular con el 9 de móvil, sin +54."
             state.contactEmail.isNotBlank() && AuthValidators.validateEmail(state.contactEmail.trim()) != null ->
                 "Ingresá un correo válido o dejalo vacío."
             else -> null
