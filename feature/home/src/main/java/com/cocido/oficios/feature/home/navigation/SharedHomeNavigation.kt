@@ -12,6 +12,7 @@ fun NavGraphBuilder.sharedHomeScreens(
     onShowMessage: (String) -> Unit,
     onNavigateToWorker: (Long) -> Unit,
     onNavigateToHire: (Long) -> Unit,
+    onNavigateToSearch: () -> Unit,
 ) {
     composable(SharedHomeDestination.help) {
         HelpRoute(onNavigateBack = { navController.popBackStack() })
@@ -21,6 +22,7 @@ fun NavGraphBuilder.sharedHomeScreens(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToWorker = onNavigateToWorker,
             onNavigateToHire = onNavigateToHire,
+            onNavigateToSearch = onNavigateToSearch,
         )
     }
     composable(SharedHomeDestination.notifications) {

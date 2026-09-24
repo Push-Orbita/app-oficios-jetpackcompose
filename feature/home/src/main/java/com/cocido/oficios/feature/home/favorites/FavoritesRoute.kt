@@ -12,6 +12,7 @@ fun FavoritesRoute(
     onNavigateBack: () -> Unit,
     onNavigateToWorker: (Long) -> Unit,
     onNavigateToHire: (Long) -> Unit,
+    onNavigateToSearch: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FavoritesViewModel = hiltViewModel(),
 ) {
@@ -22,6 +23,7 @@ fun FavoritesRoute(
             when (effect) {
                 is FavoritesEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is FavoritesEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
+                FavoritesEffect.NavigateToSearch -> onNavigateToSearch()
             }
         }
     }

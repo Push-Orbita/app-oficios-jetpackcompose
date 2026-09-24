@@ -55,6 +55,8 @@ fun FavoritesScreen(
             uiState.items.isEmpty() -> OficiosEmptyState(
                 title = stringResource(R.string.favorites_empty_title),
                 description = stringResource(R.string.favorites_empty_description),
+                ctaLabel = stringResource(R.string.favorites_empty_cta),
+                onCta = { onEvent(FavoritesEvent.SearchClicked) },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
