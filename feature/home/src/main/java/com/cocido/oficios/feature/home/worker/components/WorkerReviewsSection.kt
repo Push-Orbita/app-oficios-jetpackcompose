@@ -1,6 +1,8 @@
 package com.cocido.oficios.feature.home.worker.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,7 +34,7 @@ fun WorkerReviewsSection(
     ) {
         Text(
             text = stringResource(R.string.home_worker_reviews_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = OficiosSpacing.sm),
         )
@@ -52,9 +54,10 @@ fun WorkerReviewsSection(
                     title = stringResource(R.string.home_worker_reviews_empty_title),
                     description = stringResource(R.string.home_worker_reviews_empty_description),
                     modifier = Modifier.fillMaxWidth(),
+                    icon = Icons.Outlined.StarOutline,
                     ctaLabel = null,
                     onCta = null,
-                    variant = OficiosEmptyVariant.NoResults,
+                    variant = OficiosEmptyVariant.Generic,
                 )
             }
 
