@@ -127,7 +127,10 @@ class ProviderDniViewModel @Inject constructor(
         val front = state.frontImagePath
         val back = state.backImagePath
         val hasRemoteImages = state.frontRemoteLoaded && state.backRemoteLoaded
-        if (documento.isBlank() || (!hasRemoteImages && (front == null || back == null))) return
+        if (documento.isBlank() || (!hasRemoteImages && (front == null || back == null))) {
+            _uiState.update { it.copy(error = "Completá el número y las fotos del DNI") }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -209,6 +212,10 @@ class ProviderProfessionalInfoViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
+        if (state.descripcion.isBlank() || state.experiencia.isBlank()) {
+            _uiState.update { it.copy(error = "Completá la descripción y la experiencia") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (
@@ -318,8 +325,12 @@ class ProviderRubrosViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
-        val rubroId = state.selectedTradeId ?: return
-        val categoryId = state.selectedCategoryId ?: return
+        val rubroId = state.selectedTradeId
+        val categoryId = state.selectedCategoryId
+        if (rubroId == null || categoryId == null || !state.canSubmit) {
+            _uiState.update { it.copy(error = "Seleccioná categoría, rubro y especialidades") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
@@ -483,7 +494,10 @@ class ProviderAvailabilityViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
-        if (!state.canSubmit) return
+        if (!state.canSubmit) {
+            _uiState.update { it.copy(error = "Completá días, horarios y dónde atendés") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
@@ -619,8 +633,11 @@ class ProviderLocalViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
-        val barrioId = state.selectedBarrioId ?: return
-        if (!state.canSubmit) return
+        val barrioId = state.selectedBarrioId
+        if (barrioId == null || !state.canSubmit) {
+            _uiState.update { it.copy(error = "Completá barrio, calle y la ubicación en el mapa") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
@@ -699,7 +716,10 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
 
     fun submit() {
         val methods = _uiState.value.selectedMethods.toList()
-        if (methods.isEmpty()) return
+        if (methods.isEmpty()) {
+            _uiState.update { it.copy(error = "Elegí al menos un medio de pago") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->

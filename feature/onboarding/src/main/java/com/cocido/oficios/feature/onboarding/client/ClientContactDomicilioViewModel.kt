@@ -180,7 +180,10 @@ class ClientContactDomicilioViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
-        if (!state.canSubmit) return
+        if (!state.canSubmit) {
+            _uiState.update { it.copy(error = "Completá nombre, WhatsApp, barrio y calle") }
+            return
+        }
         val barrioId = state.selectedBarrioId ?: return
 
         viewModelScope.launch {
