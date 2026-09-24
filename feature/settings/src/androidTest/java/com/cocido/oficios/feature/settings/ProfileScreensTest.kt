@@ -58,7 +58,7 @@ class ProfileScreensTest {
             }
         }
         composeRule.onNodeWithText("El número se valida por WhatsApp. Argentina usa +54 y vos ingresás solo el número local, por ejemplo 9 370 5219109.").assertIsDisplayed()
-        composeRule.onNodeWithText("10 u 11 dígitos, sin +54").assertIsDisplayed()
+        composeRule.onNodeWithText("11 dígitos con el 9").assertIsDisplayed()
         composeRule.onNodeWithText("Guardar y verificar").assertIsDisplayed()
     }
 
