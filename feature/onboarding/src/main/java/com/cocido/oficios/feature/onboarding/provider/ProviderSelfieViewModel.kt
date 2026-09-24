@@ -74,8 +74,11 @@ class ProviderSelfieViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
-        val imagePath = state.imagePath ?: return
-        if (!state.canSubmit && imagePath.isBlank()) return
+        val imagePath = state.imagePath
+        if (imagePath.isNullOrBlank()) {
+            _uiState.update { it.copy(error = "Subí una selfie para continuar") }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }

@@ -50,6 +50,7 @@ import com.cocido.oficios.feature.onboarding.provider.ProviderAvailabilityUiStat
 import com.cocido.oficios.feature.onboarding.provider.ProviderRubrosUiState
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun OnboardingStepScaffold(
     title: String,
     modifier: Modifier = Modifier,
@@ -76,7 +77,7 @@ fun OnboardingStepScaffold(
             OficiosButton(
                 text = buttonText,
                 onClick = onSubmit,
-                enabled = canSubmit && !isLoading,
+                enabled = !isLoading,
                 loading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -135,6 +136,7 @@ fun ClientContactDomicilioStepScreen(
             selectedCountry = uiState.selectedCountry,
             onCountrySelected = onCountrySelected,
             label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
+            supportingText = stringResource(R.string.onboarding_step_contact_whatsapp_hint),
         )
         OficiosTextField(
             value = uiState.email,
@@ -262,7 +264,12 @@ fun ClientContactoStepScreen(
         onSubmit = onSubmit,
     ) {
         OficiosTextField(value = uiState.nombre, onValueChange = onNombreChanged, label = stringResource(R.string.onboarding_step_contact_nombre_label))
-        OficiosTextField(value = uiState.telefono, onValueChange = onTelefonoChanged, label = stringResource(R.string.onboarding_step_contact_whatsapp_label))
+        OficiosTextField(
+            value = uiState.telefono,
+            onValueChange = onTelefonoChanged,
+            label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
+            supportingText = stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+        )
         OficiosTextField(value = uiState.email, onValueChange = onEmailChanged, label = stringResource(R.string.onboarding_step_contact_email_label))
     }
 }
@@ -294,10 +301,6 @@ fun ProviderDniStepScreen(
         cancelLabel = cancelLabel,
         onImageSelected = onBackImage,
     )
-
-    val canSubmit = uiState.documento.isNotBlank() &&
-        (uiState.frontImagePath != null || uiState.frontRemoteLoaded) &&
-        (uiState.backImagePath != null || uiState.backRemoteLoaded)
 
     OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
         Column(
@@ -348,7 +351,7 @@ fun ProviderDniStepScreen(
                 OficiosButton(
                     text = stringResource(R.string.onboarding_step_submit_dni),
                     onClick = onSubmit,
-                    enabled = canSubmit && !uiState.isLoading,
+                    enabled = !uiState.isLoading,
                     loading = uiState.isLoading,
                     modifier = Modifier.fillMaxWidth(),
                 )
