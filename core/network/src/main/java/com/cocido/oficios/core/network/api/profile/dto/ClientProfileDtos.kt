@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.network.api.profile.dto
 
+import com.cocido.oficios.core.network.serialization.FlexibleBooleanSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,6 +20,7 @@ data class DomicilioSinPersonaDto(
     val piso: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
+    @Serializable(with = FlexibleBooleanSerializer::class)
     val favorito: Boolean = false,
 )
 
@@ -40,6 +42,7 @@ data class ContactoSinPersonaDto(
     val telefonoWhatsapp: String = "",
     val telefonoVerificado: Boolean = false,
     val email: String? = null,
+    @Serializable(with = FlexibleBooleanSerializer::class)
     val favorito: Boolean = false,
 )
 
