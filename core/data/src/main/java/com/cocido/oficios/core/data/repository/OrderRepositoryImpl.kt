@@ -48,7 +48,7 @@ class OrderRepositoryImpl @Inject constructor(
     override suspend fun getWorkerOrders(): AppResult<List<ServiceOrderListItem>> =
         withContext(dispatcherProvider.io) {
             remoteDataSource.getSolicitudesTrabajador().map { response ->
-                response.solicitudes.map { it.toListItem(isWorkerViewing = true) }
+                response.resolved().solicitudes.map { it.toListItem(isWorkerViewing = true) }
             }
         }
 

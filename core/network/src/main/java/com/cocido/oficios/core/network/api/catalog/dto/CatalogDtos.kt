@@ -18,21 +18,21 @@ data class PaginationMetadataDto(
 
 @Serializable
 data class CategoriaDto(
-    val id: Long,
-    val nombre: String,
+    val id: Long = 0L,
+    val nombre: String = "",
 )
 
 @Serializable
 data class RubroDto(
-    val id: Long,
-    val nombre: String,
+    val id: Long = 0L,
+    val nombre: String = "",
     val categoria: CategoriaDto? = null,
 )
 
 @Serializable
 data class SubRubroDto(
-    val id: Long,
-    val nombre: String,
+    val id: Long = 0L,
+    val nombre: String = "",
     val rubro: RubroDto? = null,
 )
 

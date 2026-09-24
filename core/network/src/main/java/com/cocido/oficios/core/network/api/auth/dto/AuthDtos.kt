@@ -48,8 +48,8 @@ data class RefreshTokenResponseDto(
 
 @Serializable
 data class UsuarioDto(
-    val id: Long,
-    val email: String,
+    val id: Long = 0L,
+    val email: String = "",
     val emailVerificado: Boolean = false,
     val fotoPerfil: JsonElement? = null,
     val persona: PersonaDto? = null,
@@ -65,8 +65,8 @@ data class PersonaDto(
 
 @Serializable
 data class RolUsuarioDto(
-    val id: Long,
-    val nombre: String,
+    val id: Long = 0L,
+    val nombre: String = "",
 )
 
 @Serializable

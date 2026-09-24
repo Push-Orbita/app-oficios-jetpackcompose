@@ -10,7 +10,7 @@ import com.cocido.oficios.core.network.api.orders.dto.FinalizeBookingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.MarcarTrackingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.RechazarSolicitudRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioDto
-import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSearchResponseDto
+import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSearchPageDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
 import com.cocido.oficios.core.network.api.orders.dto.UpdateSolicitudEstadoRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.TrackingBookingDto
@@ -34,7 +34,7 @@ interface OrdersApi {
     suspend fun getMisSolicitudesCliente(): PaginatedResponseDto<SolicitudServicioSimpleDto>
 
     @GET("solicitud-servicio/search")
-    suspend fun getSolicitudesTrabajador(): SolicitudServicioSearchResponseDto
+    suspend fun getSolicitudesTrabajador(): SolicitudServicioSearchPageDto
 
     @GET("solicitud-servicio/{id}")
     suspend fun getSolicitud(@Path("id") id: Long): SolicitudServicioDto

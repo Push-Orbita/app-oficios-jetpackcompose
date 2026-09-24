@@ -75,7 +75,7 @@ data class CreateCalificacionRequestDto(
 
 @Serializable
 data class TrabajadorOficioSimpleDto(
-    val id: Long,
+    val id: Long = 0L,
     val usuario: UsuarioDto? = null,
     val estado: String? = null,
     val documento: String? = null,
@@ -83,7 +83,7 @@ data class TrabajadorOficioSimpleDto(
 
 @Serializable
 data class ClienteSimpleDto(
-    val id: Long,
+    val id: Long = 0L,
     val usuario: UsuarioDto? = null,
     val estado: String? = null,
     val documento: String? = null,
@@ -98,11 +98,11 @@ data class SlotTurnoEnBookingDto(
 
 @Serializable
 data class BookingSimpleDto(
-    val id: Long,
+    val id: Long = 0L,
     val inicioConfirmado: String? = null,
     val finConfirmado: String? = null,
     val tipo: String? = null,
-    val estado: String,
+    val estado: String = "",
     val domicilioTexto: String? = null,
     val contactoTexto: String? = null,
     val slotTurno: SlotTurnoEnBookingDto? = null,
@@ -145,7 +145,7 @@ data class SolicitudServicioSimpleDto(
     val subRubro: SubRubroDto? = null,
     val domicilio: DomicilioSinPersonaDto? = null,
     val contacto: ContactoSinPersonaDto? = null,
-    val estado: String,
+    val estado: String = "",
     val descripcion: String? = null,
     val booking: BookingSimpleDto? = null,
 )
@@ -155,6 +155,23 @@ data class SolicitudServicioSearchResponseDto(
     val trabajador: TrabajadorOficioSimpleDto? = null,
     val solicitudes: List<SolicitudServicioSimpleDto> = emptyList(),
 )
+
+/**
+ * Runtime de `GET /solicitud-servicio/search` (23 sep 2026): el cuerpo es
+ * `{ data: { trabajador, solicitudes }, metadata }`, no el DTO suelto del OpenAPI.
+ * Si el backend aplana la respuesta, también se acepta el shape de raíz.
+ */
+@Serializable
+data class SolicitudServicioSearchPageDto(
+    val data: SolicitudServicioSearchResponseDto? = null,
+    val trabajador: TrabajadorOficioSimpleDto? = null,
+    val solicitudes: List<SolicitudServicioSimpleDto> = emptyList(),
+) {
+    fun resolved(): SolicitudServicioSearchResponseDto = SolicitudServicioSearchResponseDto(
+        trabajador = data?.trabajador ?: trabajador,
+        solicitudes = if (data != null) data.solicitudes else solicitudes,
+    )
+}
 
 @Serializable
 data class FinalizeBookingRequestDto(
