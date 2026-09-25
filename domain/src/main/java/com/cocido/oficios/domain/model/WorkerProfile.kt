@@ -11,6 +11,10 @@ data class WorkerProfile(
     val gallery: List<WorkGalleryItem> = emptyList(),
     val certificates: List<WorkCertificateItem> = emptyList(),
     val workAddresses: List<WorkerWorkAddress> = emptyList(),
+    /** Barrio y localidad, sin calle ni número. */
+    val zoneLabel: String? = null,
+    /** Solo si GET /trabajador-oficio/{id} trae descripcion no vacía. */
+    val about: String? = null,
 )
 
 data class WorkerSpecialty(
@@ -35,12 +39,19 @@ data class WorkerAvailability(
     val workDays: List<WorkerWorkDay> = emptyList(),
 )
 
-data class WorkerWorkDay(
-    val dayStart: String,
-    val dayEnd: String,
+data class WorkerTimeRange(
     val startTime: String,
     val endTime: String,
 )
+
+data class WorkerWorkDay(
+    val dayStart: String,
+    val dayEnd: String,
+    val hours: List<WorkerTimeRange> = emptyList(),
+) {
+    val startTime: String get() = hours.firstOrNull()?.startTime.orEmpty()
+    val endTime: String get() = hours.firstOrNull()?.endTime.orEmpty()
+}
 
 data class WorkerReputation(
     val rating: Float?,
@@ -63,6 +74,7 @@ data class WorkerWorkAddress(
     val barrioId: Long?,
     val label: String?,
     val calle: String?,
+    val zoneLabel: String? = null,
 )
 
 data class WorkerReview(
@@ -71,6 +83,8 @@ data class WorkerReview(
     val punctualityScore: Int?,
     val comment: String?,
     val clientLabel: String?,
+    /** finConfirmado o inicioConfirmado del booking, si el contrato lo trae. */
+    val reviewedAt: String? = null,
 )
 
 data class PagedWorkerReviews(

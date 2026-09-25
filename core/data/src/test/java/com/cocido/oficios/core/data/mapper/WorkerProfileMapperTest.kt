@@ -65,6 +65,58 @@ class WorkerProfileMapperTest {
         assertEquals(4, review.punctualityScore)
         assertEquals("Comentario", review.comment)
         assertEquals("Ana", review.clientLabel)
+        assertEquals("2026-01-01T11:00:00Z", review.reviewedAt)
+    }
+
+    @Test
+    fun `zone uses barrio and localidad and drops street`() {
+        assertEquals("San Francisco, Formosa", formatWorkerZone("San Francisco", "Formosa"))
+        assertEquals("Centro", formatWorkerZone("Centro", "  "))
+        assertNull(formatWorkerZone(null, null))
+
+        val dto = json.decodeFromString(
+            TrabajadorOficioPerfilCompletoDto.serializer(),
+            """
+            {
+              "id": 9,
+              "usuario": {
+                "email": "a@b.c",
+                "emailVerificado": false,
+                "persona": { "nombres": "Ana", "apellido": "Gómez" }
+              },
+              "estado": "PENDIENTE",
+              "descripcion": "   ",
+              "domicilios": [{
+                "id": 1,
+                "calle": "Av. 25 de Mayo",
+                "numero": "100",
+                "barrio": { "id": 3, "nombre": "San Francisco", "localidad": "Formosa" }
+              }]
+            }
+            """.trimIndent(),
+        )
+        val profile = dto.toWorkerProfile()
+        assertEquals("San Francisco, Formosa", profile.zoneLabel)
+        assertNull(profile.about)
+        assertNull(profile.workAddresses.first().calle)
+        assertFalse(profile.isVerified)
+    }
+
+    @Test
+    fun `about is shown only when descripcion is not blank`() {
+        val dto = json.decodeFromString(
+            TrabajadorOficioPerfilCompletoDto.serializer(),
+            """
+            {
+              "id": 10,
+              "usuario": { "email": "a@b.c", "persona": { "nombres": "Ana", "apellido": "Gómez" } },
+              "estado": "VALIDADO",
+              "descripcion": " Arreglo cañerías "
+            }
+            """.trimIndent(),
+        )
+        assertEquals("Arreglo cañerías", dto.toWorkerProfile().about)
+        assertTrue(dto.toWorkerProfile().isVerified)
     }
 
     private companion object {
