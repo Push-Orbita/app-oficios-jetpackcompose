@@ -3,7 +3,9 @@ package com.cocido.oficios.feature.home.orders
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,7 +37,14 @@ fun OrdersListScreen(
     onTabSelected: ((ClientHomeTab) -> Unit)? = null,
 ) {
     if (!showBackNavigation && onTabSelected == null) {
-        OrdersListBody(uiState = uiState, onEvent = onEvent, modifier = modifier)
+        Column(modifier = modifier.fillMaxSize()) {
+            OficiosTopAppBar(title = "Mis pedidos", windowInsets = WindowInsets(0, 0, 0, 0))
+            OrdersListBody(
+                uiState = uiState,
+                onEvent = onEvent,
+                modifier = Modifier.weight(1f),
+            )
+        }
         return
     }
     OficiosScaffold(
@@ -107,7 +116,7 @@ private fun OrdersListBody(
 
 @Composable
 private fun OrderListItemCard(order: ServiceOrderListItem, onClick: () -> Unit) {
-    OficiosCard(onClick = onClick) {
+    OficiosCard(modifier = Modifier.fillMaxWidth(), onClick = onClick) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
             ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
             Text(
