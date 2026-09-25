@@ -8,6 +8,8 @@ import com.cocido.oficios.domain.model.PagedWorkerReviews
 import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.domain.model.WorkerReview
 import com.cocido.oficios.domain.repository.FavoritesRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import com.cocido.oficios.domain.repository.WorkerProfileRepository
 import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
 import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
@@ -342,6 +344,7 @@ private class FakeFavoritesStatusRepository(
     private var isFavorite: Boolean = false,
     private val failToggle: Boolean = false,
 ) : FavoritesRepository {
+    override val favoritesChanged: SharedFlow<Unit> = MutableSharedFlow()
     override suspend fun getFavorites(pageNumber: Int, pageSize: Int) = error("unused")
 
     override suspend fun getStatus(workerId: Long) =
