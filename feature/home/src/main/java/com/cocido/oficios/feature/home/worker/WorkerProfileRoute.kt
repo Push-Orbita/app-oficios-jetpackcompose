@@ -19,6 +19,8 @@ fun WorkerProfileRoute(
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val ratingUnavailableMessage = stringResource(R.string.home_worker_rate_unavailable)
+    val favoriteSavedMessage = stringResource(R.string.home_worker_favorite_saved)
+    val favoriteRemovedMessage = stringResource(R.string.home_worker_favorite_removed)
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -26,6 +28,9 @@ fun WorkerProfileRoute(
                 WorkerProfileEffect.NavigateBack -> onNavigateBack()
                 is WorkerProfileEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 is WorkerProfileEffect.ShowMessage -> onShowMessage(effect.message)
+                is WorkerProfileEffect.ShowFavoriteResult -> onShowMessage(
+                    if (effect.added) favoriteSavedMessage else favoriteRemovedMessage,
+                )
                 WorkerProfileEffect.ShowRatingUnavailable -> onShowMessage(ratingUnavailableMessage)
                 is WorkerProfileEffect.NavigateToReport -> onNavigateToReport(effect.workerId, effect.workerName)
             }
