@@ -25,7 +25,6 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
 import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
-import com.cocido.oficios.feature.home.orders.OrdersListRoute
 
 @Composable
 fun HomeScreen(
@@ -34,7 +33,6 @@ fun HomeScreen(
     selectedTab: ClientHomeTab,
     onEvent: (HomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
-    onNavigateToOrderDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     OficiosScaffold(
@@ -46,15 +44,6 @@ fun HomeScreen(
             )
         },
     ) { paddingValues ->
-        if (selectedTab == ClientHomeTab.PEDIDOS) {
-            OrdersListRoute(
-                onNavigateBack = {},
-                onNavigateToOrderDetail = onNavigateToOrderDetail,
-                showBackNavigation = false,
-                modifier = Modifier.padding(paddingValues),
-            )
-            return@OficiosScaffold
-        }
         when (uiState) {
             HomeUiState.Loading -> {
                 OficiosLoadingState(

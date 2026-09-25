@@ -13,8 +13,11 @@ class ClientHomeTabNavigatorTest {
     }
 
     @Test
-    fun `pedidos tab stays so the bottom bar remains visible`() {
-        assertEquals(ClientHomeTabNavigation.Stay, ClientHomeTabNavigator.navigationFor(ClientHomeTab.PEDIDOS))
+    fun `pedidos is its own destination so system back returns to inicio`() {
+        assertEquals(ClientHomeTabNavigation.Orders, ClientHomeTabNavigator.navigationFor(ClientHomeTab.PEDIDOS))
+        assertEquals("orders/mine", clientTabRoute(ClientHomeTab.PEDIDOS, "home/inicio", "settings"))
+        assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("home/inicio"))
+        assertEquals(ClientHomeTab.PEDIDOS, ClientHomeTabNavigator.tabForDestination("orders/mine"))
     }
 
     @Test
@@ -33,18 +36,44 @@ class ClientHomeTabNavigatorTest {
     }
 
     @Test
-    fun `handleTabSelected does not leave home for pedidos`() {
+    fun `handleTabSelected leaves home for pedidos`() {
         var stayed = false
-        var settingsCalled = false
+        var ordersCalled = false
         ClientHomeTabNavigator.handleTabSelected(
             tab = ClientHomeTab.PEDIDOS,
             onStay = { stayed = true },
-            onNavigateToSettings = { settingsCalled = true },
+            onNavigateToOrders = { ordersCalled = true },
+            onNavigateToSettings = {},
+            onNavigateToHelp = {},
+            onNavigateToFavorites = {},
+        )
+        assertEquals(false, stayed)
+        assertEquals(true, ordersCalled)
+    }
+
+    @Test
+    fun `reselecting inicio always lands on home`() {
+        assertEquals("home/inicio", clientTabRoute(ClientHomeTab.INICIO, "home/inicio", "settings"))
+        assertEquals(
+            "providerHome/inicio",
+            clientTabRoute(ClientHomeTab.INICIO, "providerHome/inicio", "settings"),
+        )
+        assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("home/inicio"))
+        assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("providerHome/inicio"))
+        assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("home/categories"))
+        assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("orders/12"))
+        var stayed = false
+        var ordersCalled = false
+        ClientHomeTabNavigator.handleTabSelected(
+            tab = ClientHomeTab.INICIO,
+            onStay = { stayed = true },
+            onNavigateToOrders = { ordersCalled = true },
+            onNavigateToSettings = {},
             onNavigateToHelp = {},
             onNavigateToFavorites = {},
         )
         assertEquals(true, stayed)
-        assertEquals(false, settingsCalled)
+        assertEquals(false, ordersCalled)
     }
 
     @Test
