@@ -19,6 +19,12 @@ sealed interface WorkerProfileUiState {
         val canFavorite: Boolean = false,
         val isFavorite: Boolean = false,
         val isTogglingFavorite: Boolean = false,
+        val isRefreshing: Boolean = false,
+        /**
+         * El perfil no trae los bookings del cliente. Calificar pide bookingId y no hay
+         * forma confiable de saber si este cliente tiene uno finalizado sin calificar.
+         */
+        val canRate: Boolean = false,
     ) : WorkerProfileUiState
 }
 

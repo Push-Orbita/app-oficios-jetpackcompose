@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.worker
 
 import androidx.lifecycle.SavedStateHandle
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.FavoriteStatus
 import com.cocido.oficios.domain.model.PagedWorkerReviews
@@ -246,6 +247,67 @@ class WorkerProfileViewModelTest {
         val state = viewModel.uiState.value as WorkerProfileUiState.Success
         assertTrue(state.isFavorite)
         assertTrue(state.canFavorite)
+        assertTrue(state.canRate.not())
+    }
+
+    @Test
+    fun `favorite click rolls back when toggle fails`() = runTest(testDispatcher) {
+        val workerId = 3L
+        val profile = WorkerProfile(
+            id = workerId,
+            displayName = "Matias",
+            avatarUrl = null,
+            isVerified = true,
+        )
+        val repository = FakeWorkerProfileRepository(
+            profile = AppResult.Success(profile),
+            reviewsPages = emptyMap(),
+        )
+        val favorites = FakeFavoritesStatusRepository(isFavorite = true, failToggle = true)
+        val viewModel = WorkerProfileViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
+            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
+            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
+            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(favorites),
+            toggleFavoriteUseCase = ToggleFavoriteUseCase(favorites),
+        )
+        advanceUntilIdle()
+        val effects = mutableListOf<WorkerProfileEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.onEvent(WorkerProfileEvent.FavoriteClicked)
+        advanceUntilIdle()
+        job.cancel()
+
+        val state = viewModel.uiState.value as WorkerProfileUiState.Success
+        assertTrue(state.isFavorite)
+        assertTrue(state.isTogglingFavorite.not())
+        assertTrue(effects.any { it is WorkerProfileEffect.ShowMessage })
+    }
+
+    @Test
+    fun `rate stays unavailable without a finished booking of this client`() = runTest(testDispatcher) {
+        val workerId = 8L
+        val profile = WorkerProfile(id = workerId, displayName = "Ana", avatarUrl = null, isVerified = true)
+        val viewModel = WorkerProfileViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
+            getWorkerProfileUseCase = GetWorkerProfileUseCase(
+                FakeWorkerProfileRepository(AppResult.Success(profile), emptyMap()),
+            ),
+            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(
+                FakeWorkerProfileRepository(AppResult.Success(profile), emptyMap()),
+            ),
+            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
+            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
+        )
+        advanceUntilIdle()
+        val effects = mutableListOf<WorkerProfileEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+        viewModel.onEvent(WorkerProfileEvent.RateClicked)
+        advanceUntilIdle()
+        job.cancel()
+        assertTrue(effects.any { it is WorkerProfileEffect.ShowRatingUnavailable })
+        assertTrue((viewModel.uiState.value as WorkerProfileUiState.Success).canRate.not())
     }
 }
 
@@ -278,6 +340,7 @@ private class FakeWorkerProfileRepository(
 
 private class FakeFavoritesStatusRepository(
     private var isFavorite: Boolean = false,
+    private val failToggle: Boolean = false,
 ) : FavoritesRepository {
     override suspend fun getFavorites(pageNumber: Int, pageSize: Int) = error("unused")
 
@@ -285,11 +348,13 @@ private class FakeFavoritesStatusRepository(
         AppResult.Success(FavoriteStatus(isFavorite = isFavorite))
 
     override suspend fun add(workerId: Long, idempotencyKey: String): AppResult<Unit> {
+        if (failToggle) return AppResult.Error(AppError.Network("falló"))
         isFavorite = true
         return AppResult.Success(Unit)
     }
 
     override suspend fun remove(workerId: Long): AppResult<Unit> {
+        if (failToggle) return AppResult.Error(AppError.Network("falló"))
         isFavorite = false
         return AppResult.Success(Unit)
     }

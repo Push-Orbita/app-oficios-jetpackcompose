@@ -56,6 +56,7 @@ class WorkerProfileViewModel @Inject constructor(
     fun onEvent(event: WorkerProfileEvent) {
         when (event) {
             WorkerProfileEvent.Retry -> loadInitial()
+            WorkerProfileEvent.Refresh -> refresh()
             WorkerProfileEvent.Back -> emitEffect(WorkerProfileEffect.NavigateBack)
             WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
             WorkerProfileEvent.RateClicked -> emitEffect(WorkerProfileEffect.ShowRatingUnavailable)
@@ -65,6 +66,33 @@ class WorkerProfileViewModel @Inject constructor(
             }
             WorkerProfileEvent.FavoriteClicked -> toggleFavorite()
             WorkerProfileEvent.LoadNextReviews -> loadNextReviews()
+        }
+    }
+
+    private fun refresh() {
+        val current = _uiState.value as? WorkerProfileUiState.Success
+        if (current == null) {
+            loadInitial()
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { state ->
+                if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = true) else state
+            }
+            when (val profileResult = getWorkerProfileUseCase(workerId)) {
+                is AppResult.Success -> loadReviewsAndSetSuccess(
+                    profile = profileResult.data,
+                    pageNumber = 1,
+                    canFavorite = current.canFavorite,
+                    isFavorite = current.isFavorite,
+                )
+                is AppResult.Error -> {
+                    _uiState.update { state ->
+                        if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = false) else state
+                    }
+                    emitEffect(WorkerProfileEffect.ShowMessage(profileResult.error.userMessage()))
+                }
+            }
         }
     }
 
@@ -152,11 +180,7 @@ class WorkerProfileViewModel @Inject constructor(
                             current
                         }
                     }
-                    emitEffect(
-                        WorkerProfileEffect.ShowMessage(
-                            if (previous) "Lo sacamos de Favoritos." else "Lo guardamos en Favoritos.",
-                        ),
-                    )
+                    emitEffect(WorkerProfileEffect.ShowFavoriteResult(added = !previous))
                 }
                 is AppResult.Error -> {
                     _uiState.update { current ->
