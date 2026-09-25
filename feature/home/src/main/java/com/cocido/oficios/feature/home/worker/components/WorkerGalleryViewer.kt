@@ -38,6 +38,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.SubcomposeAsyncImage
@@ -111,8 +112,8 @@ fun WorkerGalleryViewer(
                     .align(Alignment.BottomCenter)
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(bottom = OficiosSpacing.md)
-                    .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(50))
-                    .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
+                    .background(Color.White.copy(alpha = 0.22f), RoundedCornerShape(50))
+                    .padding(horizontal = OficiosSpacing.sm, vertical = 6.dp),
             )
         }
     }
