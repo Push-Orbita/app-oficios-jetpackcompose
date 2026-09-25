@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.repository.FavoritesRepository
 import com.cocido.oficios.domain.usecase.social.GetFavoritesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
+    private val favoritesRepository: FavoritesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FavoritesUiState(isLoading = true))
@@ -26,8 +28,23 @@ class FavoritesViewModel @Inject constructor(
     private val _effects = Channel<FavoritesEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
+    private var skipNextResume = true
+
     init {
         load(pageNumber = 1, append = false)
+        viewModelScope.launch {
+            favoritesRepository.favoritesChanged.collect {
+                load(pageNumber = 1, append = false, silent = _uiState.value.items.isNotEmpty())
+            }
+        }
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load(pageNumber = 1, append = false, silent = _uiState.value.items.isNotEmpty())
     }
 
     fun onEvent(event: FavoritesEvent) {
@@ -44,13 +61,13 @@ class FavoritesViewModel @Inject constructor(
         }
     }
 
-    private fun load(pageNumber: Int, append: Boolean) {
+    private fun load(pageNumber: Int, append: Boolean, silent: Boolean = false) {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
-                    isLoading = !append,
+                    isLoading = !append && !silent,
                     isLoadingMore = append,
-                    errorMessage = null,
+                    errorMessage = if (silent) it.errorMessage else null,
                 )
             }
             when (val result = getFavoritesUseCase(pageNumber = pageNumber)) {
