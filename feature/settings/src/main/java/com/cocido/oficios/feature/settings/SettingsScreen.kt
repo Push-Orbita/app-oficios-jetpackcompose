@@ -41,6 +41,7 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -52,15 +53,22 @@ fun SettingsScreen(
     uiState: SettingsUiState,
     onEvent: (SettingsEvent) -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
+    bottomBar: @Composable () -> Unit = {},
 ) {
     OficiosScaffold(
         modifier = modifier,
         topBar = {
-            OficiosBackTopBar(
-                title = stringResource(R.string.settings_title),
-                onBack = { onEvent(SettingsEvent.NavigateBack) },
-            )
+            if (showBackNavigation) {
+                OficiosBackTopBar(
+                    title = stringResource(R.string.settings_title),
+                    onBack = { onEvent(SettingsEvent.NavigateBack) },
+                )
+            } else {
+                OficiosTopAppBar(title = stringResource(R.string.settings_title))
+            }
         },
+        bottomBar = bottomBar,
     ) { paddingValues ->
         when {
             uiState.isLoading && uiState.profile == null -> OficiosLoadingState(

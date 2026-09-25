@@ -12,10 +12,13 @@ import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
+import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.HomeDestination
 import com.cocido.oficios.feature.home.navigation.OrdersDestination
 import com.cocido.oficios.feature.home.navigation.agendaScreen
 import com.cocido.oficios.feature.home.navigation.homeScreen
+import com.cocido.oficios.feature.home.navigation.openClientTab
 import com.cocido.oficios.feature.home.navigation.ordersScreen
 import com.cocido.oficios.feature.home.navigation.providerHomeScreen
 import com.cocido.oficios.feature.home.navigation.sharedHomeScreens
@@ -139,14 +142,14 @@ fun AppNavHost(
         homeScreen(
             navController = navController,
             onNavigateToSettings = {
-                navController.navigate(SettingsDestination.route)
+                navController.openClientTab(ClientHomeTab.AJUSTES, SettingsDestination.route)
             },
             onShowMessage = showMessage,
         )
         providerHomeScreen(
             navController = navController,
             onNavigateToSettings = {
-                navController.navigate(SettingsDestination.route)
+                navController.openClientTab(ClientHomeTab.AJUSTES, SettingsDestination.route)
             },
             onNavigateToCompleteProfile = {
                 navController.navigate(OnboardingDestination.PROVIDER_CHECKLIST) {
@@ -176,6 +179,12 @@ fun AppNavHost(
             onNavigateToVerifyPhone = { contactId, telefono ->
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))
             },
+            bottomBar = {
+                ClientHomeBottomBar(
+                    selectedTab = ClientHomeTab.AJUSTES,
+                    onTabSelected = { navController.openClientTab(it, SettingsDestination.route) },
+                )
+            },
         )
         sharedHomeScreens(
             navController = navController,
@@ -191,6 +200,7 @@ fun AppNavHost(
                 }
             },
             onNavigateToSearch = { navController.popBackStack() },
+            settingsRoute = SettingsDestination.route,
         )
     }
 }

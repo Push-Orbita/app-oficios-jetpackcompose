@@ -80,6 +80,8 @@ fun NavGraphBuilder.ordersScreen(
         OrdersListRoute(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
+            showBackNavigation = false,
+            onTabSelected = { navController.openClientTab(it, settingsRoute = "settings") },
         )
     }
 }

@@ -17,20 +17,27 @@ import androidx.compose.ui.text.font.FontWeight
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun HelpRoute(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
+    onTabSelected: (com.cocido.oficios.feature.home.components.ClientHomeTab) -> Unit = {},
 ) {
     val context = LocalContext.current
     HelpScreen(
         onContactSupport = { openSupportPhone(context) },
         onNavigateBack = onNavigateBack,
+        showBackNavigation = showBackNavigation,
+        onTabSelected = onTabSelected,
         modifier = modifier,
     )
 }
@@ -40,14 +47,28 @@ fun HelpScreen(
     onContactSupport: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
+    onTabSelected: (ClientHomeTab) -> Unit = {},
 ) {
     OficiosScaffold(
         modifier = modifier,
         topBar = {
-            OficiosBackTopBar(
-                title = stringResource(R.string.help_title),
-                onBack = onNavigateBack,
-            )
+            if (showBackNavigation) {
+                OficiosBackTopBar(
+                    title = stringResource(R.string.help_title),
+                    onBack = onNavigateBack,
+                )
+            } else {
+                OficiosTopAppBar(title = stringResource(R.string.help_title))
+            }
+        },
+        bottomBar = {
+            if (!showBackNavigation) {
+                ClientHomeBottomBar(
+                    selectedTab = ClientHomeTab.AYUDA,
+                    onTabSelected = onTabSelected,
+                )
+            }
         },
     ) { paddingValues ->
         Column(

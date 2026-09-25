@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.settings.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.cocido.oficios.feature.settings.SettingsRoute
@@ -19,6 +20,7 @@ fun NavGraphBuilder.settingsScreen(
     onLoggedOut: () -> Unit,
     onShowMessage: (String) -> Unit,
     onNavigateToVerifyPhone: (Long, String) -> Unit,
+    bottomBar: @Composable () -> Unit = {},
 ) {
     composable(route = SettingsDestination.route) {
         SettingsRoute(
@@ -31,6 +33,8 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio) },
             onNavigateToChangePassword = { navController.navigate(SettingsDestination.changePassword) },
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
+            showBackNavigation = false,
+            bottomBar = bottomBar,
         )
     }
     composable(SettingsDestination.personalData) {
