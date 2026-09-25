@@ -13,6 +13,7 @@ import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.domain.model.WorkerReputation
 import com.cocido.oficios.domain.model.WorkerReview
 import com.cocido.oficios.domain.model.WorkerSpecialty
+import com.cocido.oficios.domain.model.WorkerTimeRange
 import com.cocido.oficios.domain.model.WorkerWorkAddress
 import com.cocido.oficios.domain.model.WorkerWorkDay
 
@@ -51,6 +52,8 @@ fun TrabajadorOficioPerfilCompletoDto.toWorkerProfile(): WorkerProfile {
         gallery = gallery,
         certificates = certificates,
         workAddresses = addresses,
+        zoneLabel = addresses.firstNotNullOfOrNull { it.zoneLabel },
+        about = descripcion?.trim()?.takeIf { it.isNotEmpty() },
     )
 }
 
@@ -81,12 +84,17 @@ private fun List<DiaLaboralSimpleDto>.toAvailability(): WorkerAvailability? {
 }
 
 private fun DiaLaboralSimpleDto.toWorkDay(): WorkerWorkDay? {
-    val firstHorario = horariosLaborales.firstOrNull() ?: return null
+    val hours = horariosLaborales.map { horario ->
+        WorkerTimeRange(
+            startTime = horario.horaInicio.normalizeTime(),
+            endTime = horario.horaFin.normalizeTime(),
+        )
+    }
+    if (hours.isEmpty()) return null
     return WorkerWorkDay(
         dayStart = diaInicio,
         dayEnd = diaFin,
-        startTime = firstHorario.horaInicio,
-        endTime = firstHorario.horaFin,
+        hours = hours,
     )
 }
 
@@ -142,13 +150,19 @@ private fun GaleriaTrabajoSimpleDto.toGalleryItem(): WorkGalleryItem? {
 
 private fun com.cocido.oficios.core.network.api.worker.dto.DomicilioEnrichedDto.toWorkAddress(): WorkerWorkAddress? {
     val addressId = id ?: return null
-    val label = nombre ?: listOfNotNull(calle, null).joinToString(" ").ifBlank { null }
+    val zone = formatWorkerZone(barrio?.nombre, barrio?.localidad)
     return WorkerWorkAddress(
         id = addressId,
         barrioId = barrioId,
-        label = label,
-        calle = calle,
+        label = zone,
+        calle = null,
+        zoneLabel = zone,
     )
+}
+
+fun formatWorkerZone(barrio: String?, localidad: String?): String? {
+    val parts = listOfNotNull(barrio?.trim()?.takeIf { it.isNotEmpty() }, localidad?.trim()?.takeIf { it.isNotEmpty() })
+    return parts.joinToString(", ").ifBlank { null }
 }
 
 fun PaginatedResponseDto<CalificacionDto>.toPagedWorkerReviews(
@@ -177,7 +191,8 @@ private fun CalificacionDto.toWorkerReview(): WorkerReview? {
         qualityScore = calidad,
         punctualityScore = puntualidad,
         comment = comentario,
-        clientLabel = booking?.contactoTexto ?: booking?.domicilioTexto,
+        clientLabel = booking?.contactoTexto,
+        reviewedAt = booking?.finConfirmado ?: booking?.inicioConfirmado,
     )
 }
 

@@ -40,4 +40,5 @@ data class SubRubroDto(
 data class BarrioDto(
     val id: Long,
     val nombre: String,
+    val localidad: String? = null,
 )
