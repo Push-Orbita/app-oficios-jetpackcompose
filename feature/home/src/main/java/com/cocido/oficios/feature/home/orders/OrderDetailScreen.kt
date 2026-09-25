@@ -1,5 +1,8 @@
 package com.cocido.oficios.feature.home.orders
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +19,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
+import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
@@ -40,15 +47,15 @@ fun OrderDetailScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Pedido", onBack = onNavigateBack) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.orders_detail_title), onBack = onNavigateBack) },
     ) { paddingValues ->
         when (uiState) {
             OrderDetailUiState.Loading -> OficiosLoadingState(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = "Cargando pedido…",
+                message = stringResource(R.string.orders_detail_loading),
             )
             is OrderDetailUiState.Error -> OficiosErrorState(
-                title = "No pudimos cargar el pedido",
+                title = stringResource(R.string.orders_detail_error_title),
                 description = uiState.message,
                 onRetry = { onEvent(OrderDetailEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -82,48 +89,67 @@ private fun OrderDetailContent(
             .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
+        val visual = orderStatusVisual(order.status, order.bookingStatus)
         OficiosCard {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
                 ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
                 Text(
-                    text = "${order.rubroLabel} · ${order.subRubroLabel}",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = stringResource(visual.explanationRes),
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Text(
-                    text = if (isWorker) "Cliente: ${order.clientName}" else "Trabajador: ${order.workerName}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (order.description.isNotBlank()) {
-                    Text(
-                        text = order.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                OrderTimeline(status = order.status, bookingStatus = order.bookingStatus)
+                cancelledByLabelRes(order.cancelledBy)?.let { label ->
+                    Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                 }
-                order.scheduledLabel?.let {
-                    Text(text = "Fecha propuesta: $it", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                order.cancellationReason?.takeIf { it.isNotBlank() }?.let { reason ->
+                    Text(reason, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Text(
-                    text = if (canShowPrivateDetails) order.addressLabel else "La dirección exacta estará disponible cuando aceptes el pedido.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+        }
+
+        if (!isWorker && order.workerId != 0L) {
+            OficiosCard(onClick = { onEvent(OrderDetailEvent.OpenWorkerProfile) }, modifier = Modifier.fillMaxWidth()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    OficiosAvatar(name = order.workerName, imageUrl = order.workerAvatarUrl, circular = true)
+                    Column {
+                        Text(stringResource(R.string.orders_worker), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(order.workerName, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text("${order.rubroLabel} · ${order.subRubroLabel}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+            }
+        }
+
+        OficiosCard {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+                order.scheduledLabel?.let { InfoText("${stringResource(R.string.orders_date)}: $it") }
+                InfoText(
+                    if (canShowPrivateDetails) "${stringResource(R.string.orders_address)}: ${order.addressLabel}"
+                    else "La dirección exacta estará disponible cuando aceptes el pedido.",
                 )
                 if (canShowPrivateDetails && order.contactName.isNotBlank()) {
-                    Text(
-                        text = "Contacto: ${order.contactName} · ${order.contactPhone}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    InfoText("${stringResource(R.string.orders_contact)}: ${order.contactName} · ${order.contactPhone}")
+                }
+                if (order.description.isNotBlank()) {
+                    InfoText("${stringResource(R.string.orders_description)}: ${order.description}")
+                }
+                order.bookingType?.takeIf { it.isNotBlank() }?.let {
+                    InfoText("${stringResource(R.string.orders_type)}: $it")
                 }
             }
         }
 
         val addressLatitude = order.addressLatitude
         val addressLongitude = order.addressLongitude
+        val context = LocalContext.current
         if (canShowPrivateDetails && addressLatitude != null && addressLongitude != null) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
+            Column(
+                modifier = Modifier.clickable {
+                    openOrderMap(context, addressLatitude, addressLongitude, order.addressLabel)
+                },
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            ) {
                 Text(
                     text = if (state.tracking != null && !isWorker) "Seguimiento del trabajador" else "Ubicación del servicio",
                     style = MaterialTheme.typography.titleMedium,
@@ -170,9 +196,9 @@ private fun OrderDetailContent(
             order.status == ServiceRequestStatus.PENDING && !isWorker -> {
                 InfoText("Esperando respuesta del trabajador")
                 OficiosButton(
-                    text = "Cancelar solicitud",
+                    text = stringResource(R.string.orders_cancel),
                     onClick = { showCancelDialog = true },
-                    variant = OficiosButtonVariant.Ghost,
+                    variant = OficiosButtonVariant.Danger,
                     enabled = !state.isActionInProgress,
                 )
             }
@@ -296,6 +322,16 @@ private fun OrderDetailContent(
                 InfoText("No pudimos determinar el estado de este pedido, contactá soporte.")
             }
         }
+
+        if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING && order.status != ServiceRequestStatus.CANCELLED) {
+            OficiosButton(
+                text = stringResource(R.string.orders_cancel),
+                onClick = { showCancelDialog = true },
+                variant = OficiosButtonVariant.Danger,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.isActionInProgress,
+            )
+        }
     }
 
     if (showRejectDialog) {
@@ -318,7 +354,11 @@ private fun OrderDetailContent(
             dismissLabel = "Volver",
             isDangerous = true,
             onConfirm = {
-                onEvent(OrderDetailEvent.CancelBeforeAcceptance)
+                if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING) {
+                    onEvent(OrderDetailEvent.CancelConfirmed(null))
+                } else {
+                    onEvent(OrderDetailEvent.CancelBeforeAcceptance)
+                }
                 showCancelDialog = false
             },
             onDismiss = { showCancelDialog = false },
@@ -332,6 +372,42 @@ private fun OrderDetailContent(
                 showFinalizeDialog = false
             },
             onDismiss = { showFinalizeDialog = false },
+        )
+    }
+}
+
+@Composable
+private fun OrderTimeline(status: ServiceRequestStatus, bookingStatus: BookingStatus?) {
+    val steps = orderTimeline(status, bookingStatus)
+    if (steps.isEmpty()) return
+    val active = orderTimelineActiveIndex(status, bookingStatus)
+    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs), modifier = Modifier.fillMaxWidth()) {
+        steps.forEachIndexed { index, step ->
+            val label = when (step) {
+                OrderTimelineStep.REQUESTED -> stringResource(R.string.orders_step_requested)
+                OrderTimelineStep.CONFIRMED -> stringResource(R.string.orders_step_confirmed)
+                OrderTimelineStep.EN_ROUTE -> stringResource(R.string.orders_step_en_route)
+                OrderTimelineStep.IN_PROGRESS -> stringResource(R.string.orders_step_in_progress)
+                OrderTimelineStep.FINISHED -> stringResource(R.string.orders_step_finished)
+            }
+            Text(
+                text = label,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+private fun openOrderMap(context: android.content.Context, latitude: Double, longitude: Double, label: String) {
+    val geo = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude(${Uri.encode(label)})")
+    val mapIntent = Intent(Intent.ACTION_VIEW, geo)
+    if (mapIntent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(mapIntent)
+    } else {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude")),
         )
     }
 }

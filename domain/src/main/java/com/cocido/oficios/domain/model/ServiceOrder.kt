@@ -48,6 +48,9 @@ data class ServiceOrder(
     val pendingCounterOffer: CounterOffer? = null,
     val alreadyRated: Boolean = false,
     val completionCode: String? = null,
+    val workerAvatarUrl: String? = null,
+    val cancelledBy: String? = null,
+    val cancellationReason: String? = null,
 )
 
 data class BookingTracking(
@@ -73,7 +76,32 @@ data class ServiceOrderListItem(
     val bookingStatus: BookingStatus?,
     val scheduledLabel: String?,
     val addressLabel: String,
+    val rubroLabel: String = "",
+    val avatarUrl: String? = null,
+    val workerId: Long = 0L,
+    val scheduledSortKey: String? = null,
 )
+
+enum class OrdersListFilter {
+    ACTIVE,
+    HISTORY,
+}
+
+fun ServiceOrderListItem.isHistoryOrder(): Boolean {
+    if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return true
+    return bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED
+}
+
+fun List<ServiceOrderListItem>.arrangedFor(filter: OrdersListFilter): List<ServiceOrderListItem> {
+    val matching = filter { item ->
+        if (filter == OrdersListFilter.HISTORY) item.isHistoryOrder() else !item.isHistoryOrder()
+    }
+    return if (filter == OrdersListFilter.ACTIVE) {
+        matching.sortedWith(compareBy(nullsLast()) { it.scheduledSortKey })
+    } else {
+        matching.sortedWith(compareByDescending(nullsLast()) { it.scheduledSortKey })
+    }
+}
 
 data class CreateServiceRequestParams(
     val trabajadorOficioSubRubroId: Long,

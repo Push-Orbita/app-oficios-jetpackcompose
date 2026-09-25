@@ -112,6 +112,9 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         canCancelBooking = booking?.puedeCancelar ?: false,
         pendingCounterOffer = pendingCounterOffer,
         completionCode = booking?.codigoFinalizacion,
+        workerAvatarUrl = trabajadorOficio?.usuario?.fotoPerfil.toPhotoUrl(),
+        cancelledBy = booking?.canceladoPor,
+        cancellationReason = booking?.motivoCancelacion ?: motivoRechazo,
     )
 }
 
@@ -151,5 +154,9 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
         bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
         scheduledLabel = booking?.scheduledLabel(),
         addressLabel = domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre),
+        rubroLabel = rubro?.nombre.orEmpty(),
+        avatarUrl = (if (isWorkerViewing) cliente?.usuario?.fotoPerfil else trabajadorOficio?.usuario?.fotoPerfil).toPhotoUrl(),
+        workerId = trabajadorOficio?.id ?: 0L,
+        scheduledSortKey = booking?.inicioConfirmado ?: booking?.slotTurno?.inicio,
     )
 }

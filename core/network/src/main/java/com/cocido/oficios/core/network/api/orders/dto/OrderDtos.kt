@@ -109,6 +109,8 @@ data class BookingSimpleDto(
     val fechaLimiteCancelacion: String? = null,
     val puedeCancelar: Boolean = false,
     val codigoFinalizacion: String? = null,
+    val canceladoPor: String? = null,
+    val motivoCancelacion: String? = null,
 )
 
 @Serializable
