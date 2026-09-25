@@ -62,7 +62,7 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
-                onNavigateToMyOrders = { navController.navigate(OrdersDestination.ordersList) },
+                onNavigateToMyOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
                 onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
                 onShowMessage = onShowMessage,
             )

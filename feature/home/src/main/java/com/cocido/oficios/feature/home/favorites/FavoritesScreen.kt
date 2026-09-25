@@ -17,10 +17,13 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.FavoriteWorker
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun FavoritesScreen(
@@ -28,14 +31,28 @@ fun FavoritesScreen(
     onEvent: (FavoritesEvent) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
+    onTabSelected: (ClientHomeTab) -> Unit = {},
 ) {
     OficiosScaffold(
         modifier = modifier,
         topBar = {
-            OficiosBackTopBar(
-                title = stringResource(R.string.home_nav_favoritos),
-                onBack = onNavigateBack,
-            )
+            if (showBackNavigation) {
+                OficiosBackTopBar(
+                    title = stringResource(R.string.home_nav_favoritos),
+                    onBack = onNavigateBack,
+                )
+            } else {
+                OficiosTopAppBar(title = stringResource(R.string.home_nav_favoritos))
+            }
+        },
+        bottomBar = {
+            if (!showBackNavigation) {
+                ClientHomeBottomBar(
+                    selectedTab = ClientHomeTab.FAVORITOS,
+                    onTabSelected = onTabSelected,
+                )
+            }
         },
     ) { paddingValues ->
         when {

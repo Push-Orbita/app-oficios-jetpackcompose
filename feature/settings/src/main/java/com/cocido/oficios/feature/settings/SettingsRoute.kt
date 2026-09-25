@@ -19,6 +19,8 @@ fun SettingsRoute(
     onNavigateToChangePassword: () -> Unit,
     onNavigateToDeleteAccount: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
+    bottomBar: @Composable () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,5 +53,7 @@ fun SettingsRoute(
             }
         },
         modifier = modifier,
+        showBackNavigation = showBackNavigation,
+        bottomBar = bottomBar,
     )
 }

@@ -18,9 +18,12 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun OrdersListScreen(
@@ -29,14 +32,29 @@ fun OrdersListScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     showBackNavigation: Boolean = true,
+    onTabSelected: ((ClientHomeTab) -> Unit)? = null,
 ) {
-    if (!showBackNavigation) {
+    if (!showBackNavigation && onTabSelected == null) {
         OrdersListBody(uiState = uiState, onEvent = onEvent, modifier = modifier)
         return
     }
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Mis pedidos", onBack = onNavigateBack) },
+        topBar = {
+            if (showBackNavigation) {
+                OficiosBackTopBar(title = "Mis pedidos", onBack = onNavigateBack)
+            } else {
+                OficiosTopAppBar(title = "Mis pedidos")
+            }
+        },
+        bottomBar = {
+            if (!showBackNavigation && onTabSelected != null) {
+                ClientHomeBottomBar(
+                    selectedTab = ClientHomeTab.PEDIDOS,
+                    onTabSelected = onTabSelected,
+                )
+            }
+        },
     ) { paddingValues ->
         OrdersListBody(
             uiState = uiState,

@@ -23,7 +23,12 @@ fun NavGraphBuilder.providerHomeScreen(
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
                 onNavigateToCompleteProfile = onNavigateToCompleteProfile,
-                onNavigateToOrdersList = { navController.navigate(OrdersDestination.ordersList) },
+                onNavigateToOrdersList = {
+                    navController.openClientTab(
+                        com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS,
+                        "settings",
+                    )
+                },
                 onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
                 onNavigateToAgenda = { navController.navigate(AgendaDestination.list) },
                 onShowMessage = onShowMessage,

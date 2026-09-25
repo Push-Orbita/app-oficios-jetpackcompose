@@ -13,6 +13,7 @@ fun OrdersListRoute(
     onNavigateToOrderDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showBackNavigation: Boolean = true,
+    onTabSelected: ((com.cocido.oficios.feature.home.components.ClientHomeTab) -> Unit)? = null,
     viewModel: OrdersListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -31,5 +32,6 @@ fun OrdersListRoute(
         onNavigateBack = onNavigateBack,
         modifier = modifier,
         showBackNavigation = showBackNavigation,
+        onTabSelected = onTabSelected,
     )
 }

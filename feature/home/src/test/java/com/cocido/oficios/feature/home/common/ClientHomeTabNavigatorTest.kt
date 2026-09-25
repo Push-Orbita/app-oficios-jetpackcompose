@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.common
 
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.navigation.clientTabRoute
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -44,5 +45,18 @@ class ClientHomeTabNavigatorTest {
         )
         assertEquals(true, stayed)
         assertEquals(false, settingsCalled)
+    }
+
+    @Test
+    fun `client tabs resolve to top level routes`() {
+        assertEquals("home/inicio", clientTabRoute(ClientHomeTab.INICIO, "home/inicio", "settings"))
+        assertEquals("orders/mine", clientTabRoute(ClientHomeTab.PEDIDOS, "home/inicio", "settings"))
+        assertEquals("favorites", clientTabRoute(ClientHomeTab.FAVORITOS, "home/inicio", "settings"))
+        assertEquals("help", clientTabRoute(ClientHomeTab.AYUDA, "home/inicio", "settings"))
+        assertEquals("settings", clientTabRoute(ClientHomeTab.AJUSTES, "home/inicio", "settings"))
+        assertEquals(
+            "providerHome/inicio",
+            clientTabRoute(ClientHomeTab.INICIO, "providerHome/inicio", "settings"),
+        )
     }
 }
