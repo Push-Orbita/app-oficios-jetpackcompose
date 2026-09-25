@@ -28,6 +28,7 @@ class OrderUseCases @Inject constructor(
     suspend fun acceptCounterOffer(counterOfferId: Long) = orderRepository.acceptCounterOffer(counterOfferId)
     suspend fun rejectCounterOffer(counterOfferId: Long) = orderRepository.rejectCounterOffer(counterOfferId)
     suspend fun cancelOrderBeforeAcceptance(orderId: Long) = orderRepository.cancelOrderBeforeAcceptance(orderId)
+    suspend fun cancelConfirmedOrder(orderId: Long, reason: String?) = orderRepository.cancelConfirmedOrder(orderId, reason)
     suspend fun getBookingTracking(bookingId: Long) = orderRepository.getBookingTracking(bookingId)
     suspend fun markEnRoute(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) =
         orderRepository.markEnRoute(bookingId, location)

@@ -30,6 +30,8 @@ sealed interface OrderDetailEvent {
     data object Finalize : OrderDetailEvent
     data class FinalizeWithCode(val code: String) : OrderDetailEvent
     data object GoToRate : OrderDetailEvent
+    data object OpenWorkerProfile : OrderDetailEvent
+    data class CancelConfirmed(val reason: String?) : OrderDetailEvent
 }
 
 enum class TrackingLocationAction { START_ROUTE, ARRIVED }
@@ -41,4 +43,5 @@ sealed interface OrderDetailEffect {
     data class RequestPreciseLocation(val action: TrackingLocationAction) : OrderDetailEffect
     data class StartForegroundTracking(val bookingId: Long) : OrderDetailEffect
     data object StopForegroundTracking : OrderDetailEffect
+    data class NavigateToWorker(val workerId: Long) : OrderDetailEffect
 }

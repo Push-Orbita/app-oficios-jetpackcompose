@@ -25,6 +25,7 @@ import com.cocido.oficios.domain.model.UserRole
 @Composable
 fun OrderDetailRoute(
     onNavigateBack: () -> Unit,
+    onNavigateToWorker: (Long) -> Unit = {},
     onNavigateToCounterOffer: (Long) -> Unit,
     onNavigateToRate: (Long, Long, String) -> Unit,
     onShowMessage: (String) -> Unit,
@@ -59,6 +60,7 @@ fun OrderDetailRoute(
                 is OrderDetailEffect.ShowMessage -> onShowMessage(effect.message)
                 is OrderDetailEffect.NavigateToCounterOffer -> onNavigateToCounterOffer(effect.orderId)
                 is OrderDetailEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerId, effect.workerName)
+                is OrderDetailEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is OrderDetailEffect.RequestPreciseLocation -> {
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         viewModel.onEvent(OrderDetailEvent.LocationPermissionGranted(effect.action))

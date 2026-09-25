@@ -15,12 +15,25 @@ import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.GeoPoint
 import com.cocido.oficios.domain.repository.OrderRepository
 import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 
+@Singleton
 class OrderRepositoryImpl @Inject constructor(
     private val remoteDataSource: OrderRemoteDataSource,
     private val dispatcherProvider: DispatcherProvider,
 ) : OrderRepository {
+
+    private val ordersChangedEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    override val ordersChanged: SharedFlow<Unit> = ordersChangedEvents.asSharedFlow()
+
+    private fun <T> AppResult<T>.notifyIfChanged(): AppResult<T> {
+        if (this is AppResult.Success) ordersChangedEvents.tryEmit(Unit)
+        return this
+    }
 
     override suspend fun createServiceRequest(params: CreateServiceRequestParams): AppResult<Long> =
         withContext(dispatcherProvider.io) {
@@ -35,7 +48,7 @@ class OrderRepositoryImpl @Inject constructor(
                     descripcion = params.description,
                 ),
                 idempotencyKey = params.idempotencyKey,
-            ).map { it.id }
+            ).map { it.id }.notifyIfChanged()
         }
 
     override suspend fun getClientOrders(): AppResult<List<ServiceOrderListItem>> =
@@ -59,12 +72,12 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun acceptOrder(orderId: Long): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.aceptarSolicitud(orderId).map { }
+            remoteDataSource.aceptarSolicitud(orderId).map { }.notifyIfChanged()
         }
 
     override suspend fun rejectOrder(orderId: Long, reason: String): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.rechazarSolicitud(orderId, reason).map { }
+            remoteDataSource.rechazarSolicitud(orderId, reason).map { }.notifyIfChanged()
         }
 
     override suspend fun sendCounterOffer(
@@ -73,22 +86,27 @@ class OrderRepositoryImpl @Inject constructor(
         newEndIso: String,
         newPrice: Double?,
     ): AppResult<Unit> = withContext(dispatcherProvider.io) {
-        remoteDataSource.enviarContrapropuesta(orderId, newStartIso, newEndIso, newPrice).map { }
+        remoteDataSource.enviarContrapropuesta(orderId, newStartIso, newEndIso, newPrice).map { }.notifyIfChanged()
     }
 
     override suspend fun acceptCounterOffer(counterOfferId: Long): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.aceptarContrapropuesta(counterOfferId).map { }
+            remoteDataSource.aceptarContrapropuesta(counterOfferId).map { }.notifyIfChanged()
         }
 
     override suspend fun rejectCounterOffer(counterOfferId: Long): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.rechazarContrapropuesta(counterOfferId).map { }
+            remoteDataSource.rechazarContrapropuesta(counterOfferId).map { }.notifyIfChanged()
         }
 
     override suspend fun cancelOrderBeforeAcceptance(orderId: Long): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.cancelarSolicitudPendiente(orderId).map { }
+            remoteDataSource.cancelarSolicitudPendiente(orderId).map { }.notifyIfChanged()
+        }
+
+    override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?): AppResult<Unit> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.cancelarSolicitudConfirmada(orderId, reason).map { }.notifyIfChanged()
         }
 
     override suspend fun getBookingTracking(bookingId: Long): AppResult<BookingTracking?> =
@@ -104,7 +122,7 @@ class OrderRepositoryImpl @Inject constructor(
                 "EN_CAMINO",
                 location.latitude.toString(),
                 location.longitude.toString(),
-            ).map { }
+            ).map { }.notifyIfChanged()
         }
     }
 
@@ -116,7 +134,7 @@ class OrderRepositoryImpl @Inject constructor(
                 "LLEGUE",
                 location.latitude.toString(),
                 location.longitude.toString(),
-            ).map { }
+            ).map { }.notifyIfChanged()
         }
     }
 
@@ -131,7 +149,7 @@ class OrderRepositoryImpl @Inject constructor(
             )
         }
         return withContext(dispatcherProvider.io) {
-            remoteDataSource.finalizarBooking(bookingId, code).map { }
+            remoteDataSource.finalizarBooking(bookingId, code).map { }.notifyIfChanged()
         }
     }
 
@@ -141,6 +159,6 @@ class OrderRepositoryImpl @Inject constructor(
         punctuality: Int,
         comment: String?,
     ): AppResult<Unit> = withContext(dispatcherProvider.io) {
-        remoteDataSource.crearCalificacion(bookingId, quality, punctuality, comment).map { }
+        remoteDataSource.crearCalificacion(bookingId, quality, punctuality, comment).map { }.notifyIfChanged()
     }
 }

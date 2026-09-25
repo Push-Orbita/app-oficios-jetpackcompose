@@ -59,6 +59,11 @@ class OrderDetailViewModel @Inject constructor(
                 if (counterOfferId != null) runAction { orderUseCases.rejectCounterOffer(counterOfferId) }
             }
             OrderDetailEvent.CancelBeforeAcceptance -> runAction { orderUseCases.cancelOrderBeforeAcceptance(orderId) }
+            is OrderDetailEvent.CancelConfirmed -> runAction { orderUseCases.cancelConfirmedOrder(orderId, event.reason) }
+            OrderDetailEvent.OpenWorkerProfile -> {
+                val workerId = (uiState.value as? OrderDetailUiState.Success)?.order?.workerId ?: return
+                if (workerId != 0L) emitEffect(OrderDetailEffect.NavigateToWorker(workerId))
+            }
             OrderDetailEvent.MarkEnRoute -> emitEffect(
                 OrderDetailEffect.RequestPreciseLocation(TrackingLocationAction.START_ROUTE),
             )
