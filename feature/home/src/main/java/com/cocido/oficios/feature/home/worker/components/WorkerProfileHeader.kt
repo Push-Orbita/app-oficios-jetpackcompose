@@ -68,9 +68,9 @@ fun WorkerProfileHeader(
                 )
                 if (!trade.isNullOrBlank()) {
                     Text(
-                        text = trade,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = trade,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 if (profile.isVerified) {
@@ -78,14 +78,14 @@ fun WorkerProfileHeader(
                         Icon(
                             imageVector = Icons.Default.Verified,
                             contentDescription = stringResource(R.string.home_worker_verified_cd),
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(OficiosComponentSize.iconSm),
                         )
                         Spacer(Modifier.width(OficiosSpacing.xxs))
                         Text(
                             text = stringResource(R.string.home_verified_user),
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -95,14 +95,14 @@ fun WorkerProfileHeader(
                         Icon(
                             imageVector = Icons.Outlined.LocationOn,
                             contentDescription = stringResource(R.string.home_worker_zone_cd),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(OficiosComponentSize.iconSm),
                         )
                         Spacer(Modifier.width(OficiosSpacing.xxs))
                         Text(
                             text = zone,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
