@@ -22,8 +22,10 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.navigation.SharedHomeDestination
 
 @Composable
 fun HelpRoute(
@@ -65,7 +67,7 @@ fun HelpScreen(
         bottomBar = {
             if (!showBackNavigation) {
                 ClientHomeBottomBar(
-                    selectedTab = ClientHomeTab.AYUDA,
+                    selectedTab = ClientHomeTabNavigator.tabForDestination(SharedHomeDestination.help),
                     onTabSelected = onTabSelected,
                 )
             }

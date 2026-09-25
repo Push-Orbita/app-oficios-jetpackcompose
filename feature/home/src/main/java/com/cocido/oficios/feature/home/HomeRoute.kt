@@ -29,7 +29,6 @@ fun HomeRoute(
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToMyOrders: () -> Unit,
-    onNavigateToOrderDetail: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -66,6 +65,7 @@ fun HomeRoute(
     }
 
     ClientHomeTabRouteHost(
+        onNavigateToOrders = onNavigateToMyOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
@@ -77,7 +77,6 @@ fun HomeRoute(
             selectedTab = selectedTab,
             onEvent = viewModel::onEvent,
             onTabSelected = onTabSelected,
-            onNavigateToOrderDetail = onNavigateToOrderDetail,
             modifier = modifier,
         )
     }
@@ -92,7 +91,7 @@ fun CategoriesRoute(
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onNavigateToOrderDetail: (Long) -> Unit,
+    onNavigateToOrders: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CategoriesViewModel = hiltViewModel(),
@@ -114,6 +113,7 @@ fun CategoriesRoute(
 
     ClientHomeTabRouteHost(
         onStay = onNavigateBack,
+        onNavigateToOrders = onNavigateToOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
@@ -125,7 +125,6 @@ fun CategoriesRoute(
             selectedTab = selectedTab,
             onEvent = viewModel::onEvent,
             onTabSelected = onTabSelected,
-            onNavigateToOrderDetail = onNavigateToOrderDetail,
             modifier = modifier,
         )
     }

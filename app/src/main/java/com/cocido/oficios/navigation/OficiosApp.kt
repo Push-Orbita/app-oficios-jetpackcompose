@@ -181,7 +181,9 @@ fun AppNavHost(
             },
             bottomBar = {
                 ClientHomeBottomBar(
-                    selectedTab = ClientHomeTab.AJUSTES,
+                    selectedTab = com.cocido.oficios.feature.home.common.ClientHomeTabNavigator.tabForDestination(
+                        SettingsDestination.route,
+                    ),
                     onTabSelected = { navController.openClientTab(it, SettingsDestination.route) },
                 )
             },

@@ -24,8 +24,10 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBa
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.navigation.OrdersDestination
 
 @Composable
 fun OrdersListScreen(
@@ -59,7 +61,7 @@ fun OrdersListScreen(
         bottomBar = {
             if (!showBackNavigation && onTabSelected != null) {
                 ClientHomeBottomBar(
-                    selectedTab = ClientHomeTab.PEDIDOS,
+                    selectedTab = ClientHomeTabNavigator.tabForDestination(OrdersDestination.ordersList),
                     onTabSelected = onTabSelected,
                 )
             }

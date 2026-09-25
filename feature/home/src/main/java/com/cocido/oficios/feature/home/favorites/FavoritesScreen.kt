@@ -22,8 +22,10 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.FavoriteWorker
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.navigation.SharedHomeDestination
 
 @Composable
 fun FavoritesScreen(
@@ -49,7 +51,7 @@ fun FavoritesScreen(
         bottomBar = {
             if (!showBackNavigation) {
                 ClientHomeBottomBar(
-                    selectedTab = ClientHomeTab.FAVORITOS,
+                    selectedTab = ClientHomeTabNavigator.tabForDestination(SharedHomeDestination.favorites),
                     onTabSelected = onTabSelected,
                 )
             }

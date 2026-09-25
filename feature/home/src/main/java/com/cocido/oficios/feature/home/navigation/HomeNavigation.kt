@@ -63,7 +63,6 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
                 onNavigateToMyOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
-                onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
                 onShowMessage = onShowMessage,
             )
         }
@@ -80,7 +79,7 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
-                onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
+                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
                 onShowMessage = onShowMessage,
             )
         }

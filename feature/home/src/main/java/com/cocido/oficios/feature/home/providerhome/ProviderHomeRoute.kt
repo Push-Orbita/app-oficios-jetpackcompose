@@ -42,6 +42,7 @@ fun ProviderHomeRoute(
     }
 
     ClientHomeTabRouteHost(
+        onNavigateToOrders = onNavigateToOrdersList,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
@@ -53,7 +54,6 @@ fun ProviderHomeRoute(
             selectedTab = selectedTab,
             onEvent = viewModel::onEvent,
             onTabSelected = onTabSelected,
-            onNavigateToOrderDetail = onNavigateToOrderDetail,
             modifier = modifier,
         )
     }
