@@ -84,8 +84,8 @@
     <string name="help_intro">Encontrá respuestas a las consultas más frecuentes sobre Oficios Formosa.</string>
     <string name="help_faq_how_to_hire_question">¿Cómo contrato a un trabajador?</string>
     <string name="help_faq_how_to_hire_answer">Buscá por categoría o rubro, entrá al perfil del trabajador y tocá Contratar. Completá fecha, domicilio y contacto para enviar la solicitud.</string>
-    <string name="help_faq_verify_phone_question">¿Por qué tengo que verificar mi teléfono?</string>
-    <string name="help_faq_verify_phone_answer">El teléfono verificado permite coordinar el servicio con el trabajador y completar tu perfil de cliente.</string>
+    <string name="help_faq_verify_phone_question">¿Cómo se verifica el WhatsApp?</string>
+    <string name="help_faq_verify_phone_answer">Al cargar tu contacto te enviamos un código por WhatsApp. Confirmalo para que el trabajador pueda coordinar el servicio.</string>
     <string name="help_faq_cancel_order_question">¿Puedo cancelar un pedido?</string>
     <string name="help_faq_cancel_order_answer">Sí, mientras el pedido esté pendiente o dentro del plazo permitido podés cancelarlo desde Mis pedidos.</string>
     <string name="help_support_title">¿Necesitás más ayuda?</string>
