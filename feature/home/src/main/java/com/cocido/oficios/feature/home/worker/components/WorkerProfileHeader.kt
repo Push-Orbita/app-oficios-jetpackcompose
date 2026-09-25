@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.worker.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -115,32 +116,40 @@ private fun ReputationLine(profile: WorkerProfile) {
     val reputation = profile.reputation
     val count = reputation?.reviewCount ?: 0
     val rating = reputation?.rating
-    if (rating == null || count <= 0) {
-        Text(
-            text = stringResource(R.string.home_worker_new),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        return
-    }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = Icons.Default.Star,
-            contentDescription = null,
-            tint = OficiosColorTertiary,
-            modifier = Modifier.size(OficiosComponentSize.iconSm),
-        )
-        Spacer(Modifier.width(OficiosSpacing.xxxs))
-        Text(
-            text = String.format(Locale.US, "%.1f", rating),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(
-            text = pluralStringResource(R.plurals.home_worker_review_count, count, count),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = OficiosSpacing.xxs),
-        )
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = OficiosColorTertiary,
+                modifier = Modifier.size(OficiosComponentSize.iconSm),
+            )
+            Spacer(Modifier.width(OficiosSpacing.xxs))
+            if (rating == null || count <= 0) {
+                Text(
+                    text = stringResource(R.string.home_worker_new),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            } else {
+                Text(
+                    text = String.format(Locale.US, "%.1f", rating),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = pluralStringResource(R.plurals.home_worker_review_count, count, count),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(start = OficiosSpacing.xxs),
+                )
+            }
+        }
     }
 }

@@ -63,7 +63,7 @@ fun WorkerReviewsSection(
                 Text(
                     text = stringResource(R.string.home_worker_reviews_empty_description),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(top = OficiosSpacing.xxs),
                 )
             }

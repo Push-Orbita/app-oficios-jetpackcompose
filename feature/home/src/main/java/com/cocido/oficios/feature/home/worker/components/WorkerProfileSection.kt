@@ -28,8 +28,9 @@ fun WorkerProfileSection(
                 .fillMaxWidth()
                 .padding(top = OficiosSpacing.sm),
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(OficiosSpacing.md),
         ) {
-            Column(modifier = Modifier.padding(OficiosSpacing.sm), content = content)
+            Column(content = content)
         }
     }
 }

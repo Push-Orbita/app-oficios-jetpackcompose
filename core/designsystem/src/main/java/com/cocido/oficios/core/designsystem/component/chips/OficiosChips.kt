@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,6 +44,8 @@ fun OficiosChip(
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     borderColor: Color = MaterialTheme.colorScheme.outline,
+    leadingIcon: ImageVector? = null,
+    verticalPadding: androidx.compose.ui.unit.Dp = OficiosSpacing.xs,
     onClick: (() -> Unit)? = null,
 ) {
     val clickModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
@@ -53,14 +56,27 @@ fun OficiosChip(
             .background(containerColor)
             .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
             .then(clickModifier)
-            .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxxs),
+            .padding(horizontal = OficiosSpacing.sm, vertical = verticalPadding),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = contentColor,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+        ) {
+            if (leadingIcon != null) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = contentColor,
+            )
+        }
     }
 }
 
