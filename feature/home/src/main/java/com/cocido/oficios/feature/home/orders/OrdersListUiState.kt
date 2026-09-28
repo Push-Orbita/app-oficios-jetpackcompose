@@ -6,7 +6,10 @@ import com.cocido.oficios.domain.model.arrangedFor
 
 sealed interface OrdersListUiState {
     data object Loading : OrdersListUiState
-    data class Error(val message: String) : OrdersListUiState
+    data class Error(
+        val message: String,
+        val isRefreshing: Boolean = false,
+    ) : OrdersListUiState
     data class Success(
         val orders: List<ServiceOrderListItem>,
         val filter: OrdersListFilter = OrdersListFilter.ACTIVE,

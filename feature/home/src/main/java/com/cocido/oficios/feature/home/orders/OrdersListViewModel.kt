@@ -65,11 +65,14 @@ class OrdersListViewModel @Inject constructor(
 
     private fun load(silent: Boolean = false, refreshing: Boolean = false) {
         viewModelScope.launch {
-            val previous = _uiState.value as? OrdersListUiState.Success
-            if (previous != null && (silent || refreshing)) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else if (!silent) {
-                _uiState.update { OrdersListUiState.Loading }
+            val snapshot = _uiState.value
+            val previous = snapshot as? OrdersListUiState.Success
+            when {
+                previous != null && (silent || refreshing) ->
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                snapshot is OrdersListUiState.Error && refreshing ->
+                    _uiState.update { snapshot.copy(isRefreshing = true) }
+                !silent -> _uiState.update { OrdersListUiState.Loading }
             }
             val userResult = authRepository.getCurrentUser()
             val role = (userResult as? AppResult.Success)?.data?.role
