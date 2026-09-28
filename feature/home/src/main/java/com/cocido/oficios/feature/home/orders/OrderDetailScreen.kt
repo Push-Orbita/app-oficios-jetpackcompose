@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -30,7 +33,9 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.HomeRepairService
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -61,7 +67,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -77,6 +82,7 @@ import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.UserRole
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderDetailScreen(
     uiState: OrderDetailUiState,
@@ -89,23 +95,68 @@ fun OrderDetailScreen(
         topBar = { OficiosBackTopBar(title = stringResource(R.string.orders_detail_title), onBack = onNavigateBack) },
     ) { paddingValues ->
         when (uiState) {
-            OrderDetailUiState.Loading -> OficiosLoadingState(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            OrderDetailUiState.Loading -> OrderDetailSkeleton(
                 message = stringResource(R.string.orders_detail_loading),
-            )
-            is OrderDetailUiState.Error -> OficiosErrorState(
-                title = stringResource(R.string.orders_detail_error_title),
-                description = uiState.message,
-                onRetry = { onEvent(OrderDetailEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
             )
-            is OrderDetailUiState.Success -> OrderDetailContent(
-                state = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(paddingValues),
-            )
+            is OrderDetailUiState.Error -> PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(OrderDetailEvent.Refresh) },
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item {
+                        OficiosErrorState(
+                            title = stringResource(R.string.orders_detail_error_title),
+                            description = uiState.message.ifBlank { stringResource(R.string.orders_detail_error_description) },
+                            onRetry = { onEvent(OrderDetailEvent.Retry) },
+                            modifier = Modifier.fillParentMaxSize(),
+                        )
+                    }
+                }
+            }
+            is OrderDetailUiState.Success -> PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(OrderDetailEvent.Refresh) },
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            ) {
+                OrderDetailContent(
+                    state = uiState,
+                    onEvent = onEvent,
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun OrderDetailSkeleton(message: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md)
+            .semantics { contentDescription = message },
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        SkeletonBlock(modifier = Modifier.size(width = 160.dp, height = 32.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+            repeat(5) { SkeletonBlock(modifier = Modifier.size(OficiosComponentSize.iconLg), shape = CircleShape) }
+        }
+        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(72.dp))
+        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(160.dp))
+        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(240.dp))
+    }
+}
+
+@Composable
+private fun SkeletonBlock(
+    modifier: Modifier,
+    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(OficiosSpacing.md),
+) {
+    Spacer(
+        modifier = modifier
+            .clip(shape)
+            .background(OficiosColorOutlineFill),
+    )
 }
 
 @Composable

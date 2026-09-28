@@ -168,6 +168,7 @@
     <string name="orders_detail_title">Pedido</string>
     <string name="orders_detail_loading">Cargando pedido…</string>
     <string name="orders_detail_error_title">No pudimos cargar el pedido</string>
+    <string name="orders_detail_error_description">Revisá tu conexión e intentá de nuevo.</string>
     <string name="orders_status_pending">Pendiente</string>
     <string name="orders_status_counter">Contrapropuesta</string>
     <string name="orders_status_confirmed">Confirmado</string>

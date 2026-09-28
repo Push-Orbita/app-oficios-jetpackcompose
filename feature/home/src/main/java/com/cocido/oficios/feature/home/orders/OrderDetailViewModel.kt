@@ -49,7 +49,8 @@ class OrderDetailViewModel @Inject constructor(
 
     fun onEvent(event: OrderDetailEvent) {
         when (event) {
-            OrderDetailEvent.Retry -> load()
+            OrderDetailEvent.Retry -> load(fromRefresh = false)
+            OrderDetailEvent.Refresh -> load(fromRefresh = true)
             OrderDetailEvent.Accept -> runAction { orderUseCases.acceptOrder(orderId) }
             is OrderDetailEvent.Reject -> runAction { orderUseCases.rejectOrder(orderId, event.reason) }
             OrderDetailEvent.OpenCounterOffer -> emitEffect(OrderDetailEffect.NavigateToCounterOffer(orderId))
@@ -113,9 +114,16 @@ class OrderDetailViewModel @Inject constructor(
         block(bookingId)
     }
 
-    private fun load() {
+    private fun load(fromRefresh: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { OrderDetailUiState.Loading }
+            val previous = _uiState.value
+            when {
+                fromRefresh && previous is OrderDetailUiState.Success ->
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                fromRefresh && previous is OrderDetailUiState.Error ->
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                else -> _uiState.update { OrderDetailUiState.Loading }
+            }
             val userResult = authRepository.getCurrentUser()
             viewerRole = (userResult as? AppResult.Success)?.data?.role ?: UserRole.UNKNOWN
 
@@ -130,7 +138,16 @@ class OrderDetailViewModel @Inject constructor(
                     _uiState.update { OrderDetailUiState.Success(order, viewerRole, tracking) }
                     startTrackingRefreshIfNeeded(order.bookingId, order.bookingStatus)
                 }
-                is AppResult.Error -> _uiState.update { OrderDetailUiState.Error(result.error.userMessage()) }
+                is AppResult.Error -> {
+                    if (fromRefresh && previous is OrderDetailUiState.Success) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
+                        emitEffect(OrderDetailEffect.ShowMessage("No pudimos actualizar el pedido"))
+                    } else {
+                        _uiState.update {
+                            OrderDetailUiState.Error(result.error.userMessage().ifBlank { "No pudimos cargar el pedido" })
+                        }
+                    }
+                }
             }
         }
     }

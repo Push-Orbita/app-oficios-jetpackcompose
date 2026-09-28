@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
@@ -174,7 +175,7 @@ fun OficiosErrorState(
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = OficiosColorMutedText,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
         if (onRetry != null) {
@@ -184,6 +185,7 @@ fun OficiosErrorState(
                 onClick = onRetry,
                 leadingIcon = Icons.Outlined.Refresh,
                 variant = OficiosButtonVariant.Ghost,
+                size = OficiosButtonSize.Prominent,
             )
         }
     }
