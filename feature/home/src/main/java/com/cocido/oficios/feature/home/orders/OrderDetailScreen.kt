@@ -302,12 +302,13 @@ private fun OrderDetailContent(
 
         when {
             order.status == ServiceRequestStatus.PENDING && isWorker -> {
-                Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), modifier = Modifier.fillMaxWidth()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md), modifier = Modifier.fillMaxWidth()) {
                     OficiosButton(
                         text = "Rechazar",
                         onClick = { showRejectDialog = true },
                         modifier = Modifier.weight(1f),
-                        variant = OficiosButtonVariant.Danger,
+                        leadingIcon = Icons.Outlined.Close,
+                        variant = OficiosButtonVariant.OutlinedDanger,
                         size = OficiosButtonSize.Prominent,
                         enabled = !state.isActionInProgress,
                     )
@@ -351,12 +352,13 @@ private fun OrderDetailContent(
                     }
                 }
                 if (!isWorker) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), modifier = Modifier.fillMaxWidth()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md), modifier = Modifier.fillMaxWidth()) {
                         OficiosButton(
                             text = "Rechazar",
                             onClick = { onEvent(OrderDetailEvent.RejectCounterOffer) },
                             modifier = Modifier.weight(1f),
-                            variant = OficiosButtonVariant.Danger,
+                            leadingIcon = Icons.Outlined.Close,
+                            variant = OficiosButtonVariant.OutlinedDanger,
                             size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
@@ -383,6 +385,11 @@ private fun OrderDetailContent(
             order.status == ServiceRequestStatus.ACCEPTED -> when (order.bookingStatus) {
                 BookingStatus.CONFIRMED -> {
                     if (isWorker) {
+                        ContactButton(
+                            label = stringResource(R.string.orders_contact_client),
+                            phone = order.contactPhone,
+                            onClick = { openWorkerContact(context, order.contactPhone) },
+                        )
                         OficiosButton(
                             text = "Estoy en camino",
                             onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
@@ -391,12 +398,21 @@ private fun OrderDetailContent(
                             enabled = !state.isActionInProgress,
                         )
                     } else {
-                        ClientContactButton(order.contactPhone) { openWorkerContact(context, order.contactPhone) }
+                        ContactButton(
+                            label = stringResource(R.string.orders_contact_worker),
+                            phone = order.contactPhone,
+                            onClick = { openWorkerContact(context, order.contactPhone) },
+                        )
                     }
                 }
                 BookingStatus.EN_ROUTE -> {
                     if (isWorker) {
                         InfoText("Marcaste que estás en camino")
+                        ContactButton(
+                            label = stringResource(R.string.orders_contact_client),
+                            phone = order.contactPhone,
+                            onClick = { openWorkerContact(context, order.contactPhone) },
+                        )
                         OficiosButton(
                             text = "Marcar llegada",
                             onClick = { onEvent(OrderDetailEvent.MarkArrived) },
@@ -405,7 +421,11 @@ private fun OrderDetailContent(
                             enabled = !state.isActionInProgress,
                         )
                     } else {
-                        ClientContactButton(order.contactPhone) { openWorkerContact(context, order.contactPhone) }
+                        ContactButton(
+                            label = stringResource(R.string.orders_contact_worker),
+                            phone = order.contactPhone,
+                            onClick = { openWorkerContact(context, order.contactPhone) },
+                        )
                     }
                 }
                 BookingStatus.IN_PROGRESS -> {
@@ -705,10 +725,10 @@ private fun InfoRow(icon: ImageVector, contentDescription: String, text: String)
 }
 
 @Composable
-private fun ClientContactButton(phone: String, onClick: () -> Unit) {
+private fun ContactButton(label: String, phone: String, onClick: () -> Unit) {
     if (phone.isBlank()) return
     OficiosButton(
-        text = stringResource(R.string.orders_contact_worker),
+        text = label,
         onClick = onClick,
         leadingIcon = Icons.Outlined.Phone,
         size = OficiosButtonSize.Prominent,
