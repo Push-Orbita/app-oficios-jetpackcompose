@@ -168,14 +168,14 @@ private fun NotificationRow(
                 Text(
                     text = item.body,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             if (item.createdAtLabel.isNotBlank()) {
                 Text(
                     text = item.createdAtLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

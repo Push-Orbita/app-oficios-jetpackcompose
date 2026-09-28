@@ -9,6 +9,8 @@ data class NotificationItem(
     val isRead: Boolean,
     val entityType: String?,
     val entityId: Long?,
+    val orderId: Long? = null,
+    val bookingId: Long? = null,
     val deepLink: String?,
 )
 
