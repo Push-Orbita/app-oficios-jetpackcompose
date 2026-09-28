@@ -1,15 +1,21 @@
 package com.cocido.oficios.feature.home.orders
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.feature.home.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun OrdersListRoute(
@@ -22,6 +28,9 @@ fun OrdersListRoute(
     viewModel: OrdersListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -36,6 +45,9 @@ fun OrdersListRoute(
             when (effect) {
                 is OrdersListEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 OrdersListEffect.NavigateToSearch -> onNavigateToSearch()
+                OrdersListEffect.ShowRefreshError -> scope.launch {
+                    snackbarHostState.showSnackbar(context.getString(R.string.orders_refresh_error))
+                }
             }
         }
     }
@@ -47,5 +59,6 @@ fun OrdersListRoute(
         modifier = modifier,
         showBackNavigation = showBackNavigation,
         onTabSelected = onTabSelected,
+        snackbarHostState = snackbarHostState,
     )
 }
