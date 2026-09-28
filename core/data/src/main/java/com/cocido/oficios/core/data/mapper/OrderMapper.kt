@@ -110,6 +110,11 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         addressLongitude = domicilio?.longitud,
         contactName = contacto?.nombre.orEmpty(),
         contactPhone = contacto?.telefonoWhatsapp.orEmpty(),
+        workerPhone = resolveWorkerPhone(
+            workerWhatsapp = trabajadorOficio?.telefonoWhatsapp,
+            userWhatsapp = trabajadorOficio?.usuario?.telefonoWhatsapp,
+            personaPhone = trabajadorOficio?.usuario?.persona?.telefono,
+        ),
         rejectionReason = motivoRechazo,
         bookingId = booking?.id?.takeIf { it != 0L },
         scheduledLabel = booking?.scheduledLabel(),
@@ -152,6 +157,15 @@ fun JsonElement.toBookingTracking(): BookingTracking? {
     val payload = unwrapTrackingElement(this) ?: return null
     return trackingJson.decodeFromJsonElement(TrackingBookingDto.serializer(), payload).toDomain()
 }
+
+/** Teléfono del trabajador. El contacto de la solicitud es del cliente y no se usa acá. */
+fun resolveWorkerPhone(
+    workerWhatsapp: String?,
+    userWhatsapp: String?,
+    personaPhone: String?,
+): String? = listOf(workerWhatsapp, userWhatsapp, personaPhone)
+    .firstOrNull { !it.isNullOrBlank() }
+    ?.trim()
 
 private fun String.toCoordinateOrNull(): Double? = trim().replace(',', '.').toDoubleOrNull()
 

@@ -39,6 +39,8 @@ data class ServiceOrder(
     val addressLongitude: Double? = null,
     val contactName: String,
     val contactPhone: String,
+    /** Teléfono del trabajador, si el perfil o el oficio lo traen. Nunca el contacto del cliente. */
+    val workerPhone: String? = null,
     val rejectionReason: String? = null,
     val bookingId: Long? = null,
     val scheduledLabel: String? = null,

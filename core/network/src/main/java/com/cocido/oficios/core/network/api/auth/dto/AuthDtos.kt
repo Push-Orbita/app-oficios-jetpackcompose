@@ -54,6 +54,7 @@ data class UsuarioDto(
     val fotoPerfil: JsonElement? = null,
     val persona: PersonaDto? = null,
     val rolUsuario: RolUsuarioDto? = null,
+    val telefonoWhatsapp: String? = null,
 )
 
 @Serializable
@@ -61,6 +62,7 @@ data class PersonaDto(
     val id: Long? = null,
     val nombres: String? = null,
     val apellido: String? = null,
+    val telefono: String? = null,
 )
 
 @Serializable

@@ -82,6 +82,7 @@ data class TrabajadorOficioSimpleDto(
     val usuario: UsuarioDto? = null,
     val estado: String? = null,
     val documento: String? = null,
+    val telefonoWhatsapp: String? = null,
 )
 
 @Serializable
