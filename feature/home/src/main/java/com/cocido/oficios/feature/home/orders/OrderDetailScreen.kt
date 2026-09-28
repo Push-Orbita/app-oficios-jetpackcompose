@@ -2,15 +2,23 @@ package com.cocido.oficios.feature.home.orders
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,9 +26,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.feature.home.R
@@ -32,6 +48,12 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingSta
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
+import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
+import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosTrackingMap
 import com.cocido.oficios.domain.model.BookingStatus
@@ -376,27 +398,105 @@ private fun OrderDetailContent(
     }
 }
 
+private enum class TimelinePhase { Done, Current, Upcoming }
+
 @Composable
 private fun OrderTimeline(status: ServiceRequestStatus, bookingStatus: BookingStatus?) {
     val steps = orderTimeline(status, bookingStatus)
     if (steps.isEmpty()) return
     val active = orderTimelineActiveIndex(status, bookingStatus)
-    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs), modifier = Modifier.fillMaxWidth()) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.Top,
+    ) {
         steps.forEachIndexed { index, step ->
-            val label = when (step) {
-                OrderTimelineStep.REQUESTED -> stringResource(R.string.orders_step_requested)
-                OrderTimelineStep.CONFIRMED -> stringResource(R.string.orders_step_confirmed)
-                OrderTimelineStep.EN_ROUTE -> stringResource(R.string.orders_step_en_route)
-                OrderTimelineStep.IN_PROGRESS -> stringResource(R.string.orders_step_in_progress)
-                OrderTimelineStep.FINISHED -> stringResource(R.string.orders_step_finished)
+            val phase = when {
+                index < active -> TimelinePhase.Done
+                index == active -> TimelinePhase.Current
+                else -> TimelinePhase.Upcoming
             }
-            Text(
-                text = label,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+            if (index > 0) {
+                TimelineConnector(done = index <= active)
+            }
+            TimelineStep(step = step, phase = phase)
+        }
+    }
+}
+
+@Composable
+private fun TimelineConnector(done: Boolean) {
+    Box(
+        modifier = Modifier
+            .padding(top = (OficiosComponentSize.iconMd - 2.dp) / 2)
+            .width(OficiosSpacing.md)
+            .height(2.dp)
+            .background(if (done) OficiosColorWhite else OficiosColorWhite.copy(alpha = 0.4f)),
+    )
+}
+
+@Composable
+private fun TimelineStep(step: OrderTimelineStep, phase: TimelinePhase) {
+    val label = when (step) {
+        OrderTimelineStep.REQUESTED -> stringResource(R.string.orders_step_requested)
+        OrderTimelineStep.CONFIRMED -> stringResource(R.string.orders_step_confirmed)
+        OrderTimelineStep.EN_ROUTE -> stringResource(R.string.orders_step_en_route)
+        OrderTimelineStep.IN_PROGRESS -> stringResource(R.string.orders_step_in_progress)
+        OrderTimelineStep.FINISHED -> stringResource(R.string.orders_step_finished)
+    }
+    val description = stringResource(
+        when (phase) {
+            TimelinePhase.Done -> R.string.orders_step_done
+            TimelinePhase.Current -> R.string.orders_step_current
+            TimelinePhase.Upcoming -> R.string.orders_step_upcoming
+        },
+        label,
+    )
+    val circle = when (phase) {
+        TimelinePhase.Done -> OficiosColorAction
+        TimelinePhase.Current -> OficiosColorAccent
+        TimelinePhase.Upcoming -> OficiosColorOutlineFill
+    }
+    val iconTint = when (phase) {
+        TimelinePhase.Done -> OficiosColorWhite
+        TimelinePhase.Current -> OficiosColorBackground
+        TimelinePhase.Upcoming -> OficiosColorWhite.copy(alpha = 0.72f)
+    }
+    val labelColor = if (phase == TimelinePhase.Upcoming) {
+        OficiosColorWhite.copy(alpha = 0.72f)
+    } else {
+        OficiosColorWhite
+    }
+    Column(
+        modifier = Modifier.clearAndSetSemantics { contentDescription = description },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(OficiosComponentSize.iconMd)
+                .clip(CircleShape)
+                .background(circle),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = orderTimelineStepIcon(step),
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(OficiosComponentSize.iconSm),
             )
         }
+        Text(
+            text = label,
+            modifier = Modifier.padding(top = OficiosSpacing.xxs),
+            style = MaterialTheme.typography.labelSmall.copy(
+                letterSpacing = 0.sp,
+                hyphens = Hyphens.None,
+            ),
+            color = labelColor,
+            textAlign = TextAlign.Center,
+            softWrap = false,
+        )
     }
 }
 
