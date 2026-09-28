@@ -6,6 +6,10 @@
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
     <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_logout_title">Cerrar sesión</string>
+    <string name="settings_logout_message">¿Querés salir de tu cuenta en este dispositivo?</string>
+    <string name="settings_logout_confirm">Cerrar sesión</string>
+    <string name="settings_logout_dismiss">Cancelar</string>
     <string name="settings_session_section">Sesión</string>
     <string name="settings_profile_section">Mi perfil</string>
     <string name="settings_security_section">Seguridad y privacidad</string>

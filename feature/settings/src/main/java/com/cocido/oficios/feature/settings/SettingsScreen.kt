@@ -28,6 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -35,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -57,6 +62,7 @@ fun SettingsScreen(
     showBackNavigation: Boolean = true,
     bottomBar: @Composable () -> Unit = {},
 ) {
+    var confirmLogout by rememberSaveable { mutableStateOf(false) }
     OficiosScaffold(
         modifier = modifier,
         topBar = {
@@ -85,9 +91,23 @@ fun SettingsScreen(
             else -> SettingsContent(
                 uiState = uiState,
                 onEvent = onEvent,
+                onRequestLogout = { confirmLogout = true },
                 modifier = Modifier.padding(paddingValues),
             )
         }
+    }
+    if (confirmLogout) {
+        OficiosDialog(
+            title = stringResource(R.string.settings_logout_title),
+            message = stringResource(R.string.settings_logout_message),
+            confirmLabel = stringResource(R.string.settings_logout_confirm),
+            dismissLabel = stringResource(R.string.settings_logout_dismiss),
+            onConfirm = {
+                confirmLogout = false
+                onEvent(SettingsEvent.Logout)
+            },
+            onDismiss = { confirmLogout = false },
+        )
     }
 }
 
@@ -95,6 +115,7 @@ fun SettingsScreen(
 private fun SettingsContent(
     uiState: SettingsUiState,
     onEvent: (SettingsEvent) -> Unit,
+    onRequestLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val profile = uiState.profile ?: return
@@ -236,7 +257,7 @@ private fun SettingsContent(
         item {
             OficiosButton(
                 text = stringResource(R.string.settings_logout),
-                onClick = { onEvent(SettingsEvent.Logout) },
+                onClick = onRequestLogout,
                 variant = OficiosButtonVariant.Ghost,
                 loading = uiState.isLoggingOut,
                 enabled = !uiState.isLoggingOut,
