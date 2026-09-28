@@ -525,13 +525,14 @@ private fun OrderDetailContent(
         )
     }
 
-    if (showFinalizeDialog) {
+    if (showFinalizeDialog && order.bookingStatus != BookingStatus.FINISHED) {
         FinalizeCodeDialog(
-            onConfirm = { code ->
-                onEvent(OrderDetailEvent.FinalizeWithCode(code))
+            error = state.completionCodeError,
+            onConfirm = { code -> onEvent(OrderDetailEvent.FinalizeWithCode(code)) },
+            onDismiss = {
                 showFinalizeDialog = false
+                onEvent(OrderDetailEvent.ClearCompletionError)
             },
-            onDismiss = { showFinalizeDialog = false },
         )
     }
 }
@@ -819,10 +820,12 @@ private fun RatingLine(label: String, stars: Int) {
 
 @Composable
 private fun FinalizeCodeDialog(
+    error: String?,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var code by remember { mutableStateOf("") }
+    var visibleError by remember(error) { mutableStateOf(error) }
     OficiosDialog(
         title = "Terminar pedido",
         message = "Pedile al cliente el código de finalización e ingresalo para cerrar el servicio.",
@@ -834,8 +837,13 @@ private fun FinalizeCodeDialog(
         content = {
             OficiosTextField(
                 value = code,
-                onValueChange = { if (it.length <= 6) code = it.filter { ch -> ch.isDigit() } },
+                onValueChange = { input ->
+                    visibleError = null
+                    if (input.length <= 6) code = input.filter { ch -> ch.isDigit() }
+                },
                 label = "Código de 6 dígitos",
+                isError = visibleError != null,
+                supportingText = visibleError,
             )
         },
     )

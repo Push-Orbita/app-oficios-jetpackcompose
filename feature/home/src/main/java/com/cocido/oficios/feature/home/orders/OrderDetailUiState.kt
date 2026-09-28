@@ -13,6 +13,7 @@ sealed interface OrderDetailUiState {
         val tracking: BookingTracking? = null,
         val isActionInProgress: Boolean = false,
         val isRefreshing: Boolean = false,
+        val completionCodeError: String? = null,
     ) : OrderDetailUiState
 }
 
@@ -31,6 +32,7 @@ sealed interface OrderDetailEvent {
     data class LocationPermissionDenied(val action: TrackingLocationAction) : OrderDetailEvent
     data object Finalize : OrderDetailEvent
     data class FinalizeWithCode(val code: String) : OrderDetailEvent
+    data object ClearCompletionError : OrderDetailEvent
     data object GoToRate : OrderDetailEvent
     data object OpenWorkerProfile : OrderDetailEvent
     data class CancelConfirmed(val reason: String?) : OrderDetailEvent
