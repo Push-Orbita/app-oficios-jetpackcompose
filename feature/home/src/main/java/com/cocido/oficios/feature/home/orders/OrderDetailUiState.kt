@@ -6,17 +6,19 @@ import com.cocido.oficios.domain.model.BookingTracking
 
 sealed interface OrderDetailUiState {
     data object Loading : OrderDetailUiState
-    data class Error(val message: String) : OrderDetailUiState
+    data class Error(val message: String, val isRefreshing: Boolean = false) : OrderDetailUiState
     data class Success(
         val order: ServiceOrder,
         val viewerRole: UserRole,
         val tracking: BookingTracking? = null,
         val isActionInProgress: Boolean = false,
+        val isRefreshing: Boolean = false,
     ) : OrderDetailUiState
 }
 
 sealed interface OrderDetailEvent {
     data object Retry : OrderDetailEvent
+    data object Refresh : OrderDetailEvent
     data object Accept : OrderDetailEvent
     data class Reject(val reason: String) : OrderDetailEvent
     data object OpenCounterOffer : OrderDetailEvent
