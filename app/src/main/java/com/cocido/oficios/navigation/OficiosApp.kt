@@ -7,9 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.core.ui.intent.openTermsAndConditions
+import com.cocido.oficios.core.ui.legal.TermsScreen
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
@@ -101,7 +103,9 @@ fun AppNavHost(
                 navController.navigate(AuthDestination.RESET_PASSWORD)
             },
             onContactSupport = { openSupportPhone(context) },
-            onNavigateToTerms = { openTermsAndConditions(context) },
+            onNavigateToTerms = {
+                openTermsAndConditions(context) { navController.navigate(AppRoutes.TERMS) }
+            },
         )
         onboardingGraph(
             onNavigateFromGate = { destination ->
@@ -176,6 +180,9 @@ fun AppNavHost(
                 navController.navigateToLoginClearingBackStack()
             },
             onShowMessage = showMessage,
+            onNavigateToTerms = {
+                openTermsAndConditions(context) { navController.navigate(AppRoutes.TERMS) }
+            },
             onNavigateToVerifyPhone = { contactId, telefono ->
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))
             },
@@ -188,6 +195,9 @@ fun AppNavHost(
                 )
             },
         )
+        composable(AppRoutes.TERMS) {
+            TermsScreen(onBack = { navController.popBackStack() })
+        }
         sharedHomeScreens(
             navController = navController,
             onShowMessage = showMessage,

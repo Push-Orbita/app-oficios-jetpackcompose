@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.ContactPhone
+import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MiscellaneousServices
@@ -212,6 +213,14 @@ private fun SettingsContent(
                 title = stringResource(R.string.settings_change_password),
                 description = stringResource(R.string.settings_change_password_description),
                 onClick = { onEvent(SettingsEvent.OpenChangePassword) },
+            )
+        }
+        item {
+            SettingsActionRow(
+                icon = Icons.Outlined.Article,
+                title = stringResource(R.string.settings_terms),
+                description = stringResource(R.string.settings_terms_description),
+                onClick = { onEvent(SettingsEvent.OpenTerms) },
             )
         }
         item {

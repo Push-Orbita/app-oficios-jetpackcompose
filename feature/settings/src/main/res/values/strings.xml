@@ -23,6 +23,8 @@
     <string name="settings_change_password_description">Actualizá tu acceso de forma segura</string>
     <string name="settings_delete_account">Eliminar cuenta</string>
     <string name="settings_delete_account_description">Darse de baja con un período de gracia de 3 días</string>
+    <string name="settings_terms">Términos y condiciones</string>
+    <string name="settings_terms_description">Cómo funciona Oficios y qué esperamos de cada cuenta</string>
     <string name="settings_delete_account_intro">Esta acción programa la baja de tu cuenta. Tenés 3 días para cancelarla si cambiás de opinión. Escribí ELIMINAR para confirmar.</string>
     <string name="settings_delete_account_password">Contraseña actual</string>
     <string name="settings_delete_account_confirmation">Escribí ELIMINAR</string>

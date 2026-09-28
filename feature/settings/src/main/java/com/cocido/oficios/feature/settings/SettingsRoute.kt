@@ -18,6 +18,7 @@ fun SettingsRoute(
     onNavigateToPortfolio: () -> Unit,
     onNavigateToChangePassword: () -> Unit,
     onNavigateToDeleteAccount: () -> Unit,
+    onNavigateToTerms: () -> Unit = {},
     modifier: Modifier = Modifier,
     showBackNavigation: Boolean = true,
     bottomBar: @Composable () -> Unit = {},
@@ -40,6 +41,7 @@ fun SettingsRoute(
                 SettingsEffect.NavigateToPortfolio -> onNavigateToPortfolio()
                 SettingsEffect.NavigateToChangePassword -> onNavigateToChangePassword()
                 SettingsEffect.NavigateToDeleteAccount -> onNavigateToDeleteAccount()
+                SettingsEffect.NavigateToTerms -> onNavigateToTerms()
             }
         }
     }

@@ -5,6 +5,15 @@ object AppConstants {
     const val DATASTORE_NAME = "user_preferences"
     const val SESSION_PREFS_NAME = "oficios_session_encrypted"
     const val MIN_PASSWORD_LENGTH = 6
-    const val TERMS_URL = "https://oficios.app/terminos"
+    /**
+     * Dirección pública de los términos. Vacía hasta que haya una URL que no redirija en loop:
+     * en ese caso la app muestra la pantalla interna.
+     */
+    const val TERMS_URL = ""
+
+    fun hasTermsUrl(url: String = TERMS_URL): Boolean {
+        val trimmed = url.trim()
+        return trimmed.startsWith("https://") || trimmed.startsWith("http://")
+    }
     const val SUPPORT_PHONE = "+5491112345678"
 }
