@@ -51,7 +51,7 @@
     <string name="home_filter_date">Fecha deseada</string>
     <string name="home_filter_clear">Limpiar</string>
     <string name="home_filter_apply">Aplicar</string>
-    <string name="home_worker_contact">Contactar</string>
+    <string name="home_worker_contact">Solicitar</string>
     <string name="home_worker_view_profile">Ver perfil</string>
     <string name="home_worker_profile_title">Perfil del trabajador</string>
     <string name="home_worker_hire">Contratar</string>
