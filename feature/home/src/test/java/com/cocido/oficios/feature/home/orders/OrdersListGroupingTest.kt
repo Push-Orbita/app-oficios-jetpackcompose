@@ -5,7 +5,9 @@ import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.model.arrangedFor
+import com.cocido.oficios.domain.model.withArrivedTracking
 import kotlin.math.pow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -23,6 +25,35 @@ class OrdersListGroupingTest {
         )
         assertEquals(listOf(3L, 1L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
         assertEquals(listOf(4L, 2L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
+    }
+
+    @Test
+    fun `confirmado en camino y en curso quedan en activos`() {
+        val items = listOf(
+            item(5, ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED, "2026-09-25T10:00:00Z"),
+            item(6, ServiceRequestStatus.PENDING, BookingStatus.PENDING, "2026-09-28T14:00:00Z"),
+            item(11, ServiceRequestStatus.ACCEPTED, BookingStatus.IN_PROGRESS, "2026-09-29T10:00:00Z"),
+            item(15, ServiceRequestStatus.ACCEPTED, BookingStatus.EN_ROUTE, "2026-10-05T15:00:00Z"),
+            item(17, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
+            item(18, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
+        )
+        assertEquals(listOf(5L, 6L, 11L, 15L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
+        assertEquals(listOf(17L, 18L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
+    }
+
+    @Test
+    fun `LLEGUE abre la misma UI que un pedido en curso`() {
+        val enRoute = order(BookingStatus.EN_ROUTE)
+        val arrived = enRoute.withArrivedTracking("LLEGUE")
+        assertEquals(BookingStatus.IN_PROGRESS, arrived.bookingStatus)
+        assertEquals(ClientPrimaryAction.CompletionCode, clientPrimaryAction(
+            status = arrived.status,
+            bookingStatus = arrived.bookingStatus,
+            hasContact = true,
+            alreadyRated = false,
+        ))
+        assertEquals(BookingStatus.FINISHED, order(BookingStatus.FINISHED).withArrivedTracking("LLEGUE").bookingStatus)
+        assertEquals(BookingStatus.EN_ROUTE, enRoute.withArrivedTracking("EN_CAMINO").bookingStatus)
     }
 
     @Test
@@ -62,6 +93,22 @@ class OrdersListGroupingTest {
         scheduledLabel = sortKey,
         addressLabel = "Calle 1",
         scheduledSortKey = sortKey,
+    )
+
+    private fun order(bookingStatus: BookingStatus) = ServiceOrder(
+        id = 11,
+        clientName = "Ana",
+        workerName = "Luis",
+        workerId = 5,
+        rubroLabel = "Hogar",
+        subRubroLabel = "Plomería",
+        status = ServiceRequestStatus.ACCEPTED,
+        description = "",
+        addressLabel = "Calle 1",
+        contactName = "Ana",
+        contactPhone = "370",
+        bookingId = 11,
+        bookingStatus = bookingStatus,
     )
 }
 

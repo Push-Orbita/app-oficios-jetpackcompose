@@ -14,9 +14,10 @@ class OrderTrackingMapperTest {
         val tracking = trackingDto(lat = "-26.18490", lng = "-58.17310").toDomain()
 
         requireNotNull(tracking)
-        assertEquals(-26.18490, tracking.location.latitude, 0.00001)
-        assertEquals(-58.17310, tracking.location.longitude, 0.00001)
-        assertTrue(tracking.location.isValid)
+        val location = requireNotNull(tracking.location)
+        assertEquals(-26.18490, location.latitude, 0.00001)
+        assertEquals(-58.17310, location.longitude, 0.00001)
+        assertTrue(location.isValid)
     }
 
     @Test
@@ -43,8 +44,9 @@ class OrderTrackingMapperTest {
         val tracking = body.toBookingTracking()
 
         requireNotNull(tracking)
-        assertEquals(-26.18490, tracking.location.latitude, 0.00001)
-        assertEquals(-58.17310, tracking.location.longitude, 0.00001)
+        val location = requireNotNull(tracking.location)
+        assertEquals(-26.18490, location.latitude, 0.00001)
+        assertEquals(-58.17310, location.longitude, 0.00001)
         assertEquals(22L, tracking.bookingId)
     }
 
@@ -57,8 +59,17 @@ class OrderTrackingMapperTest {
         )
         val tracking = wrapped.toBookingTracking()
         requireNotNull(tracking)
-        assertEquals(-26.2, tracking.location.latitude, 0.00001)
-        assertEquals(-58.2, tracking.location.longitude, 0.00001)
+        val location = requireNotNull(tracking.location)
+        assertEquals(-26.2, location.latitude, 0.00001)
+        assertEquals(-58.2, location.longitude, 0.00001)
+    }
+
+    @Test
+    fun `LLEGUE sin coordenadas conserva el estado para el codigo de finalizacion`() {
+        val tracking = trackingDto(lat = "", lng = "").copy(estado = "LLEGUE").toDomain()
+        requireNotNull(tracking)
+        assertEquals("LLEGUE", tracking.status)
+        assertNull(tracking.location)
     }
 
     @Test

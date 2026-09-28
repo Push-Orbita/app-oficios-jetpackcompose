@@ -62,7 +62,7 @@ data class BookingTracking(
     val bookingId: Long,
     val workerId: Long,
     val status: String,
-    val location: GeoPoint,
+    val location: GeoPoint?,
     val updatedAtIso: String,
 )
 
@@ -93,9 +93,22 @@ enum class OrdersListFilter {
     HISTORY,
 }
 
+/**
+ * Historial: solicitud cancelada/expirada, o booking FINALIZADA/CANCELADA.
+ * Activos conserva los estados vivos: PENDIENTE, CONTRAPROPUESTA, CONFIRMADA,
+ * EN_CAMINO, EN_CURSO y LLEGUE (este último llega mapeado como en curso).
+ */
 fun ServiceOrderListItem.isHistoryOrder(): Boolean {
     if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return true
     return bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED
+}
+
+/** LLEGUE en el tracking deja el pedido en la misma UI que EN_CURSO: el código de finalización. */
+fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
+    if (!trackingStatus.orEmpty().trim().equals("LLEGUE", ignoreCase = true)) return this
+    if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return this
+    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED) return this
+    return copy(bookingStatus = BookingStatus.IN_PROGRESS)
 }
 
 fun List<ServiceOrderListItem>.arrangedFor(filter: OrdersListFilter): List<ServiceOrderListItem> {
