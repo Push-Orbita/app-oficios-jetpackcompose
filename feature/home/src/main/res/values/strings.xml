@@ -193,6 +193,10 @@
     <string name="orders_step_current">%1$s, paso actual</string>
     <string name="orders_step_done">%1$s, completado</string>
     <string name="orders_step_upcoming">%1$s, próximo</string>
+    <string name="orders_step_a11y">Paso %1$d de %2$d, %3$s, %4$s</string>
+    <string name="orders_step_state_done">completado</string>
+    <string name="orders_step_state_current">actual</string>
+    <string name="orders_step_state_upcoming">próximo</string>
     <string name="orders_banner_cancelled">Pedido cancelado</string>
     <string name="orders_banner_expired">Solicitud expirada</string>
     <string name="orders_cancelled_by_client">Lo canceló el cliente</string>
