@@ -203,6 +203,8 @@
     <string name="orders_cancel_confirm">Sí, cancelar</string>
     <string name="orders_cancel_back">Volver</string>
     <string name="orders_open_map">Abrir en el mapa</string>
+    <string name="orders_open_in_maps">Abrir en Maps</string>
+    <string name="orders_map_unavailable">Mapa no disponible</string>
     <string name="orders_map_service_location">Ubicación del servicio</string>
     <string name="orders_map_worker_location">Ubicación del trabajador</string>
     <string name="orders_tracking_waiting">Esperando la primera actualización de ubicación del trabajador.</string>

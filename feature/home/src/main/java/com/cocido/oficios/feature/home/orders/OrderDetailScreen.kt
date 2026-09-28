@@ -237,6 +237,9 @@ private fun OrderDetailContent(
                     workerLongitude = if (!isWorker) state.tracking?.location?.longitude else null,
                     onMapClick = { openOrderMap(context, addressLatitude, addressLongitude, order.addressLabel) },
                     mapContentDescription = stringResource(R.string.orders_open_map),
+                    addressLabel = order.addressLabel,
+                    openInMapsLabel = stringResource(R.string.orders_open_in_maps),
+                    unavailableDescription = stringResource(R.string.orders_map_unavailable),
                 )
                 if (!isWorker && order.bookingStatus == BookingStatus.EN_ROUTE && state.tracking == null) {
                     InfoText(stringResource(R.string.orders_tracking_waiting))
