@@ -25,6 +25,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.cocido.oficios.feature.home.common.HomeChromeViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -156,14 +159,18 @@ fun ClientHomeBottomBar(
     selectedTab: ClientHomeTab,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    showFavorites: Boolean? = null,
 ) {
-    val items = listOf(
-        OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), Icons.Outlined.Home),
-        OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), Icons.Outlined.Assignment),
-        OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), Icons.Outlined.FavoriteBorder),
-        OficiosNavItem(ClientHomeTab.AYUDA.route, stringResource(R.string.home_nav_ayuda), Icons.AutoMirrored.Outlined.HelpOutline),
-        OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), Icons.Outlined.Settings),
-    )
+    val roleShowsFavorites = hiltViewModel<HomeChromeViewModel>().showFavorites.collectAsState().value
+    val items = buildList {
+        add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), Icons.Outlined.Home))
+        add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), Icons.Outlined.Assignment))
+        if (showFavorites ?: roleShowsFavorites) {
+            add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), Icons.Outlined.FavoriteBorder))
+        }
+        add(OficiosNavItem(ClientHomeTab.AYUDA.route, stringResource(R.string.home_nav_ayuda), Icons.AutoMirrored.Outlined.HelpOutline))
+        add(OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), Icons.Outlined.Settings))
+    }
     OficiosBottomNavigationBar(
         currentRoute = selectedTab.route,
         items = items,
