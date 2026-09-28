@@ -47,7 +47,7 @@ private fun TrabajadorOficioRubroFullDto.toManagedService() = ManagedProviderSer
             dayFrom = day.diaInicio,
             dayTo = day.diaFin,
             ranges = day.horariosLaborales.map { range ->
-                ManagedTimeRange(from = range.horaInicio, to = range.horaFin)
+                ManagedTimeRange(from = scheduleClock(range.horaInicio), to = scheduleClock(range.horaFin))
             },
         )
     },
@@ -73,3 +73,8 @@ fun AccountDeletionRequestDto.toDomain(): AccountDeletionRequest = AccountDeleti
     scheduledForIso = scheduledFor,
     canCancelUntilIso = canCancelUntil,
 )
+
+fun scheduleClock(raw: String): String {
+    val match = Regex("""(\d{1,2}):(\d{2})""").find(raw.trim()) ?: return raw.trim()
+    return "${match.groupValues[1].padStart(2, '0')}:${match.groupValues[2]}"
+}

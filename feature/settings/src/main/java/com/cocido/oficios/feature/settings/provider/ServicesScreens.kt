@@ -124,7 +124,7 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                 if (service.workSchedule.isNotEmpty()) {
                     Text(
                         service.workSchedule.joinToString { schedule ->
-                            "${dayLabel(schedule.dayFrom)}${if (schedule.dayFrom != schedule.dayTo) "–${dayLabel(schedule.dayTo)}" else ""} ${schedule.ranges.joinToString { "${it.from}–${it.to}" }}"
+                            "${dayLabel(schedule.dayFrom)}${if (schedule.dayFrom != schedule.dayTo) " a ${dayLabel(schedule.dayTo).lowercase()}" else ""} ${schedule.ranges.joinToString { "${it.from}–${it.to}" }}"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = OficiosColorSecondaryText,
