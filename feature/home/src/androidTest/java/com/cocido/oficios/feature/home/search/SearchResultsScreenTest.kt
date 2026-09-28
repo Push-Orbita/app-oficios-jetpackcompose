@@ -64,7 +64,7 @@ class SearchResultsScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithContentDescription("Filtros (2 activos)").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Filtros (2)").assertIsDisplayed()
         composeTestRule.onNodeWithText("2").assertIsDisplayed()
     }
 }
