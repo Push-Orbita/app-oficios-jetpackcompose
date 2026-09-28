@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -181,9 +183,9 @@ private fun OrderDetailContent(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
-            Row(
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
             ) {
                 ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
                 order.scheduledLabel?.let { date ->
@@ -306,12 +308,14 @@ private fun OrderDetailContent(
                         onClick = { showRejectDialog = true },
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Danger,
+                        size = OficiosButtonSize.Prominent,
                         enabled = !state.isActionInProgress,
                     )
                     OficiosButton(
                         text = "Aceptar",
                         onClick = { onEvent(OrderDetailEvent.Accept) },
                         modifier = Modifier.weight(1f),
+                        size = OficiosButtonSize.Prominent,
                         enabled = !state.isActionInProgress,
                     )
                 }
@@ -319,6 +323,7 @@ private fun OrderDetailContent(
                     text = "Reagendar",
                     onClick = { onEvent(OrderDetailEvent.OpenCounterOffer) },
                     variant = OficiosButtonVariant.Outlined,
+                    size = OficiosButtonSize.Prominent,
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.isActionInProgress,
                 )
@@ -352,12 +357,14 @@ private fun OrderDetailContent(
                             onClick = { onEvent(OrderDetailEvent.RejectCounterOffer) },
                             modifier = Modifier.weight(1f),
                             variant = OficiosButtonVariant.Danger,
+                            size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
                         OficiosButton(
                             text = "Aceptar",
                             onClick = { onEvent(OrderDetailEvent.AcceptCounterOffer) },
                             modifier = Modifier.weight(1f),
+                            size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
                     }
@@ -380,6 +387,7 @@ private fun OrderDetailContent(
                             text = "Estoy en camino",
                             onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
                             modifier = Modifier.fillMaxWidth(),
+                            size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
                     } else {
@@ -393,6 +401,7 @@ private fun OrderDetailContent(
                             text = "Marcar llegada",
                             onClick = { onEvent(OrderDetailEvent.MarkArrived) },
                             modifier = Modifier.fillMaxWidth(),
+                            size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
                     } else {
@@ -410,6 +419,7 @@ private fun OrderDetailContent(
                             text = "Terminar pedido",
                             onClick = { showFinalizeDialog = true },
                             modifier = Modifier.fillMaxWidth(),
+                            size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
                     }
@@ -439,6 +449,7 @@ private fun OrderDetailContent(
                         text = "Reintentar",
                         onClick = { onEvent(OrderDetailEvent.Retry) },
                         variant = OficiosButtonVariant.Outlined,
+                        size = OficiosButtonSize.Prominent,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -524,7 +535,7 @@ private fun OrderProgress(status: ServiceRequestStatus, bookingStatus: BookingSt
             if (index > 0) {
                 TimelineConnector(done = index <= active)
             }
-            TimelineStep(step = step, phase = phases[index])
+            TimelineStep(step = step, phase = phases[index], index = index, total = steps.size)
         }
     }
 }
@@ -554,7 +565,7 @@ private fun TimelineConnector(done: Boolean) {
 }
 
 @Composable
-private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase) {
+private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase, index: Int, total: Int) {
     val label = when (step) {
         OrderTimelineStep.REQUESTED -> stringResource(R.string.orders_step_requested)
         OrderTimelineStep.CONFIRMED -> stringResource(R.string.orders_step_confirmed)
@@ -562,14 +573,14 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase) {
         OrderTimelineStep.IN_PROGRESS -> stringResource(R.string.orders_step_in_progress)
         OrderTimelineStep.FINISHED -> stringResource(R.string.orders_step_finished)
     }
-    val description = stringResource(
+    val stateLabel = stringResource(
         when (phase) {
-            OrderTimelinePhase.Done -> R.string.orders_step_done
-            OrderTimelinePhase.Current -> R.string.orders_step_current
-            OrderTimelinePhase.Upcoming -> R.string.orders_step_upcoming
+            OrderTimelinePhase.Done -> R.string.orders_step_state_done
+            OrderTimelinePhase.Current -> R.string.orders_step_state_current
+            OrderTimelinePhase.Upcoming -> R.string.orders_step_state_upcoming
         },
-        label,
     )
+    val description = stringResource(R.string.orders_step_a11y, index + 1, total, label, stateLabel)
     val circle = when (phase) {
         OrderTimelinePhase.Done -> OficiosColorAction
         OrderTimelinePhase.Current -> OficiosColorAccent
@@ -586,7 +597,9 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase) {
         OficiosColorWhite
     }
     Column(
-        modifier = Modifier.clearAndSetSemantics { contentDescription = description },
+        modifier = Modifier
+            .widthIn(min = OficiosComponentSize.buttonHeight)
+            .clearAndSetSemantics { contentDescription = description },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
@@ -612,7 +625,8 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase) {
             ),
             color = labelColor,
             textAlign = TextAlign.Center,
-            softWrap = false,
+            softWrap = true,
+            maxLines = 2,
         )
     }
 }
@@ -672,6 +686,7 @@ private fun InfoText(text: String) {
 @Composable
 private fun InfoRow(icon: ImageVector, contentDescription: String, text: String) {
     Row(
+        modifier = Modifier.heightIn(min = OficiosComponentSize.buttonHeight),
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
