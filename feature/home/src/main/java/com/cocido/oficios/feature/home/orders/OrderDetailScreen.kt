@@ -182,6 +182,8 @@ private fun OrderDetailContent(
                     destinationLongitude = addressLongitude,
                     workerLatitude = if (!isWorker) state.tracking?.location?.latitude else null,
                     workerLongitude = if (!isWorker) state.tracking?.location?.longitude else null,
+                    onMapClick = { openOrderMap(context, addressLatitude, addressLongitude, order.addressLabel) },
+                    mapContentDescription = stringResource(R.string.orders_open_map),
                 )
                 if (!isWorker && order.bookingStatus == BookingStatus.EN_ROUTE && state.tracking == null) {
                     InfoText("Esperando la primera actualización de ubicación del trabajador.")
