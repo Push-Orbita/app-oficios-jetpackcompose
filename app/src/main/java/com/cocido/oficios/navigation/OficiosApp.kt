@@ -211,7 +211,11 @@ fun AppNavHost(
                     launchSingleTop = true
                 }
             },
-            onNavigateToSearch = { navController.popBackStack() },
+            onNavigateToSearch = {
+                navController.navigate(HomeDestination.categories) {
+                    launchSingleTop = true
+                }
+            },
             settingsRoute = SettingsDestination.route,
         )
     }
