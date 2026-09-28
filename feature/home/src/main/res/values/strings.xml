@@ -157,6 +157,7 @@
     <string name="orders_title">Mis pedidos</string>
     <string name="orders_loading">Cargando pedidos…</string>
     <string name="orders_error_title">No pudimos cargar tus pedidos</string>
+    <string name="orders_refresh_error">No pudimos actualizar tus pedidos</string>
     <string name="orders_filter_active">Activos</string>
     <string name="orders_filter_history">Historial</string>
     <string name="orders_empty_active_title">No tenés pedidos activos</string>

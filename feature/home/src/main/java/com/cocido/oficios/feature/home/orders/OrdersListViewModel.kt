@@ -91,6 +91,7 @@ class OrdersListViewModel @Inject constructor(
                 is AppResult.Error -> {
                     if (previous != null && (silent || refreshing)) {
                         _uiState.update { previous.copy(isRefreshing = false) }
+                        emitEffect(OrdersListEffect.ShowRefreshError)
                     } else {
                         _uiState.update { OrdersListUiState.Error(ordersResult.error.userMessage()) }
                     }
