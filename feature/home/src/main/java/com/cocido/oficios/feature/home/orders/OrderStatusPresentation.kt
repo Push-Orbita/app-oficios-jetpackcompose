@@ -157,6 +157,37 @@ fun orderTimelinePhases(status: ServiceRequestStatus, bookingStatus: BookingStat
     }
 }
 
+enum class ClientPrimaryAction {
+    WaitingForWorker,
+    ContactWorker,
+    CompletionCode,
+    RateWorker,
+    ShowRating,
+}
+
+fun clientPrimaryAction(
+    status: ServiceRequestStatus,
+    bookingStatus: BookingStatus?,
+    hasContact: Boolean,
+    alreadyRated: Boolean,
+): ClientPrimaryAction? = when (status) {
+    ServiceRequestStatus.PENDING -> ClientPrimaryAction.WaitingForWorker
+    ServiceRequestStatus.ACCEPTED -> when (bookingStatus) {
+        BookingStatus.CONFIRMED, BookingStatus.EN_ROUTE ->
+            if (hasContact) ClientPrimaryAction.ContactWorker else null
+        BookingStatus.IN_PROGRESS -> ClientPrimaryAction.CompletionCode
+        BookingStatus.FINISHED ->
+            if (alreadyRated) ClientPrimaryAction.ShowRating else ClientPrimaryAction.RateWorker
+        else -> null
+    }
+    else -> null
+}
+
+/** El backend guarda calidad en escala 1–10 (estrellas × 2) y puntualidad en 1–5. */
+fun qualityStars(score: Int?): Int? = score?.div(2)?.coerceIn(1, 5)
+
+fun punctualityStars(score: Int?): Int? = score?.coerceIn(1, 5)
+
 fun cancelledByLabelRes(cancelledBy: String?): Int? = when (cancelledBy?.uppercase()) {
     "CLIENTE" -> R.string.orders_cancelled_by_client
     "TRABAJADOR" -> R.string.orders_cancelled_by_worker

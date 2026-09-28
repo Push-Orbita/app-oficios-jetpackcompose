@@ -85,6 +85,7 @@ data class WorkerReview(
     val clientLabel: String?,
     /** finConfirmado o inicioConfirmado del booking, si el contrato lo trae. */
     val reviewedAt: String? = null,
+    val bookingId: Long? = null,
 )
 
 data class PagedWorkerReviews(

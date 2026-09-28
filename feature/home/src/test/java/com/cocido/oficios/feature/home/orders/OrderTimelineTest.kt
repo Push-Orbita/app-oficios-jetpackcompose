@@ -50,6 +50,42 @@ class OrderTimelineTest {
     }
 
     @Test
+    fun `la accion principal del cliente sigue el estado`() {
+        assertEquals(
+            ClientPrimaryAction.WaitingForWorker,
+            clientPrimaryAction(ServiceRequestStatus.PENDING, null, hasContact = true, alreadyRated = false),
+        )
+        assertEquals(
+            ClientPrimaryAction.ContactWorker,
+            clientPrimaryAction(ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED, hasContact = true, alreadyRated = false),
+        )
+        assertEquals(
+            ClientPrimaryAction.ContactWorker,
+            clientPrimaryAction(ServiceRequestStatus.ACCEPTED, BookingStatus.EN_ROUTE, hasContact = true, alreadyRated = false),
+        )
+        assertEquals(
+            null,
+            clientPrimaryAction(ServiceRequestStatus.ACCEPTED, BookingStatus.EN_ROUTE, hasContact = false, alreadyRated = false),
+        )
+        assertEquals(
+            ClientPrimaryAction.CompletionCode,
+            clientPrimaryAction(ServiceRequestStatus.ACCEPTED, BookingStatus.IN_PROGRESS, hasContact = true, alreadyRated = false),
+        )
+        assertEquals(
+            ClientPrimaryAction.RateWorker,
+            clientPrimaryAction(ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, hasContact = false, alreadyRated = false),
+        )
+        assertEquals(
+            ClientPrimaryAction.ShowRating,
+            clientPrimaryAction(ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, hasContact = false, alreadyRated = true),
+        )
+        assertEquals(
+            null,
+            clientPrimaryAction(ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, hasContact = true, alreadyRated = false),
+        )
+    }
+
+    @Test
     fun `cancelada no arma stepper`() {
         assertTrue(orderTimeline(ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED).isEmpty())
         assertTrue(orderTimelinePhases(ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED).isEmpty())

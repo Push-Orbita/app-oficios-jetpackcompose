@@ -66,6 +66,7 @@ class WorkerProfileMapperTest {
         assertEquals("Comentario", review.comment)
         assertEquals("Ana", review.clientLabel)
         assertEquals("2026-01-01T11:00:00Z", review.reviewedAt)
+        assertEquals(500L, review.bookingId)
     }
 
     @Test

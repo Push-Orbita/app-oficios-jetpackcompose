@@ -21,7 +21,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Description
@@ -40,7 +42,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -112,6 +116,7 @@ private fun OrderDetailContent(
 ) {
     val order = state.order
     val isWorker = state.viewerRole == UserRole.PROVIDER
+    val context = LocalContext.current
     val canShowPrivateDetails = !isWorker || order.status == ServiceRequestStatus.ACCEPTED
     var showRejectDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -209,7 +214,6 @@ private fun OrderDetailContent(
 
         val addressLatitude = order.addressLatitude
         val addressLongitude = order.addressLongitude
-        val context = LocalContext.current
         if (canShowPrivateDetails && addressLatitude != null && addressLongitude != null) {
             Column(
                 modifier = Modifier.clickable {
@@ -267,7 +271,7 @@ private fun OrderDetailContent(
             }
 
             order.status == ServiceRequestStatus.PENDING && !isWorker -> {
-                InfoText("Esperando respuesta del trabajador")
+                InfoText(stringResource(R.string.orders_waiting_worker))
                 CancelOrderButton(enabled = !state.isActionInProgress, onClick = { showCancelDialog = true })
             }
 
@@ -317,7 +321,6 @@ private fun OrderDetailContent(
 
             order.status == ServiceRequestStatus.ACCEPTED -> when (order.bookingStatus) {
                 BookingStatus.CONFIRMED -> {
-                    InfoText("Pedido confirmado")
                     if (isWorker) {
                         OficiosButton(
                             text = "Estoy en camino",
@@ -325,21 +328,24 @@ private fun OrderDetailContent(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !state.isActionInProgress,
                         )
+                    } else {
+                        ClientContactButton(order.contactPhone) { openWorkerContact(context, order.contactPhone) }
                     }
                 }
                 BookingStatus.EN_ROUTE -> {
-                    InfoText(if (isWorker) "Marcaste que estás en camino" else "El trabajador está en camino")
                     if (isWorker) {
+                        InfoText("Marcaste que estás en camino")
                         OficiosButton(
                             text = "Marcar llegada",
                             onClick = { onEvent(OrderDetailEvent.MarkArrived) },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !state.isActionInProgress,
                         )
+                    } else {
+                        ClientContactButton(order.contactPhone) { openWorkerContact(context, order.contactPhone) }
                     }
                 }
                 BookingStatus.IN_PROGRESS -> {
-                    InfoText("Servicio en curso")
                     if (!isWorker) {
                         CompletionCodeCard(
                             code = order.completionCode,
@@ -355,13 +361,19 @@ private fun OrderDetailContent(
                     }
                 }
                 BookingStatus.FINISHED -> {
-                    InfoText("Pedido finalizado")
                     if (!isWorker) {
-                        OficiosButton(
-                            text = "Puntuar al trabajador",
-                            onClick = { onEvent(OrderDetailEvent.GoToRate) },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        if (order.alreadyRated) {
+                            SubmittedRating(quality = order.qualityScore, punctuality = order.punctualityScore)
+                        } else {
+                            OficiosButton(
+                                text = stringResource(R.string.orders_rate_worker),
+                                onClick = { onEvent(OrderDetailEvent.GoToRate) },
+                                modifier = Modifier.fillMaxWidth(),
+                                size = OficiosButtonSize.Prominent,
+                            )
+                        }
+                    } else {
+                        InfoText("Pedido finalizado")
                     }
                 }
                 // bookingStatus fuera de lo esperado para un pedido ACCEPTED (ej. PENDING o
@@ -551,6 +563,17 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase) {
     }
 }
 
+private fun openWorkerContact(context: android.content.Context, phone: String) {
+    val digits = phone.filter { it.isDigit() }
+    if (digits.isBlank()) return
+    val whatsapp = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$digits"))
+    if (whatsapp.resolveActivity(context.packageManager) != null) {
+        context.startActivity(whatsapp)
+    } else {
+        context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$digits")))
+    }
+}
+
 private fun openOrderMap(context: android.content.Context, latitude: Double, longitude: Double, label: String) {
     val geo = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude(${Uri.encode(label)})")
     val mapIntent = Intent(Intent.ACTION_VIEW, geo)
@@ -613,36 +636,92 @@ private fun InfoRow(icon: ImageVector, contentDescription: String, text: String)
 }
 
 @Composable
+private fun ClientContactButton(phone: String, onClick: () -> Unit) {
+    if (phone.isBlank()) return
+    OficiosButton(
+        text = stringResource(R.string.orders_contact_worker),
+        onClick = onClick,
+        leadingIcon = Icons.Outlined.Phone,
+        size = OficiosButtonSize.Prominent,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
 private fun CompletionCodeCard(
     code: String?,
     modifier: Modifier = Modifier,
 ) {
+    val clipboard = LocalClipboardManager.current
+    var copied by remember { mutableStateOf(false) }
     OficiosCard(modifier = modifier) {
-        Column(
-            modifier = Modifier.padding(OficiosSpacing.lg),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-        ) {
-            Text(
-                text = "Código de finalización",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+            SectionTitle(stringResource(R.string.orders_code_title))
             if (code.isNullOrBlank()) {
                 Text(
-                    text = "Tu código aparecerá acá cuando el servicio esté en curso. Compartilo con el trabajador al finalizar.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(R.string.orders_code_missing),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             } else {
                 Text(
                     text = code,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Mostrá este código al trabajador para confirmar que el servicio se realizó.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(if (copied) R.string.orders_code_copied else R.string.orders_code_share),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                OficiosButton(
+                    text = stringResource(if (copied) R.string.orders_code_copied else R.string.orders_code_copy),
+                    onClick = {
+                        clipboard.setText(AnnotatedString(code))
+                        copied = true
+                    },
+                    leadingIcon = Icons.Outlined.ContentCopy,
+                    variant = OficiosButtonVariant.Outlined,
+                    size = OficiosButtonSize.Prominent,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubmittedRating(quality: Int?, punctuality: Int?) {
+    Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+        SectionTitle(stringResource(R.string.orders_already_rated))
+        qualityStars(quality)?.let { stars ->
+            RatingLine(label = stringResource(R.string.orders_rating_quality), stars = stars)
+        }
+        punctualityStars(punctuality)?.let { stars ->
+            RatingLine(label = stringResource(R.string.orders_rating_punctuality), stars = stars)
+        }
+    }
+}
+
+@Composable
+private fun RatingLine(label: String, stars: Int) {
+    val description = stringResource(R.string.orders_rating_stars, stars)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Row(modifier = Modifier.clearAndSetSemantics { contentDescription = "$label, $description" }) {
+            repeat(stars) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = OficiosColorAccent,
+                    modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }
         }

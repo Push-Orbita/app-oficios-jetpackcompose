@@ -193,6 +193,7 @@ private fun CalificacionDto.toWorkerReview(): WorkerReview? {
         comment = comentario,
         clientLabel = booking?.contactoTexto,
         reviewedAt = booking?.finConfirmado ?: booking?.inicioConfirmado,
+        bookingId = booking?.id,
     )
 }
 
