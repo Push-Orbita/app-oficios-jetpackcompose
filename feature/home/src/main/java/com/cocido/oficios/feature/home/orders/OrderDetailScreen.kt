@@ -252,12 +252,7 @@ private fun OrderDetailContent(
 
             order.status == ServiceRequestStatus.PENDING && !isWorker -> {
                 InfoText("Esperando respuesta del trabajador")
-                OficiosButton(
-                    text = stringResource(R.string.orders_cancel),
-                    onClick = { showCancelDialog = true },
-                    variant = OficiosButtonVariant.Danger,
-                    enabled = !state.isActionInProgress,
-                )
+                CancelOrderButton(enabled = !state.isActionInProgress, onClick = { showCancelDialog = true })
             }
 
             order.status == ServiceRequestStatus.COUNTER_OFFER && order.pendingCounterOffer != null -> {
@@ -381,13 +376,7 @@ private fun OrderDetailContent(
         }
 
         if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING && order.status != ServiceRequestStatus.CANCELLED) {
-            OficiosButton(
-                text = stringResource(R.string.orders_cancel),
-                onClick = { showCancelDialog = true },
-                variant = OficiosButtonVariant.Danger,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isActionInProgress,
-            )
+            CancelOrderButton(enabled = !state.isActionInProgress, onClick = { showCancelDialog = true })
         }
     }
 
@@ -545,6 +534,17 @@ private fun openOrderMap(context: android.content.Context, latitude: Double, lon
             Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude")),
         )
     }
+}
+
+@Composable
+private fun CancelOrderButton(enabled: Boolean, onClick: () -> Unit) {
+    OficiosButton(
+        text = stringResource(R.string.orders_cancel),
+        onClick = onClick,
+        variant = OficiosButtonVariant.Danger,
+        modifier = Modifier.fillMaxWidth(),
+        enabled = enabled,
+    )
 }
 
 @Composable
