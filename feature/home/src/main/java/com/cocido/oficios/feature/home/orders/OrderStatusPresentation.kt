@@ -13,7 +13,6 @@ import androidx.compose.material.icons.outlined.SwapHoriz
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorActionContainer
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAlertText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorErrorContainer
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessContainer
@@ -45,7 +44,7 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
             explanationRes = R.string.orders_explain_cancelled,
             icon = Icons.Outlined.Cancel,
             container = OficiosColorErrorContainer,
-            content = OficiosColorAlertText,
+            content = OficiosColorWhite,
         )
     }
     if (status == ServiceRequestStatus.EXPIRED) {
@@ -54,7 +53,7 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
             explanationRes = R.string.orders_explain_expired,
             icon = Icons.Outlined.Cancel,
             container = OficiosColorErrorContainer,
-            content = OficiosColorAlertText,
+            content = OficiosColorWhite,
         )
     }
     if (status == ServiceRequestStatus.COUNTER_OFFER) {
