@@ -164,6 +164,7 @@ fun OficiosTrackingMap(
     workerLatitude: Double? = null,
     workerLongitude: Double? = null,
     modifier: Modifier = Modifier,
+    showDestinationLabel: Boolean = false,
 ) {
     val destination = LatLng(destinationLatitude, destinationLongitude)
     val worker = workerLatitude?.let { lat -> workerLongitude?.let { lng -> LatLng(lat, lng) } }
@@ -203,13 +204,17 @@ fun OficiosTrackingMap(
             }
         }
     }
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = OficiosSpacing.xs),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text("Destino", style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
-        if (worker != null) {
-            Text("Ubicación actualizada", style = MaterialTheme.typography.labelMedium, color = Color(0xFF4CAF50))
+    if (showDestinationLabel || worker != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = OficiosSpacing.xs),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            if (showDestinationLabel) {
+                Text("Destino", style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
+            }
+            if (worker != null) {
+                Text("Ubicación actualizada", style = MaterialTheme.typography.labelMedium, color = Color(0xFF4CAF50))
+            }
         }
     }
 }
