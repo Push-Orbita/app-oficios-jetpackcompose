@@ -81,18 +81,10 @@ class OrderDetailViewModel @Inject constructor(
                 ),
             )
             OrderDetailEvent.Finalize -> Unit
-            is OrderDetailEvent.FinalizeWithCode -> {
-                val code = event.code.trim()
-                if (code.length != 6) {
-                    emitEffect(
-                        OrderDetailEffect.ShowMessage(
-                            "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
-                        ),
-                    )
-                    return
-                }
-                withBookingId {
-                    runAction { orderUseCases.finalizeBooking(it, code) }
+            is OrderDetailEvent.FinalizeWithCode -> finalizeWithCode(event.code)
+            OrderDetailEvent.ClearCompletionError -> {
+                _uiState.update { state ->
+                    (state as? OrderDetailUiState.Success)?.copy(completionCodeError = null) ?: state
                 }
             }
             OrderDetailEvent.GoToRate -> {
@@ -107,11 +99,6 @@ class OrderDetailViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    private inline fun withBookingId(block: (Long) -> Unit) {
-        val bookingId = (uiState.value as? OrderDetailUiState.Success)?.order?.bookingId ?: return
-        block(bookingId)
     }
 
     private fun load(fromRefresh: Boolean = false) {
@@ -214,6 +201,30 @@ class OrderDetailViewModel @Inject constructor(
                         (state as? OrderDetailUiState.Success)?.copy(tracking = result.data) ?: state
                     }
                     is AppResult.Error -> Unit
+                }
+            }
+        }
+    }
+
+    private fun finalizeWithCode(rawCode: String) {
+        val current = uiState.value as? OrderDetailUiState.Success ?: return
+        val code = rawCode.trim()
+        if (code.length != 6) {
+            _uiState.update {
+                current.copy(completionCodeError = "Ingresá el código de 6 dígitos que ve el cliente en el pedido.")
+            }
+            return
+        }
+        val bookingId = current.order.bookingId ?: return
+        viewModelScope.launch {
+            _uiState.update { current.copy(isActionInProgress = true, completionCodeError = null) }
+            when (val result = orderUseCases.finalizeBooking(bookingId, code)) {
+                is AppResult.Success -> load()
+                is AppResult.Error -> _uiState.update {
+                    current.copy(
+                        isActionInProgress = false,
+                        completionCodeError = result.error.userMessage(),
+                    )
                 }
             }
         }
