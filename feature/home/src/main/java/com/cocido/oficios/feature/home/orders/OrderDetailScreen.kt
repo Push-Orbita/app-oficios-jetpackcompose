@@ -688,8 +688,6 @@ private fun CancelOrderButton(enabled: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-@Composable
-@Composable
 private fun SectionTitle(text: String) {
     Text(
         text = text,
