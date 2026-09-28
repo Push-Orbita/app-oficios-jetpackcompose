@@ -5,7 +5,7 @@
     <string name="onboarding_provider_title">Configurá tu perfil profesional</string>
     <string name="onboarding_provider_subtitle">Completá los pasos obligatorios para operar en la plataforma</string>
     <string name="onboarding_pending_title">Tu perfil está en revisión</string>
-    <string name="onboarding_pending_subtitle">Cuando sea aprobado podrás recibir solicitudes de trabajo.</string>
+    <string name="onboarding_pending_subtitle">Cuando lo aprobemos vas a poder recibir solicitudes de trabajo.</string>
     <string name="onboarding_rejected_title">Tu perfil fue rechazado</string>
     <string name="onboarding_rejected_subtitle">Revisá los datos y corregí lo indicado para volver a enviar.</string>
     <string name="onboarding_rejected_reason">Motivo: %1$s</string>
@@ -18,11 +18,11 @@
     <string name="onboarding_inactive_subtitle">Tu cuenta está inactiva. Contactá soporte si necesitás reactivarla.</string>
     <string name="onboarding_logout">Cerrar sesión</string>
     <string name="onboarding_step_complete">Completo</string>
-    <string name="onboarding_step_incomplete">Falta Completar</string>
+    <string name="onboarding_step_incomplete">Falta completar</string>
     <string name="onboarding_step_in_review">En revisión</string>
     <string name="onboarding_step_rejected">Rechazado</string>
     <string name="onboarding_step_blocked">Bloqueado</string>
-    <string name="onboarding_provider_identity_gate_error">Tu DNI debe estar aprobado antes de configurar rubros y servicios. Si ya lo cargaste en el registro, quedó guardado en el dispositivo.</string>
+    <string name="onboarding_provider_identity_gate_error">Tu DNI tiene que estar aprobado antes de configurar rubros y servicios. Si ya lo cargaste en el registro, quedó guardado en el dispositivo.</string>
     <string name="onboarding_finalize_profile">Finalizar perfil</string>
     <string name="onboarding_finalize_submitting">Enviando tu perfil…</string>
     <string name="onboarding_client_confirmed_home_title">¡Perfil listo!</string>

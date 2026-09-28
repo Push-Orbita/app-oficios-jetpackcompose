@@ -118,7 +118,7 @@ fun RegisterFormScreen(
 ) {
     val screenTitle = when (mode) {
         RegisterMode.CLIENT -> stringResource(R.string.auth_register_client_screen_title)
-        RegisterMode.PROVIDER -> stringResource(R.string.auth_register_user_title)
+        RegisterMode.PROVIDER -> stringResource(R.string.auth_register_provider_screen_title)
     }
 
     AuthRegisterLayout(
