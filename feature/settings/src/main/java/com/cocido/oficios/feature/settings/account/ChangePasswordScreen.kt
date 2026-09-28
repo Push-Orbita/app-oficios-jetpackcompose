@@ -45,7 +45,7 @@ fun ChangePasswordScreen(
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
                 Text(
-                    text = "Usá una contraseña que no repitas en otros servicios. Debe tener al menos 6 caracteres.",
+                    text = "Usá una contraseña que no repitas en otros servicios. Tiene que tener al menos 6 caracteres.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )

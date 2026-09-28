@@ -14,7 +14,7 @@ object AuthValidators {
     fun validatePassword(password: String): String? = when {
         password.isBlank() -> "La contraseña es obligatoria"
         password.length < MIN_PASSWORD_LENGTH ->
-            "La contraseña debe tener al menos $MIN_PASSWORD_LENGTH caracteres"
+            "La contraseña tiene que tener al menos $MIN_PASSWORD_LENGTH caracteres"
         else -> null
     }
 
@@ -48,7 +48,7 @@ object AuthValidators {
 
     fun validateVerificationCode(code: String): String? = when {
         code.isBlank() -> "Ingresá el código"
-        code.length != 6 || code.any { !it.isDigit() } -> "El código debe tener 6 dígitos"
+        code.length != 6 || code.any { !it.isDigit() } -> "El código tiene que tener 6 dígitos"
         else -> null
     }
 

@@ -288,7 +288,7 @@ private fun ReviewStep(state: AddServiceUiState) {
             }
         }
     }
-    Text("Revisá todo antes de publicar. Después podrás gestionar los turnos desde Agenda.", style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+    Text("Revisá todo antes de publicar. Después vas a poder gestionar los turnos desde Agenda.", style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
 }
 
 private fun stepTitle(step: AddServiceStep) = when (step) {
