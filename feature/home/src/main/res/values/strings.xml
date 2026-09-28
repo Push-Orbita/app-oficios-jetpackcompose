@@ -37,7 +37,7 @@
     <string name="home_search_results_empty_description">Probá ajustar los filtros o buscar otro rubro.</string>
     <string name="home_search_results_empty_query_description">No encontramos trabajadores para "%1$s". Probá con otras palabras o ajustá los filtros.</string>
     <string name="home_search_filters">Filtros</string>
-    <string name="home_search_filters_with_count">Filtros (%1$d activos)</string>
+    <string name="home_search_filters_with_count">Filtros (%1$d)</string>
     <string name="home_filter_category">Categoría</string>
     <string name="home_filter_category_hint">Seleccioná una categoría</string>
     <string name="home_filter_rubro">Especialidad</string>

@@ -98,7 +98,7 @@ private fun StarSelector(
         for (star in 1..maxStars) {
             Icon(
                 imageVector = if (star <= selected) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                contentDescription = "$star estrellas",
+                contentDescription = if (star == 1) "1 estrella" else "$star estrellas",
                 tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier
                     .size(36.dp)
