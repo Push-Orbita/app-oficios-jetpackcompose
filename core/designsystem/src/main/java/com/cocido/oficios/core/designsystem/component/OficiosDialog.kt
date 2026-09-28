@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -44,6 +45,7 @@ fun OficiosDialog(
     modifier: Modifier = Modifier,
     dismissLabel: String = "Cancelar",
     isDangerous: Boolean = false,
+    actionSize: OficiosButtonSize = OficiosButtonSize.Compact,
     confirmEnabled: Boolean = true,
     content: (@Composable () -> Unit)? = null,
 ) {
@@ -86,12 +88,14 @@ fun OficiosDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Ghost,
+                        size = actionSize,
                     )
                     OficiosButton(
                         text = confirmLabel,
                         onClick = onConfirm,
                         modifier = Modifier.weight(1f),
                         enabled = confirmEnabled,
+                        size = actionSize,
                         variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Primary,
                     )
                 }
