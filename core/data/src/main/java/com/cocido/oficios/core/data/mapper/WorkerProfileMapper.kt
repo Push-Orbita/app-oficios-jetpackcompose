@@ -16,6 +16,10 @@ import com.cocido.oficios.domain.model.WorkerSpecialty
 import com.cocido.oficios.domain.model.WorkerTimeRange
 import com.cocido.oficios.domain.model.WorkerWorkAddress
 import com.cocido.oficios.domain.model.WorkerWorkDay
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 // NOTE: This mapper is intentionally tolerant: the backend may return partial sections (null reputacion, empty arrays).
 
@@ -191,9 +195,35 @@ private fun CalificacionDto.toWorkerReview(): WorkerReview? {
         qualityScore = calidad,
         punctualityScore = puntualidad,
         comment = comentario,
-        clientLabel = booking?.contactoTexto,
-        reviewedAt = booking?.finConfirmado ?: booking?.inicioConfirmado,
+        clientLabel = reviewAuthorLabel(booking?.contactoTexto),
+        reviewedAt = formatReviewDate(booking?.finConfirmado ?: booking?.inicioConfirmado),
         bookingId = booking?.id,
     )
+}
+
+/** El contacto del booking viene como "Nombre Apellido | Tel: … | Email: …". */
+fun reviewAuthorLabel(contactoTexto: String?): String? {
+    val head = contactoTexto
+        ?.substringBefore("|")
+        ?.substringBefore("Tel:")
+        ?.substringBefore("Email:")
+        ?.trim()
+        .orEmpty()
+    val parts = head.split(Regex("\\s+")).filter { part ->
+        part.isNotBlank() && !part.contains("@") && part.any { it.isLetter() }
+    }
+    if (parts.isEmpty()) return null
+    if (parts.size == 1) return parts.first()
+    return "${parts.dropLast(1).joinToString(" ")} ${parts.last().first().uppercaseChar()}."
+}
+
+fun formatReviewDate(iso: String?, zone: ZoneId = ZoneId.systemDefault()): String? {
+    if (iso.isNullOrBlank()) return null
+    return runCatching {
+        val zoned = OffsetDateTime.parse(iso).atZoneSameInstant(zone)
+        DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-AR"))
+            .format(zoned)
+            .replace(".", "")
+    }.getOrNull()
 }
 
