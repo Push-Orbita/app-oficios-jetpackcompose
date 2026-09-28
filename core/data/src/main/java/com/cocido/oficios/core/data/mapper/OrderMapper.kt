@@ -224,7 +224,11 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
         status = estado.toRequestStatus(),
         bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
         scheduledLabel = booking?.scheduledLabel(),
-        addressLabel = domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre),
+        addressLabel = if (isWorkerViewing && estado.toRequestStatus() != ServiceRequestStatus.ACCEPTED) {
+            ""
+        } else {
+            domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre)
+        },
         rubroLabel = rubro?.nombre.orEmpty(),
         avatarUrl = (if (isWorkerViewing) cliente?.usuario?.fotoPerfil else trabajadorOficio?.usuario?.fotoPerfil).toPhotoUrl(),
         workerId = trabajadorOficio?.id ?: 0L,
