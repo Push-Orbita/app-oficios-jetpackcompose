@@ -108,20 +108,26 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
     }
 }
 
+fun orderTimelineStepIcon(step: OrderTimelineStep): ImageVector = when (step) {
+    OrderTimelineStep.REQUESTED -> Icons.Outlined.HourglassEmpty
+    OrderTimelineStep.CONFIRMED -> Icons.Outlined.EventAvailable
+    OrderTimelineStep.EN_ROUTE -> Icons.AutoMirrored.Outlined.DirectionsWalk
+    OrderTimelineStep.IN_PROGRESS -> Icons.Outlined.Schedule
+    OrderTimelineStep.FINISHED -> Icons.Outlined.CheckCircle
+}
+
+/** Misma secuencia para pendiente, confirmada, en camino, en curso y finalizada. Cancelada y expirada quedan afuera. */
 fun orderTimeline(status: ServiceRequestStatus, bookingStatus: BookingStatus?): List<OrderTimelineStep> {
     if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.CANCELLED) {
         return emptyList()
     }
-    val includeRoute = bookingStatus == BookingStatus.EN_ROUTE ||
-        bookingStatus == BookingStatus.IN_PROGRESS ||
-        bookingStatus == BookingStatus.FINISHED
-    return buildList {
-        add(OrderTimelineStep.REQUESTED)
-        add(OrderTimelineStep.CONFIRMED)
-        if (includeRoute) add(OrderTimelineStep.EN_ROUTE)
-        add(OrderTimelineStep.IN_PROGRESS)
-        add(OrderTimelineStep.FINISHED)
-    }
+    return listOf(
+        OrderTimelineStep.REQUESTED,
+        OrderTimelineStep.CONFIRMED,
+        OrderTimelineStep.EN_ROUTE,
+        OrderTimelineStep.IN_PROGRESS,
+        OrderTimelineStep.FINISHED,
+    )
 }
 
 fun orderTimelineActiveIndex(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int {
