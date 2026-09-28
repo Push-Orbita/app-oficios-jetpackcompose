@@ -25,6 +25,17 @@ import kotlinx.serialization.json.decodeFromJsonElement
 
 private val DISPLAY_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-AR"))
 
+fun bookingTypeLabel(tipo: String?): String? {
+    val raw = tipo?.trim().orEmpty()
+    if (raw.isEmpty()) return null
+    return when (raw.uppercase(Locale.ROOT)) {
+        "PRESUPUESTO" -> "Presupuesto"
+        "TRABAJO" -> "Trabajo"
+        "AMBOS" -> "Presupuesto y trabajo"
+        else -> raw.lowercase(Locale.forLanguageTag("es-AR")).replaceFirstChar { it.titlecase(Locale.forLanguageTag("es-AR")) }
+    }
+}
+
 fun String?.toDisplayDateLabel(): String? {
     if (this.isNullOrBlank()) return null
     return try {
@@ -119,7 +130,7 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         bookingId = booking?.id?.takeIf { it != 0L },
         scheduledLabel = booking?.scheduledLabel(),
         bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
-        bookingType = booking?.tipo,
+        bookingType = bookingTypeLabel(booking?.tipo),
         canCancelBooking = booking?.puedeCancelar ?: false,
         pendingCounterOffer = pendingCounterOffer,
         completionCode = booking?.codigoFinalizacion,
