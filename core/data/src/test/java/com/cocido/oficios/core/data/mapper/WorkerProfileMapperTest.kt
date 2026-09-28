@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.worker.dto.CalificacionDto
 import com.cocido.oficios.core.network.api.worker.dto.TrabajadorOficioPerfilCompletoDto
 import com.cocido.oficios.domain.model.WorkerProfile
 import kotlinx.serialization.json.Json
+import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -65,8 +66,17 @@ class WorkerProfileMapperTest {
         assertEquals(4, review.punctualityScore)
         assertEquals("Comentario", review.comment)
         assertEquals("Ana", review.clientLabel)
-        assertEquals("2026-01-01T11:00:00Z", review.reviewedAt)
+        assertEquals(formatReviewDate("2026-01-01T11:00:00Z"), review.reviewedAt)
         assertEquals(500L, review.bookingId)
+    }
+
+    @Test
+    fun `la resena muestra solo el nombre y la fecha en es-AR`() {
+        val zone = ZoneId.of("America/Argentina/Buenos_Aires")
+        assertEquals("Ana", reviewAuthorLabel("Ana"))
+        assertEquals("María G.", reviewAuthorLabel("María Gómez | Tel: +543704000000 | Email: ana@mail.com"))
+        assertNull(reviewAuthorLabel("Tel: 3704000000 | Email: ana@mail.com"))
+        assertEquals("1 oct 2026", formatReviewDate("2026-10-01T14:00:00.000Z", zone))
     }
 
     @Test
