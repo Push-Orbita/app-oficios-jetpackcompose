@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,10 +38,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import kotlinx.coroutines.delay
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -169,7 +176,14 @@ fun OficiosTrackingMap(
     showDestinationLabel: Boolean = false,
     onMapClick: (() -> Unit)? = null,
     mapContentDescription: String? = null,
+    addressLabel: String = "",
+    openInMapsLabel: String = "Abrir en Maps",
+    unavailableDescription: String = "Mapa no disponible",
 ) {
+    val context = LocalContext.current
+    val mapsApiKey = remember { context.googleMapsApiKey() }
+    var mapReady by remember { mutableStateOf(false) }
+    var mapFailed by remember { mutableStateOf(mapsApiKey.isBlank()) }
     val destination = LatLng(destinationLatitude, destinationLongitude)
     val worker = workerLatitude?.let { lat -> workerLongitude?.let { lng -> LatLng(lat, lng) } }
     val focus = worker ?: destination
@@ -177,15 +191,27 @@ fun OficiosTrackingMap(
         position = CameraPosition.fromLatLngZoom(focus, if (worker == null) 16f else 14f)
     }
 
-    LaunchedEffect(focus) {
-        cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(focus, if (worker == null) 16f else 14f))
+    LaunchedEffect(mapsApiKey) {
+        if (mapsApiKey.isBlank()) {
+            mapFailed = true
+            return@LaunchedEffect
+        }
+        delay(MAP_LOAD_TIMEOUT_MILLIS)
+        if (!mapReady) mapFailed = true
+    }
+
+    LaunchedEffect(focus, mapFailed) {
+        if (!mapFailed) {
+            cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(focus, if (worker == null) 16f else 14f))
+        }
     }
 
     Surface(
         modifier = modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp)),
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Box(Modifier.fillMaxSize()) {
+            if (!mapFailed) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
@@ -198,6 +224,7 @@ fun OficiosTrackingMap(
                     scrollGesturesEnabled = onMapClick == null,
                 ),
                 onMapClick = { onMapClick?.invoke() },
+                onMapLoaded = { mapReady = true },
             ) {
                 Marker(
                     state = remember(destination) { MarkerState(position = destination) },
@@ -210,7 +237,7 @@ fun OficiosTrackingMap(
                     )
                 }
             }
-            if (onMapClick != null) {
+            if (onMapClick != null && mapReady) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -222,6 +249,15 @@ fun OficiosTrackingMap(
                                 Modifier
                             },
                         ),
+                )
+            }
+            }
+            if (!mapReady) {
+                MapPlaceholder(
+                    address = addressLabel,
+                    openLabel = openInMapsLabel,
+                    description = unavailableDescription,
+                    onOpen = { onMapClick?.invoke() },
                 )
             }
         }
@@ -240,6 +276,55 @@ fun OficiosTrackingMap(
         }
     }
 }
+
+@Composable
+private fun MapPlaceholder(
+    address: String,
+    openLabel: String,
+    description: String,
+    onOpen: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Place,
+            contentDescription = description,
+            tint = OficiosColorWhite,
+            modifier = Modifier.size(OficiosComponentSize.iconLg),
+        )
+        if (address.isNotBlank()) {
+            Text(
+                text = address,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+        }
+        OficiosButton(
+            text = openLabel,
+            onClick = onOpen,
+            variant = OficiosButtonVariant.Outlined,
+            size = OficiosButtonSize.Prominent,
+        )
+    }
+}
+
+private fun android.content.Context.googleMapsApiKey(): String {
+    return try {
+        val info = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+        info.metaData?.getString("com.google.android.geo.API_KEY").orEmpty().trim()
+    } catch (_: Exception) {
+        ""
+    }
+}
+
+private const val MAP_LOAD_TIMEOUT_MILLIS = 8_000L
 
 private fun android.content.Context.hasAnyLocationPermission(): Boolean =
     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
