@@ -187,7 +187,9 @@ private fun OrderDetailContent(
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
             ) {
-                ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
+                if (orderTimeline(order.status, order.bookingStatus).isNotEmpty()) {
+                    ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
+                }
                 order.scheduledLabel?.let { date ->
                     Text(
                         text = date,
