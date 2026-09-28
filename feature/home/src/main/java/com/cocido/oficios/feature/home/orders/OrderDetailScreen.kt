@@ -245,7 +245,7 @@ private fun OrderDetailContent(
                 if (service.isNotBlank()) {
                     InfoRow(Icons.Outlined.HomeRepairService, stringResource(R.string.orders_service), service)
                 }
-                if (canShowPrivateDetails && order.contactName.isNotBlank()) {
+                if (isWorker && canShowPrivateDetails && order.contactName.isNotBlank()) {
                     InfoRow(
                         Icons.Outlined.Phone,
                         stringResource(R.string.orders_contact),
@@ -400,8 +400,8 @@ private fun OrderDetailContent(
                     } else {
                         ContactButton(
                             label = stringResource(R.string.orders_contact_worker),
-                            phone = order.contactPhone,
-                            onClick = { openWorkerContact(context, order.contactPhone) },
+                            phone = order.workerPhone.orEmpty(),
+                            onClick = { openWorkerContact(context, order.workerPhone.orEmpty()) },
                         )
                     }
                 }
@@ -423,8 +423,8 @@ private fun OrderDetailContent(
                     } else {
                         ContactButton(
                             label = stringResource(R.string.orders_contact_worker),
-                            phone = order.contactPhone,
-                            onClick = { openWorkerContact(context, order.contactPhone) },
+                            phone = order.workerPhone.orEmpty(),
+                            onClick = { openWorkerContact(context, order.workerPhone.orEmpty()) },
                         )
                     }
                 }
@@ -652,13 +652,15 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase, ind
 }
 
 private fun openWorkerContact(context: android.content.Context, phone: String) {
-    val digits = phone.filter { it.isDigit() }
+    val trimmed = phone.trim()
+    val digits = trimmed.filter { it.isDigit() }
     if (digits.isBlank()) return
     val whatsapp = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$digits"))
+    val dial = if (trimmed.startsWith("+")) "+$digits" else digits
     if (whatsapp.resolveActivity(context.packageManager) != null) {
         context.startActivity(whatsapp)
     } else {
-        context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$digits")))
+        context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$dial")))
     }
 }
 
