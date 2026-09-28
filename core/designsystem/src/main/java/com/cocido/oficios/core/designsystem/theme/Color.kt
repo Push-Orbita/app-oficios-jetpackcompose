@@ -41,6 +41,8 @@ val OficiosColorPlaceholder = Color(0x80FFFFFF)
 // Semánticos extra (fuera del sistema M3 estándar, para uso en componentes de estado
 // que el handoff no define explícitamente, p. ej. "aceptado" en OrderCard).
 val OficiosColorSuccess = Color(0xFF4CAF7D)
+/** Verde claro sobre navy o tarjeta: AA para texto chico. */
+val OficiosColorSuccessText = Color(0xFFB7E4C7)
 val OficiosColorSuccessContainer = Color(0xFF1A3D2B)
 val OficiosColorOnSuccess = Color(0xFFFFFFFF)
 

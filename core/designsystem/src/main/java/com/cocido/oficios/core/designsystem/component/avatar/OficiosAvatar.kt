@@ -73,7 +73,7 @@ private fun AvatarInitials(name: String) {
         Text(
             text = name.firstOrNull()?.uppercaseChar()?.toString().orEmpty(),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
     }

@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -44,6 +43,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -301,7 +301,7 @@ fun OficiosTrackingMap(
                 Text("Destino", style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
             }
             if (worker != null) {
-                Text("Ubicación actualizada", style = MaterialTheme.typography.labelMedium, color = Color(0xFF4CAF50))
+                Text("Ubicación actualizada", style = MaterialTheme.typography.labelMedium, color = OficiosColorSuccessText)
             }
         }
     }
