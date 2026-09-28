@@ -20,6 +20,7 @@ fun NavGraphBuilder.settingsScreen(
     onLoggedOut: () -> Unit,
     onShowMessage: (String) -> Unit,
     onNavigateToVerifyPhone: (Long, String) -> Unit,
+    onNavigateToTerms: () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
 ) {
     composable(route = SettingsDestination.route) {
@@ -33,6 +34,7 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio) },
             onNavigateToChangePassword = { navController.navigate(SettingsDestination.changePassword) },
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
+            onNavigateToTerms = onNavigateToTerms,
             showBackNavigation = false,
             bottomBar = bottomBar,
         )

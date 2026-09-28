@@ -5,9 +5,13 @@ import android.content.Intent
 import android.net.Uri
 import com.cocido.oficios.core.model.AppConstants
 
-fun openTermsAndConditions(context: Context) {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.TERMS_URL))
-    context.startActivity(intent)
+fun openTermsAndConditions(context: Context, openInApp: () -> Unit) {
+    val url = AppConstants.TERMS_URL.trim()
+    if (AppConstants.hasTermsUrl(url)) {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } else {
+        openInApp()
+    }
 }
 
 fun openSupportPhone(context: Context) {
