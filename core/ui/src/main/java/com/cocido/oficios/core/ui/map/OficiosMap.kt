@@ -86,6 +86,12 @@ fun OficiosLocationPicker(
         position = CameraPosition.fromLatLngZoom(selected ?: FormosaCenter, if (selected == null) 12f else 16f)
     }
     var mapLoaded by remember { mutableStateOf(false) }
+    var mapUnavailable by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(MAP_LOAD_TIMEOUT_MILLIS)
+        if (!mapLoaded) mapUnavailable = true
+    }
 
     LaunchedEffect(selected) {
         selected?.let { cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(it, 16f)) }
@@ -129,11 +135,33 @@ fun OficiosLocationPicker(
                     )
                 }
             }
-            if (!mapLoaded) {
+            if (!mapLoaded && !mapUnavailable) {
                 Box(
                     Modifier.matchParentSize().background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center,
                 ) { CircularProgressIndicator() }
+            }
+            if (mapUnavailable && !mapLoaded) {
+                Column(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(OficiosSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Place,
+                        contentDescription = "Mapa no disponible",
+                        tint = OficiosColorWhite,
+                    )
+                    Text(
+                        text = "No pudimos cargar el mapa. Usá tu ubicación actual para guardar el domicilio.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
             OficiosButton(
                 text = "Usar mi ubicación",
