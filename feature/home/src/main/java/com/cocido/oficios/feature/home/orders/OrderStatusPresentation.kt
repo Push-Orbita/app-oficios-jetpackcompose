@@ -130,17 +130,31 @@ fun orderTimeline(status: ServiceRequestStatus, bookingStatus: BookingStatus?): 
     )
 }
 
+enum class OrderTimelinePhase { Done, Current, Upcoming }
+
 fun orderTimelineActiveIndex(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int {
     val steps = orderTimeline(status, bookingStatus)
     if (steps.isEmpty()) return -1
+    if (bookingStatus == BookingStatus.FINISHED) return steps.size
     val current = when {
         status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER -> OrderTimelineStep.REQUESTED
         bookingStatus == BookingStatus.EN_ROUTE -> OrderTimelineStep.EN_ROUTE
         bookingStatus == BookingStatus.IN_PROGRESS -> OrderTimelineStep.IN_PROGRESS
-        bookingStatus == BookingStatus.FINISHED -> OrderTimelineStep.FINISHED
         else -> OrderTimelineStep.CONFIRMED
     }
     return steps.indexOf(current).coerceAtLeast(0)
+}
+
+fun orderTimelinePhases(status: ServiceRequestStatus, bookingStatus: BookingStatus?): List<OrderTimelinePhase> {
+    val steps = orderTimeline(status, bookingStatus)
+    val active = orderTimelineActiveIndex(status, bookingStatus)
+    return steps.indices.map { index ->
+        when {
+            index < active -> OrderTimelinePhase.Done
+            index == active -> OrderTimelinePhase.Current
+            else -> OrderTimelinePhase.Upcoming
+        }
+    }
 }
 
 fun cancelledByLabelRes(cancelledBy: String?): Int? = when (cancelledBy?.uppercase()) {

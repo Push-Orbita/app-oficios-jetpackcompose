@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.home.orders
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OrderTimelineTest {
@@ -37,7 +38,21 @@ class OrderTimelineTest {
         assertEquals(1, orderTimelineActiveIndex(ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED))
         assertEquals(2, orderTimelineActiveIndex(ServiceRequestStatus.ACCEPTED, BookingStatus.EN_ROUTE))
         assertEquals(3, orderTimelineActiveIndex(ServiceRequestStatus.ACCEPTED, BookingStatus.IN_PROGRESS))
-        assertEquals(4, orderTimelineActiveIndex(ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED))
+        assertEquals(sequence.size, orderTimelineActiveIndex(ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED))
         assertEquals(-1, orderTimelineActiveIndex(ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED))
+    }
+
+    @Test
+    fun `finalizada deja todos los pasos completados`() {
+        val phases = orderTimelinePhases(ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED)
+        assertEquals(List(sequence.size) { OrderTimelinePhase.Done }, phases)
+        assertTrue(phases.none { it == OrderTimelinePhase.Current })
+    }
+
+    @Test
+    fun `cancelada no arma stepper`() {
+        assertTrue(orderTimeline(ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED).isEmpty())
+        assertTrue(orderTimelinePhases(ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED).isEmpty())
+        assertTrue(orderTimelinePhases(ServiceRequestStatus.EXPIRED, null).isEmpty())
     }
 }

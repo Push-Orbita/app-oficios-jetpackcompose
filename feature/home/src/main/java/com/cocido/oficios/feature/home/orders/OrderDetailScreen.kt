@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.HomeRepairService
@@ -53,6 +54,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -130,7 +132,7 @@ private fun OrderDetailContent(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                OrderTimeline(status = order.status, bookingStatus = order.bookingStatus)
+                OrderProgress(status = order.status, bookingStatus = order.bookingStatus)
                 cancelledByLabelRes(order.cancelledBy)?.let { label ->
                     Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -425,12 +427,14 @@ private fun OrderDetailContent(
     }
 }
 
-private enum class TimelinePhase { Done, Current, Upcoming }
-
 @Composable
-private fun OrderTimeline(status: ServiceRequestStatus, bookingStatus: BookingStatus?) {
+private fun OrderProgress(status: ServiceRequestStatus, bookingStatus: BookingStatus?) {
     val steps = orderTimeline(status, bookingStatus)
-    if (steps.isEmpty()) return
+    if (steps.isEmpty()) {
+        OrderClosedBanner(status = status, bookingStatus = bookingStatus)
+        return
+    }
+    val phases = orderTimelinePhases(status, bookingStatus)
     val active = orderTimelineActiveIndex(status, bookingStatus)
     Row(
         modifier = Modifier
@@ -439,17 +443,25 @@ private fun OrderTimeline(status: ServiceRequestStatus, bookingStatus: BookingSt
         verticalAlignment = Alignment.Top,
     ) {
         steps.forEachIndexed { index, step ->
-            val phase = when {
-                index < active -> TimelinePhase.Done
-                index == active -> TimelinePhase.Current
-                else -> TimelinePhase.Upcoming
-            }
             if (index > 0) {
                 TimelineConnector(done = index <= active)
             }
-            TimelineStep(step = step, phase = phase)
+            TimelineStep(step = step, phase = phases[index])
         }
     }
+}
+
+@Composable
+private fun OrderClosedBanner(status: ServiceRequestStatus, bookingStatus: BookingStatus?) {
+    val expired = status == ServiceRequestStatus.EXPIRED
+    val visual = orderStatusVisual(status, bookingStatus)
+    OficiosChip(
+        label = stringResource(if (expired) R.string.orders_banner_expired else R.string.orders_banner_cancelled),
+        containerColor = visual.container,
+        contentColor = visual.content,
+        borderColor = visual.container,
+        leadingIcon = visual.icon,
+    )
 }
 
 @Composable
@@ -464,7 +476,7 @@ private fun TimelineConnector(done: Boolean) {
 }
 
 @Composable
-private fun TimelineStep(step: OrderTimelineStep, phase: TimelinePhase) {
+private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase) {
     val label = when (step) {
         OrderTimelineStep.REQUESTED -> stringResource(R.string.orders_step_requested)
         OrderTimelineStep.CONFIRMED -> stringResource(R.string.orders_step_confirmed)
@@ -474,23 +486,23 @@ private fun TimelineStep(step: OrderTimelineStep, phase: TimelinePhase) {
     }
     val description = stringResource(
         when (phase) {
-            TimelinePhase.Done -> R.string.orders_step_done
-            TimelinePhase.Current -> R.string.orders_step_current
-            TimelinePhase.Upcoming -> R.string.orders_step_upcoming
+            OrderTimelinePhase.Done -> R.string.orders_step_done
+            OrderTimelinePhase.Current -> R.string.orders_step_current
+            OrderTimelinePhase.Upcoming -> R.string.orders_step_upcoming
         },
         label,
     )
     val circle = when (phase) {
-        TimelinePhase.Done -> OficiosColorAction
-        TimelinePhase.Current -> OficiosColorAccent
-        TimelinePhase.Upcoming -> OficiosColorOutlineFill
+        OrderTimelinePhase.Done -> OficiosColorAction
+        OrderTimelinePhase.Current -> OficiosColorAccent
+        OrderTimelinePhase.Upcoming -> OficiosColorOutlineFill
     }
     val iconTint = when (phase) {
-        TimelinePhase.Done -> OficiosColorWhite
-        TimelinePhase.Current -> OficiosColorBackground
-        TimelinePhase.Upcoming -> OficiosColorWhite.copy(alpha = 0.72f)
+        OrderTimelinePhase.Done -> OficiosColorWhite
+        OrderTimelinePhase.Current -> OficiosColorBackground
+        OrderTimelinePhase.Upcoming -> OficiosColorWhite.copy(alpha = 0.72f)
     }
-    val labelColor = if (phase == TimelinePhase.Upcoming) {
+    val labelColor = if (phase == OrderTimelinePhase.Upcoming) {
         OficiosColorWhite.copy(alpha = 0.72f)
     } else {
         OficiosColorWhite
@@ -507,7 +519,7 @@ private fun TimelineStep(step: OrderTimelineStep, phase: TimelinePhase) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = orderTimelineStepIcon(step),
+                imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
                 contentDescription = null,
                 tint = iconTint,
                 modifier = Modifier.size(OficiosComponentSize.iconSm),
