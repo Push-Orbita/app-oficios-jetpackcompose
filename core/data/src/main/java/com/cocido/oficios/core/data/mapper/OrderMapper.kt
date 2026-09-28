@@ -54,11 +54,13 @@ fun String.toRequestStatus(): ServiceRequestStatus = when (uppercase()) {
     else -> ServiceRequestStatus.PENDING
 }
 
-fun String.toBookingStatus(): BookingStatus = when (uppercase()) {
+fun String.toBookingStatus(): BookingStatus = when (trim().uppercase(Locale.ROOT)) {
     "PENDIENTE" -> BookingStatus.PENDING
     "CONFIRMADA" -> BookingStatus.CONFIRMED
     "EN_CAMINO" -> BookingStatus.EN_ROUTE
-    "EN_CURSO" -> BookingStatus.IN_PROGRESS
+    // LLEGUE es el estado de tracking post-llegada. Si llega como estado del booking,
+    // el pedido sigue vivo y la UI es la de código de finalización (igual que EN_CURSO).
+    "EN_CURSO", "LLEGUE" -> BookingStatus.IN_PROGRESS
     "FINALIZADA" -> BookingStatus.FINISHED
     "CANCELADA" -> BookingStatus.CANCELLED
     else -> BookingStatus.PENDING
@@ -148,10 +150,16 @@ private val trackingJson = Json {
 }
 
 fun TrackingBookingDto.toDomain(): BookingTracking? {
-    val latitude = lat.toCoordinateOrNull() ?: return null
-    val longitude = lng.toCoordinateOrNull() ?: return null
-    val point = GeoPoint(latitude, longitude)
-    if (!point.isValid) return null
+    val latitude = lat.toCoordinateOrNull()
+    val longitude = lng.toCoordinateOrNull()
+    val point = if (latitude != null && longitude != null) {
+        GeoPoint(latitude, longitude).takeIf { it.isValid }
+    } else {
+        null
+    }
+    // EN_CAMINO sin coordenadas válidas sigue sin tracking, para no pintar un pin falso.
+    // LLEGUE a veces vuelve solo con el estado: alcanza para abrir el código de finalización.
+    if (point == null && !estado.trim().equals("LLEGUE", ignoreCase = true)) return null
     return BookingTracking(
         bookingId = bookingId,
         workerId = trabajadorOficioId,

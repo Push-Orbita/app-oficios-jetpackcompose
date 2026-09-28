@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.withArrivedTracking
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -116,14 +117,15 @@ class OrderDetailViewModel @Inject constructor(
 
             when (val result = orderUseCases.getOrderDetail(orderId)) {
                 is AppResult.Success -> {
-                    val order = withClientRating(result.data)
-                    val tracking = order.bookingId?.takeIf {
-                        order.bookingStatus == BookingStatus.EN_ROUTE || order.bookingStatus == BookingStatus.IN_PROGRESS
+                    val loaded = withClientRating(result.data)
+                    val tracking = loaded.bookingId?.takeIf {
+                        loaded.bookingStatus == BookingStatus.EN_ROUTE || loaded.bookingStatus == BookingStatus.IN_PROGRESS
                     }?.let { bookingId ->
                         (orderUseCases.getBookingTracking(bookingId) as? AppResult.Success)?.data
                     }
+                    val order = loaded.withArrivedTracking(tracking?.status)
                     _uiState.update { OrderDetailUiState.Success(order, viewerRole, tracking) }
-                    startTrackingRefreshIfNeeded(order.bookingId, order.bookingStatus)
+                    startTrackingRefreshIfNeeded(loaded.bookingId, loaded.bookingStatus)
                 }
                 is AppResult.Error -> {
                     if (fromRefresh && previous is OrderDetailUiState.Success) {
