@@ -209,5 +209,6 @@
     <string name="orders_address">Dirección</string>
     <string name="orders_contact">Contacto</string>
     <string name="orders_description">Descripción</string>
+    <string name="orders_service">Servicio</string>
     <string name="orders_type">Tipo</string>
 </resources>

@@ -18,6 +18,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.HomeRepairService
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -145,19 +153,38 @@ private fun OrderDetailContent(
 
         OficiosCard {
             Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                order.scheduledLabel?.let { InfoText("${stringResource(R.string.orders_date)}: $it") }
-                InfoText(
-                    if (canShowPrivateDetails) "${stringResource(R.string.orders_address)}: ${order.addressLabel}"
-                    else "La dirección exacta estará disponible cuando aceptes el pedido.",
+                order.scheduledLabel?.let {
+                    InfoRow(Icons.Outlined.Schedule, stringResource(R.string.orders_date), "${stringResource(R.string.orders_date)}: $it")
+                }
+                InfoRow(
+                    icon = Icons.Outlined.Place,
+                    contentDescription = stringResource(R.string.orders_address),
+                    text = if (canShowPrivateDetails) {
+                        "${stringResource(R.string.orders_address)}: ${order.addressLabel}"
+                    } else {
+                        "La dirección exacta estará disponible cuando aceptes el pedido."
+                    },
                 )
+                val service = listOf(order.rubroLabel, order.subRubroLabel).filter { it.isNotBlank() }.joinToString(" · ")
+                if (service.isNotBlank()) {
+                    InfoRow(Icons.Outlined.HomeRepairService, stringResource(R.string.orders_service), service)
+                }
                 if (canShowPrivateDetails && order.contactName.isNotBlank()) {
-                    InfoText("${stringResource(R.string.orders_contact)}: ${order.contactName} · ${order.contactPhone}")
+                    InfoRow(
+                        Icons.Outlined.Phone,
+                        stringResource(R.string.orders_contact),
+                        "${stringResource(R.string.orders_contact)}: ${order.contactName} · ${order.contactPhone}",
+                    )
                 }
                 if (order.description.isNotBlank()) {
-                    InfoText("${stringResource(R.string.orders_description)}: ${order.description}")
+                    InfoRow(
+                        Icons.Outlined.Description,
+                        stringResource(R.string.orders_description),
+                        "${stringResource(R.string.orders_description)}: ${order.description}",
+                    )
                 }
                 order.bookingType?.takeIf { it.isNotBlank() }?.let {
-                    InfoText("${stringResource(R.string.orders_type)}: $it")
+                    InfoRow(Icons.Outlined.Category, stringResource(R.string.orders_type), "${stringResource(R.string.orders_type)}: $it")
                 }
             }
         }
@@ -522,7 +549,27 @@ private fun openOrderMap(context: android.content.Context, latitude: Double, lon
 
 @Composable
 private fun InfoText(text: String) {
-    Text(text = text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(text = text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+}
+
+@Composable
+private fun InfoRow(icon: ImageVector, contentDescription: String, text: String) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(OficiosComponentSize.iconSm),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
 }
 
 @Composable
