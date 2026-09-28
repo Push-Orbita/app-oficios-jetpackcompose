@@ -90,7 +90,7 @@ interface OrdersApi {
     @GET("tracking-booking/booking/{bookingId}")
     suspend fun getTracking(
         @Path("bookingId") bookingId: Long,
-    ): TrackingBookingDto?
+    ): JsonElement
 
     @POST("calificaciones")
     suspend fun crearCalificacion(

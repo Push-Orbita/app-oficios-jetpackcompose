@@ -206,7 +206,7 @@ fun OficiosTrackingMap(
                 worker?.let {
                     Marker(
                         state = remember(it) { MarkerState(position = it) },
-                        title = "Trabajador en camino",
+                        title = "Ubicación del trabajador",
                     )
                 }
             }

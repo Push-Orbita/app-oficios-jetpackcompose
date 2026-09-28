@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -81,6 +82,6 @@ private class FakeOrdersApi : OrdersApi {
     override suspend fun getBooking(id: Long) = BookingDto(id = id, estado = "PENDIENTE")
     override suspend fun finalizarBooking(id: Long, request: FinalizeBookingRequestDto) = error("no")
     override suspend fun marcarTracking(bookingId: Long, request: MarcarTrackingRequestDto): TrackingBookingDto = error("no")
-    override suspend fun getTracking(bookingId: Long): TrackingBookingDto? = null
+    override suspend fun getTracking(bookingId: Long): JsonElement = JsonNull
     override suspend fun crearCalificacion(request: CreateCalificacionRequestDto): JsonElement = error("no")
 }
