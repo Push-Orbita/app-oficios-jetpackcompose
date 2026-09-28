@@ -207,6 +207,24 @@ private fun OrderDetailContent(
             }
         }
 
+        if (isWorker && order.clientName.isNotBlank()) {
+            OficiosCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = OficiosComponentSize.buttonHeight),
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OficiosAvatar(name = order.clientName, imageUrl = order.clientAvatarUrl, circular = true)
+                    Text(
+                        text = order.clientName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+
         if (!isWorker && order.workerId != 0L) {
             val trade = listOf(order.rubroLabel, order.subRubroLabel).filter { it.isNotBlank() }.joinToString(" · ")
             OficiosCard(onClick = { onEvent(OrderDetailEvent.OpenWorkerProfile) }, modifier = Modifier.fillMaxWidth()) {

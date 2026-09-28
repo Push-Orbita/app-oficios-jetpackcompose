@@ -53,6 +53,7 @@ data class ServiceOrder(
     val punctualityScore: Int? = null,
     val completionCode: String? = null,
     val workerAvatarUrl: String? = null,
+    val clientAvatarUrl: String? = null,
     val cancelledBy: String? = null,
     val cancellationReason: String? = null,
 )

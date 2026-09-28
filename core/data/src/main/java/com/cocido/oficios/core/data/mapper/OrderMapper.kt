@@ -135,6 +135,7 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         pendingCounterOffer = pendingCounterOffer,
         completionCode = booking?.codigoFinalizacion,
         workerAvatarUrl = trabajadorOficio?.usuario?.fotoPerfil.toPhotoUrl(),
+        clientAvatarUrl = cliente?.usuario?.fotoPerfil.toPhotoUrl(),
         cancelledBy = booking?.canceladoPor,
         cancellationReason = booking?.motivoCancelacion ?: motivoRechazo,
     )
