@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.map
+import com.cocido.oficios.core.data.mapper.toBookingTracking
 import com.cocido.oficios.core.data.mapper.toDomain
 import com.cocido.oficios.core.data.mapper.toListItem
 import com.cocido.oficios.core.data.remote.OrderRemoteDataSource
@@ -111,7 +112,7 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun getBookingTracking(bookingId: Long): AppResult<BookingTracking?> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.getTracking(bookingId).map { it?.toDomain() }
+            remoteDataSource.getTracking(bookingId).map { it.toBookingTracking() }
         }
 
     override suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit> {

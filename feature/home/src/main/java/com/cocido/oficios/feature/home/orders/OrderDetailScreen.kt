@@ -173,7 +173,13 @@ private fun OrderDetailContent(
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
             ) {
                 Text(
-                    text = if (state.tracking != null && !isWorker) "Seguimiento del trabajador" else "Ubicación del servicio",
+                    text = stringResource(
+                        if (state.tracking != null && !isWorker) {
+                            R.string.orders_map_worker_location
+                        } else {
+                            R.string.orders_map_service_location
+                        },
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
@@ -186,7 +192,7 @@ private fun OrderDetailContent(
                     mapContentDescription = stringResource(R.string.orders_open_map),
                 )
                 if (!isWorker && order.bookingStatus == BookingStatus.EN_ROUTE && state.tracking == null) {
-                    InfoText("Esperando la primera actualización de ubicación del trabajador.")
+                    InfoText(stringResource(R.string.orders_tracking_waiting))
                 }
             }
         }

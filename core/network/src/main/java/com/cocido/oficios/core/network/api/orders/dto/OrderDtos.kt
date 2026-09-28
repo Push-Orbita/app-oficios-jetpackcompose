@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.catalog.dto.RubroDto
 import com.cocido.oficios.core.network.api.catalog.dto.SubRubroDto
 import com.cocido.oficios.core.network.api.profile.dto.ContactoSinPersonaDto
 import com.cocido.oficios.core.network.api.profile.dto.DomicilioSinPersonaDto
+import com.cocido.oficios.core.network.serialization.FlexibleNumberStringSerializer
 import kotlinx.serialization.Serializable
 
 // ---------------------------------------------------------------------------
@@ -56,13 +57,15 @@ data class MarcarTrackingRequestDto(
 
 @Serializable
 data class TrackingBookingDto(
-    val id: Long,
-    val bookingId: Long,
-    val trabajadorOficioId: Long,
-    val estado: String,
-    val lat: String,
-    val lng: String,
-    val createdAt: String,
+    val id: Long = 0L,
+    val bookingId: Long = 0L,
+    val trabajadorOficioId: Long = 0L,
+    val estado: String = "",
+    @Serializable(with = FlexibleNumberStringSerializer::class)
+    val lat: String = "",
+    @Serializable(with = FlexibleNumberStringSerializer::class)
+    val lng: String = "",
+    val createdAt: String = "",
 )
 
 @Serializable

@@ -16,6 +16,12 @@ import com.cocido.oficios.domain.model.GeoPoint
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 
 private val DISPLAY_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-AR"))
 
@@ -118,9 +124,15 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
     )
 }
 
+private val trackingJson = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    coerceInputValues = true
+}
+
 fun TrackingBookingDto.toDomain(): BookingTracking? {
-    val latitude = lat.toDoubleOrNull() ?: return null
-    val longitude = lng.toDoubleOrNull() ?: return null
+    val latitude = lat.toCoordinateOrNull() ?: return null
+    val longitude = lng.toCoordinateOrNull() ?: return null
     val point = GeoPoint(latitude, longitude)
     if (!point.isValid) return null
     return BookingTracking(
@@ -130,6 +142,40 @@ fun TrackingBookingDto.toDomain(): BookingTracking? {
         location = point,
         updatedAtIso = createdAt,
     )
+}
+
+/**
+ * GET /tracking-booking puede venir como objeto, como `{ data: ... }` o como lista.
+ * lat/lng llegan como string (y a veces como número).
+ */
+fun JsonElement.toBookingTracking(): BookingTracking? {
+    val payload = unwrapTrackingElement(this) ?: return null
+    return trackingJson.decodeFromJsonElement(TrackingBookingDto.serializer(), payload).toDomain()
+}
+
+private fun String.toCoordinateOrNull(): Double? = trim().replace(',', '.').toDoubleOrNull()
+
+private fun unwrapTrackingElement(element: JsonElement): JsonObject? = when (element) {
+    is JsonNull -> null
+    is JsonArray -> element.mapNotNull { unwrapTrackingElement(it) }.lastOrNull()
+    is JsonObject -> {
+        val hasCoordinates = element["lat"] != null || element["lng"] != null ||
+            element["latitude"] != null || element["longitude"] != null ||
+            element["latitud"] != null || element["longitud"] != null
+        if (!hasCoordinates && element["data"] != null) {
+            unwrapTrackingElement(element["data"]!!)
+        } else {
+            element.withCoordinateAliases()
+        }
+    }
+    else -> null
+}
+
+private fun JsonObject.withCoordinateAliases(): JsonObject {
+    val lat = this["lat"] ?: this["latitude"] ?: this["latitud"] ?: return this
+    val lng = this["lng"] ?: this["longitude"] ?: this["longitud"] ?: return this
+    if (this["lat"] != null && this["lng"] != null) return this
+    return JsonObject(this + ("lat" to lat) + ("lng" to lng))
 }
 
 /**
