@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
@@ -26,7 +28,6 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.HomeRepairService
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -123,43 +124,56 @@ private fun OrderDetailContent(
             .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        val visual = orderStatusVisual(order.status, order.bookingStatus)
-        OficiosCard {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
-                Text(
-                    text = stringResource(visual.explanationRes),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                OrderProgress(status = order.status, bookingStatus = order.bookingStatus)
-                cancelledByLabelRes(order.cancelledBy)?.let { label ->
-                    Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                order.scheduledLabel?.let { date ->
+                    Text(
+                        text = date,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
-                order.cancellationReason?.takeIf { it.isNotBlank() }?.let { reason ->
-                    Text(reason, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-                }
+            }
+            OrderProgress(status = order.status, bookingStatus = order.bookingStatus)
+            cancelledByLabelRes(order.cancelledBy)?.let { label ->
+                Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            }
+            order.cancellationReason?.takeIf { it.isNotBlank() }?.let { reason ->
+                Text(reason, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
             }
         }
 
         if (!isWorker && order.workerId != 0L) {
+            val trade = listOf(order.rubroLabel, order.subRubroLabel).filter { it.isNotBlank() }.joinToString(" · ")
             OficiosCard(onClick = { onEvent(OrderDetailEvent.OpenWorkerProfile) }, modifier = Modifier.fillMaxWidth()) {
-                Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = OficiosComponentSize.buttonHeight),
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     OficiosAvatar(name = order.workerName, imageUrl = order.workerAvatarUrl, circular = true)
-                    Column {
-                        Text(stringResource(R.string.orders_worker), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(order.workerName, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Text("${order.rubroLabel} · ${order.subRubroLabel}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                        if (trade.isNotBlank()) {
+                            Text(trade, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                        }
                     }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = stringResource(R.string.orders_open_worker),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
         }
 
         OficiosCard {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                order.scheduledLabel?.let {
-                    InfoRow(Icons.Outlined.Schedule, stringResource(R.string.orders_date), "${stringResource(R.string.orders_date)}: $it")
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+                SectionTitle(stringResource(R.string.orders_section_details))
                 InfoRow(
                     icon = Icons.Outlined.Place,
                     contentDescription = stringResource(R.string.orders_address),
@@ -203,16 +217,14 @@ private fun OrderDetailContent(
                 },
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
             ) {
-                Text(
-                    text = stringResource(
+                SectionTitle(
+                    stringResource(
                         if (state.tracking != null && !isWorker) {
                             R.string.orders_map_worker_location
                         } else {
                             R.string.orders_map_service_location
                         },
                     ),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 OficiosTrackingMap(
                     destinationLatitude = addressLatitude,
@@ -561,6 +573,17 @@ private fun CancelOrderButton(enabled: Boolean, onClick: () -> Unit) {
         size = OficiosButtonSize.Prominent,
         modifier = Modifier.fillMaxWidth(),
         enabled = enabled,
+    )
+}
+
+@Composable
+@Composable
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onBackground,
     )
 }
 
