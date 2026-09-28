@@ -1,8 +1,8 @@
 package com.cocido.oficios.feature.auth.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -30,22 +30,21 @@ fun AuthSupportCard(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(OficiosSpacing.md),
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
         ) {
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
             )
             OficiosButton(
                 text = stringResource(R.string.auth_support_contact),
                 onClick = onContactClick,
                 enabled = enabled,
                 variant = OficiosButtonVariant.Secondary,
+                modifier = Modifier.align(Alignment.End),
             )
         }
     }
