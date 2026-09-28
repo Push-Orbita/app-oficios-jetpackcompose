@@ -142,6 +142,9 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToHire = { workerId ->
                     navController.navigate(OrdersDestination.createOrder(workerId))
                 },
+                onNavigateToRate = { bookingId, workerName ->
+                    navController.navigate(OrdersDestination.rateWorker(bookingId, workerName))
+                },
                 onNavigateToReport = { workerId, workerName ->
                     navController.navigate(HomeDestination.workerReport(workerId, workerName))
                 },

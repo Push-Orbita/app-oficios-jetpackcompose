@@ -83,6 +83,7 @@ data class ServiceOrderListItem(
     val rubroLabel: String = "",
     val avatarUrl: String? = null,
     val workerId: Long = 0L,
+    val bookingId: Long? = null,
     val scheduledSortKey: String? = null,
 )
 

@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
 import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
@@ -32,6 +33,7 @@ class WorkerProfileViewModel @Inject constructor(
     private val getWorkerReviewsUseCase: GetWorkerReviewsUseCase,
     private val getFavoriteStatusUseCase: GetFavoriteStatusUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val orderUseCases: OrderUseCases,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -59,7 +61,11 @@ class WorkerProfileViewModel @Inject constructor(
             WorkerProfileEvent.Refresh -> refresh()
             WorkerProfileEvent.Back -> emitEffect(WorkerProfileEffect.NavigateBack)
             WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
-            WorkerProfileEvent.RateClicked -> emitEffect(WorkerProfileEffect.ShowRatingUnavailable)
+            WorkerProfileEvent.RateClicked -> {
+                val state = uiState.value as? WorkerProfileUiState.Success ?: return
+                val bookingId = state.rateBookingId ?: return
+                emitEffect(WorkerProfileEffect.NavigateToRate(bookingId, state.profile.displayName))
+            }
             WorkerProfileEvent.ReportProfileClicked -> {
                 val profile = (uiState.value as? WorkerProfileUiState.Success)?.profile ?: return
                 emitEffect(WorkerProfileEffect.NavigateToReport(workerId, profile.displayName))
@@ -131,6 +137,11 @@ class WorkerProfileViewModel @Inject constructor(
                 val paged = reviewsResult.data
                 currentReviewsPage = paged.pageNumber
                 hasMoreReviews = paged.hasMore
+                val rateBookingId = pendingRatingBookingId(
+                    workerId = workerId,
+                    orders = clientOrders(),
+                    ratedBookingIds = paged.items.mapNotNull { review -> review.bookingId }.toSet(),
+                )
                 _uiState.update {
                     WorkerProfileUiState.Success(
                         profile = profile,
@@ -141,6 +152,7 @@ class WorkerProfileViewModel @Inject constructor(
                         totalReviewsPages = paged.totalPages,
                         canFavorite = canFavorite,
                         isFavorite = isFavorite,
+                        rateBookingId = rateBookingId,
                     )
                 }
             }
@@ -236,6 +248,9 @@ class WorkerProfileViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun clientOrders() =
+        (orderUseCases.getClientOrders() as? AppResult.Success)?.data.orEmpty()
 
     private fun emitEffect(effect: WorkerProfileEffect) {
         viewModelScope.launch { _effects.send(effect) }
