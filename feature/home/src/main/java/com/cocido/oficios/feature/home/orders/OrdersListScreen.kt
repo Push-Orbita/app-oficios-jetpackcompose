@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.home.orders
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -100,12 +102,20 @@ private fun OrdersListBody(
             OficiosLoadingState(message = stringResource(R.string.orders_loading))
             repeat(3) { OrderSkeletonCard() }
         }
-        is OrdersListUiState.Error -> OficiosErrorState(
-            title = stringResource(R.string.orders_error_title),
-            description = uiState.message,
-            onRetry = { onEvent(OrdersListEvent.Retry) },
+        is OrdersListUiState.Error -> PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { onEvent(OrdersListEvent.Refresh) },
             modifier = modifier.fillMaxSize(),
-        )
+        ) {
+            RefreshablePlaceholder {
+                OficiosErrorState(
+                    title = stringResource(R.string.orders_error_title),
+                    description = uiState.message,
+                    onRetry = { onEvent(OrdersListEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
         is OrdersListUiState.Success -> Column(modifier = modifier.fillMaxSize()) {
             OrdersFilterRow(selected = uiState.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
             PullToRefreshBox(
@@ -115,13 +125,15 @@ private fun OrdersListBody(
             ) {
                 if (uiState.visibleOrders.isEmpty()) {
                     val history = uiState.filter == OrdersListFilter.HISTORY
-                    OficiosEmptyState(
-                        title = stringResource(if (history) R.string.orders_empty_history_title else R.string.orders_empty_active_title),
-                        description = stringResource(if (history) R.string.orders_empty_history_description else R.string.orders_empty_active_description),
-                        ctaLabel = if (history) null else stringResource(R.string.orders_empty_cta),
-                        onCta = if (history) null else ({ onEvent(OrdersListEvent.SearchClicked) }),
-                        modifier = Modifier.fillMaxSize(),
-                    )
+                    RefreshablePlaceholder {
+                        OficiosEmptyState(
+                            title = stringResource(if (history) R.string.orders_empty_history_title else R.string.orders_empty_active_title),
+                            description = stringResource(if (history) R.string.orders_empty_history_description else R.string.orders_empty_active_description),
+                            ctaLabel = if (history) null else stringResource(R.string.orders_empty_cta),
+                            onCta = if (history) null else ({ onEvent(OrdersListEvent.SearchClicked) }),
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -136,6 +148,30 @@ private fun OrdersListBody(
             }
         }
     }
+}
+
+/** Contenido que llena el viewport y aun así participa del nested scroll del pull-to-refresh. */
+@Composable
+private fun RefreshablePlaceholder(
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    LazyColumn(modifier = modifier.fillMaxSize()) {
+        item {
+            PlaceholderPage(content = content)
+        }
+    }
+}
+
+@Composable
+private fun LazyItemScope.PlaceholderPage(
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier.fillParentMaxSize(),
+        contentAlignment = Alignment.Center,
+        content = content,
+    )
 }
 
 @Composable
