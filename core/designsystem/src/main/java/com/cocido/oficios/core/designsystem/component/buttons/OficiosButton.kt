@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAlertText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorError
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
@@ -36,6 +37,7 @@ enum class OficiosButtonVariant {
     Primary,
     Secondary,
     Outlined,
+    OutlinedDanger,
     Ghost,
     Danger,
     Success,
@@ -83,6 +85,14 @@ fun OficiosButton(
             container = Color.Transparent,
             content = MaterialTheme.colorScheme.onSurface,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            shadow = Color.Transparent,
+        )
+        // Cancelar: borde y texto en el rosa de alerta. El fill de error (#BA6380) sobre
+        // el azul de fondo no llega a AA (2.75); el texto de alerta sí (4.64).
+        OficiosButtonVariant.OutlinedDanger -> ButtonColors(
+            container = Color.Transparent,
+            content = OficiosColorAlertText,
+            border = BorderStroke(1.dp, OficiosColorAlertText),
             shadow = Color.Transparent,
         )
         OficiosButtonVariant.Ghost -> ButtonColors(

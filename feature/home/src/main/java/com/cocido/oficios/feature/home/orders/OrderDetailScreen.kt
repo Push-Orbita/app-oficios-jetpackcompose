@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.HomeRepairService
 import androidx.compose.material.icons.outlined.Phone
@@ -49,6 +50,7 @@ import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -394,11 +396,12 @@ private fun OrderDetailContent(
 
     if (showCancelDialog) {
         OficiosDialog(
-            title = "Cancelar solicitud",
-            message = "¿Seguro que querés cancelar esta solicitud?",
-            confirmLabel = "Sí, cancelar",
-            dismissLabel = "Volver",
+            title = stringResource(R.string.orders_cancel_title),
+            message = stringResource(R.string.orders_cancel_message),
+            confirmLabel = stringResource(R.string.orders_cancel_confirm),
+            dismissLabel = stringResource(R.string.orders_cancel_back),
             isDangerous = true,
+            actionSize = OficiosButtonSize.Prominent,
             onConfirm = {
                 if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING) {
                     onEvent(OrderDetailEvent.CancelConfirmed(null))
@@ -541,7 +544,9 @@ private fun CancelOrderButton(enabled: Boolean, onClick: () -> Unit) {
     OficiosButton(
         text = stringResource(R.string.orders_cancel),
         onClick = onClick,
-        variant = OficiosButtonVariant.Danger,
+        leadingIcon = Icons.Outlined.Close,
+        variant = OficiosButtonVariant.OutlinedDanger,
+        size = OficiosButtonSize.Prominent,
         modifier = Modifier.fillMaxWidth(),
         enabled = enabled,
     )
