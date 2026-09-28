@@ -30,6 +30,7 @@ class OrderUseCases @Inject constructor(
     suspend fun cancelOrderBeforeAcceptance(orderId: Long) = orderRepository.cancelOrderBeforeAcceptance(orderId)
     suspend fun cancelConfirmedOrder(orderId: Long, reason: String?) = orderRepository.cancelConfirmedOrder(orderId, reason)
     suspend fun getBookingTracking(bookingId: Long) = orderRepository.getBookingTracking(bookingId)
+    suspend fun findOrderIdForBooking(bookingId: Long) = orderRepository.findOrderIdForBooking(bookingId)
     suspend fun markEnRoute(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) =
         orderRepository.markEnRoute(bookingId, location)
     suspend fun markArrived(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) =

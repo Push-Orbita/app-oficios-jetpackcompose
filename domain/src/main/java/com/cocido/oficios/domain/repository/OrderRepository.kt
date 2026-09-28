@@ -27,6 +27,7 @@ interface OrderRepository {
     suspend fun cancelOrderBeforeAcceptance(orderId: Long): AppResult<Unit>
     suspend fun cancelConfirmedOrder(orderId: Long, reason: String?): AppResult<Unit>
     suspend fun getBookingTracking(bookingId: Long): AppResult<BookingTracking?>
+    suspend fun findOrderIdForBooking(bookingId: Long): AppResult<Long?>
     suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit>
     suspend fun markArrived(bookingId: Long, location: GeoPoint): AppResult<Unit>
     suspend fun finalizeBooking(bookingId: Long, completionCode: String): AppResult<Unit>

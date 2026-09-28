@@ -6,6 +6,7 @@ import com.cocido.oficios.core.common.navigation.PushDeepLinkMapper
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.NotificationItem
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.notifications.GetNotificationsUseCase
 import com.cocido.oficios.domain.usecase.notifications.MarkNotificationReadUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 class NotificationsViewModel @Inject constructor(
     private val getNotificationsUseCase: GetNotificationsUseCase,
     private val markNotificationReadUseCase: MarkNotificationReadUseCase,
+    private val orderUseCases: OrderUseCases,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationsUiState(isLoading = true))
@@ -67,13 +69,11 @@ class NotificationsViewModel @Inject constructor(
                     is AppResult.Error -> emitEffect(NotificationsEffect.ShowMessage(result.error.userMessage()))
                 }
             }
+            val orderId = item.orderId ?: item.bookingId?.let { bookingId ->
+                (orderUseCases.findOrderIdForBooking(bookingId) as? AppResult.Success)?.data
+            }
             val route = PushDeepLinkMapper.toInternalRoute(item.deepLink)
-                ?: item.entityId?.let { entityId ->
-                    when (item.entityType?.uppercase()) {
-                        "SOLICITUD", "BOOKING" -> "orders/$entityId"
-                        else -> null
-                    }
-                }
+                ?: orderId?.let { "orders/$it" }
             if (route != null) {
                 emitEffect(NotificationsEffect.NavigateToDeepLink(route))
             }

@@ -110,6 +110,11 @@ class OrderRepositoryImpl @Inject constructor(
             remoteDataSource.cancelarSolicitudConfirmada(orderId, reason).map { }.notifyIfChanged()
         }
 
+    override suspend fun findOrderIdForBooking(bookingId: Long): AppResult<Long?> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.getBooking(bookingId).map { it.solicitudServicio?.id }
+        }
+
     override suspend fun getBookingTracking(bookingId: Long): AppResult<BookingTracking?> =
         withContext(dispatcherProvider.io) {
             remoteDataSource.getTracking(bookingId).map { it.toBookingTracking() }
