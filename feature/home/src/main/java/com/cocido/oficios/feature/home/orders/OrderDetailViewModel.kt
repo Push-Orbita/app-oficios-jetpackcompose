@@ -7,8 +7,10 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.repository.AuthRepository
+import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import com.cocido.oficios.domain.model.BookingStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -28,6 +30,7 @@ class OrderDetailViewModel @Inject constructor(
     private val orderUseCases: OrderUseCases,
     private val authRepository: AuthRepository,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
+    private val getWorkerReviewsUseCase: GetWorkerReviewsUseCase,
 ) : ViewModel() {
 
     private val orderId: Long = savedStateHandle.get<Long>("orderId") ?: 0L
@@ -118,7 +121,7 @@ class OrderDetailViewModel @Inject constructor(
 
             when (val result = orderUseCases.getOrderDetail(orderId)) {
                 is AppResult.Success -> {
-                    val order = result.data
+                    val order = withClientRating(result.data)
                     val tracking = order.bookingId?.takeIf {
                         order.bookingStatus == BookingStatus.EN_ROUTE || order.bookingStatus == BookingStatus.IN_PROGRESS
                     }?.let { bookingId ->
@@ -165,6 +168,22 @@ class OrderDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun withClientRating(order: ServiceOrder): ServiceOrder {
+        if (viewerRole != UserRole.CLIENT || order.bookingStatus != BookingStatus.FINISHED) return order
+        val bookingId = order.bookingId ?: return order
+        if (order.workerId == 0L) return order
+        val reviews = (getWorkerReviewsUseCase(order.workerId, pageNumber = 1, pageSize = 20) as? AppResult.Success)
+            ?.data
+            ?.items
+            ?.firstOrNull { it.bookingId == bookingId }
+            ?: return order
+        return order.copy(
+            alreadyRated = true,
+            qualityScore = reviews.qualityScore,
+            punctualityScore = reviews.punctualityScore,
+        )
     }
 
     private fun startTrackingRefreshIfNeeded(bookingId: Long?, status: BookingStatus?) {

@@ -47,6 +47,8 @@ data class ServiceOrder(
     val canCancelBooking: Boolean = false,
     val pendingCounterOffer: CounterOffer? = null,
     val alreadyRated: Boolean = false,
+    val qualityScore: Int? = null,
+    val punctualityScore: Int? = null,
     val completionCode: String? = null,
     val workerAvatarUrl: String? = null,
     val cancelledBy: String? = null,
