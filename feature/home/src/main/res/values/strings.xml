@@ -207,6 +207,8 @@
     <string name="orders_map_worker_location">Ubicación del trabajador</string>
     <string name="orders_tracking_waiting">Esperando la primera actualización de ubicación del trabajador.</string>
     <string name="orders_worker">Trabajador</string>
+    <string name="orders_section_details">Detalle</string>
+    <string name="orders_open_worker">Ver perfil del trabajador</string>
     <string name="orders_date">Fecha y hora</string>
     <string name="orders_address">Dirección</string>
     <string name="orders_contact">Contacto</string>
