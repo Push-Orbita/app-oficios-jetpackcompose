@@ -5,10 +5,12 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -165,6 +167,8 @@ fun OficiosTrackingMap(
     workerLongitude: Double? = null,
     modifier: Modifier = Modifier,
     showDestinationLabel: Boolean = false,
+    onMapClick: (() -> Unit)? = null,
+    mapContentDescription: String? = null,
 ) {
     val destination = LatLng(destinationLatitude, destinationLongitude)
     val worker = workerLatitude?.let { lat -> workerLongitude?.let { lng -> LatLng(lat, lng) } }
@@ -181,25 +185,43 @@ fun OficiosTrackingMap(
         modifier = modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp)),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        GoogleMap(
-            cameraPositionState = cameraPositionState,
-            properties = MapProperties(),
-            uiSettings = MapUiSettings(
-                compassEnabled = true,
-                myLocationButtonEnabled = false,
-                zoomControlsEnabled = false,
-                mapToolbarEnabled = false,
-                scrollGesturesEnabled = true,
-            ),
-        ) {
-            Marker(
-                state = remember(destination) { MarkerState(position = destination) },
-                title = "Destino del servicio",
-            )
-            worker?.let {
+        Box(Modifier.fillMaxSize()) {
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = MapProperties(),
+                uiSettings = MapUiSettings(
+                    compassEnabled = true,
+                    myLocationButtonEnabled = false,
+                    zoomControlsEnabled = false,
+                    mapToolbarEnabled = false,
+                    scrollGesturesEnabled = onMapClick == null,
+                ),
+                onMapClick = { onMapClick?.invoke() },
+            ) {
                 Marker(
-                    state = remember(it) { MarkerState(position = it) },
-                    title = "Trabajador en camino",
+                    state = remember(destination) { MarkerState(position = destination) },
+                    title = "Destino del servicio",
+                )
+                worker?.let {
+                    Marker(
+                        state = remember(it) { MarkerState(position = it) },
+                        title = "Trabajador en camino",
+                    )
+                }
+            }
+            if (onMapClick != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(onClick = onMapClick)
+                        .then(
+                            if (mapContentDescription != null) {
+                                Modifier.semantics { contentDescription = mapContentDescription }
+                            } else {
+                                Modifier
+                            },
+                        ),
                 )
             }
         }
