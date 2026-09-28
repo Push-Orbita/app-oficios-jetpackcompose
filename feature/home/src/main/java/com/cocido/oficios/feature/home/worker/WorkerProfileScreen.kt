@@ -138,12 +138,14 @@ fun WorkerProfileScreen(
                             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
                         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
                     ) {
-                        OficiosButton(
-                            text = stringResource(R.string.home_worker_rate),
-                            onClick = { onEvent(WorkerProfileEvent.RateClicked) },
-                            modifier = Modifier.weight(1f),
-                            variant = OficiosButtonVariant.Outlined,
-                        )
+                        if (uiState.rateBookingId != null) {
+                            OficiosButton(
+                                text = stringResource(R.string.home_worker_rate),
+                                onClick = { onEvent(WorkerProfileEvent.RateClicked) },
+                                modifier = Modifier.weight(1f),
+                                variant = OficiosButtonVariant.Outlined,
+                            )
+                        }
                         OficiosButton(
                             text = stringResource(R.string.home_worker_hire),
                             onClick = { onEvent(WorkerProfileEvent.HireClicked) },

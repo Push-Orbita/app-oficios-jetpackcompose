@@ -12,13 +12,13 @@ import com.cocido.oficios.feature.home.R
 fun WorkerProfileRoute(
     onNavigateBack: () -> Unit,
     onNavigateToHire: (Long) -> Unit,
+    onNavigateToRate: (Long, String) -> Unit = { _, _ -> },
     onNavigateToReport: (Long, String) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: WorkerProfileViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    val ratingUnavailableMessage = stringResource(R.string.home_worker_rate_unavailable)
     val favoriteSavedMessage = stringResource(R.string.home_worker_favorite_saved)
     val favoriteRemovedMessage = stringResource(R.string.home_worker_favorite_removed)
 
@@ -31,7 +31,7 @@ fun WorkerProfileRoute(
                 is WorkerProfileEffect.ShowFavoriteResult -> onShowMessage(
                     if (effect.added) favoriteSavedMessage else favoriteRemovedMessage,
                 )
-                WorkerProfileEffect.ShowRatingUnavailable -> onShowMessage(ratingUnavailableMessage)
+                is WorkerProfileEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerName)
                 is WorkerProfileEffect.NavigateToReport -> onNavigateToReport(effect.workerId, effect.workerName)
             }
         }

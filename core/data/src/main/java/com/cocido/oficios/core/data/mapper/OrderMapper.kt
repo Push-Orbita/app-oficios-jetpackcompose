@@ -232,6 +232,7 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
         rubroLabel = rubro?.nombre.orEmpty(),
         avatarUrl = (if (isWorkerViewing) cliente?.usuario?.fotoPerfil else trabajadorOficio?.usuario?.fotoPerfil).toPhotoUrl(),
         workerId = trabajadorOficio?.id ?: 0L,
+        bookingId = booking?.id?.takeIf { it != 0L },
         scheduledSortKey = booking?.inicioConfirmado ?: booking?.slotTurno?.inicio,
     )
 }
