@@ -25,7 +25,7 @@ Flujo de negocio central: el cliente busca por categoría/rubro, ve el perfil de
 
 ### Convención de nombres del design system — IMPORTANTE
 
-`docs/design-system.md` está **desactualizado**: describe componentes `App*` (`AppButton`, `AppDialog`, `AppTextField`, `AppScaffold`, `AppCard`...). **La convención real y vigente en el código es `Oficios*`**: `OficiosButton`, `OficiosDialog`, `OficiosCard`, `OficiosCheckbox`, `OficiosTextField`, `OficiosScaffold`, `OficiosBottomBarSlot`, `OficiosTopBarSlot`, `OficiosAutocompleteField`, `OficiosDropdownField`, `OficiosEmptyState`, `OficiosErrorState`, `OficiosLoadingState`, `OficiosInlineAlert`, etc., todos en `core/designsystem/src/main/java/com/cocido/oficios/core/designsystem/component/`. Confiar en el código fuente de ese paquete, no en `design-system.md`, para nombres exactos.
+`docs/design-system.md` describe el tema navy v2 y los componentes `Oficios*`. La lista viva está en `core/designsystem/src/main/java/com/cocido/oficios/core/designsystem/component/`.
 
 ### Reglas de Compose/insets — IMPORTANTE (bug real ya corregido, no reintroducir)
 
