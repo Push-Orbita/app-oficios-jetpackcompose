@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
@@ -113,6 +114,8 @@ fun LoginScreen(
                     onClick = { onEvent(LoginEvent.Submit) },
                     enabled = !uiState.isLoading,
                     loading = uiState.isLoading,
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                 )
             }
 
@@ -134,6 +137,7 @@ fun LoginScreen(
                     onClick = { onEvent(LoginEvent.RegisterClicked) },
                     enabled = !uiState.isLoading,
                     variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                 )
             }
         }

@@ -336,6 +336,7 @@ private fun OrderDetailContent(
                         text = "Aceptar",
                         onClick = { onEvent(OrderDetailEvent.Accept) },
                         modifier = Modifier.weight(1f),
+                        variant = OficiosButtonVariant.Secondary,
                         size = OficiosButtonSize.Prominent,
                         enabled = !state.isActionInProgress,
                     )
@@ -343,7 +344,7 @@ private fun OrderDetailContent(
                 OficiosButton(
                     text = "Reagendar",
                     onClick = { onEvent(OrderDetailEvent.OpenCounterOffer) },
-                    variant = OficiosButtonVariant.Outlined,
+                    variant = OficiosButtonVariant.Primary,
                     size = OficiosButtonSize.Prominent,
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.isActionInProgress,
@@ -386,6 +387,7 @@ private fun OrderDetailContent(
                             text = "Aceptar",
                             onClick = { onEvent(OrderDetailEvent.AcceptCounterOffer) },
                             modifier = Modifier.weight(1f),
+                            variant = OficiosButtonVariant.Secondary,
                             size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
@@ -414,6 +416,7 @@ private fun OrderDetailContent(
                             text = "Estoy en camino",
                             onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
                             modifier = Modifier.fillMaxWidth(),
+                            variant = OficiosButtonVariant.Secondary,
                             size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
@@ -437,6 +440,7 @@ private fun OrderDetailContent(
                             text = "Marcar llegada",
                             onClick = { onEvent(OrderDetailEvent.MarkArrived) },
                             modifier = Modifier.fillMaxWidth(),
+                            variant = OficiosButtonVariant.Secondary,
                             size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
@@ -459,6 +463,7 @@ private fun OrderDetailContent(
                             text = "Terminar pedido",
                             onClick = { showFinalizeDialog = true },
                             modifier = Modifier.fillMaxWidth(),
+                            variant = OficiosButtonVariant.Secondary,
                             size = OficiosButtonSize.Prominent,
                             enabled = !state.isActionInProgress,
                         )
