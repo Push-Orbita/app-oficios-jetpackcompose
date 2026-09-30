@@ -35,7 +35,7 @@ Los alias `OficiosColorPrimary`, `OficiosColorContainer`, `OficiosColorMutedText
 | `OutlinedDanger` | transparente + borde alerta | `#D197AB` | Rechazar / cancelar |
 | `Ghost` | fondo | blanco | Enlaces de formulario (olvidé mi contraseña) |
 
-Altura: varios frames dibujan el CTA a **36dp** (`210:29` Aceptar, `198:697` Estoy en camino). `Continuar` en `25:767` mide **48dp**. En auth y pedidos el CTA de pantalla usa `Prominent` (48dp), que es la altura pedida para esos flujos; el resto puede seguir en 36dp cuando el frame lo mide así. Radius de botón: **8dp**.
+Altura: los frames de CTA miden **36dp** (`210:29` Aceptar, `198:697` Estoy en camino). `Prominent` usa esa altura (`buttonMinHeight`). Radius de botón: **8dp**.
 
 ### Marca
 
@@ -148,8 +148,8 @@ Fallback actual: `FontFamily.SansSerif`.
 | Token | Valor |
 |---|---|
 | `textFieldHeight` | 48dp |
-| `buttonMinHeight` | 36dp |
-| `buttonHeight` | 48dp |
+| `buttonMinHeight` | 36dp (`Compact` y `Prominent`) |
+| `buttonHeight` | 48dp (filas e íconos, no el CTA) |
 | `iconSm` | 16dp |
 | `iconMd` | 24dp |
 | `iconLg` | 32dp |
