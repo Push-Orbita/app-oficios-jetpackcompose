@@ -16,7 +16,7 @@
     <string name="home_nav_pedidos">Pedidos</string>
     <string name="home_nav_favoritos">Favoritos</string>
     <string name="home_nav_ayuda">Ayuda</string>
-    <string name="home_nav_ajustes">Ajustes</string>
+    <string name="home_nav_ajustes">Perfil</string>
     <string name="home_notifications">Notificaciones</string>
     <string name="home_user_avatar">Foto de perfil</string>
     <string name="home_verified_user">Usuario verificado</string>
