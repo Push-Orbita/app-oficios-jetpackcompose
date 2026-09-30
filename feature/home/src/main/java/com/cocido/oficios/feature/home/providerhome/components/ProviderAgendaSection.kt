@@ -39,6 +39,7 @@ import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.orders.ServiceOrderStatusLabel
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
@@ -58,7 +59,10 @@ fun ProviderAgendaSection(
     onOrderClick: (Long) -> Unit = {},
 ) {
     var visibleMonth by remember { mutableStateOf(YearMonth.now()) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val today = remember { LocalDate.now() }
+    val eventDates = remember(upcomingOrders) { upcomingOrders.mapNotNull { it.scheduledDate() }.toSet() }
+    val ordersForSelectedDay = upcomingOrders.filter { it.scheduledDate() == selectedDate }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -129,7 +133,13 @@ fun ProviderAgendaSection(
                         OficiosCalendarDay(
                             dayNumber = day,
                             dayLabel = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("es-AR")),
-                            state = if (date == today) CalendarDayState.Today else CalendarDayState.Normal,
+                            state = when {
+                                date == selectedDate -> CalendarDayState.Selected
+                                date == today -> CalendarDayState.Today
+                                else -> CalendarDayState.Normal
+                            },
+                            hasEvent = date in eventDates,
+                            onClick = { selectedDate = date },
                         )
                     }
                 }
@@ -141,7 +151,7 @@ fun ProviderAgendaSection(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        if (upcomingOrders.isEmpty()) {
+        if (ordersForSelectedDay.isEmpty()) {
             OficiosCard {
                 OficiosEmptyState(
                     title = stringResource(R.string.provider_home_upcoming_shifts_empty_title),
@@ -152,7 +162,7 @@ fun ProviderAgendaSection(
             }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-                upcomingOrders.forEach { order ->
+                ordersForSelectedDay.forEach { order ->
                     OficiosCard(onClick = { onOrderClick(order.id) }) {
                         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
                             ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
@@ -170,6 +180,14 @@ fun ProviderAgendaSection(
             }
         }
     }
+}
+
+private fun ServiceOrderListItem.scheduledDate(): LocalDate? {
+    val raw = scheduledSortKey?.trim().orEmpty()
+    if (raw.isEmpty()) return null
+    return runCatching { OffsetDateTime.parse(raw).toLocalDate() }
+        .recoverCatching { LocalDate.parse(raw.take(10)) }
+        .getOrNull()
 }
 
 @Preview(name = "Provider Agenda Section", showBackground = true, backgroundColor = 0xFF00358B)

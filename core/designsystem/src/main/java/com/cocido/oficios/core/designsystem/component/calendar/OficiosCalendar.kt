@@ -56,6 +56,7 @@ fun OficiosCalendarDay(
     state: CalendarDayState = CalendarDayState.Normal,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    hasEvent: Boolean = state == CalendarDayState.HasEvent,
 ) {
     val isDisabled = state == CalendarDayState.Disabled
     val (bgColor, textColor, borderColor) = when (state) {
@@ -113,7 +114,7 @@ fun OficiosCalendarDay(
             style = MaterialTheme.typography.titleMedium,
             color = textColor,
         )
-        if (state == CalendarDayState.HasEvent) {
+        if (hasEvent) {
             Box(
                 modifier = Modifier
                     .size(4.dp)
