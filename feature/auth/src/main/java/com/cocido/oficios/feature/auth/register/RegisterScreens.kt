@@ -211,8 +211,8 @@ fun RegisterFormScreen(
                     onClick = { onEvent(RegisterFormEvent.Submit) },
                     enabled = !uiState.isLoading,
                     loading = uiState.isLoading,
-                    variant = OficiosButtonVariant.Primary,
-                    size = OficiosButtonSize.Compact,
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                 )
             }
 
