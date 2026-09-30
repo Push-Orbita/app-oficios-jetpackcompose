@@ -112,8 +112,8 @@ fun OficiosCategoryCard(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = title,

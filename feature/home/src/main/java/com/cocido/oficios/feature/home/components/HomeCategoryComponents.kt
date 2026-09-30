@@ -40,7 +40,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.feature.home.R
-import com.cocido.oficios.feature.home.common.CategoryIconResolver
+import com.cocido.oficios.core.designsystem.component.categories.CategoryIconResolver
 
 private val CategoryCardSize = 112.dp
 
