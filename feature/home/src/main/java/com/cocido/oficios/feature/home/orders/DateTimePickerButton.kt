@@ -6,7 +6,6 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDatePickerState
@@ -82,17 +81,25 @@ fun DateTimePickerButton(
             title = { Text("Elegí un horario") },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
-                TextButton(onClick = {
-                    val millis = pickedDateMillis
-                    if (millis != null) {
-                        val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
-                        onDateTimeSelected(LocalDateTime.of(date, LocalTime.of(timePickerState.hour, timePickerState.minute)))
-                    }
-                    showTimePicker = false
-                }) { Text("Confirmar") }
+                OficiosButton(
+                    text = "Confirmar",
+                    onClick = {
+                        val millis = pickedDateMillis
+                        if (millis != null) {
+                            val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
+                            onDateTimeSelected(LocalDateTime.of(date, LocalTime.of(timePickerState.hour, timePickerState.minute)))
+                        }
+                        showTimePicker = false
+                    },
+                    variant = OficiosButtonVariant.Ghost,
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
+                OficiosButton(
+                    text = "Cancelar",
+                    onClick = { showTimePicker = false },
+                    variant = OficiosButtonVariant.Ghost,
+                )
             },
         )
     }

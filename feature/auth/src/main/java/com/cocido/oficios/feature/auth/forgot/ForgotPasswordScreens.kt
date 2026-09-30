@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessState
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -63,10 +64,15 @@ fun ForgotPasswordScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
             )
-            TextButton(onClick = onBackToLogin, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.auth_back_to_login))
-            }
+            OficiosButton(
+                text = stringResource(R.string.auth_back_to_login),
+                onClick = onBackToLogin,
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Ghost,
+            )
         }
     }
 }
@@ -128,10 +134,15 @@ fun ResetPasswordScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
             )
-            TextButton(onClick = onBackToLogin, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.auth_back_to_login))
-            }
+            OficiosButton(
+                text = stringResource(R.string.auth_back_to_login),
+                onClick = onBackToLogin,
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Ghost,
+            )
         }
     }
 }

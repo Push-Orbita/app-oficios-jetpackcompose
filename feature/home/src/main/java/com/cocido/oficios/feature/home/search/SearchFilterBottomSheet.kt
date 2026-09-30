@@ -11,7 +11,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -164,7 +163,8 @@ fun SearchFilterBottomSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                OficiosButton(
+                    text = stringResource(R.string.home_filter_apply),
                     onClick = {
                         val millis = datePickerState.selectedDateMillis
                         val formatted = millis?.let {
@@ -173,14 +173,15 @@ fun SearchFilterBottomSheet(
                         onEvent(SearchResultsEvent.FilterDateChanged(formatted))
                         showDatePicker = false
                     },
-                ) {
-                    Text(stringResource(R.string.home_filter_apply))
-                }
+                    variant = OficiosButtonVariant.Ghost,
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(stringResource(R.string.home_back))
-                }
+                OficiosButton(
+                    text = stringResource(R.string.home_back),
+                    onClick = { showDatePicker = false },
+                    variant = OficiosButtonVariant.Ghost,
+                )
             },
         ) {
             DatePicker(state = datePickerState)
