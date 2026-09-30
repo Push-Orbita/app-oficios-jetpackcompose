@@ -62,7 +62,7 @@ fun OficiosButton(
 ) {
     val minHeight = when (size) {
         OficiosButtonSize.Compact -> OficiosComponentSize.buttonMinHeight
-        OficiosButtonSize.Prominent -> OficiosComponentSize.buttonHeight
+        OficiosButtonSize.Prominent -> OficiosComponentSize.buttonMinHeight
     }
 
     val (containerColor, contentColor, border, shadowColor) = when (variant) {
