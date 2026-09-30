@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -38,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -188,23 +188,16 @@ fun WorkerProfileScreen(
         }
     }
     if (confirmReport) {
-        AlertDialog(
-            onDismissRequest = { confirmReport = false },
-            title = { Text(stringResource(R.string.home_worker_report_confirm_title)) },
-            text = { Text(stringResource(R.string.home_worker_report_confirm_body)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmReport = false
-                    onEvent(WorkerProfileEvent.ReportProfileClicked)
-                }) {
-                    Text(stringResource(R.string.home_worker_report_confirm_action))
-                }
+        OficiosDialog(
+            title = stringResource(R.string.home_worker_report_confirm_title),
+            message = stringResource(R.string.home_worker_report_confirm_body),
+            confirmLabel = stringResource(R.string.home_worker_report_confirm_action),
+            dismissLabel = stringResource(R.string.home_worker_report_cancel),
+            onConfirm = {
+                confirmReport = false
+                onEvent(WorkerProfileEvent.ReportProfileClicked)
             },
-            dismissButton = {
-                TextButton(onClick = { confirmReport = false }) {
-                    Text(stringResource(R.string.home_worker_report_cancel))
-                }
-            },
+            onDismiss = { confirmReport = false },
         )
     }
 }

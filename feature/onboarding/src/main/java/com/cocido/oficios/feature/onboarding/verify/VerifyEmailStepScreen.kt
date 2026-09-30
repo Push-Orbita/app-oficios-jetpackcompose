@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.steps.OnboardingStepScaffold
@@ -28,6 +30,8 @@ fun VerifyEmailStepScreen(
         isLoading = uiState.isLoading,
         canSubmit = uiState.canSubmit,
         submitText = stringResource(R.string.onboarding_step_verify_email_submit),
+        submitVariant = OficiosButtonVariant.Secondary,
+        submitSize = OficiosButtonSize.Prominent,
         onSubmit = onSubmit,
     ) {
         Text(
@@ -55,21 +59,19 @@ fun VerifyEmailStepScreen(
             supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
-        TextButton(
+        OficiosButton(
+            text = when {
+                uiState.isResending -> stringResource(R.string.onboarding_step_verify_email_resending)
+                uiState.resendCooldownSeconds > 0 -> stringResource(
+                    R.string.onboarding_step_verify_email_resend_cooldown,
+                    uiState.resendCooldownSeconds,
+                )
+                else -> stringResource(R.string.onboarding_step_verify_email_resend)
+            },
             onClick = onResend,
             enabled = uiState.resendCooldownSeconds == 0 && !uiState.isResending && !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                text = when {
-                    uiState.isResending -> stringResource(R.string.onboarding_step_verify_email_resending)
-                    uiState.resendCooldownSeconds > 0 -> stringResource(
-                        R.string.onboarding_step_verify_email_resend_cooldown,
-                        uiState.resendCooldownSeconds,
-                    )
-                    else -> stringResource(R.string.onboarding_step_verify_email_resend)
-                },
-            )
-        }
+            variant = OficiosButtonVariant.Ghost,
+        )
     }
 }

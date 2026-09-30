@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
@@ -58,6 +60,8 @@ fun OnboardingStepScaffold(
     isLoading: Boolean = false,
     canSubmit: Boolean = true,
     submitText: String? = null,
+    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Primary,
+    submitSize: OficiosButtonSize = OficiosButtonSize.Compact,
     onSubmit: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -80,6 +84,8 @@ fun OnboardingStepScaffold(
                 enabled = !isLoading,
                 loading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
+                variant = submitVariant,
+                size = submitSize,
             )
         }
     }
