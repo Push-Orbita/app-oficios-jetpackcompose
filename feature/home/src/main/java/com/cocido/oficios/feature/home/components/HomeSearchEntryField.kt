@@ -22,8 +22,8 @@ fun HomeSearchEntryField(
         onSearch = onSearch,
         placeholder = placeholder,
         modifier = modifier,
-        onMicClick = onMicClick,
-        showMic = onMicClick != null,
+        onMicClick = onMicClick ?: {},
+        showMic = true,
     )
 }
 
@@ -42,7 +42,7 @@ fun HomeSearchEntryField(
         onValueChange = onQueryChange,
         placeholder = placeholder,
         modifier = modifier,
-        onMicClick = if (showMic) onMicClick else null,
+        onMicClick = if (showMic) onMicClick ?: {} else null,
         onSearchClick = onSearch,
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
     )
