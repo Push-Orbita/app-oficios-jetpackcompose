@@ -20,6 +20,7 @@ data class PaginationMetadataDto(
 data class CategoriaDto(
     val id: Long = 0L,
     val nombre: String = "",
+    val iconUrl: String? = null,
 )
 
 @Serializable
