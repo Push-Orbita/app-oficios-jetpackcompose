@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,6 +42,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.feature.home.R
+import coil.compose.SubcomposeAsyncImage
 import com.cocido.oficios.core.designsystem.component.categories.CategoryIconResolver
 
 private val CategoryCardSize = 112.dp
@@ -196,6 +199,7 @@ fun HomeCategoriesGrid(
             HomeCategoryCard(
                 title = category.name,
                 icon = CategoryIconResolver.iconFor(category.id, category.name),
+                iconUrl = category.iconUrl,
                 onClick = { onCategoryClick(category) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -260,6 +264,7 @@ fun HomeCategoryCard(
     HomeCategoryCard(
         title = category.name,
         icon = CategoryIconResolver.iconFor(category.id, category.name),
+        iconUrl = category.iconUrl,
         onClick = onClick,
         modifier = modifier,
     )
@@ -268,10 +273,11 @@ fun HomeCategoryCard(
 @Composable
 fun HomeCategoryCard(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    iconUrl: String? = null,
 ) {
     val titleStyle = if (compact) {
         MaterialTheme.typography.labelMedium
@@ -315,12 +321,46 @@ fun HomeCategoryCard(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(OficiosComponentSize.iconLg),
+            CategoryCardIcon(
+                icon = icon,
+                iconUrl = iconUrl,
+                contentDescription = title,
             )
         }
     }
+}
+
+@Composable
+private fun CategoryCardIcon(
+    icon: ImageVector,
+    iconUrl: String?,
+    contentDescription: String,
+) {
+    val remoteUrl = iconUrl?.takeIf { it.isNotBlank() }
+    val iconModifier = Modifier.size(OficiosComponentSize.iconLg)
+    if (remoteUrl == null) {
+        LocalCategoryIcon(icon = icon, modifier = iconModifier)
+        return
+    }
+    SubcomposeAsyncImage(
+        model = remoteUrl,
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Fit,
+        modifier = iconModifier,
+        loading = { LocalCategoryIcon(icon = icon, modifier = iconModifier) },
+        error = { LocalCategoryIcon(icon = icon, modifier = iconModifier) },
+    )
+}
+
+@Composable
+private fun LocalCategoryIcon(
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+) {
+    Icon(
+        imageVector = icon,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = modifier,
+    )
 }

@@ -9,6 +9,7 @@ import com.cocido.oficios.domain.model.CatalogOption
 fun CategoriaDto.toCatalogOption(): CatalogOption = CatalogOption(
     id = id,
     label = nombre,
+    iconUrl = iconUrl?.takeIf { it.isNotBlank() },
 )
 
 fun RubroDto.toCatalogOption(): CatalogOption = CatalogOption(

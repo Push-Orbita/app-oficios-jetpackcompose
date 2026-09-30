@@ -11,4 +11,5 @@ data class ClientHomeContent(
 data class HomeCategoryItem(
     val id: Long,
     val name: String,
+    val iconUrl: String? = null,
 )
