@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -258,7 +259,8 @@ private fun SettingsContent(
             OficiosButton(
                 text = stringResource(R.string.settings_logout),
                 onClick = onRequestLogout,
-                variant = OficiosButtonVariant.Ghost,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
                 loading = uiState.isLoggingOut,
                 enabled = !uiState.isLoggingOut,
                 modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth),
