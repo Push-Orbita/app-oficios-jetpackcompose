@@ -478,6 +478,7 @@ private fun OrderDetailContent(
                                 text = stringResource(R.string.orders_rate_worker),
                                 onClick = { onEvent(OrderDetailEvent.GoToRate) },
                                 modifier = Modifier.fillMaxWidth(),
+                                variant = OficiosButtonVariant.Secondary,
                                 size = OficiosButtonSize.Prominent,
                             )
                         }
@@ -493,7 +494,7 @@ private fun OrderDetailContent(
                     OficiosButton(
                         text = "Reintentar",
                         onClick = { onEvent(OrderDetailEvent.Retry) },
-                        variant = OficiosButtonVariant.Outlined,
+                        variant = OficiosButtonVariant.Secondary,
                         size = OficiosButtonSize.Prominent,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -757,6 +758,7 @@ private fun ContactButton(label: String, phone: String, onClick: () -> Unit) {
         text = label,
         onClick = onClick,
         leadingIcon = Icons.Outlined.Phone,
+        variant = OficiosButtonVariant.Secondary,
         size = OficiosButtonSize.Prominent,
         modifier = Modifier.fillMaxWidth(),
     )

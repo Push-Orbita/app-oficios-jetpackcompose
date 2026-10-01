@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
@@ -173,6 +174,7 @@ fun AccountStatusScreen(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                     enabled = !isLoggingOut,
                     loading = isLoggingOut,
                 )
@@ -266,6 +268,8 @@ private fun ChecklistContent(
                         modifier = Modifier.fillMaxWidth(),
                         loading = isFinalizing,
                         enabled = !isFinalizing && !isLoggingOut,
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Prominent,
                     )
                 }
                 if (primaryActionLabel != null && onPrimaryAction != null) {
@@ -273,6 +277,8 @@ private fun ChecklistContent(
                         text = primaryActionLabel,
                         onClick = onPrimaryAction,
                         modifier = Modifier.fillMaxWidth(),
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Prominent,
                     )
                 }
                 OficiosButton(
@@ -280,6 +286,7 @@ private fun ChecklistContent(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                     enabled = !isLoggingOut,
                     loading = isLoggingOut,
                 )

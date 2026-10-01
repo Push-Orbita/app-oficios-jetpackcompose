@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
@@ -124,6 +125,8 @@ private fun DeleteAccountGraceContent(
             loading = uiState.isCancelling,
             enabled = !uiState.isCancelling,
             modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Prominent,
         )
     }
 }
@@ -169,6 +172,7 @@ private fun DeleteAccountForm(
             loading = uiState.isSubmitting,
             enabled = !uiState.isSubmitting,
             variant = OficiosButtonVariant.Danger,
+            size = OficiosButtonSize.Prominent,
             modifier = Modifier.fillMaxWidth(),
         )
     }

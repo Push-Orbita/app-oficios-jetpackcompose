@@ -243,7 +243,7 @@ fun RegisterTradeScreen(
             OficiosButton(
                 text = stringResource(R.string.auth_continue),
                 onClick = { onEvent(RegisterTradeEvent.Continue) },
-                variant = OficiosButtonVariant.Primary,
+                variant = OficiosButtonVariant.Secondary,
                 size = OficiosButtonSize.Prominent,
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,

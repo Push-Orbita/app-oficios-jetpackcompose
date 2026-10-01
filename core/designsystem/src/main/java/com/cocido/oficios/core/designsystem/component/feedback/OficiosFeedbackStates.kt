@@ -131,7 +131,12 @@ fun OficiosEmptyState(
         )
         if (ctaLabel != null && onCta != null) {
             Spacer(Modifier.height(OficiosSpacing.lg))
-            OficiosButton(text = ctaLabel, onClick = onCta)
+            OficiosButton(
+                text = ctaLabel,
+                onClick = onCta,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
+            )
         }
     }
 }
@@ -184,7 +189,7 @@ fun OficiosErrorState(
                 text = "Reintentar",
                 onClick = onRetry,
                 leadingIcon = Icons.Outlined.Refresh,
-                variant = OficiosButtonVariant.Ghost,
+                variant = OficiosButtonVariant.Secondary,
                 size = OficiosButtonSize.Prominent,
             )
         }
@@ -232,7 +237,12 @@ fun OficiosSuccessState(
         )
         if (ctaLabel != null && onCta != null) {
             Spacer(Modifier.height(OficiosSpacing.lg))
-            OficiosButton(text = ctaLabel, onClick = onCta)
+            OficiosButton(
+                text = ctaLabel,
+                onClick = onCta,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
+            )
         }
     }
 }

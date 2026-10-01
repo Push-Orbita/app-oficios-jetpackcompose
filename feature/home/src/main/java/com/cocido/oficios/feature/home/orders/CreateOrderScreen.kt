@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.calendar.OficiosScheduleSlot
 import com.cocido.oficios.core.designsystem.component.calendar.ScheduleSlotData
 import com.cocido.oficios.core.designsystem.component.calendar.ScheduleSlotState
@@ -200,6 +202,8 @@ private fun CreateOrderForm(
             loading = state.isSubmitting,
             enabled = !state.isSubmitting,
             modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Prominent,
         )
     }
 }

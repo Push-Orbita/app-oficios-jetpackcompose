@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessState
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -75,6 +77,8 @@ fun RateWorkerScreen(
                     loading = uiState.isSubmitting,
                     enabled = !uiState.isSubmitting,
                     modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                 )
             }
             is RateWorkerUiState.Submitted -> OficiosSuccessState(

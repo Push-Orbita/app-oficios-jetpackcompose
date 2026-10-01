@@ -60,8 +60,8 @@ fun OnboardingStepScaffold(
     isLoading: Boolean = false,
     canSubmit: Boolean = true,
     submitText: String? = null,
-    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Primary,
-    submitSize: OficiosButtonSize = OficiosButtonSize.Compact,
+    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
+    submitSize: OficiosButtonSize = OficiosButtonSize.Prominent,
     onSubmit: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -360,6 +360,8 @@ fun ProviderDniStepScreen(
                     enabled = !uiState.isLoading,
                     loading = uiState.isLoading,
                     modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                 )
             }
         }
@@ -639,6 +641,7 @@ fun ProviderAvailabilityStepScreen(
                     text = stringResource(R.string.onboarding_step_availability_add_schedule),
                     onClick = onAddTimeSlot,
                     modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Outlined,
                 )
             }
         }
