@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.calendar.CalendarDayState
 import com.cocido.oficios.core.designsystem.component.calendar.OficiosCalendarDay
@@ -176,6 +177,8 @@ private fun AgendaListContent(
                     text = "Agregar disponibilidad",
                     onClick = { onEvent(AgendaListEvent.OpenCreateSlot) },
                     modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                 )
             }
         }
@@ -197,7 +200,8 @@ private fun AgendaListContent(
                         OficiosButton(
                             text = "Reintentar",
                             onClick = { onEvent(AgendaListEvent.RetrySlots) },
-                            variant = OficiosButtonVariant.Outlined,
+                            variant = OficiosButtonVariant.Secondary,
+                            size = OficiosButtonSize.Prominent,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -434,6 +438,8 @@ private fun SlotForm(
                 enabled = !uiState.isSavingSlot,
                 loading = uiState.isSavingSlot,
                 modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
             )
             OficiosButton(
                 text = "Cancelar",

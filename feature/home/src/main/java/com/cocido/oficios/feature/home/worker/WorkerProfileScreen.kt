@@ -150,7 +150,7 @@ fun WorkerProfileScreen(
                             text = stringResource(R.string.home_worker_hire),
                             onClick = { onEvent(WorkerProfileEvent.HireClicked) },
                             modifier = Modifier.weight(2f),
-                            variant = OficiosButtonVariant.Primary,
+                            variant = OficiosButtonVariant.Secondary,
                             size = OficiosButtonSize.Prominent,
                         )
                     }

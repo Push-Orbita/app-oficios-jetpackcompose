@@ -15,6 +15,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
@@ -117,6 +119,8 @@ fun HelpScreen(
                         text = stringResource(R.string.home_support_contact),
                         onClick = onContactSupport,
                         modifier = Modifier.fillMaxWidth(),
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Prominent,
                     )
                 }
             }

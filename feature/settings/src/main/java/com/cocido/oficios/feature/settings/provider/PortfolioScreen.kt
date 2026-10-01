@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.cards.WorkGalleryCard
@@ -211,6 +212,8 @@ private fun CertificateEditor(
             text = "Guardar certificado",
             onClick = { onEvent(PortfolioEvent.SaveCertificate) },
             modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Prominent,
             loading = state.isSaving,
             enabled = !state.isSaving,
         )

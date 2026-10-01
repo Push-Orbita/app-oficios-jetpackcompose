@@ -45,7 +45,7 @@ fun OficiosDialog(
     modifier: Modifier = Modifier,
     dismissLabel: String = "Cancelar",
     isDangerous: Boolean = false,
-    actionSize: OficiosButtonSize = OficiosButtonSize.Compact,
+    actionSize: OficiosButtonSize = OficiosButtonSize.Prominent,
     confirmEnabled: Boolean = true,
     content: (@Composable () -> Unit)? = null,
 ) {
@@ -96,7 +96,7 @@ fun OficiosDialog(
                         modifier = Modifier.weight(1f),
                         enabled = confirmEnabled,
                         size = actionSize,
-                        variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Primary,
+                        variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Secondary,
                     )
                 }
             }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
@@ -146,12 +147,14 @@ fun SearchFilterBottomSheet(
                 OficiosButton(
                     text = stringResource(R.string.home_filter_clear),
                     onClick = { onEvent(SearchResultsEvent.ClearFilters) },
-                    variant = OficiosButtonVariant.Secondary,
+                    variant = OficiosButtonVariant.Ghost,
                     modifier = Modifier.weight(1f),
                 )
                 OficiosButton(
                     text = stringResource(R.string.home_filter_apply),
                     onClick = { onEvent(SearchResultsEvent.ApplyFilters) },
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                     modifier = Modifier.weight(1f),
                 )
             }

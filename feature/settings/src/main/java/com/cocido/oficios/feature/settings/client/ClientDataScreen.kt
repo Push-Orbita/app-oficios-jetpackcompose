@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -307,6 +308,8 @@ private fun ContactEditor(
             loading = uiState.isSaving,
             enabled = !uiState.isSaving,
             modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Prominent,
         )
     }
 }
@@ -396,6 +399,8 @@ private fun DomicilioEditor(
             loading = uiState.isSaving,
             enabled = !uiState.isSaving,
             modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Prominent,
         )
     }
 }

@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
@@ -80,6 +82,8 @@ fun ProfessionalProfileScreen(
                 OficiosButton(
                     text = "Guardar cambios",
                     onClick = { onEvent(ProfessionalProfileEvent.Save) },
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Prominent,
                     loading = uiState.isSaving,
                     enabled = !uiState.isSaving,
                     modifier = Modifier.fillMaxWidth(),

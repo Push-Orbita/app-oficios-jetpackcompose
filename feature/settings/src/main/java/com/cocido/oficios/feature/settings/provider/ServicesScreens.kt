@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -84,6 +85,8 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
                             leadingIcon = Icons.Outlined.Add,
                             onClick = { onEvent(ServicesEvent.AddService) },
                             modifier = Modifier.fillMaxWidth(),
+                            variant = OficiosButtonVariant.Secondary,
+                            size = OficiosButtonSize.Prominent,
                         )
                     }
                 }
@@ -183,6 +186,8 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
                         modifier = Modifier.weight(1f),
                         loading = uiState.isSaving,
                         enabled = !uiState.isSaving,
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Prominent,
                     )
                 }
                 Column(Modifier.padding(bottom = OficiosSpacing.lg)) {}
