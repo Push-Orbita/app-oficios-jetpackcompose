@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,6 +50,7 @@ fun LoginScreen(
             )
         },
     ) {
+        val passwordFocus = remember { FocusRequester() }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,6 +85,7 @@ fun LoginScreen(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
                 ),
+                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
             )
             OficiosPasswordField(
                 value = uiState.password,
@@ -87,6 +93,9 @@ fun LoginScreen(
                 label = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
+                modifier = Modifier.focusRequester(passwordFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
             )
 
             OficiosButton(
@@ -97,27 +106,21 @@ fun LoginScreen(
                 modifier = Modifier.align(Alignment.End),
             )
 
-            Row(
+            OficiosCheckbox(
+                checked = uiState.rememberMe,
+                onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
+                label = stringResource(R.string.auth_remember_me),
+                enabled = !uiState.isLoading,
+            )
+            OficiosButton(
+                text = stringResource(R.string.auth_login_button),
+                onClick = { onEvent(LoginEvent.Submit) },
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OficiosCheckbox(
-                    checked = uiState.rememberMe,
-                    onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
-                    label = stringResource(R.string.auth_remember_me),
-                    enabled = !uiState.isLoading,
-                    expandWidth = false,
-                )
-                OficiosButton(
-                    text = stringResource(R.string.auth_login_button),
-                    onClick = { onEvent(LoginEvent.Submit) },
-                    enabled = !uiState.isLoading,
-                    loading = uiState.isLoading,
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
-                )
-            }
+            )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 

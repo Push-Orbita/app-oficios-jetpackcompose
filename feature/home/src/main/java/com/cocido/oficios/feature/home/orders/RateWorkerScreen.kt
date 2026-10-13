@@ -4,10 +4,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
@@ -42,6 +49,9 @@ fun RateWorkerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .consumeWindowInsets(paddingValues)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             ) {
@@ -70,6 +80,8 @@ fun RateWorkerScreen(
                     onValueChange = { onEvent(RateWorkerEvent.CommentChanged(it)) },
                     label = "Reseña (opcional)",
                     placeholder = "Contanos tu experiencia",
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { onEvent(RateWorkerEvent.Submit) }),
                 )
                 OficiosButton(
                     text = "Enviar",

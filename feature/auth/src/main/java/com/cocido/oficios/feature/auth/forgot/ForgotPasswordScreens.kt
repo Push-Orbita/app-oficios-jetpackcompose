@@ -3,7 +3,12 @@ package com.cocido.oficios.feature.auth.forgot
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +54,11 @@ fun ForgotPasswordScreen(
                 label = stringResource(R.string.auth_email_label),
                 isError = uiState.emailError != null,
                 supportingText = uiState.emailError,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { onEvent(ForgotPasswordEvent.Submit) }),
             )
             if (uiState.generalError != null) {
                 Text(
@@ -98,6 +107,8 @@ fun ResetPasswordScreen(
         modifier = modifier,
         isLoading = uiState.isLoading,
     ) {
+        val passwordFocus = remember { FocusRequester() }
+        val confirmFocus = remember { FocusRequester() }
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
             OficiosTextField(
                 value = uiState.code,
@@ -105,7 +116,11 @@ fun ResetPasswordScreen(
                 label = stringResource(R.string.auth_reset_code_label),
                 isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
             )
             OficiosPasswordField(
                 value = uiState.password,
@@ -113,6 +128,9 @@ fun ResetPasswordScreen(
                 label = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
+                modifier = Modifier.focusRequester(passwordFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
@@ -120,6 +138,9 @@ fun ResetPasswordScreen(
                 label = stringResource(R.string.auth_confirm_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.confirmPasswordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.confirmPasswordError else null,
+                modifier = Modifier.focusRequester(confirmFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onEvent(ResetPasswordEvent.Submit) }),
             )
             if (uiState.generalError != null) {
                 Text(

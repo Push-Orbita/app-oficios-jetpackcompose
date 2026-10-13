@@ -3,12 +3,19 @@ package com.cocido.oficios.feature.settings.account
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,10 +55,15 @@ fun PersonalDataScreen(
                 onRetry = { onEvent(PersonalDataEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
-            else -> Column(
+            else -> {
+            val lastNameFocus = remember { FocusRequester() }
+            val emailFocus = remember { FocusRequester() }
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .consumeWindowInsets(padding)
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(OficiosSpacing.lg)
                     .widthIn(max = OficiosComponentSize.contentMaxWidth),
@@ -97,6 +109,8 @@ fun PersonalDataScreen(
                     label = "Nombre",
                     isError = uiState.firstNameError != null,
                     supportingText = uiState.firstNameError,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { lastNameFocus.requestFocus() }),
                 )
                 OficiosTextField(
                     value = uiState.lastName,
@@ -104,14 +118,22 @@ fun PersonalDataScreen(
                     label = "Apellido",
                     isError = uiState.lastNameError != null,
                     supportingText = uiState.lastNameError,
+                    modifier = Modifier.focusRequester(lastNameFocus),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
                 )
                 OficiosTextField(
                     value = uiState.email,
                     onValueChange = { onEvent(PersonalDataEvent.EmailChanged(it)) },
                     label = "Correo electrónico",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onEvent(PersonalDataEvent.Save) }),
                     isError = uiState.emailError != null,
                     supportingText = uiState.emailError ?: "Si lo cambiás, es posible que debas volver a verificarlo.",
+                    modifier = Modifier.focusRequester(emailFocus),
                 )
                 uiState.errorMessage?.let { OficiosInlineAlert(message = it) }
                 OficiosButton(
@@ -123,6 +145,7 @@ fun PersonalDataScreen(
                     enabled = !uiState.isSaving,
                     modifier = Modifier.fillMaxWidth(),
                 )
+            }
             }
         }
     }

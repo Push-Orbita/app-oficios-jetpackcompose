@@ -1,7 +1,9 @@
 package com.cocido.oficios.feature.onboarding.verify
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +55,11 @@ fun VerifyPhoneStepScreen(
             label = stringResource(R.string.onboarding_step_verify_phone_code_label),
             isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
             supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = onSubmit),
         )
         OficiosButton(
             text = when {

@@ -2,10 +2,16 @@ package com.cocido.oficios.feature.home.orders
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +41,9 @@ fun CounterOfferScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .consumeWindowInsets(paddingValues)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
@@ -60,7 +69,11 @@ fun CounterOfferScreen(
                     onValueChange = { onEvent(CounterOfferEvent.PriceChanged(it)) },
                     label = "Nuevo precio (opcional)",
                     placeholder = "Ej: 15000",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { onEvent(CounterOfferEvent.Submit) }),
                 )
                 OficiosButton(
                     text = "Enviar contrapropuesta",

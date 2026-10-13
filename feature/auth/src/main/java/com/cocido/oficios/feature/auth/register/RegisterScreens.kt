@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -136,6 +141,10 @@ fun RegisterFormScreen(
             color = MaterialTheme.colorScheme.onBackground,
         )
 
+        val documentFocus = remember { FocusRequester() }
+        val emailFocus = remember { FocusRequester() }
+        val passwordFocus = remember { FocusRequester() }
+        val confirmFocus = remember { FocusRequester() }
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -151,6 +160,8 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_full_name_label),
                 isError = uiState.hasAttemptedSubmit && uiState.fullNameError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.fullNameError else null,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { documentFocus.requestFocus() }),
             )
             OficiosTextField(
                 value = uiState.document,
@@ -159,7 +170,12 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_document_label),
                 isError = uiState.hasAttemptedSubmit && uiState.documentError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.documentError else null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.focusRequester(documentFocus),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
             )
             OficiosTextField(
                 value = uiState.email,
@@ -168,7 +184,12 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_email_electronic_label),
                 isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.focusRequester(emailFocus),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
             )
             Text(
                 text = stringResource(R.string.auth_register_email_hint),
@@ -182,6 +203,9 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
+                modifier = Modifier.focusRequester(passwordFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
@@ -190,31 +214,28 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_repeat_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.confirmPasswordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.confirmPasswordError else null,
+                modifier = Modifier.focusRequester(confirmFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onEvent(RegisterFormEvent.Submit) }),
             )
 
-            Row(
+            OficiosTermsCheckbox(
+                checked = uiState.acceptedTerms,
+                onCheckedChange = { onEvent(RegisterFormEvent.TermsChanged(it)) },
+                onTermsClick = { onEvent(RegisterFormEvent.TermsClicked) },
+                enabled = !uiState.isLoading,
+                prefix = stringResource(R.string.auth_terms_prefix),
+                termsLabel = stringResource(R.string.auth_terms_link),
+            )
+            OficiosButton(
+                text = stringResource(R.string.auth_next_button),
+                onClick = { onEvent(RegisterFormEvent.Submit) },
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-                verticalAlignment = Alignment.Top,
-            ) {
-                OficiosTermsCheckbox(
-                    checked = uiState.acceptedTerms,
-                    onCheckedChange = { onEvent(RegisterFormEvent.TermsChanged(it)) },
-                    onTermsClick = { onEvent(RegisterFormEvent.TermsClicked) },
-                    enabled = !uiState.isLoading,
-                    prefix = stringResource(R.string.auth_terms_prefix),
-                    termsLabel = stringResource(R.string.auth_terms_link),
-                    modifier = Modifier.weight(1f),
-                )
-                OficiosButton(
-                    text = stringResource(R.string.auth_next_button),
-                    onClick = { onEvent(RegisterFormEvent.Submit) },
-                    enabled = !uiState.isLoading,
-                    loading = uiState.isLoading,
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
-                )
-            }
+            )
 
             if (uiState.hasAttemptedSubmit && uiState.termsError != null) {
                 Text(
