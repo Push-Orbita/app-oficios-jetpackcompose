@@ -304,7 +304,6 @@ private fun ContactEditor(
             value = uiState.contactPhone,
             onValueChange = { onEvent(ClientDataEvent.ContactPhoneChanged(it)) },
             selectedCountry = PhoneCountryOptions.ARGENTINA,
-            onCountrySelected = {},
             label = "WhatsApp",
             supportingText = "11 dígitos con el 9",
             numberModifier = Modifier.focusRequester(phoneFocus),

@@ -61,6 +61,7 @@ fun NavGraphBuilder.authGraph(
         RegisterProviderRoute(
             onNavigateToTradeSetup = onNavigateToRegisterTrade,
             onNavigateToLogin = onNavigateToLogin,
+            onNavigateToOnboarding = onNavigateToOnboarding,
             onNavigateToTerms = onNavigateToTerms,
             onContactSupport = onContactSupport,
         )

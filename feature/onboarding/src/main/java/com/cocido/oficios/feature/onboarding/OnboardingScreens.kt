@@ -95,6 +95,7 @@ fun ProviderPendingApprovalScreen(
     uiState: ProviderStatusUiState,
     onRetry: () -> Unit,
     onLogout: () -> Unit,
+    onStepClick: (OnboardingStep) -> Unit,
     modifier: Modifier = Modifier,
     isLoggingOut: Boolean = false,
 ) {
@@ -110,7 +111,7 @@ fun ProviderPendingApprovalScreen(
             subtitle = stringResource(R.string.onboarding_pending_subtitle),
             steps = uiState.steps,
             onLogout = onLogout,
-            onStepClick = {},
+            onStepClick = onStepClick,
             isLoggingOut = isLoggingOut,
             modifier = modifier,
         )
