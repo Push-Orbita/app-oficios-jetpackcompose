@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,6 +31,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.SharedHomeDestination
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     uiState: FavoritesUiState,
@@ -57,28 +62,27 @@ fun FavoritesScreen(
             }
         },
     ) { paddingValues ->
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { onEvent(FavoritesEvent.Refresh) },
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+        ) {
         when {
             uiState.isLoading -> OficiosLoadingState(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
             )
             uiState.errorMessage != null && uiState.items.isEmpty() -> OficiosErrorState(
                 title = stringResource(R.string.favorites_load_error),
                 description = uiState.errorMessage,
                 onRetry = { onEvent(FavoritesEvent.Retry) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             )
             uiState.items.isEmpty() -> OficiosEmptyState(
                 title = stringResource(R.string.favorites_empty_title),
                 description = stringResource(R.string.favorites_empty_description),
                 ctaLabel = stringResource(R.string.favorites_empty_cta),
                 onCta = { onEvent(FavoritesEvent.SearchClicked) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             )
             else -> FavoritesList(
                 items = uiState.items,
@@ -87,10 +91,9 @@ fun FavoritesScreen(
                 onHire = { onEvent(FavoritesEvent.HireClicked(it)) },
                 onViewProfile = { onEvent(FavoritesEvent.ProfileClicked(it)) },
                 onLoadMore = { onEvent(FavoritesEvent.LoadMore) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
             )
+        }
         }
     }
 }

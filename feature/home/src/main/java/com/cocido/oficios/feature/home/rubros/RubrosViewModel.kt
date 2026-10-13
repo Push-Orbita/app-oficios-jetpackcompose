@@ -43,6 +43,7 @@ class RubrosViewModel @Inject constructor(
     fun onEvent(event: RubrosEvent) {
         when (event) {
             RubrosEvent.Retry -> loadRubros()
+            RubrosEvent.Refresh -> loadRubros(refreshing = true)
             RubrosEvent.Back -> emitEffect(RubrosEffect.NavigateBack)
             is RubrosEvent.RubroSelected -> onRubroSelected(event.rubro)
             is RubrosEvent.SearchSubmitted -> onSearchSubmitted(event.query)
@@ -86,9 +87,16 @@ class RubrosViewModel @Inject constructor(
         }
     }
 
-    private fun loadRubros() {
+    private fun loadRubros(refreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { RubrosUiState.Loading }
+            val previous = _uiState.value
+            if (refreshing && previous is RubrosUiState.Success) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else if (refreshing && previous is RubrosUiState.Error) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else {
+                _uiState.update { RubrosUiState.Loading }
+            }
             when (val result = getRubrosByCategoryUseCase(categoryId)) {
                 is AppResult.Success -> {
                     _uiState.update {
@@ -99,7 +107,11 @@ class RubrosViewModel @Inject constructor(
                     }
                 }
                 is AppResult.Error -> {
-                    _uiState.update { RubrosUiState.Error(result.error.userMessage()) }
+                    if (refreshing && previous is RubrosUiState.Success) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
+                    } else {
+                        _uiState.update { RubrosUiState.Error(result.error.userMessage()) }
+                    }
                 }
             }
         }
@@ -115,12 +127,17 @@ sealed interface RubrosUiState {
     data class Success(
         val categoryName: String,
         val rubros: List<CatalogOption>,
+        val isRefreshing: Boolean = false,
     ) : RubrosUiState
-    data class Error(val message: String) : RubrosUiState
+    data class Error(
+        val message: String,
+        val isRefreshing: Boolean = false,
+    ) : RubrosUiState
 }
 
 sealed interface RubrosEvent {
     data object Retry : RubrosEvent
+    data object Refresh : RubrosEvent
     data object Back : RubrosEvent
     data class RubroSelected(val rubro: CatalogOption) : RubrosEvent
     data class SearchSubmitted(val query: String) : RubrosEvent

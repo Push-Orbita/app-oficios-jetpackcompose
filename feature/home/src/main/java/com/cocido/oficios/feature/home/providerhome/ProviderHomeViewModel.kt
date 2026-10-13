@@ -39,6 +39,7 @@ class ProviderHomeViewModel @Inject constructor(
     fun onEvent(event: ProviderHomeEvent) {
         when (event) {
             ProviderHomeEvent.Retry -> loadHome()
+            ProviderHomeEvent.Refresh -> loadHome(refreshing = true)
             ProviderHomeEvent.OpenNotifications -> emitEffect(ProviderHomeEffect.NavigateToNotifications)
             ProviderHomeEvent.CompleteProfileClicked -> emitEffect(ProviderHomeEffect.NavigateToCompleteProfile)
             ProviderHomeEvent.ViewFullAgendaClicked -> emitEffect(ProviderHomeEffect.NavigateToAgenda)
@@ -58,12 +59,25 @@ class ProviderHomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadHome() {
+    private fun loadHome(refreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { ProviderHomeUiState.Loading }
+            val previous = _uiState.value
+            if (refreshing && previous is ProviderHomeUiState.Success) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else if (refreshing && previous is ProviderHomeUiState.Error) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else {
+                _uiState.update { ProviderHomeUiState.Loading }
+            }
             when (val result = getProviderHomeUseCase()) {
                 is AppResult.Success -> _uiState.update { ProviderHomeUiState.Success(result.data) }
-                is AppResult.Error -> _uiState.update { ProviderHomeUiState.Error(result.error.userMessage()) }
+                is AppResult.Error -> {
+                    if (refreshing && previous is ProviderHomeUiState.Success) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
+                    } else {
+                        _uiState.update { ProviderHomeUiState.Error(result.error.userMessage()) }
+                    }
+                }
             }
         }
     }

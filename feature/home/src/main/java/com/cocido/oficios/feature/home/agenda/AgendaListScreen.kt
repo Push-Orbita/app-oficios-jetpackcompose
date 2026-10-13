@@ -19,10 +19,14 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EventBusy
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +62,7 @@ import java.util.Locale
 
 private val agendaLocale = Locale.forLanguageTag("es-AR")
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgendaListScreen(
     uiState: AgendaListUiState,
@@ -88,17 +93,29 @@ fun AgendaListScreen(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 message = "Cargando agenda…",
             )
-            is AgendaListUiState.Error -> OficiosErrorState(
-                title = "No pudimos cargar tu agenda",
-                description = uiState.message,
-                onRetry = { onEvent(AgendaListEvent.Retry) },
+            is AgendaListUiState.Error -> PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(AgendaListEvent.Refresh) },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            is AgendaListUiState.Success -> AgendaListContent(
-                uiState = uiState,
-                onEvent = onEvent,
+            ) {
+                OficiosErrorState(
+                    title = "No pudimos cargar tu agenda",
+                    description = uiState.message,
+                    onRetry = { onEvent(AgendaListEvent.Retry) },
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                )
+            }
+            is AgendaListUiState.Success -> PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(AgendaListEvent.Refresh) },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
+            ) {
+                AgendaListContent(
+                    uiState = uiState,
+                    onEvent = onEvent,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }
@@ -114,7 +131,7 @@ private fun AgendaListContent(
             title = "Todavía no tenés servicios que usen turnos",
             description = "Activá la opción de trabajar con turnos en alguno de tus servicios para organizarlo desde acá.",
             icon = Icons.Outlined.EventBusy,
-            modifier = modifier,
+            modifier = modifier.verticalScroll(rememberScrollState()),
         )
         return
     }

@@ -50,6 +50,7 @@ class FavoritesViewModel @Inject constructor(
     fun onEvent(event: FavoritesEvent) {
         when (event) {
             FavoritesEvent.Retry -> load(pageNumber = 1, append = false)
+            FavoritesEvent.Refresh -> load(pageNumber = 1, append = false, refreshing = true)
             FavoritesEvent.LoadMore -> {
                 val state = _uiState.value
                 if (!state.hasMore || state.isLoadingMore) return
@@ -61,13 +62,19 @@ class FavoritesViewModel @Inject constructor(
         }
     }
 
-    private fun load(pageNumber: Int, append: Boolean, silent: Boolean = false) {
+    private fun load(
+        pageNumber: Int,
+        append: Boolean,
+        silent: Boolean = false,
+        refreshing: Boolean = false,
+    ) {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
-                    isLoading = !append && !silent,
+                    isLoading = !append && !silent && !refreshing,
+                    isRefreshing = refreshing,
                     isLoadingMore = append,
-                    errorMessage = if (silent) it.errorMessage else null,
+                    errorMessage = if (silent || refreshing) it.errorMessage else null,
                 )
             }
             when (val result = getFavoritesUseCase(pageNumber = pageNumber)) {
@@ -76,6 +83,7 @@ class FavoritesViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            isRefreshing = false,
                             isLoadingMore = false,
                             items = if (append) it.items + page.items else page.items,
                             pageNumber = page.pageNumber,
@@ -88,8 +96,9 @@ class FavoritesViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            isRefreshing = false,
                             isLoadingMore = false,
-                            errorMessage = result.error.userMessage(),
+                            errorMessage = if (refreshing && it.items.isNotEmpty()) it.errorMessage else result.error.userMessage(),
                         )
                     }
                 }

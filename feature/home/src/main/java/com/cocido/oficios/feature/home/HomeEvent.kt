@@ -6,6 +6,7 @@ import com.cocido.oficios.domain.model.RecentSearchType
 
 sealed interface HomeEvent {
     data object Retry : HomeEvent
+    data object Refresh : HomeEvent
     data object OpenSearch : HomeEvent
     data object OpenNotifications : HomeEvent
     data class SearchSubmitted(val query: String) : HomeEvent
@@ -22,6 +23,7 @@ sealed interface HomeEvent {
 
 sealed interface CategoriesEvent {
     data object Retry : CategoriesEvent
+    data object Refresh : CategoriesEvent
     data object Back : CategoriesEvent
     data object OpenNotifications : CategoriesEvent
     data class CategorySelected(val category: HomeCategoryItem) : CategoriesEvent

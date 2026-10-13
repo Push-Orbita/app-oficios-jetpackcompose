@@ -43,6 +43,7 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.Retry -> loadHome()
+            HomeEvent.Refresh -> loadHome(refreshing = true)
             HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
@@ -119,13 +120,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadHome() {
+    private fun loadHome(refreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { HomeUiState.Loading }
+            val previous = _uiState.value
+            if (refreshing && previous is HomeUiState.Success) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else if (refreshing && previous is HomeUiState.Error) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else {
+                _uiState.update { HomeUiState.Loading }
+            }
             when (val result = getClientHomeUseCase()) {
                 is AppResult.Success -> _uiState.update { HomeUiState.Success(result.data) }
                 is AppResult.Error -> {
-                    _uiState.update { HomeUiState.Error(result.error.userMessage()) }
+                    if (refreshing && previous is HomeUiState.Success) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
+                    } else {
+                        _uiState.update { HomeUiState.Error(result.error.userMessage()) }
+                    }
                 }
             }
         }

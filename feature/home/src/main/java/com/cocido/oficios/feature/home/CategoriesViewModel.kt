@@ -51,6 +51,7 @@ class CategoriesViewModel @Inject constructor(
     fun onEvent(event: CategoriesEvent) {
         when (event) {
             CategoriesEvent.Retry -> loadCategories()
+            CategoriesEvent.Refresh -> loadCategories(refreshing = true)
             CategoriesEvent.Back -> emitEffect(CategoriesEffect.NavigateBack)
             CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.NavigateToNotifications)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
@@ -72,15 +73,26 @@ class CategoriesViewModel @Inject constructor(
         }
     }
 
-    private fun loadCategories() {
+    private fun loadCategories(refreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { CategoriesUiState.Loading }
+            val previous = _uiState.value
+            if (refreshing && previous is CategoriesUiState.Success) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else if (refreshing && previous is CategoriesUiState.Error) {
+                _uiState.update { previous.copy(isRefreshing = true) }
+            } else {
+                _uiState.update { CategoriesUiState.Loading }
+            }
             when (val result = getHomeCategoriesUseCase()) {
                 is AppResult.Success -> {
                     _uiState.update { CategoriesUiState.Success(result.data) }
                 }
                 is AppResult.Error -> {
-                    _uiState.update { CategoriesUiState.Error(result.error.userMessage()) }
+                    if (refreshing && previous is CategoriesUiState.Success) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
+                    } else {
+                        _uiState.update { CategoriesUiState.Error(result.error.userMessage()) }
+                    }
                 }
             }
         }
