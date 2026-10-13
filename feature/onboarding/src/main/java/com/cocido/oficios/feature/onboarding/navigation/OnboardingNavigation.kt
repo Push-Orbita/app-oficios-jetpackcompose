@@ -56,7 +56,10 @@ fun NavGraphBuilder.onboardingGraph(
         )
     }
     composable(OnboardingDestination.PROVIDER_PENDING) {
-        ProviderPendingRoute(onLoggedOut = onLoggedOut)
+        ProviderPendingRoute(
+            onLoggedOut = onLoggedOut,
+            onNavigateToStep = onNavigateToStep,
+        )
     }
     composable(OnboardingDestination.PROVIDER_REJECTED) {
         ProviderRejectedRoute(

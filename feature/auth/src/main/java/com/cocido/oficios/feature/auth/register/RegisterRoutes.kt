@@ -71,6 +71,7 @@ fun RegisterClientRoute(
 fun RegisterProviderRoute(
     onNavigateToTradeSetup: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToOnboarding: () -> Unit,
     onNavigateToTerms: () -> Unit = {},
     onContactSupport: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -78,7 +79,7 @@ fun RegisterProviderRoute(
 ) {
     RegisterFormRoute(
         mode = RegisterMode.PROVIDER,
-        onNavigateToOnboarding = {},
+        onNavigateToOnboarding = onNavigateToOnboarding,
         onNavigateToTradeSetup = onNavigateToTradeSetup,
         onNavigateToLogin = onNavigateToLogin,
         onNavigateToTerms = onNavigateToTerms,

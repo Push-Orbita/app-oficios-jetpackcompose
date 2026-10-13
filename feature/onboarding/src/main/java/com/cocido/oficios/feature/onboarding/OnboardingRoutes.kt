@@ -100,6 +100,7 @@ fun ProviderOnboardingRoute(
 @Composable
 fun ProviderPendingRoute(
     onLoggedOut: () -> Unit,
+    onNavigateToStep: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProviderPendingViewModel = hiltViewModel(),
     logoutViewModel: LogoutViewModel = hiltViewModel(),
@@ -114,6 +115,7 @@ fun ProviderPendingRoute(
         uiState = uiState,
         onRetry = viewModel::load,
         onLogout = logoutViewModel::logout,
+        onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
         isLoggingOut = isLoggingOut,
         modifier = modifier,
     )

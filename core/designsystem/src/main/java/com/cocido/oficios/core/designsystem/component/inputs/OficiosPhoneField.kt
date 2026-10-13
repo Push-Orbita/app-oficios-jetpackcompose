@@ -60,7 +60,7 @@ fun OficiosPhoneField(
     value: String,
     onValueChange: (String) -> Unit,
     selectedCountry: PhoneCountryOption,
-    onCountrySelected: (PhoneCountryOption) -> Unit,
+    onCountrySelected: (PhoneCountryOption) -> Unit = {},
     label: String,
     modifier: Modifier = Modifier,
     numberModifier: Modifier = Modifier,
@@ -72,12 +72,24 @@ fun OficiosPhoneField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val countrySelectable = countries.size > 1
 
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
+        if (!countrySelectable) {
+            OficiosTextField(
+                value = "${selectedCountry.flagEmoji} ${selectedCountry.dialCode}",
+                onValueChange = {},
+                label = countryLabel,
+                modifier = Modifier.width(COUNTRY_FIELD_WIDTH),
+                readOnly = true,
+                enabled = false,
+                isError = isError,
+            )
+        } else {
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it },
@@ -119,6 +131,7 @@ fun OficiosPhoneField(
                     )
                 }
             }
+        }
         }
         OficiosTextField(
             value = value,
