@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -45,6 +46,7 @@ import kotlinx.coroutines.launch
 //   readonly → sin interacción
 // ---------------------------------------------------------------------------
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OficiosTextField(
     value: String,

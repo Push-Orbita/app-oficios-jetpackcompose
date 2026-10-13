@@ -59,7 +59,7 @@ fun VerifyPhoneStepScreen(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done,
             ),
-            keyboardActions = KeyboardActions(onDone = onSubmit),
+            keyboardActions = KeyboardActions(onDone = { onSubmit() }),
         )
         OficiosButton(
             text = when {
