@@ -3,11 +3,20 @@ package com.cocido.oficios.feature.settings.client
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -268,8 +277,15 @@ private fun ContactEditor(
     onEvent: (ClientDataEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val phoneFocus = remember { FocusRequester() }
+    val emailFocus = remember { FocusRequester() }
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(OficiosSpacing.lg),
+        modifier = modifier
+            .fillMaxSize()
+            .consumeWindowInsets(WindowInsets.safeDrawing)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
@@ -281,6 +297,8 @@ private fun ContactEditor(
             value = uiState.contactName,
             onValueChange = { onEvent(ClientDataEvent.ContactNameChanged(it)) },
             label = "Nombre del contacto",
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { phoneFocus.requestFocus() }),
         )
         OficiosPhoneField(
             value = uiState.contactPhone,
@@ -289,12 +307,20 @@ private fun ContactEditor(
             onCountrySelected = {},
             label = "WhatsApp",
             supportingText = "11 dígitos con el 9",
+            numberModifier = Modifier.focusRequester(phoneFocus),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
         )
         OficiosTextField(
             value = uiState.contactEmail,
             onValueChange = { onEvent(ClientDataEvent.ContactEmailChanged(it)) },
             label = "Correo alternativo (opcional)",
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.focusRequester(emailFocus),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = { onEvent(ClientDataEvent.SaveContact) }),
         )
         OficiosCheckbox(
             checked = uiState.contactFavorite,
@@ -320,8 +346,19 @@ private fun DomicilioEditor(
     onEvent: (ClientDataEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val barrioFocus = remember { FocusRequester() }
+    val streetFocus = remember { FocusRequester() }
+    val numberFocus = remember { FocusRequester() }
+    val floorFocus = remember { FocusRequester() }
+    val apartmentFocus = remember { FocusRequester() }
+    val towerFocus = remember { FocusRequester() }
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(OficiosSpacing.lg),
+        modifier = modifier
+            .fillMaxSize()
+            .consumeWindowInsets(WindowInsets.safeDrawing)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
@@ -334,6 +371,8 @@ private fun DomicilioEditor(
             onValueChange = { onEvent(ClientDataEvent.AddressNameChanged(it)) },
             label = "Nombre (opcional)",
             placeholder = "Ej: Casa",
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { barrioFocus.requestFocus() }),
         )
         OficiosAutocompleteField(
             value = uiState.barrioQuery,
@@ -343,17 +382,28 @@ private fun DomicilioEditor(
             suggestionLabel = { it.label },
             label = "Barrio",
             placeholder = "Buscá y seleccioná tu barrio",
+            modifier = Modifier.focusRequester(barrioFocus),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { streetFocus.requestFocus() }),
         )
         OficiosTextField(
             value = uiState.street,
             onValueChange = { onEvent(ClientDataEvent.StreetChanged(it)) },
             label = "Calle",
+            modifier = Modifier.focusRequester(streetFocus),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { numberFocus.requestFocus() }),
         )
         OficiosTextField(
             value = uiState.number,
             onValueChange = { onEvent(ClientDataEvent.NumberChanged(it)) },
             label = "Altura",
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.focusRequester(numberFocus),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(onNext = { floorFocus.requestFocus() }),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Column(Modifier.weight(1f)) {
@@ -361,6 +411,9 @@ private fun DomicilioEditor(
                     value = uiState.floor,
                     onValueChange = { onEvent(ClientDataEvent.FloorChanged(it)) },
                     label = "Piso",
+                    modifier = Modifier.focusRequester(floorFocus),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { apartmentFocus.requestFocus() }),
                 )
             }
             Column(Modifier.weight(1f)) {
@@ -368,6 +421,9 @@ private fun DomicilioEditor(
                     value = uiState.apartment,
                     onValueChange = { onEvent(ClientDataEvent.ApartmentChanged(it)) },
                     label = "Dpto.",
+                    modifier = Modifier.focusRequester(apartmentFocus),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { towerFocus.requestFocus() }),
                 )
             }
         }
@@ -375,6 +431,9 @@ private fun DomicilioEditor(
             value = uiState.houseTower,
             onValueChange = { onEvent(ClientDataEvent.HouseTowerChanged(it)) },
             label = "Casa o torre (opcional)",
+            modifier = Modifier.focusRequester(towerFocus),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onEvent(ClientDataEvent.SaveDomicilio) }),
         )
         OficiosLocationPicker(
             latitude = uiState.addressLatitude,

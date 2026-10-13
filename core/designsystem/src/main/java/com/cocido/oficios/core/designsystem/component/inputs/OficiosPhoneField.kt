@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -62,10 +63,13 @@ fun OficiosPhoneField(
     onCountrySelected: (PhoneCountryOption) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    numberModifier: Modifier = Modifier,
     countryLabel: String = "País",
     countries: List<PhoneCountryOption> = PhoneCountryOptions.DEFAULT,
     isError: Boolean = false,
     supportingText: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -121,10 +125,11 @@ fun OficiosPhoneField(
             onValueChange = onValueChange,
             label = label,
             placeholder = selectedCountry.localExample,
-            modifier = Modifier.weight(1f),
+            modifier = numberModifier.weight(1f),
             isError = isError,
             supportingText = supportingText,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Phone),
+            keyboardActions = keyboardActions,
         )
     }
 }

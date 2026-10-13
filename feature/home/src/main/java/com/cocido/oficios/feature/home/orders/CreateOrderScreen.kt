@@ -2,11 +2,18 @@ package com.cocido.oficios.feature.home.orders
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -79,6 +86,8 @@ private fun CreateOrderForm(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .consumeWindowInsets(WindowInsets.safeDrawing)
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -194,6 +203,8 @@ private fun CreateOrderForm(
             onValueChange = { onEvent(CreateOrderEvent.DescriptionChanged(it)) },
             label = "Descripción (opcional)",
             placeholder = "Contanos qué necesitás",
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onEvent(CreateOrderEvent.Submit) }),
         )
 
         OficiosButton(
