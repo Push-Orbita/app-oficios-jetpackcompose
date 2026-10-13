@@ -14,7 +14,10 @@ fun openTermsAndConditions(context: Context, openInApp: () -> Unit) {
     }
 }
 
+fun isSupportPhoneConfigured(): Boolean = AppConstants.hasSupportPhone()
+
 fun openSupportPhone(context: Context) {
+    if (!AppConstants.hasSupportPhone()) return
     val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${AppConstants.SUPPORT_PHONE}"))
     context.startActivity(intent)
 }
