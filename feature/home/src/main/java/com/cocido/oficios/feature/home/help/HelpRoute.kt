@@ -22,6 +22,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.intent.isSupportPhoneConfigured
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
@@ -110,14 +111,18 @@ fun HelpScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
+                    val supportAvailable = isSupportPhoneConfigured()
                     Text(
-                        text = stringResource(R.string.help_support_message),
+                        text = stringResource(
+                            if (supportAvailable) R.string.help_support_message else R.string.help_support_unavailable,
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     OficiosButton(
                         text = stringResource(R.string.home_support_contact),
                         onClick = onContactSupport,
+                        enabled = supportAvailable,
                         modifier = Modifier.fillMaxWidth(),
                         variant = OficiosButtonVariant.Secondary,
                         size = OficiosButtonSize.Prominent,

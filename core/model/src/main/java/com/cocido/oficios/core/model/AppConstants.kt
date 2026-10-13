@@ -16,4 +16,6 @@ object AppConstants {
         return trimmed.startsWith("https://") || trimmed.startsWith("http://")
     }
     const val SUPPORT_PHONE = "+5491112345678"
+
+    fun hasSupportPhone(phone: String = SUPPORT_PHONE): Boolean = phone.isNotBlank()
 }

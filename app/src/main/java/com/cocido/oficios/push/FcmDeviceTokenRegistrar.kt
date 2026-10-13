@@ -24,7 +24,12 @@ class FcmDeviceTokenRegistrar @Inject constructor(
             Log.d(TAG, "Firebase deshabilitado (google-services.json stub). Saltando registro de token.")
             return
         }
-        val token = fetchFcmToken() ?: return
+        val token = try {
+            fetchFcmToken()
+        } catch (error: Exception) {
+            Log.w(TAG, "No se pudo obtener el token de Firebase.", error)
+            null
+        } ?: return
         val deviceId = android.provider.Settings.Secure.getString(
             context.contentResolver,
             android.provider.Settings.Secure.ANDROID_ID,
@@ -38,7 +43,10 @@ class FcmDeviceTokenRegistrar @Inject constructor(
     private suspend fun fetchFcmToken(): String? = suspendCancellableCoroutine { continuation ->
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token -> continuation.resume(token) }
-            .addOnFailureListener { continuation.resume(null) }
+            .addOnFailureListener { error ->
+                Log.w(TAG, "Firebase no devolvió token.", error)
+                continuation.resume(null)
+            }
     }
 
     companion object {

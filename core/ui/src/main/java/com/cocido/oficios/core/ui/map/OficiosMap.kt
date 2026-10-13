@@ -72,6 +72,7 @@ fun OficiosLocationPicker(
     isLocating: Boolean = false,
 ) {
     val context = LocalContext.current
+    val mapsApiKey = remember { context.googleMapsApiKey() }
     var hasLocationPermission by remember {
         mutableStateOf(context.hasAnyLocationPermission())
     }
@@ -86,9 +87,13 @@ fun OficiosLocationPicker(
         position = CameraPosition.fromLatLngZoom(selected ?: FormosaCenter, if (selected == null) 12f else 16f)
     }
     var mapLoaded by remember { mutableStateOf(false) }
-    var mapUnavailable by remember { mutableStateOf(false) }
+    var mapUnavailable by remember { mutableStateOf(mapsApiKey.isBlank()) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(mapsApiKey) {
+        if (mapsApiKey.isBlank()) {
+            mapUnavailable = true
+            return@LaunchedEffect
+        }
         delay(MAP_LOAD_TIMEOUT_MILLIS)
         if (!mapLoaded) mapUnavailable = true
     }
@@ -115,7 +120,7 @@ fun OficiosLocationPicker(
                 .clip(RoundedCornerShape(16.dp))
                 .semantics { contentDescription = "Mapa para seleccionar la ubicación" },
         ) {
-            GoogleMap(
+            if (!mapUnavailable) GoogleMap(
                 modifier = Modifier.matchParentSize(),
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
