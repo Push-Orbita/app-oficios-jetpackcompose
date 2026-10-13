@@ -19,7 +19,10 @@ enum class AgendaSlotFormIssue {
 sealed interface AgendaListUiState {
     data object Loading : AgendaListUiState
 
-    data class Error(val message: String) : AgendaListUiState
+    data class Error(
+        val message: String,
+        val isRefreshing: Boolean = false,
+    ) : AgendaListUiState
 
     data class Success(
         val subRubroOptions: List<ProviderSubRubroOption> = emptyList(),
@@ -39,6 +42,7 @@ sealed interface AgendaListUiState {
         val slotsError: String? = null,
         val formIssue: AgendaSlotFormIssue? = null,
         val formBackendError: String? = null,
+        val isRefreshing: Boolean = false,
     ) : AgendaListUiState {
         val selectedSubRubro: ProviderSubRubroOption?
             get() = subRubroOptions.firstOrNull { it.id == selectedSubRubroId }
@@ -75,6 +79,7 @@ sealed interface AgendaListUiState {
 
 sealed interface AgendaListEvent {
     data object Retry : AgendaListEvent
+    data object Refresh : AgendaListEvent
     data object RetrySlots : AgendaListEvent
     data class SubRubroSelected(val subRubroId: Long) : AgendaListEvent
     data class ViewModeChanged(val mode: AgendaViewMode) : AgendaListEvent

@@ -9,10 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +33,7 @@ import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.HomeRubrosGrid
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RubrosScreen(
     uiState: RubrosUiState,
@@ -44,20 +49,29 @@ fun RubrosScreen(
                 )
             }
             is RubrosUiState.Error -> {
-                OficiosErrorState(
-                    title = stringResource(R.string.home_error_title),
-                    description = uiState.message,
-                    onRetry = { onEvent(RubrosEvent.Retry) },
-                    modifier = Modifier.padding(paddingValues),
-                )
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { onEvent(RubrosEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                ) {
+                    OficiosErrorState(
+                        title = stringResource(R.string.home_error_title),
+                        description = uiState.message,
+                        onRetry = { onEvent(RubrosEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                }
             }
-            is RubrosUiState.Success -> {
+            is RubrosUiState.Success -> PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(RubrosEvent.Refresh) },
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            ) {
                 var searchQuery by rememberSaveable { mutableStateOf("") }
 
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
                         .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
                     verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                 ) {

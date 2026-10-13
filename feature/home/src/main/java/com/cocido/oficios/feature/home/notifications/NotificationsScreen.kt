@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,6 +33,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.feature.home.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
     uiState: NotificationsUiState,
@@ -54,18 +59,23 @@ fun NotificationsScreen(
                 soloNoLeidas = uiState.soloNoLeidas,
                 onToggle = { onEvent(NotificationsEvent.ToggleUnreadFilter) },
             )
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(NotificationsEvent.Refresh) },
+                modifier = Modifier.fillMaxSize(),
+            ) {
             when {
                 uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
                 uiState.errorMessage != null && uiState.items.isEmpty() -> OficiosErrorState(
                     title = stringResource(R.string.notifications_load_error),
                     description = uiState.errorMessage,
                     onRetry = { onEvent(NotificationsEvent.Retry) },
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                 )
                 uiState.items.isEmpty() -> OficiosEmptyState(
                     title = stringResource(R.string.notifications_empty_title),
                     description = stringResource(R.string.notifications_empty_description),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                 )
                 else -> NotificationsList(
                     items = uiState.items,
@@ -74,6 +84,7 @@ fun NotificationsScreen(
                     onLoadMore = { onEvent(NotificationsEvent.LoadMore) },
                     hasMore = uiState.hasMore,
                 )
+            }
             }
         }
     }

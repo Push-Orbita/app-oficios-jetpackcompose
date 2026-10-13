@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +35,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
     uiState: CategoriesUiState,
@@ -57,20 +62,29 @@ fun CategoriesScreen(
                 )
             }
             is CategoriesUiState.Error -> {
-                OficiosErrorState(
-                    title = stringResource(R.string.home_error_title),
-                    description = uiState.message,
-                    onRetry = { onEvent(CategoriesEvent.Retry) },
-                    modifier = Modifier.padding(paddingValues),
-                )
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { onEvent(CategoriesEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                ) {
+                    OficiosErrorState(
+                        title = stringResource(R.string.home_error_title),
+                        description = uiState.message,
+                        onRetry = { onEvent(CategoriesEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                }
             }
-            is CategoriesUiState.Success -> {
+            is CategoriesUiState.Success -> PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { onEvent(CategoriesEvent.Refresh) },
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            ) {
                 var searchQuery by rememberSaveable { mutableStateOf("") }
 
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
                         .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
                     verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                 ) {

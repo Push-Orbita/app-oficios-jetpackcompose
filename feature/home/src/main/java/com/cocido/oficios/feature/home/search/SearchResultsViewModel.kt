@@ -69,6 +69,7 @@ class SearchResultsViewModel @Inject constructor(
     fun onEvent(event: SearchResultsEvent) {
         when (event) {
             SearchResultsEvent.Retry -> refresh()
+            SearchResultsEvent.Refresh -> pullToRefresh()
             SearchResultsEvent.Back -> emitEffect(SearchResultsEffect.NavigateBack)
             SearchResultsEvent.LoadNextPage -> loadNextPage()
             SearchResultsEvent.OpenFilters -> openFilters()
@@ -142,17 +143,35 @@ class SearchResultsViewModel @Inject constructor(
         loadPage(page = 1, append = false)
     }
 
+    private fun pullToRefresh() {
+        currentPage = 0
+        endReached = false
+        loadPage(page = 1, append = false, refreshing = true)
+    }
+
     private fun loadNextPage() {
         val state = _uiState.value
         if (state !is SearchResultsUiState.Success || state.isLoadingPage || endReached) return
         loadPage(page = currentPage + 1, append = true)
     }
 
-    private fun loadPage(page: Int, append: Boolean) {
+    private fun loadPage(page: Int, append: Boolean, refreshing: Boolean = false) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
+            val previous = _uiState.value
             if (!append) {
-                _uiState.update { SearchResultsUiState.Loading }
+                if (refreshing) {
+                    _uiState.update {
+                        when (previous) {
+                            is SearchResultsUiState.Success -> previous.copy(isRefreshing = true)
+                            is SearchResultsUiState.Empty -> previous.copy(isRefreshing = true)
+                            is SearchResultsUiState.Error -> previous.copy(isRefreshing = true)
+                            SearchResultsUiState.Loading -> SearchResultsUiState.Loading
+                        }
+                    }
+                } else {
+                    _uiState.update { SearchResultsUiState.Loading }
+                }
             } else {
                 val current = _uiState.value
                 if (current is SearchResultsUiState.Success) {
@@ -197,9 +216,13 @@ class SearchResultsViewModel @Inject constructor(
                     if (append) {
                         val current = _uiState.value
                         if (current is SearchResultsUiState.Success) {
-                            _uiState.update { current.copy(isLoadingPage = false) }
+                            _uiState.update { current.copy(isLoadingPage = false, isRefreshing = false) }
                         }
                         emitEffect(SearchResultsEffect.ShowMessage(result.error.userMessage()))
+                    } else if (refreshing && previous is SearchResultsUiState.Success) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
+                    } else if (refreshing && previous is SearchResultsUiState.Empty) {
+                        _uiState.update { previous.copy(isRefreshing = false) }
                     } else {
                         _uiState.update { SearchResultsUiState.Error(result.error.userMessage()) }
                     }
@@ -396,12 +419,17 @@ sealed interface SearchResultsUiState {
         val filterChips: List<FilterChip>,
         val isLoadingPage: Boolean,
         val endReached: Boolean,
+        val isRefreshing: Boolean = false,
     ) : SearchResultsUiState
     data class Empty(
         val activeFilters: WorkerSearchFilters,
         val filterChips: List<FilterChip>,
+        val isRefreshing: Boolean = false,
     ) : SearchResultsUiState
-    data class Error(val message: String) : SearchResultsUiState
+    data class Error(
+        val message: String,
+        val isRefreshing: Boolean = false,
+    ) : SearchResultsUiState
 }
 
 data class FilterSheetUiState(
@@ -439,6 +467,7 @@ data class FilterChip(
 
 sealed interface SearchResultsEvent {
     data object Retry : SearchResultsEvent
+    data object Refresh : SearchResultsEvent
     data object Back : SearchResultsEvent
     data object LoadNextPage : SearchResultsEvent
     data object OpenFilters : SearchResultsEvent

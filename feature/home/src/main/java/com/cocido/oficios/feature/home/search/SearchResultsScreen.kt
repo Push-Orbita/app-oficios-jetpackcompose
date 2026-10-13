@@ -16,8 +16,11 @@ import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +66,17 @@ fun SearchResultsScreen(
                 },
                 onEvent = onEvent,
             )
+            val isRefreshing = when (uiState) {
+                is SearchResultsUiState.Success -> uiState.isRefreshing
+                is SearchResultsUiState.Empty -> uiState.isRefreshing
+                is SearchResultsUiState.Error -> uiState.isRefreshing
+                SearchResultsUiState.Loading -> false
+            }
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { onEvent(SearchResultsEvent.Refresh) },
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) {
             when (uiState) {
                 SearchResultsUiState.Loading -> {
                     OficiosLoadingState(
@@ -74,37 +88,43 @@ fun SearchResultsScreen(
                         title = stringResource(R.string.home_error_title),
                         description = uiState.message,
                         onRetry = { onEvent(SearchResultsEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                     )
                 }
                 is SearchResultsUiState.Empty -> {
-                    ActiveFilterChips(
-                        chips = uiState.filterChips,
-                        onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
-                    )
-                    val query = uiState.activeFilters.query?.takeIf { it.isNotBlank() }
-                    OficiosEmptyState(
-                        title = stringResource(R.string.home_search_results_empty_title),
-                        description = if (query != null) {
-                            stringResource(R.string.home_search_results_empty_query_description, query)
-                        } else {
-                            stringResource(R.string.home_search_results_empty_description)
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        ActiveFilterChips(
+                            chips = uiState.filterChips,
+                            onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
+                        )
+                        val query = uiState.activeFilters.query?.takeIf { it.isNotBlank() }
+                        OficiosEmptyState(
+                            title = stringResource(R.string.home_search_results_empty_title),
+                            description = if (query != null) {
+                                stringResource(R.string.home_search_results_empty_query_description, query)
+                            } else {
+                                stringResource(R.string.home_search_results_empty_description)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
                 is SearchResultsUiState.Success -> {
-                    ActiveFilterChips(
-                        chips = uiState.filterChips,
-                        onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
-                    )
-                    WorkersList(
-                        workers = uiState.workers,
-                        isLoadingPage = uiState.isLoadingPage,
-                        endReached = uiState.endReached,
-                        onEvent = onEvent,
-                        modifier = Modifier.weight(1f),
-                    )
+                    Column(Modifier.fillMaxSize()) {
+                        ActiveFilterChips(
+                            chips = uiState.filterChips,
+                            onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
+                        )
+                        WorkersList(
+                            workers = uiState.workers,
+                            isLoadingPage = uiState.isLoadingPage,
+                            endReached = uiState.endReached,
+                            onEvent = onEvent,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
+            }
             }
         }
     }

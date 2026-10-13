@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.home.providerhome
 
 sealed interface ProviderHomeEvent {
     data object Retry : ProviderHomeEvent
+    data object Refresh : ProviderHomeEvent
     data object OpenNotifications : ProviderHomeEvent
     data object CompleteProfileClicked : ProviderHomeEvent
     data object ViewFullAgendaClicked : ProviderHomeEvent

@@ -4,6 +4,7 @@ import com.cocido.oficios.domain.model.FavoriteWorker
 
 data class FavoritesUiState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val items: List<FavoriteWorker> = emptyList(),
     val errorMessage: String? = null,
@@ -13,6 +14,7 @@ data class FavoritesUiState(
 
 sealed interface FavoritesEvent {
     data object Retry : FavoritesEvent
+    data object Refresh : FavoritesEvent
     data object LoadMore : FavoritesEvent
     data class HireClicked(val workerId: Long) : FavoritesEvent
     data class ProfileClicked(val workerId: Long) : FavoritesEvent

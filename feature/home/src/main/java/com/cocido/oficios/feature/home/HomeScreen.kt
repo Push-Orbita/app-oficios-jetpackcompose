@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +28,7 @@ import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
 import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
@@ -52,20 +55,31 @@ fun HomeScreen(
                 )
             }
             is HomeUiState.Error -> {
-                OficiosErrorState(
-                    title = stringResource(R.string.home_error_title),
-                    description = uiState.message,
-                    onRetry = { onEvent(HomeEvent.Retry) },
-                    modifier = Modifier.padding(paddingValues),
-                )
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { onEvent(HomeEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                ) {
+                    OficiosErrorState(
+                        title = stringResource(R.string.home_error_title),
+                        description = uiState.message,
+                        onRetry = { onEvent(HomeEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                }
             }
             is HomeUiState.Success -> {
-                HomeSuccessContent(
-                    content = uiState.content,
-                    unreadNotificationCount = unreadNotificationCount,
-                    onEvent = onEvent,
-                    modifier = Modifier.padding(paddingValues),
-                )
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { onEvent(HomeEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                ) {
+                    HomeSuccessContent(
+                        content = uiState.content,
+                        unreadNotificationCount = unreadNotificationCount,
+                        onEvent = onEvent,
+                    )
+                }
             }
         }
     }

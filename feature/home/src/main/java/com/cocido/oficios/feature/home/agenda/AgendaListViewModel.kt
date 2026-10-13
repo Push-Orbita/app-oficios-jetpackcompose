@@ -47,6 +47,7 @@ class AgendaListViewModel @Inject constructor(
     fun onEvent(event: AgendaListEvent) {
         when (event) {
             AgendaListEvent.Retry -> load()
+            AgendaListEvent.Refresh -> refreshAll()
             AgendaListEvent.RetrySlots -> refreshSlots()
             is AgendaListEvent.SubRubroSelected -> selectSubRubro(event.subRubroId)
             is AgendaListEvent.ViewModeChanged -> updateSuccess { it.copy(viewMode = event.mode) }
@@ -69,24 +70,6 @@ class AgendaListViewModel @Inject constructor(
             AgendaListEvent.DismissDeleteSlot -> updateSuccess { it.copy(slotPendingDeleteId = null) }
             AgendaListEvent.ConfirmDeleteSlot -> confirmDeleteSlot()
             AgendaListEvent.OpenConfig -> emitEffect(AgendaListEffect.NavigateToConfig)
-        }
-    }
-
-    private fun load() {
-        viewModelScope.launch {
-            _uiState.value = AgendaListUiState.Loading
-            when (val result = getMySubRubrosUseCase()) {
-                is AppResult.Success -> {
-                    val options = result.data.filter { it.requiresTurns }
-                    val firstId = options.firstOrNull()?.id
-                    _uiState.value = AgendaListUiState.Success(
-                        subRubroOptions = options,
-                        selectedSubRubroId = firstId,
-                    )
-                    if (firstId != null) loadSlots(firstId, YearMonth.now())
-                }
-                is AppResult.Error -> _uiState.value = AgendaListUiState.Error(result.error.userMessage())
-            }
         }
     }
 
@@ -134,6 +117,58 @@ class AgendaListViewModel @Inject constructor(
         }
     }
 
+    private fun refreshAll() {
+        val previous = _uiState.value
+        if (previous !is AgendaListUiState.Success) {
+            load(refreshing = previous is AgendaListUiState.Error)
+            return
+        }
+        viewModelScope.launch {
+            updateSuccess { it.copy(isRefreshing = true) }
+            when (val result = getMySubRubrosUseCase()) {
+                is AppResult.Success -> {
+                    val options = result.data.filter { it.requiresTurns }
+                    val selected = previous.selectedSubRubroId?.takeIf { id -> options.any { it.id == id } }
+                        ?: options.firstOrNull()?.id
+                    updateSuccess {
+                        it.copy(
+                            subRubroOptions = options,
+                            selectedSubRubroId = selected,
+                            isRefreshing = selected != null,
+                        )
+                    }
+                    if (selected != null) {
+                        loadSlots(selected, previous.visibleMonth)
+                    }
+                }
+                is AppResult.Error -> updateSuccess { it.copy(isRefreshing = false) }
+            }
+        }
+    }
+
+    private fun load(refreshing: Boolean = false) {
+        viewModelScope.launch {
+            val previous = _uiState.value
+            if (refreshing && previous is AgendaListUiState.Error) {
+                _uiState.value = previous.copy(isRefreshing = true)
+            } else if (!refreshing) {
+                _uiState.value = AgendaListUiState.Loading
+            }
+            when (val result = getMySubRubrosUseCase()) {
+                is AppResult.Success -> {
+                    val options = result.data.filter { it.requiresTurns }
+                    val firstId = options.firstOrNull()?.id
+                    _uiState.value = AgendaListUiState.Success(
+                        subRubroOptions = options,
+                        selectedSubRubroId = firstId,
+                    )
+                    if (firstId != null) loadSlots(firstId, YearMonth.now())
+                }
+                is AppResult.Error -> _uiState.value = AgendaListUiState.Error(result.error.userMessage())
+            }
+        }
+    }
+
     private fun refreshSlots() {
         val state = _uiState.value as? AgendaListUiState.Success ?: return
         state.selectedSubRubroId?.let { loadSlots(it, state.visibleMonth) }
@@ -171,10 +206,18 @@ class AgendaListViewModel @Inject constructor(
             val to = month.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone).toInstant().toString()
             when (val result = agendaUseCases.getSlotsForSubRubro(subRubroId, from, to)) {
                 is AppResult.Success -> updateSuccess {
-                    it.copy(isLoadingSlots = false, slots = result.data.sortedBy { slot -> slot.start })
+                    it.copy(
+                        isLoadingSlots = false,
+                        isRefreshing = false,
+                        slots = result.data.sortedBy { slot -> slot.start },
+                    )
                 }
                 is AppResult.Error -> updateSuccess {
-                    it.copy(isLoadingSlots = false, slotsError = result.error.userMessage())
+                    it.copy(
+                        isLoadingSlots = false,
+                        isRefreshing = false,
+                        slotsError = result.error.userMessage(),
+                    )
                 }
             }
         }
