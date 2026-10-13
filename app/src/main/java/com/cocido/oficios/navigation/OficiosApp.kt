@@ -1,10 +1,17 @@
 package com.cocido.oficios.navigation
 
-import android.widget.Toast
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSnackbarHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,6 +44,7 @@ fun OficiosApp(
     pendingPushRoute: String? = null,
     onPushRouteConsumed: () -> Unit = {},
 ) {
+    val snackbarController = remember { OficiosSnackbarController() }
     LaunchedEffect(pendingPushRoute) {
         val route = pendingPushRoute ?: return@LaunchedEffect
         navController.currentBackStackEntryFlow.collect { entry ->
@@ -48,10 +56,18 @@ fun OficiosApp(
             }
         }
     }
-    AppNavHost(
-        navController = navController,
-        modifier = modifier,
-    )
+    CompositionLocalProvider(LocalOficiosSnackbarController provides snackbarController) {
+        Box(modifier = modifier.fillMaxSize()) {
+            AppNavHost(
+                navController = navController,
+                modifier = Modifier.fillMaxSize(),
+            )
+            OficiosSnackbarHost(
+                controller = snackbarController,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
+        }
+    }
 }
 
 @Composable
@@ -61,9 +77,8 @@ fun AppNavHost(
     startDestination: String = AuthDestination.SPLASH,
 ) {
     val context = LocalContext.current
-    val showMessage: (String) -> Unit = { message ->
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
+    val snackbar = LocalOficiosSnackbarController.current
+    val showMessage: (String) -> Unit = { message -> snackbar.show(message) }
 
     NavHost(
         navController = navController,
