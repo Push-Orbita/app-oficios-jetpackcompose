@@ -1,5 +1,6 @@
 package com.cocido.oficios.domain.usecase.auth
 
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.domain.model.RegisterClientRequest
@@ -147,10 +148,16 @@ class ResolveInitialDestinationUseCase @Inject constructor(
 
         val userResult = authRepository.getCurrentUser()
         if (userResult is AppResult.Error) {
-            if (userResult.error is com.cocido.oficios.core.common.result.AppError.Unauthorized) {
+            if (userResult.error.endsSession()) {
                 sessionRepository.clearSession()
+                return AppResult.Success(InitialDestination.Login)
             }
-            return AppResult.Success(InitialDestination.Login)
+            val cachedHome = sessionRepository.getCachedUser()?.offlineHome()
+            return if (cachedHome != null) {
+                AppResult.Success(cachedHome)
+            } else {
+                userResult
+            }
         }
 
         val user = (userResult as AppResult.Success).data
@@ -171,7 +178,14 @@ class ResolveInitialDestinationUseCase @Inject constructor(
                 !status.data.isComplete -> AppResult.Success(InitialDestination.ClientOnboarding)
                 else -> AppResult.Success(InitialDestination.ClientHome)
             }
-            is AppResult.Error -> AppResult.Success(InitialDestination.ClientOnboarding)
+            is AppResult.Error -> when {
+                status.error.endsSession() -> {
+                    sessionRepository.clearSession()
+                    AppResult.Success(InitialDestination.Login)
+                }
+                status.error is AppError.Network -> AppResult.Success(InitialDestination.ClientHome)
+                else -> AppResult.Success(InitialDestination.ClientOnboarding)
+            }
         }
 
     private suspend fun resolveProviderDestination(): AppResult<InitialDestination> =
@@ -198,8 +212,24 @@ class ResolveInitialDestinationUseCase @Inject constructor(
                         AppResult.Success(InitialDestination.ProviderPendingApproval)
                     }
             }
-            is AppResult.Error -> AppResult.Success(InitialDestination.ProviderOnboarding)
+            is AppResult.Error -> when {
+                status.error.endsSession() -> {
+                    sessionRepository.clearSession()
+                    AppResult.Success(InitialDestination.Login)
+                }
+                status.error is AppError.Network -> AppResult.Success(InitialDestination.ProviderHome)
+                else -> AppResult.Success(InitialDestination.ProviderOnboarding)
+            }
         }
+}
+
+private fun AppError.endsSession(): Boolean =
+    this is AppError.Unauthorized || this is AppError.Forbidden
+
+private fun com.cocido.oficios.domain.model.User.offlineHome(): InitialDestination? = when (role) {
+    com.cocido.oficios.domain.model.UserRole.CLIENT -> InitialDestination.ClientHome
+    com.cocido.oficios.domain.model.UserRole.PROVIDER -> InitialDestination.ProviderHome
+    else -> null
 }
 
 class GetOnboardingStatusUseCase @Inject constructor(
