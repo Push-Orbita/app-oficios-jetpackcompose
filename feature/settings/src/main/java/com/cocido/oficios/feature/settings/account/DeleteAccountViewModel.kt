@@ -3,14 +3,13 @@ package com.cocido.oficios.feature.settings.account
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.AccountDeletionStatus
 import com.cocido.oficios.domain.model.RequestAccountDeletionParams
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.auth.LogoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
@@ -164,19 +163,12 @@ class DeleteAccountViewModel @Inject constructor(
 
     companion object {
         const val CONFIRMATION_WORD = "ELIMINAR"
-        private val cordobaZone = ZoneId.of("America/Argentina/Cordoba")
         private val scheduleFormatter = DateTimeFormatter.ofPattern(
             "d 'de' MMMM 'de' yyyy, HH:mm",
             Locale.forLanguageTag("es-AR"),
         )
 
-        fun formatSchedule(iso: String?): String? {
-            if (iso.isNullOrBlank()) return null
-            return runCatching {
-                OffsetDateTime.parse(iso)
-                    .atZoneSameInstant(cordobaZone)
-                    .format(scheduleFormatter)
-            }.getOrNull()
-        }
+        fun formatSchedule(iso: String?): String? =
+            DisplayDateTime.toZonedDateTime(iso)?.format(scheduleFormatter)
     }
 }

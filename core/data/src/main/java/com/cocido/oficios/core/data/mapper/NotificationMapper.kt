@@ -1,12 +1,12 @@
 package com.cocido.oficios.core.data.mapper
 
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.core.network.api.notifications.dto.NotificationDto
 import com.cocido.oficios.core.network.api.notifications.dto.NotificationsPageDto
 import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.domain.model.NotificationPage
 import java.time.Duration
 import java.time.Instant
-import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -56,17 +56,17 @@ object NotificationMapper {
         )
     }
 
-    fun relativeTime(raw: String?, now: Instant = Instant.now(), zone: ZoneId = ZoneId.systemDefault()): String {
+    fun relativeTime(raw: String?, now: Instant = Instant.now(), zone: ZoneId = DisplayDateTime.ARGENTINA): String {
         if (raw.isNullOrBlank()) return ""
-        val instant = runCatching { OffsetDateTime.parse(raw).toInstant() }.getOrNull() ?: return raw
-        val minutes = Duration.between(instant, now).toMinutes()
+        val zoned = DisplayDateTime.toZonedDateTime(raw, zone) ?: return raw
+        val minutes = Duration.between(zoned.toInstant(), now).toMinutes()
         return when {
             minutes < 1 -> "Ahora"
             minutes < 60 -> "Hace $minutes min"
             minutes < 24 * 60 -> "Hace ${minutes / 60} h"
             minutes < 48 * 60 -> "Ayer"
             else -> DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-AR"))
-                .format(instant.atZone(zone))
+                .format(zoned)
                 .replace(".", "")
         }
     }

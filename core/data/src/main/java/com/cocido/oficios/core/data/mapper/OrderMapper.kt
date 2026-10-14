@@ -12,8 +12,8 @@ import com.cocido.oficios.domain.model.CounterOfferStatus
 import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.GeoPoint
-import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -25,7 +25,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
-internal val ORDER_DISPLAY_ZONE: ZoneId = ZoneId.of("America/Argentina/Buenos_Aires")
+internal val ORDER_DISPLAY_ZONE: ZoneId = DisplayDateTime.ARGENTINA
 
 private val DISPLAY_FORMATTER: DateTimeFormatter =
     DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-AR"))
@@ -50,10 +50,8 @@ fun String?.toDisplayDateLabel(zone: ZoneId = ORDER_DISPLAY_ZONE): String? {
 
 /**
  * Rango del booking en hora de Argentina.
- * Inicio y fin se convierten al mismo huso: si cada uno se formatea con el offset
- * que trae el ISO, un fin en UTC queda antes que un inicio con -03:00
- * ("13 oct, 16:54 - 14:54"). Si los instantes vienen cruzados, se ordenan.
- * Si el fin cae otro día, se conserva la fecha para que la hora no parezca anterior.
+ * Con `Z` u offset se convierte el instante. Sin offset la hora ya es local y no se mueve.
+ * Inicio y fin usan el mismo huso para no invertir el rango. Si el fin cae otro día, se conserva la fecha.
  */
 internal fun formatScheduledRange(
     startIso: String?,
@@ -71,10 +69,8 @@ internal fun formatScheduledRange(
     return "${from.formatDisplayLabel()} - $endLabel"
 }
 
-private fun String?.toZonedDateTimeOrNull(zone: ZoneId): ZonedDateTime? {
-    if (this.isNullOrBlank()) return null
-    return runCatching { OffsetDateTime.parse(this).atZoneSameInstant(zone) }.getOrNull()
-}
+private fun String?.toZonedDateTimeOrNull(zone: ZoneId): ZonedDateTime? =
+    DisplayDateTime.toZonedDateTime(this, zone)
 
 private fun ZonedDateTime.formatDisplayLabel(): String =
     format(DISPLAY_FORMATTER).replace(".", "").replaceFirstChar { it.uppercase() }

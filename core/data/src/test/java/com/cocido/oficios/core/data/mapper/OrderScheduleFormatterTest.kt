@@ -33,6 +33,28 @@ class OrderScheduleFormatterTest {
     }
 
     @Test
+    fun `un rango con Z de un pedido en curso se muestra en hora de Argentina`() {
+        val label = formatScheduledRange(
+            startIso = "2026-09-30T13:00:00.000Z",
+            endIso = "2026-09-30T15:00:00.000Z",
+            zone = argentina,
+        )
+
+        assertEquals("30 sept, 10:00 - 12:00", label)
+    }
+
+    @Test
+    fun `un rango sin offset ya es hora local y no se convierte`() {
+        val label = formatScheduledRange(
+            startIso = "2026-09-30T13:00:00",
+            endIso = "2026-09-30T15:00:00",
+            zone = argentina,
+        )
+
+        assertEquals("30 sept, 13:00 - 15:00", label)
+    }
+
+    @Test
     fun `si el fin cae al dia siguiente conserva la fecha`() {
         val label = formatScheduledRange(
             startIso = "2026-10-13T16:54:00-03:00",

@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.data.mapper
 
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.DiaLaboralSimpleDto
 import com.cocido.oficios.core.network.api.worker.dto.CalificacionDto
@@ -16,7 +17,6 @@ import com.cocido.oficios.domain.model.WorkerSpecialty
 import com.cocido.oficios.domain.model.WorkerTimeRange
 import com.cocido.oficios.domain.model.WorkerWorkAddress
 import com.cocido.oficios.domain.model.WorkerWorkDay
-import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -217,13 +217,10 @@ fun reviewAuthorLabel(contactoTexto: String?): String? {
     return "${parts.dropLast(1).joinToString(" ")} ${parts.last().first().uppercaseChar()}."
 }
 
-fun formatReviewDate(iso: String?, zone: ZoneId = ZoneId.systemDefault()): String? {
-    if (iso.isNullOrBlank()) return null
-    return runCatching {
-        val zoned = OffsetDateTime.parse(iso).atZoneSameInstant(zone)
-        DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-AR"))
-            .format(zoned)
-            .replace(".", "")
-    }.getOrNull()
+fun formatReviewDate(iso: String?, zone: ZoneId = DisplayDateTime.ARGENTINA): String? {
+    val zoned = DisplayDateTime.toZonedDateTime(iso, zone) ?: return null
+    return DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-AR"))
+        .format(zoned)
+        .replace(".", "")
 }
 
