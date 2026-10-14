@@ -8,6 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.CertificateCard
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -37,9 +39,11 @@ fun WorkerCertificatesSection(
                         .sizeIn(minHeight = OficiosComponentSize.buttonMinHeight)
                         .then(
                             if (!url.isNullOrBlank()) {
-                                Modifier.clickable(
-                                    onClickLabel = stringResource(R.string.home_worker_certificate_open),
-                                ) { onOpen(url) }
+                                Modifier
+                                    .semantics(mergeDescendants = true) { contentDescription = cert.name }
+                                    .clickable(
+                                        onClickLabel = stringResource(R.string.home_worker_certificate_open),
+                                    ) { onOpen(url) }
                             } else {
                                 Modifier
                             },

@@ -354,6 +354,8 @@
     <string name="rate_worker_sent">Enviado ✓</string>
     <string name="rate_worker_thanks">Gracias por calificar a %1$s.</string>
     <string name="rate_worker_back">Volver</string>
+    <string name="rate_worker_stars">%1$d estrellas</string>
+    <string name="rate_worker_star">1 estrella</string>
     <string name="counter_offer_title">Reagendar pedido</string>
     <string name="counter_offer_body">Proponele al cliente una nueva fecha y hora para el servicio.</string>
     <string name="counter_offer_pick">Elegir nueva fecha y hora</string>

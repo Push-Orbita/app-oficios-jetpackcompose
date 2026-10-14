@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
@@ -156,6 +158,7 @@ private fun NotificationRow(
     OficiosCard(
         modifier = modifier
             .fillMaxWidth()
+            .semantics(mergeDescendants = true) { contentDescription = item.title }
             .clickable(onClick = onClick),
     ) {
         Column(

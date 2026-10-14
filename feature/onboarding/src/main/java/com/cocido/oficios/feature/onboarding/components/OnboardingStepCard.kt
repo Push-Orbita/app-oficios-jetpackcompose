@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.theme.OficiosColorError
@@ -32,7 +34,9 @@ fun OnboardingStepCard(
             .fillMaxWidth()
             .then(
                 if (enabled && onClick != null) {
-                    Modifier.clickable(onClick = onClick)
+                    Modifier
+                        .semantics(mergeDescendants = true) { contentDescription = "${step.title}. $statusLabel" }
+                        .clickable(onClick = onClick)
                 } else {
                     Modifier
                 },

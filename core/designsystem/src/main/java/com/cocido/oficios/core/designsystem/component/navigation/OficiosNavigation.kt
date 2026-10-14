@@ -2,6 +2,7 @@ package com.cocido.oficios.core.designsystem.component.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -103,6 +104,7 @@ private fun OficiosBottomNavItem(
 
     Column(
         modifier = modifier
+            .semantics(mergeDescendants = true) {}
             .clickable(onClick = onClick)
             .padding(vertical = OficiosSpacing.xxs),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -124,7 +126,7 @@ private fun OficiosBottomNavItem(
             OficiosNotificationBadge(count = item.badgeCount) {
                 Icon(
                     imageVector = item.icon,
-                    contentDescription = item.label,
+                    contentDescription = null,
                     tint = contentColor,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )

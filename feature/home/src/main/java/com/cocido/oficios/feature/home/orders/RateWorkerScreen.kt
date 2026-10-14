@@ -116,7 +116,11 @@ private fun StarSelector(
         for (star in 1..maxStars) {
             Icon(
                 imageVector = if (star <= selected) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                contentDescription = if (star == 1) "1 estrella" else "$star estrellas",
+                contentDescription = if (star == 1) {
+                    stringResource(R.string.rate_worker_star)
+                } else {
+                    stringResource(R.string.rate_worker_stars, star)
+                },
                 tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier
                     .size(OficiosComponentSize.ratingIcon)

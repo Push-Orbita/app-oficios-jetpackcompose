@@ -26,6 +26,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -297,6 +299,7 @@ fun HomeCategoryCard(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(OficiosSpacing.md),
             )
+            .semantics(mergeDescendants = true) { contentDescription = title }
             .clickable(onClick = onClick)
             .padding(OficiosSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,

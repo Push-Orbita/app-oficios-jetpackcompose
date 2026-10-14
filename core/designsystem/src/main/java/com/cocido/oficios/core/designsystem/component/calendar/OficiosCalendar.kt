@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Schedule
@@ -91,7 +92,7 @@ fun OficiosCalendarDay(
 
     Column(
         modifier = modifier
-            .width(OficiosComponentSize.agendaCell)
+            .widthIn(min = OficiosComponentSize.agendaCell)
             .clip(MaterialTheme.shapes.small)
             .background(bgColor)
             .then(
