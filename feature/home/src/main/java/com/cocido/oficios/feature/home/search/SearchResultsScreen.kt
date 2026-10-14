@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -184,31 +186,27 @@ private fun SearchResultsHeader(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ActiveFilterChips(
     chips: List<FilterChip>,
     onRemove: (FilterChip) -> Unit,
 ) {
     if (chips.isEmpty()) return
-    LazyColumn(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.md),
-        userScrollEnabled = false,
+            .padding(horizontal = OficiosSpacing.md)
+            .padding(bottom = OficiosSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
-        item {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                modifier = Modifier.padding(bottom = OficiosSpacing.sm),
-            ) {
-                chips.forEach { chip ->
-                    FilterChip(
-                        selected = true,
-                        onClick = { onRemove(chip) },
-                        label = { Text(chip.label) },
-                    )
-                }
-            }
+        chips.forEach { chip ->
+            FilterChip(
+                selected = true,
+                onClick = { onRemove(chip) },
+                label = { Text(chip.label) },
+            )
         }
     }
 }
