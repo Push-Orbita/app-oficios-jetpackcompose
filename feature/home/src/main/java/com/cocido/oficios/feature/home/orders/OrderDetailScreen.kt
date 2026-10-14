@@ -249,7 +249,7 @@ private fun OrderDetailContent(
             }
         }
 
-        OficiosCard {
+        OficiosCard(modifier = Modifier.fillMaxWidth()) {
             Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
                 SectionTitle(stringResource(R.string.orders_section_details))
                 InfoRow(
