@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.usecase.OrderUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 @HiltViewModel
 class OrdersListViewModel @Inject constructor(
@@ -33,6 +35,8 @@ class OrdersListViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
 
     private var skipNextResume = true
+    private var loadJob: Job? = null
+    private var loadGeneration = 0
 
     init {
         load()
@@ -64,48 +68,54 @@ class OrdersListViewModel @Inject constructor(
     }
 
     private fun load(silent: Boolean = false, refreshing: Boolean = false) {
-        viewModelScope.launch {
+        val generation = ++loadGeneration
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             val snapshot = _uiState.value
             val previous = snapshot as? OrdersListUiState.Success
             try {
                 when {
                     previous != null && (silent || refreshing) ->
-                        _uiState.update { previous.copy(isRefreshing = true) }
+                        _uiState.value = previous.copy(isRefreshing = true)
                     snapshot is OrdersListUiState.Error && refreshing ->
-                        _uiState.update { snapshot.copy(isRefreshing = true) }
-                    !silent -> _uiState.update { OrdersListUiState.Loading }
+                        _uiState.value = snapshot.copy(isRefreshing = true)
+                    !silent -> _uiState.value = OrdersListUiState.Loading
                 }
+                if (refreshing) yield()
+                if (generation != loadGeneration) return@launch
                 val userResult = authRepository.getCurrentUser()
+                if (generation != loadGeneration) return@launch
                 val role = (userResult as? AppResult.Success)?.data?.role
                 val ordersResult = when {
                     userResult is AppResult.Error -> userResult
                     role == UserRole.PROVIDER -> orderUseCases.getWorkerOrders()
                     else -> orderUseCases.getClientOrders()
                 }
+                if (generation != loadGeneration) return@launch
                 when (ordersResult) {
-                    is AppResult.Success -> _uiState.update {
-                        OrdersListUiState.Success(
-                            orders = ordersResult.data,
-                            filter = previous?.filter ?: OrdersListFilter.ACTIVE,
-                        )
-                    }
+                    is AppResult.Success -> _uiState.value = OrdersListUiState.Success(
+                        orders = ordersResult.data,
+                        filter = previous?.filter ?: OrdersListFilter.ACTIVE,
+                    )
                     is AppResult.Error -> {
                         val message = ordersResult.error.userMessage()
                         if (previous != null) {
-                            _uiState.update { previous.copy(isRefreshing = false) }
+                            _uiState.value = previous.copy(isRefreshing = false)
                             if (refreshing || silent) emitEffect(OrdersListEffect.ShowRefreshError(message))
                         } else {
-                            _uiState.update { OrdersListUiState.Error(message) }
+                            _uiState.value = OrdersListUiState.Error(message)
                             if (refreshing) emitEffect(OrdersListEffect.ShowRefreshError(message))
                         }
                     }
                 }
             } finally {
-                _uiState.update { state ->
-                    when (state) {
-                        is OrdersListUiState.Success -> state.copy(isRefreshing = false)
-                        is OrdersListUiState.Error -> state.copy(isRefreshing = false)
-                        OrdersListUiState.Loading -> state
+                if (generation == loadGeneration) {
+                    _uiState.update { state ->
+                        when (state) {
+                            is OrdersListUiState.Success -> state.copy(isRefreshing = false)
+                            is OrdersListUiState.Error -> state.copy(isRefreshing = false)
+                            OrdersListUiState.Loading -> state
+                        }
                     }
                 }
             }

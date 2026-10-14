@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -63,6 +64,24 @@ class HomeViewModelTest {
         job.cancel()
 
         assertTrue(effects.any { it is HomeEffect.NavigateToSearchResults && it.query == "plomero" })
+    }
+
+    @Test
+    fun `refresh failure keeps content and stops refreshing`() = runTest(testDispatcher) {
+        val repository = FakeHomeRepository()
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+        val content = (viewModel.uiState.value as HomeUiState.Success).content
+
+        repository.homeResult = AppResult.Error(
+            com.cocido.oficios.core.common.result.AppError.Network("No internet connection"),
+        )
+        viewModel.onEvent(HomeEvent.Refresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as HomeUiState.Success
+        assertEquals(content, state.content)
+        assertFalse(state.isRefreshing)
     }
 
     @Test
