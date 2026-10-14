@@ -14,6 +14,8 @@ import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.GeoPoint
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.serialization.json.Json
@@ -23,7 +25,12 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
-private val DISPLAY_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-AR"))
+internal val ORDER_DISPLAY_ZONE: ZoneId = ZoneId.of("America/Argentina/Buenos_Aires")
+
+private val DISPLAY_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale.forLanguageTag("es-AR"))
+private val TIME_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("es-AR"))
 
 fun bookingTypeLabel(tipo: String?): String? {
     val raw = tipo?.trim().orEmpty()
@@ -36,14 +43,41 @@ fun bookingTypeLabel(tipo: String?): String? {
     }
 }
 
-fun String?.toDisplayDateLabel(): String? {
+fun String?.toDisplayDateLabel(zone: ZoneId = ORDER_DISPLAY_ZONE): String? {
     if (this.isNullOrBlank()) return null
-    return try {
-        OffsetDateTime.parse(this).format(DISPLAY_FORMATTER).replaceFirstChar { it.uppercase() }
-    } catch (e: Exception) {
-        this
-    }
+    return toZonedDateTimeOrNull(zone)?.formatDisplayLabel() ?: this
 }
+
+/**
+ * Rango del booking en hora de Argentina.
+ * Inicio y fin se convierten al mismo huso: si cada uno se formatea con el offset
+ * que trae el ISO, un fin en UTC queda antes que un inicio con -03:00
+ * ("13 oct, 16:54 - 14:54"). Si los instantes vienen cruzados, se ordenan.
+ * Si el fin cae otro día, se conserva la fecha para que la hora no parezca anterior.
+ */
+internal fun formatScheduledRange(
+    startIso: String?,
+    endIso: String?,
+    zone: ZoneId = ORDER_DISPLAY_ZONE,
+): String? {
+    val start = startIso.toZonedDateTimeOrNull(zone) ?: return startIso.toDisplayDateLabel(zone)
+    val end = endIso.toZonedDateTimeOrNull(zone) ?: return start.formatDisplayLabel()
+    val (from, to) = if (end.isBefore(start)) end to start else start to end
+    val endLabel = if (from.toLocalDate() == to.toLocalDate()) {
+        to.format(TIME_FORMATTER)
+    } else {
+        to.formatDisplayLabel()
+    }
+    return "${from.formatDisplayLabel()} - $endLabel"
+}
+
+private fun String?.toZonedDateTimeOrNull(zone: ZoneId): ZonedDateTime? {
+    if (this.isNullOrBlank()) return null
+    return runCatching { OffsetDateTime.parse(this).atZoneSameInstant(zone) }.getOrNull()
+}
+
+private fun ZonedDateTime.formatDisplayLabel(): String =
+    format(DISPLAY_FORMATTER).replace(".", "").replaceFirstChar { it.uppercase() }
 
 fun String.toRequestStatus(): ServiceRequestStatus = when (uppercase()) {
     "PENDIENTE" -> ServiceRequestStatus.PENDING
@@ -91,9 +125,7 @@ private fun ContrapropuestaDto.toDomain(): CounterOffer = CounterOffer(
 
 private fun BookingSimpleDto.scheduledLabel(): String? {
     if (id == 0L && inicioConfirmado.isNullOrBlank()) return null
-    val start = inicioConfirmado.toDisplayDateLabel()
-    val end = finConfirmado.toDisplayDateLabel()?.substringAfter(", ")?.ifBlank { null }
-    return if (start != null && end != null) "$start - $end" else start
+    return formatScheduledRange(inicioConfirmado, finConfirmado)
 }
 
 fun SolicitudServicioDto.toDomain(): ServiceOrder {
