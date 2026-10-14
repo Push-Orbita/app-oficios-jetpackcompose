@@ -11,4 +11,7 @@ interface NotificationsRepository {
         pageSize: Int,
         soloNoLeidas: Boolean,
     ): AppResult<NotificationPage>
+
+    /** Último conteo de no leídas que llegó bien. Null si todavía no hubo uno. */
+    fun cachedUnreadCount(): Int? = null
 }

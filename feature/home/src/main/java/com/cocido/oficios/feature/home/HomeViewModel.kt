@@ -31,7 +31,7 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val _unreadNotificationCount = MutableStateFlow(0)
+    private val _unreadNotificationCount = MutableStateFlow(getUnreadNotificationCountUseCase.lastKnown() ?: 0)
     val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
     private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
@@ -67,8 +67,10 @@ class HomeViewModel @Inject constructor(
     fun refreshUnreadCount() {
         viewModelScope.launch {
             when (val result = getUnreadNotificationCountUseCase()) {
-                is AppResult.Success -> _unreadNotificationCount.update { result.data }
-                is AppResult.Error -> Unit
+                is AppResult.Success -> _unreadNotificationCount.value = result.data
+                is AppResult.Error -> getUnreadNotificationCountUseCase.lastKnown()?.let { known ->
+                    _unreadNotificationCount.value = known
+                }
             }
         }
     }

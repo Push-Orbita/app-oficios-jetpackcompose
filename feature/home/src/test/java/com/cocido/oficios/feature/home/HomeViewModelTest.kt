@@ -2,6 +2,8 @@ package com.cocido.oficios.feature.home
 
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.HomeCategoryItem
+import com.cocido.oficios.core.common.result.AppError
+import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.domain.model.NotificationPage
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.repository.NotificationsRepository
@@ -97,16 +99,68 @@ class HomeViewModelTest {
         assertTrue(viewModel.uiState.value is HomeUiState.Error)
     }
 
-    private fun createViewModel(repository: FakeHomeRepository) = HomeViewModel(
+    @Test
+    fun `unread badge keeps the last known count when refresh fails`() = runTest(testDispatcher) {
+        val notifications = FakeNotificationsRepository()
+        notifications.unreadCount = 3
+        val first = createViewModel(FakeHomeRepository(), notifications)
+        advanceUntilIdle()
+        assertEquals(3, first.unreadNotificationCount.value)
+
+        notifications.fail = true
+        first.refreshUnreadCount()
+        advanceUntilIdle()
+        assertEquals(3, first.unreadNotificationCount.value)
+
+        val recreated = createViewModel(FakeHomeRepository(), notifications)
+        advanceUntilIdle()
+        assertEquals(3, recreated.unreadNotificationCount.value)
+    }
+
+    private fun createViewModel(
+        repository: FakeHomeRepository,
+        notifications: FakeNotificationsRepository = FakeNotificationsRepository(),
+    ) = HomeViewModel(
         getClientHomeUseCase = GetClientHomeUseCase(repository),
         trackRecentSearchUseCase = TrackRecentSearchUseCase(FakeRecentSearchRepository()),
-        getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeNotificationsRepository()),
+        getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(notifications),
     )
 }
 
 private class FakeNotificationsRepository : NotificationsRepository {
+    var unreadCount: Int = 0
+    var fail: Boolean = false
+    private var cachedUnread: Int? = null
+
+    override fun cachedUnreadCount(): Int? = cachedUnread
+
     override suspend fun registerDeviceToken(fcmToken: String, deviceId: String?) = AppResult.Success(Unit)
     override suspend fun markAsRead(notificationId: Long) = AppResult.Success(Unit)
-    override suspend fun getNotifications(pageNumber: Int, pageSize: Int, soloNoLeidas: Boolean) =
-        AppResult.Success(NotificationPage(items = emptyList(), pageNumber = 1, totalPages = 1, hasMore = false))
+    override suspend fun getNotifications(
+        pageNumber: Int,
+        pageSize: Int,
+        soloNoLeidas: Boolean,
+    ): AppResult<NotificationPage> {
+        if (fail) return AppResult.Error(AppError.Network("No internet connection"))
+        val page = NotificationPage(
+            items = List(unreadCount) { index ->
+                NotificationItem(
+                    id = index.toLong(),
+                    type = "info",
+                    title = "Aviso",
+                    body = "Texto",
+                    createdAtLabel = "hoy",
+                    isRead = false,
+                    entityType = null,
+                    entityId = null,
+                    deepLink = null,
+                )
+            },
+            pageNumber = 1,
+            totalPages = 1,
+            hasMore = false,
+        )
+        if (soloNoLeidas) cachedUnread = page.items.count { !it.isRead }
+        return AppResult.Success(page)
+    }
 }
