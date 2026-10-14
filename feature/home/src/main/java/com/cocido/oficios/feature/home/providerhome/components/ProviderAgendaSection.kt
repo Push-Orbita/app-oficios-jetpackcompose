@@ -39,7 +39,7 @@ import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.orders.ServiceOrderStatusLabel
 import java.time.LocalDate
-import java.time.OffsetDateTime
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
@@ -185,9 +185,8 @@ fun ProviderAgendaSection(
 private fun ServiceOrderListItem.scheduledDate(): LocalDate? {
     val raw = scheduledSortKey?.trim().orEmpty()
     if (raw.isEmpty()) return null
-    return runCatching { OffsetDateTime.parse(raw).toLocalDate() }
-        .recoverCatching { LocalDate.parse(raw.take(10)) }
-        .getOrNull()
+    return DisplayDateTime.toZonedDateTime(raw)?.toLocalDate()
+        ?: runCatching { LocalDate.parse(raw.take(10)) }.getOrNull()
 }
 
 @Preview(name = "Provider Agenda Section", showBackground = true, backgroundColor = 0xFF00358B)
