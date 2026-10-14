@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAlertText
@@ -44,8 +44,9 @@ enum class OficiosButtonVariant {
 }
 
 enum class OficiosButtonSize {
-    Compact,
-    Prominent,
+    Small,
+    Medium,
+    Large,
 }
 
 @Composable
@@ -54,15 +55,16 @@ fun OficiosButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     variant: OficiosButtonVariant = OficiosButtonVariant.Primary,
-    size: OficiosButtonSize = OficiosButtonSize.Compact,
+    size: OficiosButtonSize = OficiosButtonSize.Small,
     enabled: Boolean = true,
     loading: Boolean = false,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
 ) {
     val minHeight = when (size) {
-        OficiosButtonSize.Compact -> OficiosComponentSize.buttonMinHeight
-        OficiosButtonSize.Prominent -> OficiosComponentSize.buttonMinHeight
+        OficiosButtonSize.Small -> OficiosComponentSize.buttonHeightSmall
+        OficiosButtonSize.Medium -> OficiosComponentSize.buttonHeightMedium
+        OficiosButtonSize.Large -> OficiosComponentSize.buttonHeightLarge
     }
 
     val (containerColor, contentColor, border, shadowColor) = when (variant) {
@@ -167,10 +169,9 @@ fun OficiosButton(
         ),
     ) {
         if (loading) {
-            CircularProgressIndicator(
+            OficiosProgress(
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
                 color = contentColor,
-                strokeWidth = 2.dp,
             )
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -222,7 +223,7 @@ private fun SecondaryButtonPreview() {
                 text = "Añadir otro horario",
                 onClick = {},
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
         }
     }

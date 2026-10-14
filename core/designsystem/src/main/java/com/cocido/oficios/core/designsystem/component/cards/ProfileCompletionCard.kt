@@ -79,7 +79,7 @@ fun ProfileCompletionCard(
                 onClick = onCompleteProfile,
                 modifier = Modifier.fillMaxWidth(),
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Medium,
             )
         }
     }

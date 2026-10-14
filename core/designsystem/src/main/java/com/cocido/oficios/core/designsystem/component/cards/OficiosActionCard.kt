@@ -39,7 +39,7 @@ fun OficiosActionCard(
                 onClick = onPrimaryAction,
                 modifier = Modifier.fillMaxWidth(),
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Medium,
             )
             if (secondaryActionLabel != null && onSecondaryAction != null) {
                 OficiosButton(
@@ -47,6 +47,7 @@ fun OficiosActionCard(
                     onClick = onSecondaryAction,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Medium,
                 )
             }
         }

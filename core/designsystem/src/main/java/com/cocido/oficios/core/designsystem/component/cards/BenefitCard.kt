@@ -82,7 +82,7 @@ fun BenefitCard(
                         text = ctaLabel,
                         onClick = onCtaClick,
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Medium,
                     )
                 }
             }

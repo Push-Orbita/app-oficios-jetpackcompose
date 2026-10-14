@@ -334,7 +334,7 @@ private fun ContactEditor(
             enabled = !uiState.isSaving,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
         )
     }
 }
@@ -458,7 +458,7 @@ private fun DomicilioEditor(
             enabled = !uiState.isSaving,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
         )
     }
 }

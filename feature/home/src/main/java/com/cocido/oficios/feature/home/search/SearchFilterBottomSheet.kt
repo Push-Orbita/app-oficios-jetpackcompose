@@ -154,7 +154,7 @@ fun SearchFilterBottomSheet(
                     text = stringResource(R.string.home_filter_apply),
                     onClick = { onEvent(SearchResultsEvent.ApplyFilters) },
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                     modifier = Modifier.weight(1f),
                 )
             }

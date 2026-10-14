@@ -125,7 +125,7 @@ fun HelpScreen(
                         enabled = supportAvailable,
                         modifier = Modifier.fillMaxWidth(),
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Large,
                     )
                 }
             }

@@ -82,7 +82,7 @@ fun CounterOfferScreen(
                     enabled = !uiState.isSubmitting,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                 )
             }
         }

@@ -126,7 +126,7 @@ fun WorkerReportScreen(
                     enabled = !uiState.isSubmitting,
                     loading = uiState.isSubmitting,
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                 )
             }
         }

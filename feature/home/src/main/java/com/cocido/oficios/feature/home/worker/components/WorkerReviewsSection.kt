@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,7 +52,7 @@ fun WorkerReviewsSection(
         }
         when {
             isLoadingReviews && reviews.isEmpty() -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                OficiosProgress(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
             reviews.isEmpty() -> {
                 Text(
@@ -77,7 +77,7 @@ fun WorkerReviewsSection(
         }
         if (hasMoreReviews) {
             if (isLoadingReviews && reviews.isNotEmpty()) {
-                CircularProgressIndicator(
+                OficiosProgress(
                     modifier = Modifier
                         .padding(top = OficiosSpacing.sm)
                         .align(Alignment.CenterHorizontally),

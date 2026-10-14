@@ -126,7 +126,7 @@ private fun DeleteAccountGraceContent(
             enabled = !uiState.isCancelling,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
         )
     }
 }
@@ -172,7 +172,7 @@ private fun DeleteAccountForm(
             loading = uiState.isSubmitting,
             enabled = !uiState.isSubmitting,
             variant = OficiosButtonVariant.Danger,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
             modifier = Modifier.fillMaxWidth(),
         )
     }

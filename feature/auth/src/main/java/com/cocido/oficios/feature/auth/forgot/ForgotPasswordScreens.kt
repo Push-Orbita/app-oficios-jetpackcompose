@@ -74,7 +74,7 @@ fun ForgotPasswordScreen(
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
             OficiosButton(
                 text = stringResource(R.string.auth_back_to_login),
@@ -156,7 +156,7 @@ fun ResetPasswordScreen(
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
             OficiosButton(
                 text = stringResource(R.string.auth_back_to_login),

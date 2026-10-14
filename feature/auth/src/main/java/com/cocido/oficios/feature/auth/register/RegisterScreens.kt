@@ -136,7 +136,7 @@ fun RegisterFormScreen(
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -264,7 +264,7 @@ fun RegisterFormScreen(
                     onClick = { onEvent(RegisterFormEvent.LoginClicked) },
                     enabled = !uiState.isLoading,
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Compact,
+                    size = OficiosButtonSize.Small,
                 )
             }
         }

@@ -140,7 +140,7 @@ fun PersonalDataScreen(
                     text = "Guardar cambios",
                     onClick = { onEvent(PersonalDataEvent.Save) },
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                     loading = uiState.isSaving,
                     enabled = !uiState.isSaving,
                     modifier = Modifier.fillMaxWidth(),

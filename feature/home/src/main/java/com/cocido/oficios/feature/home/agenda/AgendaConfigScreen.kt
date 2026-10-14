@@ -134,7 +134,7 @@ private fun AgendaConfigContent(
                         loading = uiState.isSaving,
                         modifier = Modifier.fillMaxWidth(),
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Large,
                     )
                 }
             }

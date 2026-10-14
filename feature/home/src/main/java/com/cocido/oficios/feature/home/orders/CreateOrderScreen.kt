@@ -214,7 +214,7 @@ private fun CreateOrderForm(
             enabled = !state.isSubmitting,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
         )
     }
 }

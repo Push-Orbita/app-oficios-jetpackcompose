@@ -123,7 +123,7 @@ fun OrderCard(
                         onClick = it.onClick,
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Medium,
                     )
                 }
             }

@@ -15,7 +15,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.CircularProgressIndicator
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -265,7 +265,7 @@ private fun WorkersList(
                         .padding(OficiosSpacing.md),
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    CircularProgressIndicator()
+                    OficiosProgress()
                 }
             }
         }

@@ -175,7 +175,7 @@ fun AccountStatusScreen(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Medium,
                     enabled = !isLoggingOut,
                     loading = isLoggingOut,
                 )
@@ -270,7 +270,7 @@ private fun ChecklistContent(
                         loading = isFinalizing,
                         enabled = !isFinalizing && !isLoggingOut,
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Large,
                     )
                 }
                 if (primaryActionLabel != null && onPrimaryAction != null) {
@@ -279,7 +279,7 @@ private fun ChecklistContent(
                         onClick = onPrimaryAction,
                         modifier = Modifier.fillMaxWidth(),
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Large,
                     )
                 }
                 OficiosButton(
@@ -287,7 +287,7 @@ private fun ChecklistContent(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Medium,
                     enabled = !isLoggingOut,
                     loading = isLoggingOut,
                 )

@@ -345,7 +345,7 @@ private fun MapPlaceholder(
             text = openLabel,
             onClick = onOpen,
             variant = OficiosButtonVariant.Outlined,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
         )
     }
 }

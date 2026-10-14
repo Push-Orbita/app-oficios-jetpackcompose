@@ -329,7 +329,7 @@ private fun OrderDetailContent(
                         modifier = Modifier.weight(1f),
                         leadingIcon = Icons.Outlined.Close,
                         variant = OficiosButtonVariant.OutlinedDanger,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Medium,
                         enabled = !state.isActionInProgress,
                     )
                     OficiosButton(
@@ -337,7 +337,7 @@ private fun OrderDetailContent(
                         onClick = { onEvent(OrderDetailEvent.Accept) },
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Medium,
                         enabled = !state.isActionInProgress,
                     )
                 }
@@ -345,7 +345,7 @@ private fun OrderDetailContent(
                     text = "Reagendar",
                     onClick = { onEvent(OrderDetailEvent.OpenCounterOffer) },
                     variant = OficiosButtonVariant.Primary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.isActionInProgress,
                 )
@@ -380,7 +380,7 @@ private fun OrderDetailContent(
                             modifier = Modifier.weight(1f),
                             leadingIcon = Icons.Outlined.Close,
                             variant = OficiosButtonVariant.OutlinedDanger,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Medium,
                             enabled = !state.isActionInProgress,
                         )
                         OficiosButton(
@@ -388,7 +388,7 @@ private fun OrderDetailContent(
                             onClick = { onEvent(OrderDetailEvent.AcceptCounterOffer) },
                             modifier = Modifier.weight(1f),
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Medium,
                             enabled = !state.isActionInProgress,
                         )
                     }
@@ -411,13 +411,14 @@ private fun OrderDetailContent(
                             label = stringResource(R.string.orders_contact_client),
                             phone = order.contactPhone,
                             onClick = { openWorkerContact(context, order.contactPhone) },
+                            size = OficiosButtonSize.Medium,
                         )
                         OficiosButton(
                             text = "Estoy en camino",
                             onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Large,
                             enabled = !state.isActionInProgress,
                         )
                     } else {
@@ -435,13 +436,14 @@ private fun OrderDetailContent(
                             label = stringResource(R.string.orders_contact_client),
                             phone = order.contactPhone,
                             onClick = { openWorkerContact(context, order.contactPhone) },
+                            size = OficiosButtonSize.Medium,
                         )
                         OficiosButton(
                             text = "Marcar llegada",
                             onClick = { onEvent(OrderDetailEvent.MarkArrived) },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Large,
                             enabled = !state.isActionInProgress,
                         )
                     } else {
@@ -464,7 +466,7 @@ private fun OrderDetailContent(
                             onClick = { showFinalizeDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Large,
                             enabled = !state.isActionInProgress,
                         )
                     }
@@ -479,7 +481,7 @@ private fun OrderDetailContent(
                                 onClick = { onEvent(OrderDetailEvent.GoToRate) },
                                 modifier = Modifier.fillMaxWidth(),
                                 variant = OficiosButtonVariant.Secondary,
-                                size = OficiosButtonSize.Prominent,
+                                size = OficiosButtonSize.Large,
                             )
                         }
                     } else {
@@ -495,7 +497,7 @@ private fun OrderDetailContent(
                         text = "Reintentar",
                         onClick = { onEvent(OrderDetailEvent.Retry) },
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Large,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -515,7 +517,11 @@ private fun OrderDetailContent(
         }
 
         if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING && order.status != ServiceRequestStatus.CANCELLED) {
-            CancelOrderButton(enabled = !state.isActionInProgress, onClick = { showCancelDialog = true })
+            CancelOrderButton(
+                enabled = !state.isActionInProgress,
+                onClick = { showCancelDialog = true },
+                size = OficiosButtonSize.Medium,
+            )
         }
     }
 
@@ -538,7 +544,7 @@ private fun OrderDetailContent(
             confirmLabel = stringResource(R.string.orders_cancel_confirm),
             dismissLabel = stringResource(R.string.orders_cancel_back),
             isDangerous = true,
-            actionSize = OficiosButtonSize.Prominent,
+            actionSize = OficiosButtonSize.Large,
             onConfirm = {
                 if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING) {
                     onEvent(OrderDetailEvent.CancelConfirmed(null))
@@ -704,13 +710,17 @@ private fun openOrderMap(context: android.content.Context, latitude: Double, lon
 }
 
 @Composable
-private fun CancelOrderButton(enabled: Boolean, onClick: () -> Unit) {
+private fun CancelOrderButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
+    size: OficiosButtonSize = OficiosButtonSize.Large,
+) {
     OficiosButton(
         text = stringResource(R.string.orders_cancel),
         onClick = onClick,
         leadingIcon = Icons.Outlined.Close,
         variant = OficiosButtonVariant.OutlinedDanger,
-        size = OficiosButtonSize.Prominent,
+        size = size,
         modifier = Modifier.fillMaxWidth(),
         enabled = enabled,
     )
@@ -752,14 +762,19 @@ private fun InfoRow(icon: ImageVector, contentDescription: String, text: String)
 }
 
 @Composable
-private fun ContactButton(label: String, phone: String, onClick: () -> Unit) {
+private fun ContactButton(
+    label: String,
+    phone: String,
+    onClick: () -> Unit,
+    size: OficiosButtonSize = OficiosButtonSize.Large,
+) {
     if (phone.isBlank()) return
     OficiosButton(
         text = label,
         onClick = onClick,
         leadingIcon = Icons.Outlined.Phone,
         variant = OficiosButtonVariant.Secondary,
-        size = OficiosButtonSize.Prominent,
+        size = size,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -799,7 +814,7 @@ private fun CompletionCodeCard(
                     },
                     leadingIcon = Icons.Outlined.ContentCopy,
                     variant = OficiosButtonVariant.Outlined,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Medium,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
