@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.provider
 
+import com.cocido.oficios.feature.settings.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,12 +47,12 @@ import com.cocido.oficios.domain.model.ProviderPaymentMethods
 @Composable
 fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
     OficiosScaffold(
-        topBar = { OficiosBackTopBar("Servicios que ofrecés", onBack = { onEvent(ServicesEvent.Back) }) },
+        topBar = { OficiosBackTopBar(stringResource(R.string.services_title), onBack = { onEvent(ServicesEvent.Back) }) },
     ) { padding ->
         when {
             uiState.isLoading && uiState.services.isEmpty() -> OficiosLoadingState(Modifier.fillMaxSize().padding(padding))
             uiState.errorMessage != null && uiState.services.isEmpty() -> OficiosErrorState(
-                title = "No pudimos cargar tus servicios",
+                title = stringResource(R.string.services_load_error),
                 description = uiState.errorMessage,
                 onRetry = { onEvent(ServicesEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -61,7 +63,7 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
             ) {
                 item {
                     Text(
-                        "Cada servicio agrupa sus especialidades, modalidad y disponibilidad. Sumá solo lo que realmente ofrecés para recibir pedidos relevantes.",
+                        stringResource(R.string.services_intro),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -69,9 +71,9 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
                 if (uiState.services.isEmpty()) {
                     item {
                         OficiosEmptyState(
-                            title = "Todavía no publicaste servicios",
-                            description = "Agregá tu primer oficio para empezar a aparecer en búsquedas.",
-                            ctaLabel = "Agregar servicio",
+                            title = stringResource(R.string.services_empty_title),
+                            description = stringResource(R.string.services_empty_description),
+                            ctaLabel = stringResource(R.string.services_add),
                             onCta = { onEvent(ServicesEvent.AddService) },
                         )
                     }
@@ -81,7 +83,7 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
                     }
                     item {
                         OficiosButton(
-                            text = "Agregar otro servicio",
+                            text = stringResource(R.string.services_add_another),
                             leadingIcon = Icons.Outlined.Add,
                             onClick = { onEvent(ServicesEvent.AddService) },
                             modifier = Modifier.fillMaxWidth(),
@@ -96,9 +98,9 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
     }
     uiState.pendingDelete?.let { service ->
         OficiosDialog(
-            title = "Eliminar ${service.rubroName}",
-            message = "Dejarás de aparecer en búsquedas de este servicio. Los pedidos históricos no se eliminan.",
-            confirmLabel = "Eliminar servicio",
+            title = stringResource(R.string.services_delete_title, service.rubroName),
+            message = stringResource(R.string.services_delete_message),
+            confirmLabel = stringResource(R.string.services_delete_confirm),
             isDangerous = true,
             onConfirm = { onEvent(ServicesEvent.ConfirmDelete) },
             onDismiss = { onEvent(ServicesEvent.DismissDelete) },
@@ -113,33 +115,43 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
             Icon(Icons.Outlined.WorkOutline, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
             Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                 Text(service.rubroName, style = MaterialTheme.typography.titleMedium)
-                if (service.isPrimary) Text("Servicio principal", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary)
+                if (service.isPrimary) Text(stringResource(R.string.services_primary), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary)
                 Text(
-                    service.subServices.joinToString { it.name }.ifBlank { "Sin especialidades informadas" },
+                    service.subServices.joinToString { it.name }.ifBlank { stringResource(R.string.services_no_specialties) },
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 val modalities = buildList {
-                    if (service.subServices.any { it.servesAtClientHome }) add("A domicilio")
-                    if (service.subServices.any { it.servesAtLocal }) add("En local")
-                    if (service.subServices.any { it.requiresTurns }) add("Con turnos")
+                    if (service.subServices.any { it.servesAtClientHome }) add(stringResource(R.string.services_at_home))
+                    if (service.subServices.any { it.servesAtLocal }) add(stringResource(R.string.services_at_local))
+                    if (service.subServices.any { it.requiresTurns }) add(stringResource(R.string.services_with_turns))
                 }
-                Text(modalities.joinToString(" · ").ifBlank { "Modalidad sin informar" }, style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+                Text(modalities.joinToString(" · ").ifBlank { stringResource(R.string.services_modality_unknown) }, style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
                 if (service.workSchedule.isNotEmpty()) {
+                    val days = dayOptions()
+                    val scheduleLines = mutableListOf<String>()
+                    for (schedule in service.workSchedule) {
+                        val from = days.firstOrNull { it.first == schedule.dayFrom }?.second ?: schedule.dayFrom
+                        val to = days.firstOrNull { it.first == schedule.dayTo }?.second ?: schedule.dayTo
+                        val label = if (schedule.dayFrom != schedule.dayTo) {
+                            stringResource(R.string.services_day_range, from, to.lowercase())
+                        } else {
+                            from
+                        }
+                        scheduleLines += "$label ${schedule.ranges.joinToString { "${it.from}–${it.to}" }}"
+                    }
                     Text(
-                        service.workSchedule.joinToString { schedule ->
-                            "${dayLabel(schedule.dayFrom)}${if (schedule.dayFrom != schedule.dayTo) " a ${dayLabel(schedule.dayTo).lowercase()}" else ""} ${schedule.ranges.joinToString { "${it.from}–${it.to}" }}"
-                        },
+                        scheduleLines.joinToString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = OficiosColorSecondaryText,
                     )
                 }
                 if (service.isPrimary) {
-                    Text("El servicio principal se conserva para proteger tu perfil y tus pedidos activos.", style = MaterialTheme.typography.labelSmall, color = OficiosColorSecondaryText)
+                    Text(stringResource(R.string.services_primary_locked), style = MaterialTheme.typography.labelSmall, color = OficiosColorSecondaryText)
                 }
             }
             if (!service.isPrimary) {
                 IconButton(enabled = !disabled, onClick = { onEvent(ServicesEvent.RequestDelete(service)) }) {
-                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Eliminar ${service.rubroName}")
+                    Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.services_delete_action, service.rubroName))
                 }
             }
         }
@@ -149,13 +161,13 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
 @Composable
 fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
     OficiosScaffold(
-        topBar = { OficiosBackTopBar("Agregar servicio", onBack = { onEvent(AddServiceEvent.Previous) }) },
+        topBar = { OficiosBackTopBar(stringResource(R.string.services_add), onBack = { onEvent(AddServiceEvent.Previous) }) },
     ) { padding ->
         if (uiState.isLoading && uiState.categories.isEmpty()) {
             OficiosLoadingState(Modifier.fillMaxSize().padding(padding))
         } else if (uiState.errorMessage != null && uiState.categories.isEmpty()) {
             OficiosErrorState(
-                title = "No pudimos preparar el formulario",
+                title = stringResource(R.string.services_form_error),
                 description = uiState.errorMessage,
                 onRetry = { onEvent(AddServiceEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -165,7 +177,7 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
                 modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
-                Text("Paso ${uiState.step.ordinal + 1} de ${AddServiceStep.entries.size}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
+                Text(stringResource(R.string.services_step_counter, uiState.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
                 Text(stepTitle(uiState.step), style = MaterialTheme.typography.headlineSmall)
                 Text(stepDescription(uiState.step), style = MaterialTheme.typography.bodyMedium)
                 when (uiState.step) {
@@ -178,10 +190,10 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
                 uiState.errorMessage?.let { OficiosInlineAlert(it) }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
                     if (uiState.step != AddServiceStep.TRADE) {
-                        OficiosButton("Atrás", { onEvent(AddServiceEvent.Previous) }, Modifier.weight(1f), OficiosButtonVariant.Outlined)
+                        OficiosButton(stringResource(R.string.services_back), { onEvent(AddServiceEvent.Previous) }, Modifier.weight(1f), OficiosButtonVariant.Outlined)
                     }
                     OficiosButton(
-                        text = if (uiState.step == AddServiceStep.REVIEW) "Publicar servicio" else "Continuar",
+                        text = if (uiState.step == AddServiceStep.REVIEW) stringResource(R.string.services_publish) else stringResource(R.string.services_continue),
                         onClick = { onEvent(if (uiState.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next) },
                         modifier = Modifier.weight(1f),
                         loading = uiState.isSaving,
@@ -202,19 +214,19 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
         value = state.selectedCategoryLabel,
         options = state.categories.map { it.label },
         onOptionSelected = { label -> state.categories.firstOrNull { it.label == label }?.let { onEvent(AddServiceEvent.CategorySelected(it.id)) } },
-        label = "Categoría",
-        placeholder = "Elegí una categoría",
+        label = stringResource(R.string.services_category),
+        placeholder = stringResource(R.string.services_category_hint),
     )
     OficiosDropdownField(
         value = state.selectedRubroLabel,
         options = state.rubros.map { it.label },
         onOptionSelected = { label -> state.rubros.firstOrNull { it.label == label }?.let { onEvent(AddServiceEvent.RubroSelected(it.id)) } },
-        label = "Oficio",
-        placeholder = if (state.selectedCategoryId == null) "Primero elegí una categoría" else "Elegí un oficio",
+        label = stringResource(R.string.services_trade),
+        placeholder = if (state.selectedCategoryId == null) stringResource(R.string.services_trade_hint_locked) else stringResource(R.string.services_trade_hint),
         enabled = state.selectedCategoryId != null && !state.isLoading,
     )
     if (state.subRubros.isNotEmpty()) {
-        Text("Especialidades", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
         state.subRubros.forEach { option ->
             OficiosCheckbox(option.id in state.selectedSubRubroIds, { onEvent(AddServiceEvent.SubRubroToggled(option.id, it)) }, option.label)
         }
@@ -223,22 +235,22 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
 
 @Composable
 private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    OficiosCheckbox(state.servesAtClientHome, { onEvent(AddServiceEvent.ClientHomeChanged(it)) }, "Voy al domicilio del cliente")
-    OficiosCheckbox(state.servesAtLocal, { onEvent(AddServiceEvent.LocalChanged(it)) }, "Atiendo en mi local")
-    OficiosCheckbox(state.requiresTurns, { onEvent(AddServiceEvent.RequiresTurnsChanged(it)) }, "Este servicio requiere turno")
+    OficiosCheckbox(state.servesAtClientHome, { onEvent(AddServiceEvent.ClientHomeChanged(it)) }, stringResource(R.string.services_client_home))
+    OficiosCheckbox(state.servesAtLocal, { onEvent(AddServiceEvent.LocalChanged(it)) }, stringResource(R.string.services_local))
+    OficiosCheckbox(state.requiresTurns, { onEvent(AddServiceEvent.RequiresTurnsChanged(it)) }, stringResource(R.string.services_requires_turns))
     if (state.servesAtLocal) {
-        Text("Dirección del local", style = MaterialTheme.typography.titleMedium)
-        OficiosTextField(state.localName, { onEvent(AddServiceEvent.LocalNameChanged(it)) }, "Nombre del local (opcional)", placeholder = "Ej: Taller Centro")
+        Text(stringResource(R.string.services_local_address), style = MaterialTheme.typography.titleMedium)
+        OficiosTextField(state.localName, { onEvent(AddServiceEvent.LocalNameChanged(it)) }, stringResource(R.string.services_local_name), placeholder = stringResource(R.string.services_local_name_hint))
         OficiosAutocompleteField(
             value = state.localBarrioQuery,
             onValueChange = { onEvent(AddServiceEvent.LocalBarrioChanged(it)) },
             suggestions = state.localBarrioSuggestions,
             onSuggestionSelected = { onEvent(AddServiceEvent.LocalBarrioSelected(it)) },
             suggestionLabel = { it.label },
-            label = "Barrio",
-            placeholder = "Buscá y seleccioná el barrio",
+            label = stringResource(R.string.services_neighborhood),
+            placeholder = stringResource(R.string.services_neighborhood_hint),
         )
-        OficiosTextField(state.localStreet, { onEvent(AddServiceEvent.LocalStreetChanged(it)) }, "Calle y altura")
+        OficiosTextField(state.localStreet, { onEvent(AddServiceEvent.LocalStreetChanged(it)) }, stringResource(R.string.services_street))
         OficiosLocationPicker(
             latitude = state.localLatitude,
             longitude = state.localLongitude,
@@ -254,24 +266,24 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
 
 @Composable
 private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    Text("Días habituales", style = MaterialTheme.typography.titleMedium)
-    DAYS.forEach { (id, label) -> OficiosCheckbox(id in state.workDays, { onEvent(AddServiceEvent.WorkDayToggled(id, it)) }, label, compactRow = true) }
-    Text("Horarios", style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.services_days), style = MaterialTheme.typography.titleMedium)
+    dayOptions().forEach { (id, label) -> OficiosCheckbox(id in state.workDays, { onEvent(AddServiceEvent.WorkDayToggled(id, it)) }, label, compactRow = true) }
+    Text(stringResource(R.string.services_hours), style = MaterialTheme.typography.titleMedium)
     state.timeSlots.forEachIndexed { index, slot ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
-            OficiosDropdownField(slot.from, TIME_OPTIONS, { onEvent(AddServiceEvent.TimeFromChanged(index, it)) }, "Desde", Modifier.weight(1f))
-            OficiosDropdownField(slot.to, TIME_OPTIONS, { onEvent(AddServiceEvent.TimeToChanged(index, it)) }, "Hasta", Modifier.weight(1f))
+            OficiosDropdownField(slot.from, TIME_OPTIONS, { onEvent(AddServiceEvent.TimeFromChanged(index, it)) }, stringResource(R.string.services_from), Modifier.weight(1f))
+            OficiosDropdownField(slot.to, TIME_OPTIONS, { onEvent(AddServiceEvent.TimeToChanged(index, it)) }, stringResource(R.string.services_to), Modifier.weight(1f))
             if (state.timeSlots.size > 1) IconButton(onClick = { onEvent(AddServiceEvent.RemoveTimeSlot(index)) }) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = "Quitar horario")
+                Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.services_remove_slot))
             }
         }
     }
-    OficiosButton("Agregar franja horaria", { onEvent(AddServiceEvent.AddTimeSlot) }, Modifier.fillMaxWidth(), OficiosButtonVariant.Outlined, leadingIcon = Icons.Outlined.Add)
+    OficiosButton(stringResource(R.string.services_add_slot), { onEvent(AddServiceEvent.AddTimeSlot) }, Modifier.fillMaxWidth(), OficiosButtonVariant.Outlined, leadingIcon = Icons.Outlined.Add)
 }
 
 @Composable
 private fun PaymentStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    paymentOptions.forEach { (id, label) -> OficiosCheckbox(id in state.paymentMethods, { onEvent(AddServiceEvent.PaymentToggled(id, it)) }, label) }
+    paymentOptions().forEach { (id, label) -> OficiosCheckbox(id in state.paymentMethods, { onEvent(AddServiceEvent.PaymentToggled(id, it)) }, label) }
 }
 
 @Composable
@@ -280,39 +292,57 @@ private fun ReviewStep(state: AddServiceUiState) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Text(state.selectedRubroLabel, style = MaterialTheme.typography.titleLarge)
             Text(state.subRubros.filter { it.id in state.selectedSubRubroIds }.joinToString { it.label })
-            Text(buildList { if (state.servesAtClientHome) add("A domicilio"); if (state.servesAtLocal) add("En local"); if (state.requiresTurns) add("Con turnos") }.joinToString(" · "))
-            Text(state.workDays.map(::dayLabel).joinToString())
+            Text(buildList { if (state.servesAtClientHome) add(stringResource(R.string.services_at_home)); if (state.servesAtLocal) add(stringResource(R.string.services_at_local)); if (state.requiresTurns) add(stringResource(R.string.services_with_turns)) }.joinToString(" · "))
+            val days = dayOptions()
+            val payments = paymentOptions()
+            Text(state.workDays.joinToString { id -> days.firstOrNull { it.first == id }?.second ?: id })
             Text(state.timeSlots.joinToString { "${it.from}–${it.to}" })
-            Text(state.paymentMethods.map(::paymentLabel).joinToString())
+            Text(state.paymentMethods.joinToString { id -> payments.firstOrNull { it.first == id }?.second ?: id })
             if (state.servesAtLocal) {
                 Text(
-                    if (state.localLatitude != null && state.localLongitude != null) "Ubicación del local confirmada" else "Ubicación del local pendiente",
+                    if (state.localLatitude != null && state.localLongitude != null) stringResource(R.string.services_location_confirmed) else stringResource(R.string.services_location_pending),
                     style = MaterialTheme.typography.bodySmall,
                     color = OficiosColorSecondaryText,
                 )
             }
         }
     }
-    Text("Revisá todo antes de publicar. Después vas a poder gestionar los turnos desde Agenda.", style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+    Text(stringResource(R.string.services_review_note), style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
 }
 
+@Composable
 private fun stepTitle(step: AddServiceStep) = when (step) {
-    AddServiceStep.TRADE -> "¿Qué servicio ofrecés?"
-    AddServiceStep.MODALITY -> "¿Dónde y cómo atendés?"
-    AddServiceStep.SCHEDULE -> "¿Cuándo trabajás?"
-    AddServiceStep.PAYMENT -> "¿Cómo cobrás?"
-    AddServiceStep.REVIEW -> "Revisá tu nuevo servicio"
+    AddServiceStep.TRADE -> stringResource(R.string.services_step_trade_title)
+    AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_title)
+    AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_title)
+    AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_title)
+    AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_title)
 }
+@Composable
 private fun stepDescription(step: AddServiceStep) = when (step) {
-    AddServiceStep.TRADE -> "Elegí el oficio y todas las especialidades que realmente realizás."
-    AddServiceStep.MODALITY -> "Podés ir al domicilio del cliente, atender en un local o usar ambas modalidades."
-    AddServiceStep.SCHEDULE -> "Definí una disponibilidad habitual; los turnos concretos se administran desde Agenda."
-    AddServiceStep.PAYMENT -> "Mostrá de antemano qué medios de cobro aceptás."
-    AddServiceStep.REVIEW -> "Esta información será visible para los clientes."
+    AddServiceStep.TRADE -> stringResource(R.string.services_step_trade_body)
+    AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_body)
+    AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_body)
+    AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_body)
+    AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_body)
 }
 
-private val DAYS = listOf("LUNES" to "Lunes", "MARTES" to "Martes", "MIERCOLES" to "Miércoles", "JUEVES" to "Jueves", "VIERNES" to "Viernes", "SABADO" to "Sábado", "DOMINGO" to "Domingo")
 private val TIME_OPTIONS = buildList { for (hour in 0..23) for (minute in listOf(0, 30)) add("%02d:%02d".format(hour, minute)) }
-private val paymentOptions = listOf(ProviderPaymentMethods.EFECTIVO to "Efectivo", ProviderPaymentMethods.TRANSFERENCIA to "Transferencia bancaria", ProviderPaymentMethods.MERCADOPAGO to "Mercado Pago")
-private fun paymentLabel(value: String) = paymentOptions.firstOrNull { it.first == value }?.second ?: value
-private fun dayLabel(value: String) = DAYS.firstOrNull { it.first == value }?.second ?: value.lowercase().replaceFirstChar { it.uppercase() }
+
+@Composable
+private fun dayOptions() = listOf(
+    "LUNES" to stringResource(R.string.services_day_monday),
+    "MARTES" to stringResource(R.string.services_day_tuesday),
+    "MIERCOLES" to stringResource(R.string.services_day_wednesday),
+    "JUEVES" to stringResource(R.string.services_day_thursday),
+    "VIERNES" to stringResource(R.string.services_day_friday),
+    "SABADO" to stringResource(R.string.services_day_saturday),
+    "DOMINGO" to stringResource(R.string.services_day_sunday),
+)
+
+@Composable
+private fun paymentOptions() = listOf(
+    ProviderPaymentMethods.EFECTIVO to stringResource(R.string.professional_profile_cash),
+    ProviderPaymentMethods.TRANSFERENCIA to stringResource(R.string.professional_profile_transfer),
+    ProviderPaymentMethods.MERCADOPAGO to stringResource(R.string.professional_profile_mercadopago),
+)

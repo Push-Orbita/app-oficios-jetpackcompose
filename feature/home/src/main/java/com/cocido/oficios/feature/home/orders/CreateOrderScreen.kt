@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.feature.home.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -54,16 +56,16 @@ fun CreateOrderScreen(
     OficiosScaffold(
         modifier = modifier,
         topBar = {
-            OficiosBackTopBar(title = "Contratar", onBack = handleBack)
+            OficiosBackTopBar(title = stringResource(R.string.create_order_title), onBack = handleBack)
         },
     ) { paddingValues ->
         when (uiState) {
             CreateOrderUiState.Loading -> OficiosLoadingState(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = "Cargando datos…",
+                message = stringResource(R.string.create_order_loading),
             )
             is CreateOrderUiState.Error -> OficiosErrorState(
-                title = "No pudimos cargar los datos",
+                title = stringResource(R.string.create_order_error),
                 description = uiState.message,
                 onRetry = { onEvent(CreateOrderEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -93,7 +95,7 @@ private fun CreateOrderForm(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
-            text = "Solicitar a ${state.workerName}",
+            text = stringResource(R.string.create_order_request, state.workerName),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -107,28 +109,31 @@ private fun CreateOrderForm(
                         onEvent(CreateOrderEvent.SubRubroSelected(it.id))
                     }
                 },
-                label = "Especialidad",
+                label = stringResource(R.string.create_order_specialty),
                 isError = state.hasAttemptedSubmit && state.selectedSubRubroId == null,
             )
         }
 
         if (state.domicilios.isEmpty() || state.contactos.isEmpty()) {
             Text(
-                text = "Necesitás tener al menos un domicilio y un contacto guardados en tu perfil " +
-                    "para poder solicitar un servicio.",
+                text = stringResource(R.string.create_order_profile_required),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
+            val domicilioOptions = mutableListOf<Pair<ClientDomicilio, String>>()
+            for (domicilio in state.domicilios) {
+                domicilioOptions += domicilio to domicilio.displayLabel()
+            }
             OficiosDropdownField(
-                value = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }?.let { it.displayLabel() }.orEmpty(),
-                options = state.domicilios.map { it.displayLabel() },
+                value = domicilioOptions.firstOrNull { it.first.id == state.selectedDomicilioId }?.second.orEmpty(),
+                options = domicilioOptions.map { it.second },
                 onOptionSelected = { label ->
-                    state.domicilios.firstOrNull { it.displayLabel() == label }?.let {
-                        onEvent(CreateOrderEvent.DomicilioSelected(it.id))
+                    domicilioOptions.firstOrNull { it.second == label }?.let {
+                        onEvent(CreateOrderEvent.DomicilioSelected(it.first.id))
                     }
                 },
-                label = "Domicilio",
+                label = stringResource(R.string.create_order_address),
                 isError = state.hasAttemptedSubmit && state.selectedDomicilioId == null,
             )
             OficiosDropdownField(
@@ -139,14 +144,14 @@ private fun CreateOrderForm(
                         onEvent(CreateOrderEvent.ContactoSelected(it.id))
                     }
                 },
-                label = "Contacto",
+                label = stringResource(R.string.create_order_contact),
                 isError = state.hasAttemptedSubmit && state.selectedContactoId == null,
             )
         }
 
         if (state.isLoadingSlots) {
             Text(
-                text = "Cargando turnos disponibles…",
+                text = stringResource(R.string.create_order_slots_loading),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -156,7 +161,7 @@ private fun CreateOrderForm(
             }
             if (state.availableSlots.isNotEmpty()) {
                 Text(
-                    text = "Turnos disponibles",
+                    text = stringResource(R.string.create_order_slots_title),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
@@ -177,7 +182,7 @@ private fun CreateOrderForm(
                 }
             } else if (state.selectedSubRubroId != null && state.slotsErrorMessage == null) {
                 Text(
-                    text = "Este trabajador no publicó turnos para las próximas semanas. Podés proponer una fecha.",
+                    text = stringResource(R.string.create_order_no_slots),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -185,14 +190,14 @@ private fun CreateOrderForm(
         }
 
         DateTimePickerButton(
-            label = "Proponer otra fecha y hora",
+            label = stringResource(R.string.create_order_propose),
             selectedDateTime = state.proposedDateTime,
             onDateTimeSelected = { onEvent(CreateOrderEvent.DateTimeSelected(it)) },
         )
 
         if (state.hasAttemptedSubmit && state.selectedSlotId == null && state.proposedDateTime == null) {
             Text(
-                text = "Elegí un turno disponible o una fecha y hora propuesta",
+                text = stringResource(R.string.create_order_pick_slot),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -201,14 +206,14 @@ private fun CreateOrderForm(
         OficiosTextField(
             value = state.description,
             onValueChange = { onEvent(CreateOrderEvent.DescriptionChanged(it)) },
-            label = "Descripción (opcional)",
-            placeholder = "Contanos qué necesitás",
+            label = stringResource(R.string.create_order_description),
+            placeholder = stringResource(R.string.create_order_description_hint),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onEvent(CreateOrderEvent.Submit) }),
         )
 
         OficiosButton(
-            text = "Enviar solicitud",
+            text = stringResource(R.string.create_order_submit),
             onClick = { onEvent(CreateOrderEvent.Submit) },
             loading = state.isSubmitting,
             enabled = !state.isSubmitting,
@@ -219,10 +224,12 @@ private fun CreateOrderForm(
     }
 }
 
-private fun ClientDomicilio.displayLabel(): String =
-    listOfNotNull(nombre, listOfNotNull(calle, numero).joinToString(" ").ifBlank { null }, barrioName)
+@Composable
+private fun ClientDomicilio.displayLabel(): String {
+    val raw = listOfNotNull(nombre, listOfNotNull(calle, numero).joinToString(" ").ifBlank { null }, barrioName)
         .joinToString(" · ")
-        .ifBlank { "Domicilio #$id" }
+    return raw.ifBlank { stringResource(R.string.create_order_address_fallback, id) }
+}
 
 private val SLOT_DATE_FORMATTER: DateTimeFormatter =
     DateTimeFormatter.ofPattern("d MMM", Locale.forLanguageTag("es-AR"))

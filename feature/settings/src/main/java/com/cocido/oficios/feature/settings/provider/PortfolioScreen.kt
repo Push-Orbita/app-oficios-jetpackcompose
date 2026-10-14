@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.provider
 
+import com.cocido.oficios.feature.settings.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,8 +50,8 @@ fun PortfolioScreen(
     onPickCertificateFile: () -> Unit,
 ) {
     val title = if (uiState.certificateEditorVisible) {
-        if (uiState.editingCertificateId == null) "Nuevo certificado" else "Editar certificado"
-    } else "Galería y certificados"
+        if (uiState.editingCertificateId == null) stringResource(R.string.portfolio_new_certificate) else stringResource(R.string.portfolio_edit_certificate)
+    } else stringResource(R.string.portfolio_title)
     OficiosScaffold(
         topBar = {
             OficiosBackTopBar(
@@ -61,7 +63,7 @@ fun PortfolioScreen(
         when {
             uiState.isLoading && uiState.gallery.isEmpty() && uiState.certificates.isEmpty() -> OficiosLoadingState(Modifier.fillMaxSize().padding(padding))
             uiState.errorMessage != null && uiState.gallery.isEmpty() && uiState.certificates.isEmpty() && !uiState.certificateEditorVisible -> OficiosErrorState(
-                title = "No pudimos cargar tu portfolio",
+                title = stringResource(R.string.portfolio_load_error),
                 description = uiState.errorMessage,
                 onRetry = { onEvent(PortfolioEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -73,11 +75,11 @@ fun PortfolioScreen(
     uiState.pendingDelete?.let { target ->
         OficiosDialog(
             title = when (target) {
-                is PortfolioDeleteTarget.Gallery -> "Eliminar foto"
-                is PortfolioDeleteTarget.Certificate -> "Eliminar ${target.name}"
+                is PortfolioDeleteTarget.Gallery -> stringResource(R.string.portfolio_delete_photo)
+                is PortfolioDeleteTarget.Certificate -> stringResource(R.string.portfolio_delete_named, target.name)
             },
-            message = "Este contenido dejará de verse en tu perfil público.",
-            confirmLabel = "Eliminar",
+            message = stringResource(R.string.portfolio_delete_message),
+            confirmLabel = stringResource(R.string.portfolio_delete_confirm),
             isDangerous = true,
             onConfirm = { onEvent(PortfolioEvent.ConfirmDelete) },
             onDismiss = { onEvent(PortfolioEvent.DismissDelete) },
@@ -98,18 +100,18 @@ private fun PortfolioList(
     ) {
         item {
             Text(
-                "Usá fotos reales y documentación vigente. Un perfil claro genera más confianza que una galería extensa sin contexto.",
+                stringResource(R.string.portfolio_intro),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
         state.errorMessage?.let { item { OficiosInlineAlert(it) } }
-        item { PortfolioHeader("Trabajos realizados", "Agregar foto", onPickGalleryImage) }
+        item { PortfolioHeader(stringResource(R.string.portfolio_works), stringResource(R.string.portfolio_add_photo), onPickGalleryImage) }
         if (state.gallery.isEmpty()) {
             item {
                 OficiosEmptyState(
-                    title = "Tu galería está vacía",
-                    description = "Sumá fotos nítidas que muestren el resultado de tu trabajo.",
-                    ctaLabel = "Agregar foto",
+                    title = stringResource(R.string.portfolio_gallery_empty_title),
+                    description = stringResource(R.string.portfolio_gallery_empty_description),
+                    ctaLabel = stringResource(R.string.portfolio_add_photo),
                     onCta = onPickGalleryImage,
                 )
             }
@@ -118,9 +120,9 @@ private fun PortfolioList(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
                     rowItems.forEach { item ->
                         Column(Modifier.weight(1f)) {
-                            WorkGalleryCard(item.imageUrl, "Trabajo realizado", modifier = Modifier.fillMaxWidth())
+                            WorkGalleryCard(item.imageUrl, stringResource(R.string.portfolio_work_description), modifier = Modifier.fillMaxWidth())
                             OficiosButton(
-                                text = "Eliminar",
+                                text = stringResource(R.string.portfolio_delete_confirm),
                                 onClick = { onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Gallery(item.id))) },
                                 modifier = Modifier.fillMaxWidth(),
                                 variant = OficiosButtonVariant.Ghost,
@@ -133,13 +135,13 @@ private fun PortfolioList(
                 }
             }
         }
-        item { PortfolioHeader("Certificados", "Agregar", { onEvent(PortfolioEvent.AddCertificate) }) }
+        item { PortfolioHeader(stringResource(R.string.portfolio_certificates), stringResource(R.string.portfolio_add), { onEvent(PortfolioEvent.AddCertificate) }) }
         if (state.certificates.isEmpty()) {
             item {
                 OficiosEmptyState(
-                    title = "No cargaste certificados",
-                    description = "Podés adjuntar matrículas, cursos o habilitaciones en PDF o imagen.",
-                    ctaLabel = "Agregar certificado",
+                    title = stringResource(R.string.portfolio_certificates_empty_title),
+                    description = stringResource(R.string.portfolio_certificates_empty_description),
+                    ctaLabel = stringResource(R.string.portfolio_add_certificate),
                     onCta = { onEvent(PortfolioEvent.AddCertificate) },
                 )
             }
@@ -165,13 +167,13 @@ private fun CertificateItem(item: WorkCertificateItem, disabled: Boolean, onEven
             Icon(Icons.Outlined.WorkspacePremium, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
             Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium)
-                Text("Documento cargado · sin validación administrativa informada", style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+                Text(stringResource(R.string.portfolio_document_note), style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.EditCertificate(item)) }) {
-                Icon(Icons.Outlined.Edit, contentDescription = "Editar ${item.name}")
+                Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.portfolio_edit_named, item.name))
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Certificate(item.id, item.name))) }) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = "Eliminar ${item.name}")
+                Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.portfolio_delete_named, item.name))
             }
         }
     }
@@ -188,28 +190,28 @@ private fun CertificateEditor(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        Text("Identificá el documento con un nombre que el cliente pueda entender.", style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.portfolio_certificate_hint), style = MaterialTheme.typography.bodyMedium)
         OficiosTextField(
             value = state.certificateName,
             onValueChange = { onEvent(PortfolioEvent.CertificateNameChanged(it)) },
-            label = "Nombre del certificado",
-            placeholder = "Ej: Electricista matriculado",
+            label = stringResource(R.string.portfolio_certificate_name),
+            placeholder = stringResource(R.string.portfolio_certificate_name_hint),
         )
         OficiosButton(
-            text = if (state.certificateFilePath == null) "Seleccionar archivo" else "Archivo seleccionado",
+            text = if (state.certificateFilePath == null) stringResource(R.string.portfolio_select_file) else stringResource(R.string.portfolio_file_selected),
             onClick = onPickCertificateFile,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Outlined,
             leadingIcon = Icons.Outlined.AttachFile,
         )
         Text(
-            if (state.editingCertificateId != null && state.certificateFilePath == null) "Si no elegís otro archivo, se conservará el actual." else "Formatos admitidos: PDF, JPG, PNG o WEBP. Máximo 10 MB.",
+            if (state.editingCertificateId != null && state.certificateFilePath == null) stringResource(R.string.portfolio_keep_file) else stringResource(R.string.portfolio_file_formats),
             style = MaterialTheme.typography.bodySmall,
             color = OficiosColorSecondaryText,
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
         OficiosButton(
-            text = "Guardar certificado",
+            text = stringResource(R.string.portfolio_save),
             onClick = { onEvent(PortfolioEvent.SaveCertificate) },
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,

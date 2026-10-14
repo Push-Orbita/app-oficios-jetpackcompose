@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.client
 
+import com.cocido.oficios.feature.settings.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,9 +68,9 @@ fun ClientDataScreen(
     onEvent: (ClientDataEvent) -> Unit,
 ) {
     val title = when (uiState.mode) {
-        ClientDataMode.LIST -> "Contactos y domicilios"
-        ClientDataMode.CONTACT -> if (uiState.editingId == null) "Nuevo contacto" else "Editar contacto"
-        ClientDataMode.DOMICILIO -> if (uiState.editingId == null) "Nuevo domicilio" else "Editar domicilio"
+        ClientDataMode.LIST -> stringResource(R.string.client_data_title)
+        ClientDataMode.CONTACT -> if (uiState.editingId == null) stringResource(R.string.client_data_new_contact) else stringResource(R.string.client_data_edit_contact)
+        ClientDataMode.DOMICILIO -> if (uiState.editingId == null) stringResource(R.string.client_data_new_address) else stringResource(R.string.client_data_edit_address)
     }
     OficiosScaffold(
         topBar = {
@@ -86,7 +88,7 @@ fun ClientDataScreen(
                 OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
             uiState.errorMessage != null && uiState.personaId == null && uiState.mode == ClientDataMode.LIST ->
                 OficiosErrorState(
-                    title = "No pudimos cargar tus datos",
+                    title = stringResource(R.string.client_data_load_error),
                     description = uiState.errorMessage,
                     onRetry = { onEvent(ClientDataEvent.Retry) },
                     modifier = Modifier.fillMaxSize().padding(padding),
@@ -110,9 +112,9 @@ fun ClientDataScreen(
     }
     uiState.pendingDelete?.let { target ->
         OficiosDialog(
-            title = "Eliminar ${target.label}",
-            message = "Esta acción puede dejar tu perfil incompleto. Los pedidos existentes conservarán sus datos históricos.",
-            confirmLabel = "Eliminar",
+            title = stringResource(R.string.client_data_delete_title, target.label),
+            message = stringResource(R.string.client_data_delete_message),
+            confirmLabel = stringResource(R.string.client_data_delete_confirm),
             isDangerous = true,
             onConfirm = { onEvent(ClientDataEvent.ConfirmDelete) },
             onDismiss = { onEvent(ClientDataEvent.DismissDelete) },
@@ -133,7 +135,7 @@ private fun ClientDataList(
     ) {
         item {
             Text(
-                text = "Podés guardar varias opciones. Marcá una como principal para usarla por defecto al contratar.",
+                text = stringResource(R.string.client_data_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth),
@@ -142,17 +144,17 @@ private fun ClientDataList(
         uiState.errorMessage?.let { message -> item { OficiosInlineAlert(message) } }
         item {
             SectionHeader(
-                title = "Contactos",
-                actionLabel = "Agregar",
+                title = stringResource(R.string.client_data_contacts),
+                actionLabel = stringResource(R.string.client_data_add),
                 onAction = { onEvent(ClientDataEvent.AddContact) },
             )
         }
         if (uiState.contacts.isEmpty()) {
             item {
                 OficiosEmptyState(
-                    title = "Todavía no tenés contactos",
-                    description = "Agregá un WhatsApp para coordinar los servicios.",
-                    ctaLabel = "Agregar contacto",
+                    title = stringResource(R.string.client_data_contacts_empty_title),
+                    description = stringResource(R.string.client_data_contacts_empty_description),
+                    ctaLabel = stringResource(R.string.client_data_add_contact),
                     onCta = { onEvent(ClientDataEvent.AddContact) },
                 )
             }
@@ -163,17 +165,17 @@ private fun ClientDataList(
         }
         item {
             SectionHeader(
-                title = "Domicilios",
-                actionLabel = "Agregar",
+                title = stringResource(R.string.client_data_addresses),
+                actionLabel = stringResource(R.string.client_data_add),
                 onAction = { onEvent(ClientDataEvent.AddDomicilio) },
             )
         }
         if (uiState.domicilios.isEmpty()) {
             item {
                 OficiosEmptyState(
-                    title = "Todavía no tenés domicilios",
-                    description = "Agregá dónde querés recibir el servicio.",
-                    ctaLabel = "Agregar domicilio",
+                    title = stringResource(R.string.client_data_addresses_empty_title),
+                    description = stringResource(R.string.client_data_addresses_empty_description),
+                    ctaLabel = stringResource(R.string.client_data_add_address),
                     onCta = { onEvent(ClientDataEvent.AddDomicilio) },
                 )
             }
@@ -217,22 +219,23 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
                         tint = if (contact.telefonoVerificado) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error,
                     )
                     Text(
-                        text = if (contact.telefonoVerificado) "WhatsApp verificado" else "Falta verificar WhatsApp",
+                        text = if (contact.telefonoVerificado) stringResource(R.string.client_data_whatsapp_verified) else stringResource(R.string.client_data_whatsapp_pending),
                         style = MaterialTheme.typography.labelMedium,
                         color = OficiosColorSecondaryText,
                     )
                 }
             }
             IconButton(onClick = { onEvent(ClientDataEvent.ToggleContactFavorite(contact.id, !contact.favorito)) }) {
-                Icon(if (contact.favorito) Icons.Outlined.Star else Icons.Outlined.StarBorder, "Contacto principal")
+                Icon(if (contact.favorito) Icons.Outlined.Star else Icons.Outlined.StarBorder, stringResource(R.string.client_data_primary_contact))
             }
             IconButton(onClick = { onEvent(ClientDataEvent.EditContact(contact)) }) {
-                Icon(Icons.Outlined.Edit, "Editar contacto")
+                Icon(Icons.Outlined.Edit, stringResource(R.string.client_data_edit_contact))
             }
+            val deleteContactLabel = stringResource(R.string.client_data_delete_contact)
             IconButton(onClick = {
-                onEvent(ClientDataEvent.RequestDelete(ClientDataDeleteTarget.Contact(contact.id, "el contacto")))
+                onEvent(ClientDataEvent.RequestDelete(ClientDataDeleteTarget.Contact(contact.id, deleteContactLabel)))
             }) {
-                Icon(Icons.Outlined.DeleteOutline, "Eliminar contacto", tint = MaterialTheme.colorScheme.error)
+                Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.client_data_delete_contact_action), tint = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -240,32 +243,37 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
 
 @Composable
 private fun DomicilioCard(domicilio: ClientDomicilio, onEvent: (ClientDataEvent) -> Unit) {
-    val title = domicilio.nombre?.takeIf { it.isNotBlank() } ?: domicilio.barrioName ?: "Domicilio"
+    val title = domicilio.nombre?.takeIf { it.isNotBlank() } ?: domicilio.barrioName ?: stringResource(R.string.client_data_address_fallback)
+    val piso = domicilio.piso
+    val departamento = domicilio.departamento
+    val floor = if (piso.isNullOrBlank()) null else stringResource(R.string.client_data_floor, piso)
+    val apartment = if (departamento.isNullOrBlank()) null else stringResource(R.string.client_data_apartment, departamento)
     val detail = listOfNotNull(
         domicilio.calle,
         domicilio.numero,
-        domicilio.piso?.let { "Piso $it" },
-        domicilio.departamento?.let { "Dpto. $it" },
+        floor,
+        apartment,
     ).filter { it.isNotBlank() }.joinToString(" ")
     OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                Text(detail.ifBlank { "Sin detalle de calle" }, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
+                Text(detail.ifBlank { stringResource(R.string.client_data_no_street) }, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
                 domicilio.barrioName?.let {
                     Text(it, style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
                 }
             }
             IconButton(onClick = { onEvent(ClientDataEvent.ToggleDomicilioFavorite(domicilio.id, !domicilio.favorito)) }) {
-                Icon(if (domicilio.favorito) Icons.Outlined.Star else Icons.Outlined.StarBorder, "Domicilio principal")
+                Icon(if (domicilio.favorito) Icons.Outlined.Star else Icons.Outlined.StarBorder, stringResource(R.string.client_data_primary_address))
             }
             IconButton(onClick = { onEvent(ClientDataEvent.EditDomicilio(domicilio)) }) {
-                Icon(Icons.Outlined.Edit, "Editar domicilio")
+                Icon(Icons.Outlined.Edit, stringResource(R.string.client_data_edit_address))
             }
+            val deleteAddressLabel = stringResource(R.string.client_data_delete_address)
             IconButton(onClick = {
-                onEvent(ClientDataEvent.RequestDelete(ClientDataDeleteTarget.Domicilio(domicilio.id, "el domicilio")))
+                onEvent(ClientDataEvent.RequestDelete(ClientDataDeleteTarget.Domicilio(domicilio.id, deleteAddressLabel)))
             }) {
-                Icon(Icons.Outlined.DeleteOutline, "Eliminar domicilio", tint = MaterialTheme.colorScheme.error)
+                Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.client_data_delete_address_action), tint = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -289,14 +297,14 @@ private fun ContactEditor(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
-            "El número se valida por WhatsApp. Argentina usa +54 y vos ingresás solo el número local, por ejemplo 9 370 5219109.",
+            stringResource(R.string.client_data_phone_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
         OficiosTextField(
             value = uiState.contactName,
             onValueChange = { onEvent(ClientDataEvent.ContactNameChanged(it)) },
-            label = "Nombre del contacto",
+            label = stringResource(R.string.client_data_contact_name),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { phoneFocus.requestFocus() }),
         )
@@ -304,7 +312,7 @@ private fun ContactEditor(
             value = uiState.contactPhone,
             onValueChange = { onEvent(ClientDataEvent.ContactPhoneChanged(it)) },
             selectedCountry = PhoneCountryOptions.ARGENTINA,
-            label = "WhatsApp",
+            label = stringResource(R.string.client_data_whatsapp),
             supportingText = "11 dígitos con el 9",
             numberModifier = Modifier.focusRequester(phoneFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -313,7 +321,7 @@ private fun ContactEditor(
         OficiosTextField(
             value = uiState.contactEmail,
             onValueChange = { onEvent(ClientDataEvent.ContactEmailChanged(it)) },
-            label = "Correo alternativo (opcional)",
+            label = stringResource(R.string.client_data_alt_email),
             modifier = Modifier.focusRequester(emailFocus),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -324,11 +332,11 @@ private fun ContactEditor(
         OficiosCheckbox(
             checked = uiState.contactFavorite,
             onCheckedChange = { onEvent(ClientDataEvent.ContactFavoriteChanged(it)) },
-            label = "Usar como contacto principal",
+            label = stringResource(R.string.client_data_primary_contact_toggle),
         )
         uiState.errorMessage?.let { OficiosInlineAlert(it) }
         OficiosButton(
-            text = if (uiState.editingId == null) "Guardar y verificar" else "Guardar cambios",
+            text = if (uiState.editingId == null) stringResource(R.string.client_data_save_verify) else stringResource(R.string.client_data_save_changes),
             onClick = { onEvent(ClientDataEvent.SaveContact) },
             loading = uiState.isSaving,
             enabled = !uiState.isSaving,
@@ -361,15 +369,15 @@ private fun DomicilioEditor(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
-            "Guardá una etiqueta clara, como “Casa” o “Trabajo”, y confirmá la entrada en el mapa para evitar confusiones.",
+            stringResource(R.string.client_data_address_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
         OficiosTextField(
             value = uiState.addressName,
             onValueChange = { onEvent(ClientDataEvent.AddressNameChanged(it)) },
-            label = "Nombre (opcional)",
-            placeholder = "Ej: Casa",
+            label = stringResource(R.string.client_data_name_optional),
+            placeholder = stringResource(R.string.client_data_name_hint),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { barrioFocus.requestFocus() }),
         )
@@ -379,8 +387,8 @@ private fun DomicilioEditor(
             suggestions = uiState.barrioSuggestions,
             onSuggestionSelected = { onEvent(ClientDataEvent.BarrioSelected(it)) },
             suggestionLabel = { it.label },
-            label = "Barrio",
-            placeholder = "Buscá y seleccioná tu barrio",
+            label = stringResource(R.string.client_data_neighborhood),
+            placeholder = stringResource(R.string.client_data_neighborhood_hint),
             modifier = Modifier.focusRequester(barrioFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { streetFocus.requestFocus() }),
@@ -388,7 +396,7 @@ private fun DomicilioEditor(
         OficiosTextField(
             value = uiState.street,
             onValueChange = { onEvent(ClientDataEvent.StreetChanged(it)) },
-            label = "Calle",
+            label = stringResource(R.string.client_data_street),
             modifier = Modifier.focusRequester(streetFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { numberFocus.requestFocus() }),
@@ -396,7 +404,7 @@ private fun DomicilioEditor(
         OficiosTextField(
             value = uiState.number,
             onValueChange = { onEvent(ClientDataEvent.NumberChanged(it)) },
-            label = "Altura",
+            label = stringResource(R.string.client_data_number),
             modifier = Modifier.focusRequester(numberFocus),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
@@ -409,7 +417,7 @@ private fun DomicilioEditor(
                 OficiosTextField(
                     value = uiState.floor,
                     onValueChange = { onEvent(ClientDataEvent.FloorChanged(it)) },
-                    label = "Piso",
+                    label = stringResource(R.string.client_data_floor_label),
                     modifier = Modifier.focusRequester(floorFocus),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { apartmentFocus.requestFocus() }),
@@ -419,7 +427,7 @@ private fun DomicilioEditor(
                 OficiosTextField(
                     value = uiState.apartment,
                     onValueChange = { onEvent(ClientDataEvent.ApartmentChanged(it)) },
-                    label = "Dpto.",
+                    label = stringResource(R.string.client_data_apartment_label),
                     modifier = Modifier.focusRequester(apartmentFocus),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { towerFocus.requestFocus() }),
@@ -429,7 +437,7 @@ private fun DomicilioEditor(
         OficiosTextField(
             value = uiState.houseTower,
             onValueChange = { onEvent(ClientDataEvent.HouseTowerChanged(it)) },
-            label = "Casa o torre (opcional)",
+            label = stringResource(R.string.client_data_tower),
             modifier = Modifier.focusRequester(towerFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onEvent(ClientDataEvent.SaveDomicilio) }),
@@ -448,11 +456,11 @@ private fun DomicilioEditor(
         OficiosCheckbox(
             checked = uiState.addressFavorite,
             onCheckedChange = { onEvent(ClientDataEvent.AddressFavoriteChanged(it)) },
-            label = "Usar como domicilio principal",
+            label = stringResource(R.string.client_data_primary_address_toggle),
         )
         uiState.errorMessage?.let { OficiosInlineAlert(it) }
         OficiosButton(
-            text = "Guardar domicilio",
+            text = stringResource(R.string.client_data_save_address),
             onClick = { onEvent(ClientDataEvent.SaveDomicilio) },
             loading = uiState.isSaving,
             enabled = !uiState.isSaving,

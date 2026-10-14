@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.feature.home.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -34,7 +36,7 @@ fun CounterOfferScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Reagendar pedido", onBack = onNavigateBack) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.counter_offer_title), onBack = onNavigateBack) },
     ) { paddingValues ->
         if (uiState is CounterOfferUiState.Form) {
             Column(
@@ -48,18 +50,18 @@ fun CounterOfferScreen(
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
                 Text(
-                    text = "Proponele al cliente una nueva fecha y hora para el servicio.",
+                    text = stringResource(R.string.counter_offer_body),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 DateTimePickerButton(
-                    label = "Elegir nueva fecha y hora",
+                    label = stringResource(R.string.counter_offer_pick),
                     selectedDateTime = uiState.dateTime,
                     onDateTimeSelected = { onEvent(CounterOfferEvent.DateTimeSelected(it)) },
                 )
                 if (uiState.hasAttemptedSubmit && uiState.dateTime == null) {
                     Text(
-                        text = "Elegí una nueva fecha y hora",
+                        text = stringResource(R.string.counter_offer_required),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -67,8 +69,8 @@ fun CounterOfferScreen(
                 OficiosTextField(
                     value = uiState.price,
                     onValueChange = { onEvent(CounterOfferEvent.PriceChanged(it)) },
-                    label = "Nuevo precio (opcional)",
-                    placeholder = "Ej: 15000",
+                    label = stringResource(R.string.counter_offer_price),
+                    placeholder = stringResource(R.string.counter_offer_price_hint),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done,
@@ -76,7 +78,7 @@ fun CounterOfferScreen(
                     keyboardActions = KeyboardActions(onDone = { onEvent(CounterOfferEvent.Submit) }),
                 )
                 OficiosButton(
-                    text = "Enviar contrapropuesta",
+                    text = stringResource(R.string.counter_offer_submit),
                     onClick = { onEvent(CounterOfferEvent.Submit) },
                     loading = uiState.isSubmitting,
                     enabled = !uiState.isSubmitting,

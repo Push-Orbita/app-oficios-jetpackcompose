@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.agenda
 
+import com.cocido.oficios.feature.home.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -74,13 +76,13 @@ fun AgendaListScreen(
         modifier = modifier,
         topBar = {
             OficiosBackTopBar(
-                title = "Agenda",
+                title = stringResource(R.string.agenda_title),
                 onBack = onNavigateBack,
                 actions = {
                     IconButton(onClick = { onEvent(AgendaListEvent.OpenConfig) }) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
-                            contentDescription = "Configurar agenda",
+                            contentDescription = stringResource(R.string.agenda_configure),
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
@@ -91,7 +93,7 @@ fun AgendaListScreen(
         when (uiState) {
             AgendaListUiState.Loading -> OficiosLoadingState(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = "Cargando agenda…",
+                message = stringResource(R.string.agenda_loading),
             )
             is AgendaListUiState.Error -> PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
@@ -99,7 +101,7 @@ fun AgendaListScreen(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
             ) {
                 OficiosErrorState(
-                    title = "No pudimos cargar tu agenda",
+                    title = stringResource(R.string.agenda_load_error),
                     description = uiState.message,
                     onRetry = { onEvent(AgendaListEvent.Retry) },
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -128,8 +130,8 @@ private fun AgendaListContent(
 ) {
     if (uiState.subRubroOptions.isEmpty()) {
         OficiosEmptyState(
-            title = "Todavía no tenés servicios que usen turnos",
-            description = "Activá la opción de trabajar con turnos en alguno de tus servicios para organizarlo desde acá.",
+            title = stringResource(R.string.agenda_no_services_title),
+            description = stringResource(R.string.agenda_no_services_description),
             icon = Icons.Outlined.EventBusy,
             modifier = modifier.verticalScroll(rememberScrollState()),
         )
@@ -151,7 +153,7 @@ private fun AgendaListContent(
                             onEvent(AgendaListEvent.SubRubroSelected(it.id))
                         }
                     },
-                    label = "Servicio",
+                    label = stringResource(R.string.agenda_service),
                 )
             }
         }
@@ -179,7 +181,7 @@ private fun AgendaListContent(
                     modifier = Modifier.weight(1f),
                 )
                 OficiosButton(
-                    text = "Hoy",
+                    text = stringResource(R.string.agenda_today),
                     onClick = { onEvent(AgendaListEvent.GoToToday) },
                     variant = OficiosButtonVariant.Ghost,
                 )
@@ -191,7 +193,7 @@ private fun AgendaListContent(
                 SlotForm(uiState = uiState, onEvent = onEvent)
             } else {
                 OficiosButton(
-                    text = "Agregar disponibilidad",
+                    text = stringResource(R.string.agenda_add_availability),
                     onClick = { onEvent(AgendaListEvent.OpenCreateSlot) },
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
@@ -205,7 +207,7 @@ private fun AgendaListContent(
                 OficiosCard {
                     Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
                         Text(
-                            text = "No pudimos actualizar los horarios",
+                            text = stringResource(R.string.agenda_update_error),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -215,7 +217,7 @@ private fun AgendaListContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         OficiosButton(
-                            text = "Reintentar",
+                            text = stringResource(R.string.agenda_retry),
                             onClick = { onEvent(AgendaListEvent.RetrySlots) },
                             variant = OficiosButtonVariant.Secondary,
                             size = OficiosButtonSize.Medium,
@@ -227,12 +229,12 @@ private fun AgendaListContent(
         }
 
         if (uiState.isLoadingSlots) {
-            item { OficiosLoadingState(message = "Actualizando horarios…") }
+            item { OficiosLoadingState(message = stringResource(R.string.agenda_updating)) }
         } else if (uiState.selectedDateSlots.isEmpty()) {
             item {
                 OficiosEmptyState(
-                    title = "No hay horarios para este día",
-                    description = "Podés agregar disponibilidad para que los clientes elijan un turno real.",
+                    title = stringResource(R.string.agenda_empty_day_title),
+                    description = stringResource(R.string.agenda_empty_day_description),
                     icon = Icons.Outlined.CalendarMonth,
                 )
             }
@@ -249,9 +251,9 @@ private fun AgendaListContent(
 
     if (uiState.slotPendingDeleteId != null) {
         OficiosDialog(
-            title = "Eliminar disponibilidad",
-            message = "Este horario dejará de estar disponible para nuevos pedidos. ¿Querés eliminarlo?",
-            confirmLabel = "Eliminar",
+            title = stringResource(R.string.agenda_delete_title),
+            message = stringResource(R.string.agenda_delete_message),
+            confirmLabel = stringResource(R.string.agenda_delete_confirm),
             onConfirm = { onEvent(AgendaListEvent.ConfirmDeleteSlot) },
             onDismiss = { onEvent(AgendaListEvent.DismissDeleteSlot) },
             isDangerous = true,
@@ -269,13 +271,13 @@ private fun AgendaViewSelector(
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
         OficiosButton(
-            text = "Mes",
+            text = stringResource(R.string.agenda_view_month),
             onClick = { onEvent(AgendaListEvent.ViewModeChanged(AgendaViewMode.MONTH)) },
             variant = if (selected == AgendaViewMode.MONTH) OficiosButtonVariant.Secondary else OficiosButtonVariant.Outlined,
             modifier = Modifier.weight(1f),
         )
         OficiosButton(
-            text = "Semana",
+            text = stringResource(R.string.agenda_view_week),
             onClick = { onEvent(AgendaListEvent.ViewModeChanged(AgendaViewMode.WEEK)) },
             variant = if (selected == AgendaViewMode.WEEK) OficiosButtonVariant.Secondary else OficiosButtonVariant.Outlined,
             modifier = Modifier.weight(1f),
@@ -298,7 +300,7 @@ private fun AgendaCalendar(
                 IconButton(onClick = { onEvent(AgendaListEvent.PreviousPeriod) }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                        contentDescription = if (uiState.viewMode == AgendaViewMode.MONTH) "Mes anterior" else "Semana anterior",
+                        contentDescription = if (uiState.viewMode == AgendaViewMode.MONTH) stringResource(R.string.agenda_previous_month) else stringResource(R.string.agenda_previous_week),
                     )
                 }
                 Text(
@@ -309,7 +311,7 @@ private fun AgendaCalendar(
                 IconButton(onClick = { onEvent(AgendaListEvent.NextPeriod) }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = if (uiState.viewMode == AgendaViewMode.MONTH) "Mes siguiente" else "Semana siguiente",
+                        contentDescription = if (uiState.viewMode == AgendaViewMode.MONTH) stringResource(R.string.agenda_next_month) else stringResource(R.string.agenda_next_week),
                     )
                 }
             }
@@ -331,7 +333,15 @@ private fun MonthGrid(
     uiState: AgendaListUiState.Success,
     onDateSelected: (LocalDate) -> Unit,
 ) {
-    val weekLabels = listOf("Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá")
+    val weekLabels = listOf(
+        stringResource(R.string.agenda_dow_sun),
+        stringResource(R.string.agenda_dow_mon),
+        stringResource(R.string.agenda_dow_tue),
+        stringResource(R.string.agenda_dow_wed),
+        stringResource(R.string.agenda_dow_thu),
+        stringResource(R.string.agenda_dow_fri),
+        stringResource(R.string.agenda_dow_sat),
+    )
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         weekLabels.forEach { label ->
             Text(
@@ -415,29 +425,29 @@ private fun SlotForm(
     OficiosCard {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Text(
-                text = if (uiState.editingSlotId == null) "Nueva disponibilidad" else "Editar disponibilidad",
+                text = if (uiState.editingSlotId == null) stringResource(R.string.agenda_new_slot) else stringResource(R.string.agenda_edit_slot),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Elegí un inicio y un fin para el mismo día. No se permiten horarios superpuestos.",
+                text = stringResource(R.string.agenda_slot_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             DateTimePickerButton(
-                label = "Inicio",
+                label = stringResource(R.string.agenda_start),
                 selectedDateTime = uiState.slotStart,
                 onDateTimeSelected = { onEvent(AgendaListEvent.SlotStartSelected(it)) },
             )
             DateTimePickerButton(
-                label = "Fin",
+                label = stringResource(R.string.agenda_end),
                 selectedDateTime = uiState.slotEnd,
                 onDateTimeSelected = { onEvent(AgendaListEvent.SlotEndSelected(it)) },
             )
             OficiosCheckbox(
                 checked = uiState.slotAutoAcceptance,
                 onCheckedChange = { onEvent(AgendaListEvent.SlotAutoAcceptanceChanged(it)) },
-                label = "Aceptar automáticamente los pedidos para este horario",
+                label = stringResource(R.string.agenda_auto_accept),
             )
             displayedIssue?.let {
                 Text(
@@ -450,7 +460,7 @@ private fun SlotForm(
                 Text(text = it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
             }
             OficiosButton(
-                text = if (uiState.editingSlotId == null) "Guardar disponibilidad" else "Guardar cambios",
+                text = if (uiState.editingSlotId == null) stringResource(R.string.agenda_save_slot) else stringResource(R.string.agenda_save_changes),
                 onClick = { onEvent(AgendaListEvent.SubmitSlot) },
                 enabled = !uiState.isSavingSlot,
                 loading = uiState.isSavingSlot,
@@ -459,7 +469,7 @@ private fun SlotForm(
                 size = OficiosButtonSize.Large,
             )
             OficiosButton(
-                text = "Cancelar",
+                text = stringResource(R.string.agenda_cancel),
                 onClick = { onEvent(AgendaListEvent.DismissSlotForm) },
                 variant = OficiosButtonVariant.Ghost,
                 modifier = Modifier.fillMaxWidth(),
@@ -468,12 +478,13 @@ private fun SlotForm(
     }
 }
 
+@Composable
 private fun slotIssueMessage(issue: AgendaSlotFormIssue): String = when (issue) {
-    AgendaSlotFormIssue.MISSING_DATE -> "Elegí el inicio y el fin del horario."
-    AgendaSlotFormIssue.END_BEFORE_START -> "La hora de finalización debe ser posterior al inicio."
-    AgendaSlotFormIssue.DIFFERENT_DAY -> "El inicio y el fin deben pertenecer al mismo día."
-    AgendaSlotFormIssue.PAST_DATE -> "Elegí una fecha y hora futuras."
-    AgendaSlotFormIssue.OVERLAP -> "Este horario se superpone con otro turno de tu agenda."
+    AgendaSlotFormIssue.MISSING_DATE -> stringResource(R.string.agenda_issue_missing)
+    AgendaSlotFormIssue.END_BEFORE_START -> stringResource(R.string.agenda_issue_end)
+    AgendaSlotFormIssue.DIFFERENT_DAY -> stringResource(R.string.agenda_issue_day)
+    AgendaSlotFormIssue.PAST_DATE -> stringResource(R.string.agenda_issue_past)
+    AgendaSlotFormIssue.OVERLAP -> stringResource(R.string.agenda_issue_overlap)
 }
 
 @Composable
@@ -484,6 +495,8 @@ private fun AgendaSlotRow(
 ) {
     val isPast = slot.end.isBefore(LocalDateTime.now())
     val isEditable = !isPast && slot.status == AgendaSlotStatus.DISPONIBLE
+    val bookingId = slot.bookingId
+    val bookingLabel = if (bookingId == null) null else stringResource(R.string.agenda_booking, bookingId)
     OficiosCard {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
             OficiosScheduleSlot(
@@ -491,7 +504,7 @@ private fun AgendaSlotRow(
                     startTime = slot.start.format(DateTimeFormatter.ofPattern("HH:mm")),
                     endTime = slot.end.format(DateTimeFormatter.ofPattern("HH:mm")),
                     serviceTitle = slot.subRubroLabel,
-                    clientName = slot.bookingId?.let { "Reserva #$it" },
+                    clientName = bookingLabel,
                     state = when {
                         isPast -> ScheduleSlotState.Past
                         slot.status == AgendaSlotStatus.DISPONIBLE -> ScheduleSlotState.Available
@@ -509,14 +522,14 @@ private fun AgendaSlotRow(
                     IconButton(onClick = onEditClick) {
                         Icon(
                             imageVector = Icons.Outlined.Edit,
-                            contentDescription = "Editar disponibilidad",
+                            contentDescription = stringResource(R.string.agenda_edit_slot),
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                     IconButton(onClick = onDeleteClick) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
-                            contentDescription = "Eliminar disponibilidad",
+                            contentDescription = stringResource(R.string.agenda_delete_title),
                             tint = MaterialTheme.colorScheme.error,
                         )
                     }

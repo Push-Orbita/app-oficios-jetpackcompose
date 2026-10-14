@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.agenda
 
+import com.cocido.oficios.feature.home.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,15 +46,15 @@ fun AgendaConfigScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Configurar agenda", onBack = onNavigateBack) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.agenda_config_title), onBack = onNavigateBack) },
     ) { paddingValues ->
         when (uiState) {
             AgendaConfigUiState.Loading -> OficiosLoadingState(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = "Cargando configuración…",
+                message = stringResource(R.string.agenda_config_loading),
             )
             is AgendaConfigUiState.Error -> OficiosErrorState(
-                title = "No pudimos cargar tu configuración",
+                title = stringResource(R.string.agenda_config_error),
                 description = uiState.message,
                 onRetry = { onEvent(AgendaConfigEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
@@ -74,8 +76,8 @@ private fun AgendaConfigContent(
 ) {
     if (uiState.subRubroOptions.isEmpty()) {
         OficiosEmptyState(
-            title = "Todavía no tenés especialidades con agenda",
-            description = "Configurá tus rubros y sub-rubros para poder armar tu agenda de turnos.",
+            title = stringResource(R.string.agenda_config_empty_title),
+            description = stringResource(R.string.agenda_config_empty_description),
             icon = Icons.Outlined.EventBusy,
             modifier = modifier,
         )
@@ -97,14 +99,14 @@ private fun AgendaConfigContent(
                             onEvent(AgendaConfigEvent.SubRubroSelected(it.id))
                         }
                     },
-                    label = "Especialidad",
+                    label = stringResource(R.string.agenda_config_specialty),
                 )
             }
         }
 
         item {
             Text(
-                text = "Duración e intervalo de turnos",
+                text = stringResource(R.string.agenda_config_duration_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -116,7 +118,7 @@ private fun AgendaConfigContent(
                     OficiosTextField(
                         value = uiState.durationInput,
                         onValueChange = { onEvent(AgendaConfigEvent.DurationChanged(it)) },
-                        label = "Duración del turno (minutos)",
+                        label = stringResource(R.string.agenda_config_duration),
                         isError = uiState.durationError != null,
                         supportingText = uiState.durationError,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -124,11 +126,11 @@ private fun AgendaConfigContent(
                     OficiosTextField(
                         value = uiState.intervalInput,
                         onValueChange = { onEvent(AgendaConfigEvent.IntervalChanged(it)) },
-                        label = "Intervalo entre turnos (minutos, opcional)",
+                        label = stringResource(R.string.agenda_config_interval),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     OficiosButton(
-                        text = "Guardar",
+                        text = stringResource(R.string.agenda_config_save),
                         onClick = { onEvent(AgendaConfigEvent.Save) },
                         enabled = !uiState.isSaving,
                         loading = uiState.isSaving,
@@ -143,7 +145,7 @@ private fun AgendaConfigContent(
         if (uiState.sessions.isNotEmpty()) {
             item {
                 Text(
-                    text = "Configuraciones guardadas",
+                    text = stringResource(R.string.agenda_config_saved),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -159,9 +161,9 @@ private fun AgendaConfigContent(
 
     if (uiState.sessionPendingDeleteId != null) {
         OficiosDialog(
-            title = "Eliminar configuración",
-            message = "¿Querés eliminar esta duración de turnos? Los horarios ya creados no se modificarán.",
-            confirmLabel = "Eliminar",
+            title = stringResource(R.string.agenda_config_delete_title),
+            message = stringResource(R.string.agenda_config_delete_message),
+            confirmLabel = stringResource(R.string.agenda_config_delete_confirm),
             confirmEnabled = !uiState.isDeleting,
             onConfirm = { onEvent(AgendaConfigEvent.ConfirmDeleteSession) },
             onDismiss = { onEvent(AgendaConfigEvent.DismissDeleteSession) },
@@ -185,7 +187,7 @@ private fun SessionRow(session: AgendaSessionConfig, onDeleteClick: () -> Unit) 
                 )
                 session.intervalMinutes?.let {
                     Text(
-                        text = "Intervalo: $it min",
+                        text = stringResource(R.string.agenda_config_interval_value, it),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -194,7 +196,7 @@ private fun SessionRow(session: AgendaSessionConfig, onDeleteClick: () -> Unit) 
             IconButton(onClick = onDeleteClick) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
-                    contentDescription = "Eliminar configuración",
+                    contentDescription = stringResource(R.string.agenda_config_delete_title),
                     tint = MaterialTheme.colorScheme.error,
                 )
             }

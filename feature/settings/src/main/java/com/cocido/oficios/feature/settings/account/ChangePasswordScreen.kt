@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.account
 
+import com.cocido.oficios.feature.settings.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -38,12 +40,12 @@ fun ChangePasswordScreen(
     onEvent: (ChangePasswordEvent) -> Unit,
 ) {
     OficiosScaffold(
-        topBar = { OficiosBackTopBar(title = "Cambiar contraseña", onBack = { onEvent(ChangePasswordEvent.Back) }) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.change_password_title), onBack = { onEvent(ChangePasswordEvent.Back) }) },
     ) { padding ->
         when {
             uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
             uiState.email.isBlank() && uiState.errorMessage != null -> OficiosErrorState(
-                title = "No pudimos validar tu cuenta",
+                title = stringResource(R.string.change_password_load_error),
                 description = uiState.errorMessage,
                 onRetry = { onEvent(ChangePasswordEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -62,14 +64,14 @@ fun ChangePasswordScreen(
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
                 Text(
-                    text = "Usá una contraseña que no repitas en otros servicios. Tiene que tener al menos 6 caracteres.",
+                    text = stringResource(R.string.change_password_intro),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 OficiosPasswordField(
                     value = uiState.password,
                     onValueChange = { onEvent(ChangePasswordEvent.PasswordChanged(it)) },
-                    label = "Nueva contraseña",
+                    label = stringResource(R.string.change_password_new),
                     isError = uiState.passwordError != null,
                     supportingText = uiState.passwordError,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -78,7 +80,7 @@ fun ChangePasswordScreen(
                 OficiosPasswordField(
                     value = uiState.confirmation,
                     onValueChange = { onEvent(ChangePasswordEvent.ConfirmationChanged(it)) },
-                    label = "Repetir nueva contraseña",
+                    label = stringResource(R.string.change_password_repeat),
                     isError = uiState.confirmationError != null,
                     supportingText = uiState.confirmationError,
                     modifier = Modifier.focusRequester(confirmFocus),
@@ -87,7 +89,7 @@ fun ChangePasswordScreen(
                 )
                 uiState.errorMessage?.let { OficiosInlineAlert(it) }
                 OficiosButton(
-                    text = "Actualizar contraseña",
+                    text = stringResource(R.string.change_password_submit),
                     onClick = { onEvent(ChangePasswordEvent.Submit) },
                     loading = uiState.isSubmitting,
                     enabled = !uiState.isSubmitting,

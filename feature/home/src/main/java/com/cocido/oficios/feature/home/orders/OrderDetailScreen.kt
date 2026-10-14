@@ -258,7 +258,7 @@ private fun OrderDetailContent(
                     text = if (canShowPrivateDetails) {
                         "${stringResource(R.string.orders_address)}: ${order.addressLabel}"
                     } else {
-                        "La dirección exacta estará disponible cuando aceptes el pedido."
+                        stringResource(R.string.orders_address_hidden)
                     },
                 )
                 val service = listOf(order.rubroLabel, order.subRubroLabel).filter { it.isNotBlank() }.joinToString(" · ")
@@ -324,7 +324,7 @@ private fun OrderDetailContent(
             order.status == ServiceRequestStatus.PENDING && isWorker -> {
                 Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md), modifier = Modifier.fillMaxWidth()) {
                     OficiosButton(
-                        text = "Rechazar",
+                        text = stringResource(R.string.orders_reject),
                         onClick = { showRejectDialog = true },
                         modifier = Modifier.weight(1f),
                         leadingIcon = Icons.Outlined.Close,
@@ -333,7 +333,7 @@ private fun OrderDetailContent(
                         enabled = !state.isActionInProgress,
                     )
                     OficiosButton(
-                        text = "Aceptar",
+                        text = stringResource(R.string.orders_accept),
                         onClick = { onEvent(OrderDetailEvent.Accept) },
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Secondary,
@@ -342,7 +342,7 @@ private fun OrderDetailContent(
                     )
                 }
                 OficiosButton(
-                    text = "Reagendar",
+                    text = stringResource(R.string.orders_reschedule),
                     onClick = { onEvent(OrderDetailEvent.OpenCounterOffer) },
                     variant = OficiosButtonVariant.Primary,
                     size = OficiosButtonSize.Large,
@@ -361,13 +361,13 @@ private fun OrderDetailContent(
                     OficiosCard {
                         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                             Text(
-                                text = "El trabajador propuso reagendar",
+                                text = stringResource(R.string.orders_worker_proposed),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
-                            Text(text = "Nueva fecha: ${offer.proposedLabel}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(text = stringResource(R.string.orders_new_date, offer.proposedLabel), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             offer.proposedPrice?.let {
-                                Text(text = "Nuevo precio: $$it", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(text = stringResource(R.string.orders_new_price, it), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -375,7 +375,7 @@ private fun OrderDetailContent(
                 if (!isWorker) {
                     Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md), modifier = Modifier.fillMaxWidth()) {
                         OficiosButton(
-                            text = "Rechazar",
+                            text = stringResource(R.string.orders_reject),
                             onClick = { onEvent(OrderDetailEvent.RejectCounterOffer) },
                             modifier = Modifier.weight(1f),
                             leadingIcon = Icons.Outlined.Close,
@@ -384,7 +384,7 @@ private fun OrderDetailContent(
                             enabled = !state.isActionInProgress,
                         )
                         OficiosButton(
-                            text = "Aceptar",
+                            text = stringResource(R.string.orders_accept),
                             onClick = { onEvent(OrderDetailEvent.AcceptCounterOffer) },
                             modifier = Modifier.weight(1f),
                             variant = OficiosButtonVariant.Secondary,
@@ -393,7 +393,7 @@ private fun OrderDetailContent(
                         )
                     }
                 } else {
-                    InfoText("Esperando respuesta del cliente a tu contrapropuesta")
+                    InfoText(stringResource(R.string.orders_waiting_counteroffer))
                 }
             }
 
@@ -401,7 +401,7 @@ private fun OrderDetailContent(
             // del backend (la contrapropuesta debería venir siempre en ese estado) — igual se
             // cubre para no dejar la pantalla en blanco si llega a pasar.
             order.status == ServiceRequestStatus.COUNTER_OFFER -> {
-                InfoText("No pudimos cargar el detalle de la contrapropuesta. Volvé a intentar más tarde.")
+                InfoText(stringResource(R.string.orders_counteroffer_error))
             }
 
             order.status == ServiceRequestStatus.ACCEPTED -> when (order.bookingStatus) {
@@ -414,7 +414,7 @@ private fun OrderDetailContent(
                             size = OficiosButtonSize.Medium,
                         )
                         OficiosButton(
-                            text = "Estoy en camino",
+                            text = stringResource(R.string.orders_on_the_way),
                             onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
@@ -431,7 +431,7 @@ private fun OrderDetailContent(
                 }
                 BookingStatus.EN_ROUTE -> {
                     if (isWorker) {
-                        InfoText("Marcaste que estás en camino")
+                        InfoText(stringResource(R.string.orders_marked_on_the_way))
                         ContactButton(
                             label = stringResource(R.string.orders_contact_client),
                             phone = order.contactPhone,
@@ -439,7 +439,7 @@ private fun OrderDetailContent(
                             size = OficiosButtonSize.Medium,
                         )
                         OficiosButton(
-                            text = "Marcar llegada",
+                            text = stringResource(R.string.orders_mark_arrival),
                             onClick = { onEvent(OrderDetailEvent.MarkArrived) },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
@@ -462,7 +462,7 @@ private fun OrderDetailContent(
                         )
                     } else {
                         OficiosButton(
-                            text = "Terminar pedido",
+                            text = stringResource(R.string.orders_finish),
                             onClick = { showFinalizeDialog = true },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
@@ -485,16 +485,16 @@ private fun OrderDetailContent(
                             )
                         }
                     } else {
-                        InfoText("Pedido finalizado")
+                        InfoText(stringResource(R.string.orders_finished))
                     }
                 }
                 // bookingStatus fuera de lo esperado para un pedido ACCEPTED (ej. PENDING o
                 // CANCELLED) sería inconsistente, pero se muestra algo accionable en vez de
                 // dejar la pantalla en blanco.
                 else -> {
-                    InfoText("No pudimos determinar el estado actual de este pedido.")
+                    InfoText(stringResource(R.string.orders_unknown_booking))
                     OficiosButton(
-                        text = "Reintentar",
+                        text = stringResource(R.string.orders_retry),
                         onClick = { onEvent(OrderDetailEvent.Retry) },
                         variant = OficiosButtonVariant.Secondary,
                         size = OficiosButtonSize.Large,
@@ -504,15 +504,16 @@ private fun OrderDetailContent(
             }
 
             order.status == ServiceRequestStatus.CANCELLED -> {
-                InfoText(order.rejectionReason?.let { "Rechazado: $it" } ?: "Pedido cancelado")
+                val reason = order.rejectionReason
+                InfoText(if (reason.isNullOrBlank()) stringResource(R.string.orders_cancelled) else stringResource(R.string.orders_rejected_reason, reason))
             }
 
             order.status == ServiceRequestStatus.EXPIRED -> {
-                InfoText("La solicitud expiró")
+                InfoText(stringResource(R.string.orders_expired))
             }
 
             else -> {
-                InfoText("No pudimos determinar el estado de este pedido, contactá soporte.")
+                InfoText(stringResource(R.string.orders_unknown_status))
             }
         }
 
@@ -527,8 +528,8 @@ private fun OrderDetailContent(
 
     if (showRejectDialog) {
         ReasonDialog(
-            title = "Rechazar solicitud",
-            confirmLabel = "Rechazar",
+            title = stringResource(R.string.orders_reject_title),
+            confirmLabel = stringResource(R.string.orders_reject),
             onConfirm = {
                 onEvent(OrderDetailEvent.Reject(it))
                 showRejectDialog = false
@@ -869,10 +870,10 @@ private fun FinalizeCodeDialog(
     var code by remember { mutableStateOf("") }
     var visibleError by remember(error) { mutableStateOf(error) }
     OficiosDialog(
-        title = "Terminar pedido",
-        message = "Pedile al cliente el código de finalización e ingresalo para cerrar el servicio.",
-        confirmLabel = "Finalizar",
-        dismissLabel = "Cancelar",
+        title = stringResource(R.string.orders_finish),
+        message = stringResource(R.string.orders_finalize_message),
+        confirmLabel = stringResource(R.string.orders_finalize_confirm),
+        dismissLabel = stringResource(R.string.orders_dialog_cancel),
         confirmEnabled = code.length == 6,
         onConfirm = { onConfirm(code.trim()) },
         onDismiss = onDismiss,
@@ -883,7 +884,7 @@ private fun FinalizeCodeDialog(
                     visibleError = null
                     if (input.length <= 6) code = input.filter { ch -> ch.isDigit() }
                 },
-                label = "Código de 6 dígitos",
+                label = stringResource(R.string.orders_code_label),
                 isError = visibleError != null,
                 supportingText = visibleError,
             )
@@ -901,7 +902,7 @@ private fun ReasonDialog(
     var reason by remember { mutableStateOf("") }
     OficiosDialog(
         title = title,
-        message = "Contanos el motivo para que la otra persona lo vea.",
+        message = stringResource(R.string.orders_reason_message),
         confirmLabel = confirmLabel,
         isDangerous = true,
         confirmEnabled = reason.isNotBlank(),
@@ -911,7 +912,7 @@ private fun ReasonDialog(
             OficiosTextField(
                 value = reason,
                 onValueChange = { reason = it },
-                label = "Motivo",
+                label = stringResource(R.string.orders_reason_label),
             )
         },
     )
