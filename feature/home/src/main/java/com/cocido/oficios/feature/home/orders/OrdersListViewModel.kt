@@ -37,6 +37,7 @@ class OrdersListViewModel @Inject constructor(
     private var skipNextResume = true
     private var loadJob: Job? = null
     private var loadGeneration = 0
+    private var lastSuccess: OrdersListUiState.Success? = null
 
     init {
         load()
@@ -72,7 +73,7 @@ class OrdersListViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             val snapshot = _uiState.value
-            val previous = snapshot as? OrdersListUiState.Success
+            val previous = (snapshot as? OrdersListUiState.Success) ?: lastSuccess?.takeIf { silent || refreshing }
             try {
                 when {
                     previous != null && (silent || refreshing) ->
@@ -93,15 +94,22 @@ class OrdersListViewModel @Inject constructor(
                 }
                 if (generation != loadGeneration) return@launch
                 when (ordersResult) {
-                    is AppResult.Success -> _uiState.value = OrdersListUiState.Success(
-                        orders = ordersResult.data,
-                        filter = previous?.filter ?: OrdersListFilter.ACTIVE,
-                    )
+                    is AppResult.Success -> {
+                        val next = OrdersListUiState.Success(
+                            orders = ordersResult.data,
+                            filter = previous?.filter ?: OrdersListFilter.ACTIVE,
+                        )
+                        lastSuccess = next
+                        _uiState.value = next
+                    }
                     is AppResult.Error -> {
                         val message = ordersResult.error.userMessage()
-                        if (previous != null) {
-                            _uiState.value = previous.copy(isRefreshing = false)
-                            if (refreshing || silent) emitEffect(OrdersListEffect.ShowRefreshError(message))
+                        val kept = previous ?: lastSuccess
+                        if (kept != null && (refreshing || silent)) {
+                            val restored = kept.copy(isRefreshing = false)
+                            lastSuccess = restored
+                            _uiState.value = restored
+                            emitEffect(OrdersListEffect.ShowRefreshError(message))
                         } else {
                             _uiState.value = OrdersListUiState.Error(message)
                             if (refreshing) emitEffect(OrdersListEffect.ShowRefreshError(message))
