@@ -4,14 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -37,20 +39,23 @@ fun AuthScreenLayout(
     footer: @Composable (ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    // El IME no entra en el padding del Scaffold: si se consume ahí, imePadding no corre
-    // y el CTA anclado queda debajo del teclado. Se resta la barra de gestos para no sumarla dos veces.
-    val keyboardInsets = WindowInsets.ime.exclude(WindowInsets.navigationBars)
+    // Un solo inset inferior (teclado ∪ barra de gestos). Si el Scaffold anima la
+    // barra y el contenido anima el IME por separado, el CTA sigue moviéndose
+    // un instante después de que el teclado terminó de abrir.
+    val bottomInsets = WindowInsets.ime.union(WindowInsets.navigationBars)
     OficiosScaffold(
         modifier = modifier.fillMaxSize(),
         isLoading = isLoading,
-        contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime),
+        contentWindowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+        ),
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .consumeWindowInsets(padding)
-                .windowInsetsPadding(keyboardInsets)
+                .windowInsetsPadding(bottomInsets)
                 .padding(horizontal = OficiosSpacing.xl),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
