@@ -52,7 +52,7 @@ fun RateWorkerScreen(
                     .consumeWindowInsets(paddingValues)
                     .imePadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+                    .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             ) {
                 Text(

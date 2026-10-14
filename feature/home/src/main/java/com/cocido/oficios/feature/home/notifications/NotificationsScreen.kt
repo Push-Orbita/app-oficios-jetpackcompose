@@ -79,7 +79,7 @@ fun NotificationsScreen(
                 )
                 else -> NotificationsList(
                     items = uiState.items,
-                    contentPadding = PaddingValues(OficiosSpacing.lg),
+                    contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                     onItemClick = { onEvent(NotificationsEvent.NotificationClicked(it)) },
                     onLoadMore = { onEvent(NotificationsEvent.LoadMore) },
                     hasMore = uiState.hasMore,
@@ -99,7 +99,7 @@ private fun NotificationFilterRow(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
@@ -159,7 +159,7 @@ private fun NotificationRow(
             .clickable(onClick = onClick),
     ) {
         Column(
-            modifier = Modifier.padding(OficiosSpacing.lg),
+            modifier = Modifier.padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
         ) {
             Text(

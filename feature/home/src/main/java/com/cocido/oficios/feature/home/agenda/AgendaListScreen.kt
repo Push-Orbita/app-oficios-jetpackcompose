@@ -138,7 +138,7 @@ private fun AgendaListContent(
 
     LazyColumn(
         modifier = modifier.testTag("agenda_list"),
-        contentPadding = PaddingValues(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         if (uiState.subRubroOptions.size > 1) {

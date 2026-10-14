@@ -113,7 +113,7 @@ fun WorkerGalleryViewer(
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(bottom = OficiosSpacing.md)
                     .background(Color.White.copy(alpha = 0.22f), RoundedCornerShape(50))
-                    .padding(horizontal = OficiosSpacing.sm, vertical = 6.dp),
+                    .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xs),
             )
         }
     }

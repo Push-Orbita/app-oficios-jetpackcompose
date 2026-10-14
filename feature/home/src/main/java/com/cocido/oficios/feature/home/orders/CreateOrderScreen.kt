@@ -89,7 +89,7 @@ private fun CreateOrderForm(
             .consumeWindowInsets(WindowInsets.safeDrawing)
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(

@@ -617,7 +617,7 @@ fun ProviderAvailabilityStepScreen(
         }
 
         AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_schedule)) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.formSection)) {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
                 uiState.timeSlots.forEachIndexed { index, slot ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),

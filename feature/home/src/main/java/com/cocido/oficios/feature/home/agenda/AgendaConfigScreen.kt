@@ -84,7 +84,7 @@ private fun AgendaConfigContent(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         if (uiState.subRubroOptions.size > 1) {

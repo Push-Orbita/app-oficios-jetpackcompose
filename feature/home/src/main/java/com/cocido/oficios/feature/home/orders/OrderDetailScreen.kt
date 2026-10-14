@@ -135,7 +135,7 @@ fun OrderDetailScreen(
 private fun OrderDetailSkeleton(message: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md)
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
             .semantics { contentDescription = message },
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
@@ -179,8 +179,8 @@ private fun OrderDetailContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
             FlowRow(

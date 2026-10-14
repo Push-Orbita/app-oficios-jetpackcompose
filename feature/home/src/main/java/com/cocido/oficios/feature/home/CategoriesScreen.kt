@@ -85,7 +85,7 @@ fun CategoriesScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+                        .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                     verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                 ) {
                     Row(

@@ -107,7 +107,7 @@ private fun OrdersListBody(
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
-        OrdersListUiState.Loading -> Column(modifier = modifier.fillMaxSize().padding(OficiosSpacing.lg), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+        OrdersListUiState.Loading -> Column(modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             OficiosLoadingState(message = stringResource(R.string.orders_loading))
             repeat(3) { OrderSkeletonCard() }
         }
@@ -156,7 +156,7 @@ private fun OrdersListBody(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+                        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
                         items(uiState.visibleOrders, key = { it.id }) { order ->
@@ -196,7 +196,7 @@ private fun LazyItemScope.PlaceholderPage(
 @Composable
 private fun OrdersFilterRow(selected: OrdersListFilter, onSelected: (OrdersListFilter) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.sm),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         FilterChip(stringResource(R.string.orders_filter_active), selected == OrdersListFilter.ACTIVE) { onSelected(OrdersListFilter.ACTIVE) }
@@ -253,7 +253,7 @@ private fun IconLine(icon: androidx.compose.ui.graphics.vector.ImageVector, text
 private fun OrderSkeletonCard() {
     OficiosCard(modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            Box(Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)).padding(0.dp))
+            Box(Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)))
             Box(Modifier.fillMaxWidth().height(16.dp))
             Box(Modifier.fillMaxWidth(0.6f).height(14.dp))
         }

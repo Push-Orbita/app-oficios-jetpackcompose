@@ -189,7 +189,7 @@ fun RegisterTradeScreen(
         RegisterTradeLabeledSection(
             title = stringResource(R.string.auth_register_trade_schedule_label),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.formSection)) {
+            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
                 uiState.timeSlots.forEachIndexed { index, slot ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -266,7 +266,7 @@ private fun RegisterTradeLabeledSection(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.formSection),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         Text(
             text = title,

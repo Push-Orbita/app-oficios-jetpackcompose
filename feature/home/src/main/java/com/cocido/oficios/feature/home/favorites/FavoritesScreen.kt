@@ -110,7 +110,7 @@ private fun FavoritesList(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(OficiosSpacing.lg),
+        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         items(items, key = { it.favoriteId }) { worker ->
