@@ -6,6 +6,7 @@ import com.cocido.oficios.domain.model.AuthTokens
 import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.model.GeoPoint
+import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
 import com.cocido.oficios.domain.model.ServiceOrder
@@ -77,6 +78,25 @@ class OrdersListViewModelTest {
     }
 
     @Test
+    fun `refresh keeps orders and tabs when auth me fails`() = runTest(testDispatcher) {
+        val orders = listOf(order(7))
+        val repository = FakeOrderRepository(AppResult.Success(orders))
+        val auth = FakeAuthRepository()
+        val viewModel = viewModel(repository, auth)
+        advanceUntilIdle()
+        viewModel.onEvent(OrdersListEvent.FilterSelected(OrdersListFilter.HISTORY))
+
+        auth.currentUser = AppResult.Error(AppError.Network("No internet connection"))
+        viewModel.onEvent(OrdersListEvent.Refresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as OrdersListUiState.Success
+        assertEquals(orders, state.orders)
+        assertEquals(OrdersListFilter.HISTORY, state.filter)
+        assertFalse(state.isRefreshing)
+    }
+
+    @Test
     fun `initial load failure stays on retry error without refresh effect`() = runTest(testDispatcher) {
         val repository = FakeOrderRepository(
             AppResult.Error(AppError.Network("No internet connection")),
@@ -107,9 +127,12 @@ class OrdersListViewModelTest {
         )
     }
 
-    private fun viewModel(repository: FakeOrderRepository) = OrdersListViewModel(
+    private fun viewModel(
+        repository: FakeOrderRepository,
+        authRepository: AuthRepository = FakeAuthRepository(),
+    ) = OrdersListViewModel(
         orderUseCases = OrderUseCases(repository),
-        authRepository = FakeAuthRepository(),
+        authRepository = authRepository,
         orderRepository = repository,
     )
 
@@ -160,7 +183,7 @@ private class FakeOrderRepository(
 }
 
 private class FakeAuthRepository : AuthRepository {
-    override suspend fun getCurrentUser(): AppResult<User> = AppResult.Success(
+    var currentUser: AppResult<User> = AppResult.Success(
         User(
             id = 1,
             email = "ana@oficios.test",
@@ -170,6 +193,8 @@ private class FakeAuthRepository : AuthRepository {
             emailVerified = true,
         ),
     )
+
+    override suspend fun getCurrentUser(): AppResult<User> = currentUser
 
     override suspend fun login(email: String, password: String): AppResult<UserSession> = unused()
     override suspend fun registerClient(request: RegisterClientRequest): AppResult<UserSession> = unused()
