@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -140,10 +139,6 @@ class HomeViewModel @Inject constructor(
                         _uiState.value = previous.copy(isRefreshing = true)
                     else -> _uiState.value = HomeUiState.Loading
                 }
-                // Un frame con isRefreshing=true para que el indicador vea el
-                // pasaje a false. Si true y false caen en el mismo frame, el
-                // gesto queda clavado en el umbral.
-                if (refreshing) yield()
                 if (generation != loadGeneration) return@launch
                 when (val result = getClientHomeUseCase()) {
                     is AppResult.Success -> {

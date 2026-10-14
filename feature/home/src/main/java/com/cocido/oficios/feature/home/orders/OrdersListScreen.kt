@@ -26,10 +26,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +44,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.OrdersListFilter
+import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
@@ -113,12 +111,16 @@ private fun OrdersListBody(
             OficiosLoadingState(message = stringResource(R.string.orders_loading))
             repeat(3) { OrderSkeletonCard() }
         }
-        is OrdersListUiState.Error -> PullToRefreshBox(
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = { onEvent(OrdersListEvent.Refresh) },
-            state = rememberSettledPullState(uiState.isRefreshing),
-            modifier = modifier.fillMaxSize(),
-        ) {
+        is OrdersListUiState.Error -> {
+            val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
+                onEvent(OrdersListEvent.Refresh)
+            }
+            PullToRefreshBox(
+                isRefreshing = pullRefresh.isRefreshing,
+                onRefresh = pullRefresh.onRefresh,
+                state = pullRefresh.state,
+                modifier = modifier.fillMaxSize(),
+            ) {
             RefreshablePlaceholder {
                 OficiosErrorState(
                     title = stringResource(R.string.orders_error_title),
@@ -128,12 +130,16 @@ private fun OrdersListBody(
                 )
             }
         }
+        }
         is OrdersListUiState.Success -> Column(modifier = modifier.fillMaxSize()) {
             OrdersFilterRow(selected = uiState.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
+            val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
+                onEvent(OrdersListEvent.Refresh)
+            }
             PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(OrdersListEvent.Refresh) },
-                state = rememberSettledPullState(uiState.isRefreshing),
+                isRefreshing = pullRefresh.isRefreshing,
+                onRefresh = pullRefresh.onRefresh,
+                state = pullRefresh.state,
                 modifier = Modifier.fillMaxSize(),
             ) {
                 if (uiState.visibleOrders.isEmpty()) {
@@ -161,16 +167,6 @@ private fun OrdersListBody(
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun rememberSettledPullState(isRefreshing: Boolean): PullToRefreshState {
-    val state = rememberPullToRefreshState()
-    LaunchedEffect(isRefreshing) {
-        if (!isRefreshing) state.snapTo(0f)
-    }
-    return state
 }
 
 /** Contenido que llena el viewport y aun así participa del nested scroll del pull-to-refresh. */

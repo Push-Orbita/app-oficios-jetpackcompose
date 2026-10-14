@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 @HiltViewModel
 class OrdersListViewModel @Inject constructor(
@@ -82,7 +81,6 @@ class OrdersListViewModel @Inject constructor(
                         _uiState.value = snapshot.copy(isRefreshing = true)
                     !silent -> _uiState.value = OrdersListUiState.Loading
                 }
-                if (refreshing) yield()
                 if (generation != loadGeneration) return@launch
                 val userResult = authRepository.getCurrentUser()
                 if (generation != loadGeneration) return@launch
