@@ -36,7 +36,9 @@ import java.util.concurrent.TimeUnit
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val TIMEOUT_SECONDS = 30L
+    private const val CONNECT_TIMEOUT_SECONDS = 10L
+    private const val READ_TIMEOUT_SECONDS = 20L
+    private const val WRITE_TIMEOUT_SECONDS = 20L
 
     @Provides
     @Singleton
@@ -53,9 +55,9 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
-            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .authenticator(tokenAuthenticator)
             .addInterceptor(authInterceptor)
 
@@ -87,9 +89,9 @@ object NetworkModule {
     fun provideDemoRetrofit(json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         val demoClient = OkHttpClient.Builder()
-            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .apply {
                 if (BuildConfig.DEBUG) {
                     addInterceptor(SanitizedLoggingInterceptor())

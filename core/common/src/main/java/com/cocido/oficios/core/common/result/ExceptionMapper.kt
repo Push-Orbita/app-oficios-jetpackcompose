@@ -3,6 +3,7 @@ package com.cocido.oficios.core.common.result
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLException
@@ -14,7 +15,9 @@ fun Throwable.toAppError(): AppError {
 
     return when (this) {
         is ClientValidationException -> AppError.Validation(message = message)
-        is SocketTimeoutException -> AppError.Network(message = "Request timed out")
+        is SocketTimeoutException,
+        is TimeoutException,
+        -> AppError.Network(message = "Request timed out")
         is UnknownHostException -> AppError.Network(message = "No internet connection")
         is SSLException -> AppError.Network(message = "Secure connection could not be established")
         is CertPathValidatorException,

@@ -3,7 +3,11 @@ package com.cocido.oficios.core.common.result
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.security.cert.CertPathValidatorException
+import java.util.concurrent.TimeoutException
 import javax.net.ssl.SSLHandshakeException
 
 class ExceptionMapperTest {
@@ -49,6 +53,26 @@ class ExceptionMapperTest {
         assertEquals(
             "No pudimos guardar los cambios. Revisá los datos e intentá nuevamente.",
             error.userMessage(),
+        )
+    }
+
+    @Test
+    fun `offline and timeouts map to a connection error`() {
+        assertEquals(
+            "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+            UnknownHostException("offline").toAppError().userMessage(),
+        )
+        assertEquals(
+            "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+            IOException("reset").toAppError().userMessage(),
+        )
+        assertEquals(
+            "La conexión tardó demasiado. Intentá nuevamente.",
+            SocketTimeoutException("read").toAppError().userMessage(),
+        )
+        assertEquals(
+            "La conexión tardó demasiado. Intentá nuevamente.",
+            TimeoutException("call").toAppError().userMessage(),
         )
     }
 
