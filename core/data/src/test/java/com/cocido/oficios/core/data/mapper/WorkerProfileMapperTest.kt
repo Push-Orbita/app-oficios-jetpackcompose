@@ -114,6 +114,24 @@ class WorkerProfileMapperTest {
     }
 
     @Test
+    fun `decodes staging trabajador-oficio 11 with localidad object and tinyint favorito`() {
+        val dto = json.decodeFromString(
+            TrabajadorOficioPerfilCompletoDto.serializer(),
+            FIXTURE_STAGING_TRABAJADOR_OFICIO_11,
+        )
+
+        val profile = dto.toWorkerProfile()
+
+        assertEquals(11L, profile.id)
+        assertEquals("QA Trabajador", profile.displayName)
+        assertEquals("Plomería", profile.specialties.first().rubroName)
+        assertTrue(profile.specialties.first().servesAtHome)
+        assertEquals("Lun - Sab · 08:00 - 18:00", profile.availability?.summaryLabel)
+        assertEquals("Villa Hermosa, Ciudad de Formosa", profile.zoneLabel)
+        assertTrue(profile.isVerified)
+    }
+
+    @Test
     fun `about is shown only when descripcion is not blank`() {
         val dto = json.decodeFromString(
             TrabajadorOficioPerfilCompletoDto.serializer(),
@@ -185,6 +203,94 @@ class WorkerProfileMapperTest {
               "certificados": [],
               "galeriaTrabajos": [],
               "domicilios": []
+            }
+        """.trimIndent()
+
+        /**
+         * GET trabajador-oficio/11 en staging (200). PII redactada.
+         * `barrio.localidad` llega como objeto y `favorito` como TINYINT 1.
+         */
+        private val FIXTURE_STAGING_TRABAJADOR_OFICIO_11 = """
+            {
+              "id": 11,
+              "usuario": {
+                "id": 26,
+                "email": "qa.trabajador@example.test",
+                "fotoPerfil": null,
+                "emailVerificado": true,
+                "persona": { "id": 26, "nombres": "QA", "apellido": "Trabajador" },
+                "rolUsuario": { "id": 1, "nombre": "TRABAJADOR_DE_OFICIOS" }
+              },
+              "estado": "VALIDADO",
+              "documento": "30111222",
+              "rubros": [
+                {
+                  "id": 11,
+                  "rubro": {
+                    "id": 1,
+                    "nombre": "Plomería",
+                    "plazoCancelacionHorasDefault": 24,
+                    "categoria": { "id": 1, "nombre": "Hogar y Construcción" }
+                  },
+                  "principal": true,
+                  "subRubros": [
+                    {
+                      "id": 29,
+                      "subRubro": { "id": 1, "nombre": "Reparación de cañerías" },
+                      "lugarDomicilio": true,
+                      "lugarLocal": false,
+                      "requiereTurnos": true,
+                      "plazoCancelacionHoras": null,
+                      "slotsTurno": []
+                    }
+                  ],
+                  "diasLaborales": [
+                    {
+                      "id": 11,
+                      "diaInicio": "LUNES",
+                      "diaFin": "SABADO",
+                      "horariosLaborales": [
+                        { "id": 11, "horaInicio": "08:00:00", "horaFin": "18:00:00" }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "reputacion": null,
+              "certificados": [],
+              "galeriaTrabajos": [],
+              "domicilios": [
+                {
+                  "id": 9,
+                  "barrioId": 107,
+                  "personaId": 26,
+                  "persona": {
+                    "id": 26,
+                    "nombres": "QA",
+                    "apellido": "Trabajador",
+                    "usuario": {
+                      "id": 26,
+                      "email": "qa.trabajador@example.test",
+                      "fotoPerfil": null,
+                      "rolUsuario": { "id": 1, "nombre": "TRABAJADOR_DE_OFICIOS" }
+                    }
+                  },
+                  "barrio": {
+                    "id": 107,
+                    "nombre": "Villa Hermosa",
+                    "localidad": { "id": 4, "nombre": "Ciudad de Formosa" }
+                  },
+                  "nombre": "Base QA",
+                  "calle": "Av. 25 de Mayo",
+                  "numero": "500",
+                  "casaTorre": null,
+                  "departamento": null,
+                  "piso": null,
+                  "latitud": -26.1852,
+                  "longitud": -58.1735,
+                  "favorito": 1
+                }
+              ]
             }
         """.trimIndent()
 

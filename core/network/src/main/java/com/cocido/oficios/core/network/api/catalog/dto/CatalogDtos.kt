@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.network.api.catalog.dto
 
+import com.cocido.oficios.core.network.serialization.FlexibleLocalidadNameSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -41,5 +42,6 @@ data class SubRubroDto(
 data class BarrioDto(
     val id: Long,
     val nombre: String,
+    @Serializable(with = FlexibleLocalidadNameSerializer::class)
     val localidad: String? = null,
 )
