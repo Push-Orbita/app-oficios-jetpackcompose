@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +23,7 @@ fun AuthFormLayout(
     isLoading: Boolean = false,
     brandScale: OficiosBrandScale = OficiosBrandScale.Compact,
     showBrand: Boolean = true,
-    footer: @Composable ColumnScope.() -> Unit = {},
+    footer: @Composable (ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     AuthScreenLayout(
@@ -32,6 +31,7 @@ fun AuthFormLayout(
         isLoading = isLoading,
         brandScale = brandScale,
         showBrand = showBrand,
+        footer = footer,
     ) {
         Text(
             text = title,
@@ -56,14 +56,6 @@ fun AuthFormLayout(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             content = content,
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = OficiosSpacing.lg),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-            content = footer,
         )
     }
 }

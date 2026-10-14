@@ -129,6 +129,17 @@ fun RegisterFormScreen(
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
+        footer = {
+            OficiosButton(
+                text = stringResource(R.string.auth_next_button),
+                onClick = { onEvent(RegisterFormEvent.Submit) },
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
     ) {
         Text(
             text = screenTitle,
@@ -226,15 +237,6 @@ fun RegisterFormScreen(
                 enabled = !uiState.isLoading,
                 prefix = stringResource(R.string.auth_terms_prefix),
                 termsLabel = stringResource(R.string.auth_terms_link),
-            )
-            OficiosButton(
-                text = stringResource(R.string.auth_next_button),
-                onClick = { onEvent(RegisterFormEvent.Submit) },
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
-                modifier = Modifier.fillMaxWidth(),
             )
 
             if (uiState.hasAttemptedSubmit && uiState.termsError != null) {

@@ -42,6 +42,28 @@ fun RegisterTradeScreen(
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading || uiState.isLoadingCatalog,
+        footer = if (uiState.selectedCategoryId != null) {
+            {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = OficiosComponentSize.buttonHeight),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OficiosButton(
+                        text = stringResource(R.string.auth_continue),
+                        onClick = { onEvent(RegisterTradeEvent.Continue) },
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Prominent,
+                        enabled = !uiState.isLoading,
+                        loading = uiState.isLoading,
+                    )
+                }
+            }
+        } else {
+            null
+        },
     ) {
         Text(
             text = stringResource(R.string.auth_register_trade_title),
@@ -230,23 +252,6 @@ fun RegisterTradeScreen(
                 },
                 label = stringResource(R.string.auth_register_trade_payment_mercadopago),
                 compactRow = true,
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = OficiosComponentSize.buttonHeight),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OficiosButton(
-                text = stringResource(R.string.auth_continue),
-                onClick = { onEvent(RegisterTradeEvent.Continue) },
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
             )
         }
         }
