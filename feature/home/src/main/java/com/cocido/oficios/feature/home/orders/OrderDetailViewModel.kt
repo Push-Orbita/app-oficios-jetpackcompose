@@ -105,36 +105,46 @@ class OrderDetailViewModel @Inject constructor(
     private fun load(fromRefresh: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
-            when {
-                fromRefresh && previous is OrderDetailUiState.Success ->
-                    _uiState.update { previous.copy(isRefreshing = true) }
-                fromRefresh && previous is OrderDetailUiState.Error ->
-                    _uiState.update { previous.copy(isRefreshing = true) }
-                else -> _uiState.update { OrderDetailUiState.Loading }
-            }
-            val userResult = authRepository.getCurrentUser()
-            viewerRole = (userResult as? AppResult.Success)?.data?.role ?: UserRole.UNKNOWN
-
-            when (val result = orderUseCases.getOrderDetail(orderId)) {
-                is AppResult.Success -> {
-                    val loaded = withClientRating(result.data)
-                    val tracking = loaded.bookingId?.takeIf {
-                        loaded.bookingStatus == BookingStatus.EN_ROUTE || loaded.bookingStatus == BookingStatus.IN_PROGRESS
-                    }?.let { bookingId ->
-                        (orderUseCases.getBookingTracking(bookingId) as? AppResult.Success)?.data
-                    }
-                    val order = loaded.withArrivedTracking(tracking?.status)
-                    _uiState.update { OrderDetailUiState.Success(order, viewerRole, tracking) }
-                    startTrackingRefreshIfNeeded(loaded.bookingId, loaded.bookingStatus)
+            try {
+                when {
+                    fromRefresh && previous is OrderDetailUiState.Success ->
+                        _uiState.update { previous.copy(isRefreshing = true) }
+                    fromRefresh && previous is OrderDetailUiState.Error ->
+                        _uiState.update { previous.copy(isRefreshing = true) }
+                    else -> _uiState.update { OrderDetailUiState.Loading }
                 }
-                is AppResult.Error -> {
-                    if (fromRefresh && previous is OrderDetailUiState.Success) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                        emitEffect(OrderDetailEffect.ShowMessage("No pudimos actualizar el pedido"))
-                    } else {
-                        _uiState.update {
-                            OrderDetailUiState.Error(result.error.userMessage().ifBlank { "No pudimos cargar el pedido" })
+                val userResult = authRepository.getCurrentUser()
+                viewerRole = (userResult as? AppResult.Success)?.data?.role ?: UserRole.UNKNOWN
+
+                when (val result = orderUseCases.getOrderDetail(orderId)) {
+                    is AppResult.Success -> {
+                        val loaded = withClientRating(result.data)
+                        val tracking = loaded.bookingId?.takeIf {
+                            loaded.bookingStatus == BookingStatus.EN_ROUTE || loaded.bookingStatus == BookingStatus.IN_PROGRESS
+                        }?.let { bookingId ->
+                            (orderUseCases.getBookingTracking(bookingId) as? AppResult.Success)?.data
                         }
+                        val order = loaded.withArrivedTracking(tracking?.status)
+                        _uiState.update { OrderDetailUiState.Success(order, viewerRole, tracking) }
+                        startTrackingRefreshIfNeeded(loaded.bookingId, loaded.bookingStatus)
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage().ifBlank { "No pudimos cargar el pedido" }
+                        if (previous is OrderDetailUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            if (fromRefresh) emitEffect(OrderDetailEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { OrderDetailUiState.Error(message) }
+                            if (fromRefresh) emitEffect(OrderDetailEffect.ShowMessage(message))
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is OrderDetailUiState.Success -> state.copy(isRefreshing = false)
+                        is OrderDetailUiState.Error -> state.copy(isRefreshing = false)
+                        OrderDetailUiState.Loading -> state
                     }
                 }
             }

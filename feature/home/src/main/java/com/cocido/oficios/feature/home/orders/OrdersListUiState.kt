@@ -30,5 +30,5 @@ sealed interface OrdersListEvent {
 sealed interface OrdersListEffect {
     data class NavigateToOrderDetail(val orderId: Long) : OrdersListEffect
     data object NavigateToSearch : OrdersListEffect
-    data object ShowRefreshError : OrdersListEffect
+    data class ShowRefreshError(val message: String) : OrdersListEffect
 }

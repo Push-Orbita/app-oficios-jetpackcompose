@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -124,24 +125,32 @@ class AgendaListViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            updateSuccess { it.copy(isRefreshing = true) }
-            when (val result = getMySubRubrosUseCase()) {
-                is AppResult.Success -> {
-                    val options = result.data.filter { it.requiresTurns }
-                    val selected = previous.selectedSubRubroId?.takeIf { id -> options.any { it.id == id } }
-                        ?: options.firstOrNull()?.id
-                    updateSuccess {
-                        it.copy(
-                            subRubroOptions = options,
-                            selectedSubRubroId = selected,
-                            isRefreshing = selected != null,
-                        )
+            var slotsStarted = false
+            try {
+                updateSuccess { it.copy(isRefreshing = true) }
+                when (val result = getMySubRubrosUseCase()) {
+                    is AppResult.Success -> {
+                        val options = result.data.filter { it.requiresTurns }
+                        val selected = previous.selectedSubRubroId?.takeIf { id -> options.any { it.id == id } }
+                            ?: options.firstOrNull()?.id
+                        updateSuccess {
+                            it.copy(
+                                subRubroOptions = options,
+                                selectedSubRubroId = selected,
+                                isRefreshing = selected != null,
+                            )
+                        }
+                        if (selected != null) {
+                            slotsStarted = true
+                            loadSlots(selected, previous.visibleMonth)
+                        }
                     }
-                    if (selected != null) {
-                        loadSlots(selected, previous.visibleMonth)
-                    }
+                    is AppResult.Error -> emitEffect(AgendaListEffect.ShowError(result.error.userMessage()))
                 }
-                is AppResult.Error -> updateSuccess { it.copy(isRefreshing = false) }
+            } finally {
+                if (!slotsStarted) {
+                    updateSuccess { it.copy(isRefreshing = false) }
+                }
             }
         }
     }
@@ -149,22 +158,40 @@ class AgendaListViewModel @Inject constructor(
     private fun load(refreshing: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
-            if (refreshing && previous is AgendaListUiState.Error) {
-                _uiState.value = previous.copy(isRefreshing = true)
-            } else if (!refreshing) {
-                _uiState.value = AgendaListUiState.Loading
-            }
-            when (val result = getMySubRubrosUseCase()) {
-                is AppResult.Success -> {
-                    val options = result.data.filter { it.requiresTurns }
-                    val firstId = options.firstOrNull()?.id
-                    _uiState.value = AgendaListUiState.Success(
-                        subRubroOptions = options,
-                        selectedSubRubroId = firstId,
-                    )
-                    if (firstId != null) loadSlots(firstId, YearMonth.now())
+            try {
+                if (refreshing && previous is AgendaListUiState.Error) {
+                    _uiState.value = previous.copy(isRefreshing = true)
+                } else if (!refreshing) {
+                    _uiState.value = AgendaListUiState.Loading
                 }
-                is AppResult.Error -> _uiState.value = AgendaListUiState.Error(result.error.userMessage())
+                when (val result = getMySubRubrosUseCase()) {
+                    is AppResult.Success -> {
+                        val options = result.data.filter { it.requiresTurns }
+                        val firstId = options.firstOrNull()?.id
+                        _uiState.value = AgendaListUiState.Success(
+                            subRubroOptions = options,
+                            selectedSubRubroId = firstId,
+                        )
+                        if (firstId != null) loadSlots(firstId, YearMonth.now())
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is AgendaListUiState.Success) {
+                            _uiState.value = previous.copy(isRefreshing = false)
+                            emitEffect(AgendaListEffect.ShowError(message))
+                        } else {
+                            _uiState.value = AgendaListUiState.Error(message)
+                            if (refreshing) emitEffect(AgendaListEffect.ShowError(message))
+                        }
+                    }
+                }
+            } finally {
+                val state = _uiState.value
+                if (state is AgendaListUiState.Error) {
+                    _uiState.value = state.copy(isRefreshing = false)
+                } else if (state is AgendaListUiState.Success && state.selectedSubRubroId == null) {
+                    _uiState.value = state.copy(isRefreshing = false)
+                }
             }
         }
     }
@@ -200,24 +227,34 @@ class AgendaListViewModel @Inject constructor(
     private fun loadSlots(subRubroId: Long, month: YearMonth) {
         slotsJob?.cancel()
         slotsJob = viewModelScope.launch {
-            updateSuccess { it.copy(isLoadingSlots = true, slotsError = null) }
-            val zone = ZoneId.systemDefault()
-            val from = month.atDay(1).atStartOfDay(zone).toInstant().toString()
-            val to = month.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone).toInstant().toString()
-            when (val result = agendaUseCases.getSlotsForSubRubro(subRubroId, from, to)) {
-                is AppResult.Success -> updateSuccess {
-                    it.copy(
-                        isLoadingSlots = false,
-                        isRefreshing = false,
-                        slots = result.data.sortedBy { slot -> slot.start },
-                    )
+            try {
+                updateSuccess { it.copy(isLoadingSlots = true, slotsError = null) }
+                val zone = ZoneId.systemDefault()
+                val from = month.atDay(1).atStartOfDay(zone).toInstant().toString()
+                val to = month.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone).toInstant().toString()
+                when (val result = agendaUseCases.getSlotsForSubRubro(subRubroId, from, to)) {
+                    is AppResult.Success -> updateSuccess {
+                        it.copy(
+                            isLoadingSlots = false,
+                            isRefreshing = false,
+                            slots = result.data.sortedBy { slot -> slot.start },
+                        )
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        updateSuccess {
+                            it.copy(
+                                isLoadingSlots = false,
+                                isRefreshing = false,
+                                slotsError = message,
+                            )
+                        }
+                        emitEffect(AgendaListEffect.ShowError(message))
+                    }
                 }
-                is AppResult.Error -> updateSuccess {
-                    it.copy(
-                        isLoadingSlots = false,
-                        isRefreshing = false,
-                        slotsError = result.error.userMessage(),
-                    )
+            } finally {
+                if (isActive) {
+                    updateSuccess { it.copy(isLoadingSlots = false, isRefreshing = false) }
                 }
             }
         }

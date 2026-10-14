@@ -62,20 +62,33 @@ class ProviderHomeViewModel @Inject constructor(
     private fun loadHome(refreshing: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
-            if (refreshing && previous is ProviderHomeUiState.Success) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else if (refreshing && previous is ProviderHomeUiState.Error) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else {
-                _uiState.update { ProviderHomeUiState.Loading }
-            }
-            when (val result = getProviderHomeUseCase()) {
-                is AppResult.Success -> _uiState.update { ProviderHomeUiState.Success(result.data) }
-                is AppResult.Error -> {
-                    if (refreshing && previous is ProviderHomeUiState.Success) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                    } else {
-                        _uiState.update { ProviderHomeUiState.Error(result.error.userMessage()) }
+            try {
+                if (refreshing && previous is ProviderHomeUiState.Success) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else if (refreshing && previous is ProviderHomeUiState.Error) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else {
+                    _uiState.update { ProviderHomeUiState.Loading }
+                }
+                when (val result = getProviderHomeUseCase()) {
+                    is AppResult.Success -> _uiState.update { ProviderHomeUiState.Success(result.data) }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is ProviderHomeUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            emitEffect(ProviderHomeEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { ProviderHomeUiState.Error(message) }
+                            if (refreshing) emitEffect(ProviderHomeEffect.ShowMessage(message))
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is ProviderHomeUiState.Success -> state.copy(isRefreshing = false)
+                        is ProviderHomeUiState.Error -> state.copy(isRefreshing = false)
+                        ProviderHomeUiState.Loading -> state
                     }
                 }
             }

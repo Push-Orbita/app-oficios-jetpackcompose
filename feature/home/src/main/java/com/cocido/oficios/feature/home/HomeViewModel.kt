@@ -123,20 +123,33 @@ class HomeViewModel @Inject constructor(
     private fun loadHome(refreshing: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
-            if (refreshing && previous is HomeUiState.Success) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else if (refreshing && previous is HomeUiState.Error) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else {
-                _uiState.update { HomeUiState.Loading }
-            }
-            when (val result = getClientHomeUseCase()) {
-                is AppResult.Success -> _uiState.update { HomeUiState.Success(result.data) }
-                is AppResult.Error -> {
-                    if (refreshing && previous is HomeUiState.Success) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                    } else {
-                        _uiState.update { HomeUiState.Error(result.error.userMessage()) }
+            try {
+                if (refreshing && previous is HomeUiState.Success) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else if (refreshing && previous is HomeUiState.Error) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else {
+                    _uiState.update { HomeUiState.Loading }
+                }
+                when (val result = getClientHomeUseCase()) {
+                    is AppResult.Success -> _uiState.update { HomeUiState.Success(result.data) }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is HomeUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            emitEffect(HomeEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { HomeUiState.Error(message) }
+                            if (refreshing) emitEffect(HomeEffect.ShowMessage(message))
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is HomeUiState.Success -> state.copy(isRefreshing = false)
+                        is HomeUiState.Error -> state.copy(isRefreshing = false)
+                        HomeUiState.Loading -> state
                     }
                 }
             }

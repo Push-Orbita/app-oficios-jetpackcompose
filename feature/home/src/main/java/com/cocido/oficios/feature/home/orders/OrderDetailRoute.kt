@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ fun OrderDetailRoute(
     viewModel: OrderDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = LocalOficiosSnackbarController.current
     val context = LocalContext.current
     var pendingLocationAction by remember { mutableStateOf<TrackingLocationAction?>(null) }
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -57,7 +59,7 @@ fun OrderDetailRoute(
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
-                is OrderDetailEffect.ShowMessage -> onShowMessage(effect.message)
+                is OrderDetailEffect.ShowMessage -> snackbar.showError(effect.message)
                 is OrderDetailEffect.NavigateToCounterOffer -> onNavigateToCounterOffer(effect.orderId)
                 is OrderDetailEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerId, effect.workerName)
                 is OrderDetailEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)

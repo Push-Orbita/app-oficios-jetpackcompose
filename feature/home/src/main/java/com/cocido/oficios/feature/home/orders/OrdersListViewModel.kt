@@ -67,33 +67,45 @@ class OrdersListViewModel @Inject constructor(
         viewModelScope.launch {
             val snapshot = _uiState.value
             val previous = snapshot as? OrdersListUiState.Success
-            when {
-                previous != null && (silent || refreshing) ->
-                    _uiState.update { previous.copy(isRefreshing = true) }
-                snapshot is OrdersListUiState.Error && refreshing ->
-                    _uiState.update { snapshot.copy(isRefreshing = true) }
-                !silent -> _uiState.update { OrdersListUiState.Loading }
-            }
-            val userResult = authRepository.getCurrentUser()
-            val role = (userResult as? AppResult.Success)?.data?.role
-            val ordersResult = if (role == UserRole.PROVIDER) {
-                orderUseCases.getWorkerOrders()
-            } else {
-                orderUseCases.getClientOrders()
-            }
-            when (ordersResult) {
-                is AppResult.Success -> _uiState.update {
-                    OrdersListUiState.Success(
-                        orders = ordersResult.data,
-                        filter = previous?.filter ?: OrdersListFilter.ACTIVE,
-                    )
+            try {
+                when {
+                    previous != null && (silent || refreshing) ->
+                        _uiState.update { previous.copy(isRefreshing = true) }
+                    snapshot is OrdersListUiState.Error && refreshing ->
+                        _uiState.update { snapshot.copy(isRefreshing = true) }
+                    !silent -> _uiState.update { OrdersListUiState.Loading }
                 }
-                is AppResult.Error -> {
-                    if (previous != null && (silent || refreshing)) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                        emitEffect(OrdersListEffect.ShowRefreshError)
-                    } else {
-                        _uiState.update { OrdersListUiState.Error(ordersResult.error.userMessage()) }
+                val userResult = authRepository.getCurrentUser()
+                val role = (userResult as? AppResult.Success)?.data?.role
+                val ordersResult = when {
+                    userResult is AppResult.Error -> userResult
+                    role == UserRole.PROVIDER -> orderUseCases.getWorkerOrders()
+                    else -> orderUseCases.getClientOrders()
+                }
+                when (ordersResult) {
+                    is AppResult.Success -> _uiState.update {
+                        OrdersListUiState.Success(
+                            orders = ordersResult.data,
+                            filter = previous?.filter ?: OrdersListFilter.ACTIVE,
+                        )
+                    }
+                    is AppResult.Error -> {
+                        val message = ordersResult.error.userMessage()
+                        if (previous != null) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            if (refreshing || silent) emitEffect(OrdersListEffect.ShowRefreshError(message))
+                        } else {
+                            _uiState.update { OrdersListUiState.Error(message) }
+                            if (refreshing) emitEffect(OrdersListEffect.ShowRefreshError(message))
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is OrdersListUiState.Success -> state.copy(isRefreshing = false)
+                        is OrdersListUiState.Error -> state.copy(isRefreshing = false)
+                        OrdersListUiState.Loading -> state
                     }
                 }
             }
