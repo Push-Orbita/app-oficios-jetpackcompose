@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.provider
 
+import com.cocido.oficios.feature.settings.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,13 +34,13 @@ fun ProfessionalProfileScreen(
     onEvent: (ProfessionalProfileEvent) -> Unit,
 ) {
     OficiosScaffold(
-        topBar = { OficiosBackTopBar(title = "Presentación profesional", onBack = { onEvent(ProfessionalProfileEvent.Back) }) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.professional_profile_title), onBack = { onEvent(ProfessionalProfileEvent.Back) }) },
     ) { padding ->
         when {
             uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
             uiState.loadFailed -> OficiosErrorState(
-                title = "No pudimos cargar tu perfil profesional",
-                description = uiState.errorMessage ?: "Intentá nuevamente.",
+                title = stringResource(R.string.professional_profile_load_error),
+                description = uiState.errorMessage ?: stringResource(R.string.professional_profile_retry),
                 onRetry = { onEvent(ProfessionalProfileEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
@@ -52,35 +54,35 @@ fun ProfessionalProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
                 Text(
-                    text = "Explicá con claridad qué hacés y qué experiencia tenés. Es lo primero que evalúa un cliente.",
+                    text = stringResource(R.string.professional_profile_intro),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 OficiosTextField(
                     value = uiState.description,
                     onValueChange = { onEvent(ProfessionalProfileEvent.DescriptionChanged(it)) },
-                    label = "Descripción profesional",
-                    placeholder = "Ej: Instalaciones, reparaciones y mantenimiento…",
+                    label = stringResource(R.string.professional_profile_description),
+                    placeholder = stringResource(R.string.professional_profile_description_hint),
                     singleLine = false,
                 )
                 OficiosTextField(
                     value = uiState.experience,
                     onValueChange = { onEvent(ProfessionalProfileEvent.ExperienceChanged(it)) },
-                    label = "Experiencia",
-                    placeholder = "Ej: Más de 5 años trabajando en…",
+                    label = stringResource(R.string.professional_profile_experience),
+                    placeholder = stringResource(R.string.professional_profile_experience_hint),
                     singleLine = false,
                 )
                 Text(
-                    text = "Medios de cobro",
+                    text = stringResource(R.string.professional_profile_payments),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
-                PaymentOption("Efectivo", ProviderPaymentMethods.EFECTIVO, uiState, onEvent)
-                PaymentOption("Transferencia bancaria", ProviderPaymentMethods.TRANSFERENCIA, uiState, onEvent)
-                PaymentOption("Mercado Pago", ProviderPaymentMethods.MERCADOPAGO, uiState, onEvent)
+                PaymentOption(stringResource(R.string.professional_profile_cash), ProviderPaymentMethods.EFECTIVO, uiState, onEvent)
+                PaymentOption(stringResource(R.string.professional_profile_transfer), ProviderPaymentMethods.TRANSFERENCIA, uiState, onEvent)
+                PaymentOption(stringResource(R.string.professional_profile_mercadopago), ProviderPaymentMethods.MERCADOPAGO, uiState, onEvent)
                 uiState.errorMessage?.let { OficiosInlineAlert(it) }
                 OficiosButton(
-                    text = "Guardar cambios",
+                    text = stringResource(R.string.professional_profile_save),
                     onClick = { onEvent(ProfessionalProfileEvent.Save) },
                     variant = OficiosButtonVariant.Secondary,
                     size = OficiosButtonSize.Large,

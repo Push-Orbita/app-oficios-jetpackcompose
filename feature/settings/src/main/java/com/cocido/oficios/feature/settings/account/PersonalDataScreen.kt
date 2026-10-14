@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.account
 
+import com.cocido.oficios.feature.settings.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,12 +47,12 @@ fun PersonalDataScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Datos personales", onBack = { onEvent(PersonalDataEvent.Back) }) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.personal_data_title), onBack = { onEvent(PersonalDataEvent.Back) }) },
     ) { padding ->
         when {
             uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
             uiState.errorMessage != null && uiState.userId == 0L -> OficiosErrorState(
-                title = "No pudimos cargar tus datos",
+                title = stringResource(R.string.personal_data_load_error),
                 description = uiState.errorMessage,
                 onRetry = { onEvent(PersonalDataEvent.Retry) },
                 modifier = Modifier.fillMaxSize().padding(padding),
@@ -71,7 +73,7 @@ fun PersonalDataScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Mantené tus datos actualizados para que tu cuenta sea fácil de reconocer.",
+                    text = stringResource(R.string.personal_data_intro),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.fillMaxWidth(),
@@ -91,13 +93,13 @@ fun PersonalDataScreen(
                     horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
                 ) {
                     OficiosButton(
-                        text = "Cambiar foto",
+                        text = stringResource(R.string.personal_data_change_photo),
                         onClick = onRequestPhoto,
                         variant = OficiosButtonVariant.Outlined,
                         modifier = Modifier.weight(1f),
                     )
                     OficiosButton(
-                        text = "Quitar",
+                        text = stringResource(R.string.personal_data_remove_photo),
                         onClick = { onEvent(PersonalDataEvent.RemovePhoto) },
                         variant = OficiosButtonVariant.Ghost,
                         modifier = Modifier.weight(1f),
@@ -106,7 +108,7 @@ fun PersonalDataScreen(
                 OficiosTextField(
                     value = uiState.firstName,
                     onValueChange = { onEvent(PersonalDataEvent.FirstNameChanged(it)) },
-                    label = "Nombre",
+                    label = stringResource(R.string.personal_data_first_name),
                     isError = uiState.firstNameError != null,
                     supportingText = uiState.firstNameError,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -115,7 +117,7 @@ fun PersonalDataScreen(
                 OficiosTextField(
                     value = uiState.lastName,
                     onValueChange = { onEvent(PersonalDataEvent.LastNameChanged(it)) },
-                    label = "Apellido",
+                    label = stringResource(R.string.personal_data_last_name),
                     isError = uiState.lastNameError != null,
                     supportingText = uiState.lastNameError,
                     modifier = Modifier.focusRequester(lastNameFocus),
@@ -125,19 +127,19 @@ fun PersonalDataScreen(
                 OficiosTextField(
                     value = uiState.email,
                     onValueChange = { onEvent(PersonalDataEvent.EmailChanged(it)) },
-                    label = "Correo electrónico",
+                    label = stringResource(R.string.personal_data_email),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Done,
                     ),
                     keyboardActions = KeyboardActions(onDone = { onEvent(PersonalDataEvent.Save) }),
                     isError = uiState.emailError != null,
-                    supportingText = uiState.emailError ?: "Si lo cambiás, es posible que debas volver a verificarlo.",
+                    supportingText = uiState.emailError ?: stringResource(R.string.personal_data_email_hint),
                     modifier = Modifier.focusRequester(emailFocus),
                 )
                 uiState.errorMessage?.let { OficiosInlineAlert(message = it) }
                 OficiosButton(
-                    text = "Guardar cambios",
+                    text = stringResource(R.string.personal_data_save),
                     onClick = { onEvent(PersonalDataEvent.Save) },
                     variant = OficiosButtonVariant.Secondary,
                     size = OficiosButtonSize.Large,

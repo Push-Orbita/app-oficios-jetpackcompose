@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.feature.home.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,7 +44,7 @@ fun RateWorkerScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Calificar", onBack = onNavigateBack) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.rate_worker_title), onBack = onNavigateBack) },
     ) { paddingValues ->
         when (uiState) {
             is RateWorkerUiState.Form -> Column(
@@ -56,21 +58,21 @@ fun RateWorkerScreen(
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             ) {
                 Text(
-                    text = "¿Cómo estuvo el servicio de ${uiState.workerName}?",
+                    text = stringResource(R.string.rate_worker_question, uiState.workerName),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-                    Text(text = "Calidad del trabajo", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(R.string.rate_worker_quality), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     StarSelector(selected = uiState.qualityStars, onSelect = { onEvent(RateWorkerEvent.QualitySelected(it)) })
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-                    Text(text = "Puntualidad", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(R.string.rate_worker_punctuality), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     StarSelector(selected = uiState.punctualityStars, onSelect = { onEvent(RateWorkerEvent.PunctualitySelected(it)) })
                 }
                 if (uiState.hasAttemptedSubmit && (uiState.qualityStars == 0 || uiState.punctualityStars == 0)) {
                     Text(
-                        text = "Elegí una calificación para calidad y puntualidad",
+                        text = stringResource(R.string.rate_worker_required),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -78,13 +80,13 @@ fun RateWorkerScreen(
                 OficiosTextField(
                     value = uiState.comment,
                     onValueChange = { onEvent(RateWorkerEvent.CommentChanged(it)) },
-                    label = "Reseña (opcional)",
-                    placeholder = "Contanos tu experiencia",
+                    label = stringResource(R.string.rate_worker_review),
+                    placeholder = stringResource(R.string.rate_worker_review_hint),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { onEvent(RateWorkerEvent.Submit) }),
                 )
                 OficiosButton(
-                    text = "Enviar",
+                    text = stringResource(R.string.rate_worker_submit),
                     onClick = { onEvent(RateWorkerEvent.Submit) },
                     loading = uiState.isSubmitting,
                     enabled = !uiState.isSubmitting,
@@ -94,10 +96,10 @@ fun RateWorkerScreen(
                 )
             }
             is RateWorkerUiState.Submitted -> OficiosSuccessState(
-                title = "Enviado ✓",
-                description = "Gracias por calificar a ${uiState.workerName}.",
+                title = stringResource(R.string.rate_worker_sent),
+                description = stringResource(R.string.rate_worker_thanks, uiState.workerName),
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ctaLabel = "Volver",
+                ctaLabel = stringResource(R.string.rate_worker_back),
                 onCta = onNavigateBack,
             )
         }
