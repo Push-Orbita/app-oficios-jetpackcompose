@@ -1,8 +1,10 @@
 package com.cocido.oficios.feature.home.providerhome
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -16,12 +18,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.cards.BenefitCard
 import com.cocido.oficios.core.designsystem.component.cards.ProfileCompletionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ProviderHomeContent
@@ -156,16 +158,19 @@ private fun ProviderBenefitsSection(
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-        ) {
-            items(content.benefits) { benefit ->
-                BenefitCard(
-                    title = benefit.title,
-                    description = benefit.description,
-                    discount = benefit.discountLabel,
-                    modifier = Modifier.width(300.dp),
-                )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val cardWidth = maxWidth * OficiosComponentSize.carouselWidthFraction
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                items(content.benefits) { benefit ->
+                    BenefitCard(
+                        title = benefit.title,
+                        description = benefit.description,
+                        discount = benefit.discountLabel,
+                        modifier = Modifier.width(cardWidth),
+                    )
+                }
             }
         }
     }

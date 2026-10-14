@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
@@ -135,7 +134,7 @@ private fun SettingsContent(
                     OficiosAvatar(
                         name = displayName,
                         imageUrl = user.profilePhotoUrl,
-                        size = 72.dp,
+                        size = OficiosComponentSize.avatarSettings,
                         showBorder = true,
                     )
                     Spacer(Modifier.width(OficiosSpacing.md))
@@ -162,7 +161,7 @@ private fun SettingsContent(
                                 imageVector = if (user.emailVerified) Icons.Outlined.Verified else Icons.Outlined.Badge,
                                 contentDescription = null,
                                 tint = if (user.emailVerified) MaterialTheme.colorScheme.tertiary else OficiosColorSecondaryText,
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(OficiosComponentSize.iconSm),
                             )
                             Text(
                                 text = stringResource(
@@ -303,7 +302,7 @@ private fun SettingsActionRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(OficiosComponentSize.iconLg),
             )
             Spacer(Modifier.width(OficiosSpacing.md))
             Column(modifier = Modifier.weight(1f)) {

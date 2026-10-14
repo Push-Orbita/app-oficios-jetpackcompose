@@ -4,11 +4,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -45,8 +47,6 @@ import com.cocido.oficios.feature.home.R
 import coil.compose.SubcomposeAsyncImage
 import com.cocido.oficios.core.designsystem.component.categories.CategoryIconResolver
 
-private val CategoryCardSize = 112.dp
-
 @Composable
 fun HomeFeaturedWorkersSection(
     workers: List<WorkerSummary>,
@@ -77,23 +77,26 @@ fun HomeFeaturedWorkersSection(
                 variant = OficiosButtonVariant.Ghost,
             )
         }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            contentPadding = PaddingValues(end = OficiosSpacing.xs),
-        ) {
-            items(workers, key = { it.id }) { worker ->
-                WorkerCard(
-                    name = worker.displayName,
-                    specialty = worker.specialtyLabel,
-                    rating = worker.rating,
-                    avatarUrl = worker.avatarUrl,
-                    isVerified = worker.isVerified,
-                    contactLabel = stringResource(R.string.home_worker_contact),
-                    viewProfileLabel = stringResource(R.string.home_worker_view_profile),
-                    onContact = { onContact(worker) },
-                    onViewProfile = { onViewProfile(worker) },
-                    modifier = Modifier.width(320.dp),
-                )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val cardWidth = maxWidth * OficiosComponentSize.carouselWidthFraction
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                contentPadding = PaddingValues(end = OficiosSpacing.xs),
+            ) {
+                items(workers, key = { it.id }) { worker ->
+                    WorkerCard(
+                        name = worker.displayName,
+                        specialty = worker.specialtyLabel,
+                        rating = worker.rating,
+                        avatarUrl = worker.avatarUrl,
+                        isVerified = worker.isVerified,
+                        contactLabel = stringResource(R.string.home_worker_contact),
+                        viewProfileLabel = stringResource(R.string.home_worker_view_profile),
+                        onContact = { onContact(worker) },
+                        onViewProfile = { onViewProfile(worker) },
+                        modifier = Modifier.width(cardWidth),
+                    )
+                }
             }
         }
     }
@@ -123,8 +126,8 @@ fun HomeRecentSearchesSection(
                     entry = entry,
                     onClick = { onSearchClick(entry) },
                     modifier = Modifier
-                        .width(CategoryCardSize)
-                        .height(CategoryCardSize),
+                        .width(OficiosComponentSize.categoryCardSize)
+                        .height(OficiosComponentSize.categoryCardSize),
                 )
             }
         }
@@ -203,7 +206,7 @@ fun HomeCategoriesGrid(
                 onClick = { onCategoryClick(category) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(172.dp),
+                    .heightIn(min = OficiosComponentSize.registerRoleCardHeight),
             )
         }
         if (showSeeAll) {
@@ -214,7 +217,7 @@ fun HomeCategoriesGrid(
                     onClick = onSeeAllClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(172.dp),
+                        .heightIn(min = OficiosComponentSize.registerRoleCardHeight),
                 )
             }
         }
@@ -249,7 +252,7 @@ fun HomeRubrosGrid(
                 onClick = { onRubroClick(rubro) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(172.dp),
+                    .heightIn(min = OficiosComponentSize.registerRoleCardHeight),
             )
         }
     }
@@ -284,7 +287,7 @@ fun HomeCategoryCard(
     } else {
         MaterialTheme.typography.bodyLarge
     }
-    val titleAreaHeight = if (compact) 36.dp else 48.dp
+    val titleAreaHeight = if (compact) OficiosComponentSize.ratingIcon else OficiosComponentSize.minTouchTarget
 
     Column(
         modifier = modifier
@@ -302,7 +305,7 @@ fun HomeCategoryCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(titleAreaHeight),
+                .heightIn(min = titleAreaHeight),
             contentAlignment = Alignment.Center,
         ) {
             Text(

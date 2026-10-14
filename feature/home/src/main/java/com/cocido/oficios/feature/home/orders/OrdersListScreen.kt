@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -42,6 +41,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
@@ -253,9 +253,9 @@ private fun IconLine(icon: androidx.compose.ui.graphics.vector.ImageVector, text
 private fun OrderSkeletonCard() {
     OficiosCard(modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            Box(Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)))
-            Box(Modifier.fillMaxWidth().height(16.dp))
-            Box(Modifier.fillMaxWidth(0.6f).height(14.dp))
+            Box(Modifier.size(OficiosComponentSize.avatarSm).clip(RoundedCornerShape(OficiosRadius.xl)))
+            Box(Modifier.fillMaxWidth().height(OficiosComponentSize.iconSm))
+            Box(Modifier.fillMaxWidth(0.6f).height(OficiosSpacing.sm))
         }
     }
 }

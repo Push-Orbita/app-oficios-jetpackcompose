@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -49,6 +48,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.AgendaSlotStatus
@@ -338,7 +338,7 @@ private fun MonthGrid(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(width = 40.dp, height = 24.dp),
+                modifier = Modifier.size(width = OficiosComponentSize.agendaCell, height = OficiosComponentSize.iconMd),
             )
         }
     }
@@ -353,7 +353,7 @@ private fun MonthGrid(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             week.forEach { date ->
                 if (date == null) {
-                    Spacer(Modifier.size(width = 40.dp, height = 52.dp))
+                    Spacer(Modifier.size(OficiosComponentSize.agendaCell))
                 } else {
                     OficiosCalendarDay(
                         dayNumber = date.dayOfMonth,

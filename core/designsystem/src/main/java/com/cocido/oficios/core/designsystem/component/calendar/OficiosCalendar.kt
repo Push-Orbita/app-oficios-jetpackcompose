@@ -91,7 +91,7 @@ fun OficiosCalendarDay(
 
     Column(
         modifier = modifier
-            .width(40.dp)
+            .width(OficiosComponentSize.agendaCell)
             .clip(MaterialTheme.shapes.small)
             .background(bgColor)
             .then(
