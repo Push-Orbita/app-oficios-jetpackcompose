@@ -33,6 +33,8 @@ class GetNotificationsUseCase @Inject constructor(
 class GetUnreadNotificationCountUseCase @Inject constructor(
     private val notificationsRepository: NotificationsRepository,
 ) {
+    fun lastKnown(): Int? = notificationsRepository.cachedUnreadCount()
+
     suspend operator fun invoke(): AppResult<Int> =
         when (val result = notificationsRepository.getNotifications(pageNumber = 1, pageSize = 50, soloNoLeidas = true)) {
             is AppResult.Success -> AppResult.Success(result.data.items.count { !it.isRead })
