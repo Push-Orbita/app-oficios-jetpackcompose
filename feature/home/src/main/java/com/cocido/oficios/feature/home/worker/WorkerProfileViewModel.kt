@@ -82,21 +82,24 @@ class WorkerProfileViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            _uiState.update { state ->
-                if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = true) else state
-            }
-            when (val profileResult = getWorkerProfileUseCase(workerId)) {
-                is AppResult.Success -> loadReviewsAndSetSuccess(
-                    profile = profileResult.data,
-                    pageNumber = 1,
-                    canFavorite = current.canFavorite,
-                    isFavorite = current.isFavorite,
-                )
-                is AppResult.Error -> {
-                    _uiState.update { state ->
-                        if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = false) else state
+            try {
+                _uiState.update { state ->
+                    if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = true) else state
+                }
+                when (val profileResult = getWorkerProfileUseCase(workerId)) {
+                    is AppResult.Success -> loadReviewsAndSetSuccess(
+                        profile = profileResult.data,
+                        pageNumber = 1,
+                        canFavorite = current.canFavorite,
+                        isFavorite = current.isFavorite,
+                    )
+                    is AppResult.Error -> {
+                        emitEffect(WorkerProfileEffect.ShowMessage(profileResult.error.userMessage()))
                     }
-                    emitEffect(WorkerProfileEffect.ShowMessage(profileResult.error.userMessage()))
+                }
+            } finally {
+                _uiState.update { state ->
+                    if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = false) else state
                 }
             }
         }

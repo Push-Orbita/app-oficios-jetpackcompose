@@ -102,5 +102,6 @@ sealed interface AgendaListEvent {
 
 sealed interface AgendaListEffect {
     data class ShowMessage(val message: String) : AgendaListEffect
+    data class ShowError(val message: String) : AgendaListEffect
     data object NavigateToConfig : AgendaListEffect
 }

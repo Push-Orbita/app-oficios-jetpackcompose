@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.favorites
 
 import androidx.compose.runtime.Composable
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ fun FavoritesRoute(
     viewModel: FavoritesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = LocalOficiosSnackbarController.current
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer = LifecycleEventObserver { _, event ->
@@ -36,6 +38,7 @@ fun FavoritesRoute(
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
+                is FavoritesEffect.ShowMessage -> snackbar.showError(effect.message)
                 is FavoritesEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is FavoritesEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 FavoritesEffect.NavigateToSearch -> onNavigateToSearch()

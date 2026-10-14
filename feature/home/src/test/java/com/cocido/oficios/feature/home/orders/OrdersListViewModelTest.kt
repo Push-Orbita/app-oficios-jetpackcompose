@@ -31,7 +31,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -67,7 +66,14 @@ class OrdersListViewModelTest {
         val state = viewModel.uiState.value as OrdersListUiState.Success
         assertEquals(orders, state.orders)
         assertFalse(state.isRefreshing)
-        assertEquals(listOf(OrdersListEffect.ShowRefreshError), effects)
+        assertEquals(
+            listOf(
+                OrdersListEffect.ShowRefreshError(
+                    "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+                ),
+            ),
+            effects,
+        )
     }
 
     @Test
@@ -91,7 +97,14 @@ class OrdersListViewModelTest {
             state.message,
         )
         assertFalse(state.isRefreshing)
-        assertTrue(effects.isEmpty())
+        assertEquals(
+            listOf(
+                OrdersListEffect.ShowRefreshError(
+                    "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+                ),
+            ),
+            effects,
+        )
     }
 
     private fun viewModel(repository: FakeOrderRepository) = OrdersListViewModel(

@@ -69,39 +69,46 @@ class FavoritesViewModel @Inject constructor(
         refreshing: Boolean = false,
     ) {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = !append && !silent && !refreshing,
-                    isRefreshing = refreshing,
-                    isLoadingMore = append,
-                    errorMessage = if (silent || refreshing) it.errorMessage else null,
-                )
-            }
-            when (val result = getFavoritesUseCase(pageNumber = pageNumber)) {
-                is AppResult.Success -> {
-                    val page = result.data
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            isLoadingMore = false,
-                            items = if (append) it.items + page.items else page.items,
-                            pageNumber = page.pageNumber,
-                            hasMore = page.hasMore,
-                            errorMessage = null,
-                        )
+            val hadItems = _uiState.value.items.isNotEmpty()
+            try {
+                _uiState.update {
+                    it.copy(
+                        isLoading = !append && !silent && !refreshing,
+                        isRefreshing = refreshing,
+                        isLoadingMore = append,
+                        errorMessage = if (silent || refreshing) it.errorMessage else null,
+                    )
+                }
+                when (val result = getFavoritesUseCase(pageNumber = pageNumber)) {
+                    is AppResult.Success -> {
+                        val page = result.data
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                isLoadingMore = false,
+                                items = if (append) it.items + page.items else page.items,
+                                pageNumber = page.pageNumber,
+                                hasMore = page.hasMore,
+                                errorMessage = null,
+                            )
+                        }
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                isLoadingMore = false,
+                                errorMessage = if (refreshing && it.items.isNotEmpty()) it.errorMessage else message,
+                            )
+                        }
+                        if (refreshing || hadItems) emitEffect(FavoritesEffect.ShowMessage(message))
                     }
                 }
-                is AppResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            isLoadingMore = false,
-                            errorMessage = if (refreshing && it.items.isNotEmpty()) it.errorMessage else result.error.userMessage(),
-                        )
-                    }
-                }
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false, isLoadingMore = false) }
             }
         }
     }

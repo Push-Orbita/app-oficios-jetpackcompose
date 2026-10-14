@@ -22,6 +22,7 @@ sealed interface FavoritesEvent {
 }
 
 sealed interface FavoritesEffect {
+    data class ShowMessage(val message: String) : FavoritesEffect
     data class NavigateToWorker(val workerId: Long) : FavoritesEffect
     data class NavigateToHire(val workerId: Long) : FavoritesEffect
     data object NavigateToSearch : FavoritesEffect

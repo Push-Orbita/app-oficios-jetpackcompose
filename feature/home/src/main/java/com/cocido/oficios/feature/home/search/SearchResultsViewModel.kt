@@ -21,6 +21,7 @@ import com.cocido.oficios.feature.home.common.toWorkerSearchFiltersWithExtras
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -159,6 +160,7 @@ class SearchResultsViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             val previous = _uiState.value
+            try {
             if (!append) {
                 if (refreshing) {
                     _uiState.update {
@@ -213,18 +215,37 @@ class SearchResultsViewModel @Inject constructor(
                     }
                 }
                 is AppResult.Error -> {
+                    val message = result.error.userMessage()
                     if (append) {
                         val current = _uiState.value
                         if (current is SearchResultsUiState.Success) {
                             _uiState.update { current.copy(isLoadingPage = false, isRefreshing = false) }
                         }
-                        emitEffect(SearchResultsEffect.ShowMessage(result.error.userMessage()))
-                    } else if (refreshing && previous is SearchResultsUiState.Success) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                    } else if (refreshing && previous is SearchResultsUiState.Empty) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
+                        emitEffect(SearchResultsEffect.ShowMessage(message))
+                    } else if (previous is SearchResultsUiState.Success || previous is SearchResultsUiState.Empty) {
+                        _uiState.update {
+                            when (previous) {
+                                is SearchResultsUiState.Success -> previous.copy(isRefreshing = false)
+                                is SearchResultsUiState.Empty -> previous.copy(isRefreshing = false)
+                                else -> previous
+                            }
+                        }
+                        if (refreshing) emitEffect(SearchResultsEffect.ShowMessage(message))
                     } else {
-                        _uiState.update { SearchResultsUiState.Error(result.error.userMessage()) }
+                        _uiState.update { SearchResultsUiState.Error(message) }
+                        if (refreshing) emitEffect(SearchResultsEffect.ShowMessage(message))
+                    }
+                }
+            }
+            } finally {
+                if (isActive) {
+                    _uiState.update { state ->
+                        when (state) {
+                            is SearchResultsUiState.Success -> state.copy(isRefreshing = false, isLoadingPage = false)
+                            is SearchResultsUiState.Empty -> state.copy(isRefreshing = false)
+                            is SearchResultsUiState.Error -> state.copy(isRefreshing = false)
+                            SearchResultsUiState.Loading -> state
+                        }
                     }
                 }
             }

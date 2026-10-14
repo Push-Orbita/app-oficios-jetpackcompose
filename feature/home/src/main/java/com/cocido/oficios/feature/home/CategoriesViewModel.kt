@@ -76,22 +76,35 @@ class CategoriesViewModel @Inject constructor(
     private fun loadCategories(refreshing: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
-            if (refreshing && previous is CategoriesUiState.Success) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else if (refreshing && previous is CategoriesUiState.Error) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else {
-                _uiState.update { CategoriesUiState.Loading }
-            }
-            when (val result = getHomeCategoriesUseCase()) {
-                is AppResult.Success -> {
-                    _uiState.update { CategoriesUiState.Success(result.data) }
+            try {
+                if (refreshing && previous is CategoriesUiState.Success) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else if (refreshing && previous is CategoriesUiState.Error) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else {
+                    _uiState.update { CategoriesUiState.Loading }
                 }
-                is AppResult.Error -> {
-                    if (refreshing && previous is CategoriesUiState.Success) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                    } else {
-                        _uiState.update { CategoriesUiState.Error(result.error.userMessage()) }
+                when (val result = getHomeCategoriesUseCase()) {
+                    is AppResult.Success -> {
+                        _uiState.update { CategoriesUiState.Success(result.data) }
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is CategoriesUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            emitEffect(CategoriesEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { CategoriesUiState.Error(message) }
+                            if (refreshing) emitEffect(CategoriesEffect.ShowMessage(message))
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is CategoriesUiState.Success -> state.copy(isRefreshing = false)
+                        is CategoriesUiState.Error -> state.copy(isRefreshing = false)
+                        CategoriesUiState.Loading -> state
                     }
                 }
             }

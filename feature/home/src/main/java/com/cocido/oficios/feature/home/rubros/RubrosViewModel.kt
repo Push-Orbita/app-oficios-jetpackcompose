@@ -90,27 +90,40 @@ class RubrosViewModel @Inject constructor(
     private fun loadRubros(refreshing: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
-            if (refreshing && previous is RubrosUiState.Success) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else if (refreshing && previous is RubrosUiState.Error) {
-                _uiState.update { previous.copy(isRefreshing = true) }
-            } else {
-                _uiState.update { RubrosUiState.Loading }
-            }
-            when (val result = getRubrosByCategoryUseCase(categoryId)) {
-                is AppResult.Success -> {
-                    _uiState.update {
-                        RubrosUiState.Success(
-                            categoryName = categoryName,
-                            rubros = result.data,
-                        )
+            try {
+                if (refreshing && previous is RubrosUiState.Success) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else if (refreshing && previous is RubrosUiState.Error) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else {
+                    _uiState.update { RubrosUiState.Loading }
+                }
+                when (val result = getRubrosByCategoryUseCase(categoryId)) {
+                    is AppResult.Success -> {
+                        _uiState.update {
+                            RubrosUiState.Success(
+                                categoryName = categoryName,
+                                rubros = result.data,
+                            )
+                        }
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is RubrosUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            emitEffect(RubrosEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { RubrosUiState.Error(message) }
+                            if (refreshing) emitEffect(RubrosEffect.ShowMessage(message))
+                        }
                     }
                 }
-                is AppResult.Error -> {
-                    if (refreshing && previous is RubrosUiState.Success) {
-                        _uiState.update { previous.copy(isRefreshing = false) }
-                    } else {
-                        _uiState.update { RubrosUiState.Error(result.error.userMessage()) }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is RubrosUiState.Success -> state.copy(isRefreshing = false)
+                        is RubrosUiState.Error -> state.copy(isRefreshing = false)
+                        RubrosUiState.Loading -> state
                     }
                 }
             }
@@ -147,6 +160,7 @@ sealed interface RubrosEvent {
 sealed interface RubrosEffect {
     data object NavigateBack : RubrosEffect
     data object ShowComingSoon : RubrosEffect
+    data class ShowMessage(val message: String) : RubrosEffect
     data class NavigateToSearchResults(
         val rubroId: Long,
         val rubroLabel: String,

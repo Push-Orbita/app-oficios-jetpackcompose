@@ -83,44 +83,51 @@ class NotificationsViewModel @Inject constructor(
     private fun load(pageNumber: Int, append: Boolean, refreshing: Boolean = false) {
         viewModelScope.launch {
             val current = _uiState.value
-            _uiState.update {
-                it.copy(
-                    isLoading = !append && !refreshing,
-                    isRefreshing = refreshing,
-                    isLoadingMore = append,
-                    errorMessage = null,
-                )
-            }
-            when (
-                val result = getNotificationsUseCase(
-                    pageNumber = pageNumber,
-                    soloNoLeidas = current.soloNoLeidas,
-                )
-            ) {
-                is AppResult.Success -> {
-                    val page = result.data
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            isLoadingMore = false,
-                            items = if (append) it.items + page.items else page.items,
-                            pageNumber = page.pageNumber,
-                            hasMore = page.hasMore,
-                            errorMessage = null,
-                        )
+            val hadItems = current.items.isNotEmpty()
+            try {
+                _uiState.update {
+                    it.copy(
+                        isLoading = !append && !refreshing,
+                        isRefreshing = refreshing,
+                        isLoadingMore = append,
+                        errorMessage = if (refreshing) it.errorMessage else null,
+                    )
+                }
+                when (
+                    val result = getNotificationsUseCase(
+                        pageNumber = pageNumber,
+                        soloNoLeidas = current.soloNoLeidas,
+                    )
+                ) {
+                    is AppResult.Success -> {
+                        val page = result.data
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                isLoadingMore = false,
+                                items = if (append) it.items + page.items else page.items,
+                                pageNumber = page.pageNumber,
+                                hasMore = page.hasMore,
+                                errorMessage = null,
+                            )
+                        }
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                isLoadingMore = false,
+                                errorMessage = if (hadItems) null else message,
+                            )
+                        }
+                        if (refreshing || hadItems) emitEffect(NotificationsEffect.ShowMessage(message))
                     }
                 }
-                is AppResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            isLoadingMore = false,
-                            errorMessage = result.error.userMessage(),
-                        )
-                    }
-                }
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false, isLoadingMore = false) }
             }
         }
     }
