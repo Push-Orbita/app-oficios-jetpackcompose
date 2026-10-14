@@ -33,7 +33,7 @@ fun VerifyEmailStepScreen(
         canSubmit = uiState.canSubmit,
         submitText = stringResource(R.string.onboarding_step_verify_email_submit),
         submitVariant = OficiosButtonVariant.Secondary,
-        submitSize = OficiosButtonSize.Prominent,
+        submitSize = OficiosButtonSize.Large,
         onSubmit = onSubmit,
     ) {
         Text(

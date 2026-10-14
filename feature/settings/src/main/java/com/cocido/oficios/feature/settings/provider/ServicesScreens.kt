@@ -86,7 +86,7 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
                             onClick = { onEvent(ServicesEvent.AddService) },
                             modifier = Modifier.fillMaxWidth(),
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Large,
                         )
                     }
                 }
@@ -187,7 +187,7 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
                         loading = uiState.isSaving,
                         enabled = !uiState.isSaving,
                         variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Prominent,
+                        size = OficiosButtonSize.Large,
                     )
                 }
                 Column(Modifier.padding(bottom = OficiosSpacing.lg)) {}

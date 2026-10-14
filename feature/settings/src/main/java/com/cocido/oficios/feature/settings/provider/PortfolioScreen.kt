@@ -213,7 +213,7 @@ private fun CertificateEditor(
             onClick = { onEvent(PortfolioEvent.SaveCertificate) },
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Prominent,
+            size = OficiosButtonSize.Large,
             loading = state.isSaving,
             enabled = !state.isSaving,
         )

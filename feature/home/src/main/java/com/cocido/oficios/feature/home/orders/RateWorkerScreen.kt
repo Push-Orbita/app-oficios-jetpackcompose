@@ -90,7 +90,7 @@ fun RateWorkerScreen(
                     enabled = !uiState.isSubmitting,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                 )
             }
             is RateWorkerUiState.Submitted -> OficiosSuccessState(

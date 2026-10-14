@@ -45,7 +45,7 @@ fun OficiosDialog(
     modifier: Modifier = Modifier,
     dismissLabel: String = "Cancelar",
     isDangerous: Boolean = false,
-    actionSize: OficiosButtonSize = OficiosButtonSize.Prominent,
+    actionSize: OficiosButtonSize = OficiosButtonSize.Large,
     confirmEnabled: Boolean = true,
     content: (@Composable () -> Unit)? = null,
 ) {

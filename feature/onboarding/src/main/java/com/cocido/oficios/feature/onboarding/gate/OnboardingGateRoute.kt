@@ -2,8 +2,7 @@ package com.cocido.oficios.feature.onboarding.gate
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,7 +42,7 @@ fun OnboardingGateRoute(
                 modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                OficiosProgress()
             }
         }
         is OnboardingGateUiState.Error -> {

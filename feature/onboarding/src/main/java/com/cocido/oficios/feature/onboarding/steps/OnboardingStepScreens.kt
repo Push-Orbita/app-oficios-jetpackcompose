@@ -63,7 +63,7 @@ fun OnboardingStepScaffold(
     canSubmit: Boolean = true,
     submitText: String? = null,
     submitVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
-    submitSize: OficiosButtonSize = OficiosButtonSize.Prominent,
+    submitSize: OficiosButtonSize = OficiosButtonSize.Large,
     onSubmit: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -367,7 +367,7 @@ fun ProviderDniStepScreen(
                     loading = uiState.isLoading,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                 )
             }
         }

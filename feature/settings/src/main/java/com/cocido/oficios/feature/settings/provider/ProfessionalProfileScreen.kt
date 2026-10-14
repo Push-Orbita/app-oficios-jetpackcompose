@@ -83,7 +83,7 @@ fun ProfessionalProfileScreen(
                     text = "Guardar cambios",
                     onClick = { onEvent(ProfessionalProfileEvent.Save) },
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                     loading = uiState.isSaving,
                     enabled = !uiState.isSaving,
                     modifier = Modifier.fillMaxWidth(),

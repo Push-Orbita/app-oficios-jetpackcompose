@@ -123,13 +123,14 @@ fun WorkerCard(
                 onClick = onContact,
                 modifier = Modifier.weight(1f),
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Medium,
             )
             OficiosButton(
                 text = viewProfileLabel,
                 onClick = onViewProfile,
                 modifier = Modifier.weight(1f),
                 variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Medium,
             )
         }
     }

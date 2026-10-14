@@ -16,7 +16,6 @@ import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.WifiOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -66,7 +65,7 @@ fun OficiosLoadingState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            OficiosProgress()
             if (message != null) {
                 Text(
                     text = message,
@@ -136,7 +135,7 @@ fun OficiosEmptyState(
                 text = ctaLabel,
                 onClick = onCta,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
         }
     }
@@ -195,7 +194,7 @@ fun OficiosErrorState(
                 onClick = onRetry,
                 leadingIcon = Icons.Outlined.Refresh,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
         }
     }
@@ -246,7 +245,7 @@ fun OficiosSuccessState(
                 text = ctaLabel,
                 onClick = onCta,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
         }
     }

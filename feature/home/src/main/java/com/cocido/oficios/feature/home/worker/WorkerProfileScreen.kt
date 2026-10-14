@@ -25,7 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -151,7 +150,7 @@ fun WorkerProfileScreen(
                             onClick = { onEvent(WorkerProfileEvent.HireClicked) },
                             modifier = Modifier.weight(2f),
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Large,
                         )
                     }
                 }
@@ -265,13 +264,14 @@ private fun AboutSection(about: String) {
             overflow = TextOverflow.Ellipsis,
         )
         if (longText) {
-            TextButton(onClick = { expanded = !expanded }) {
-                Text(
-                    stringResource(
-                        if (expanded) R.string.home_worker_about_collapse else R.string.home_worker_about_expand,
-                    ),
-                )
-            }
+            OficiosButton(
+                text = stringResource(
+                    if (expanded) R.string.home_worker_about_collapse else R.string.home_worker_about_expand,
+                ),
+                onClick = { expanded = !expanded },
+                variant = OficiosButtonVariant.Ghost,
+                size = OficiosButtonSize.Small,
+            )
         }
     }
 }

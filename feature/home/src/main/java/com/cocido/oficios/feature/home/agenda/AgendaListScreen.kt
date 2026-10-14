@@ -195,7 +195,7 @@ private fun AgendaListContent(
                     onClick = { onEvent(AgendaListEvent.OpenCreateSlot) },
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                 )
             }
         }
@@ -218,7 +218,7 @@ private fun AgendaListContent(
                             text = "Reintentar",
                             onClick = { onEvent(AgendaListEvent.RetrySlots) },
                             variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Prominent,
+                            size = OficiosButtonSize.Medium,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -456,7 +456,7 @@ private fun SlotForm(
                 loading = uiState.isSavingSlot,
                 modifier = Modifier.fillMaxWidth(),
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
             )
             OficiosButton(
                 text = "Cancelar",

@@ -56,7 +56,7 @@ fun LoginScreen(
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -142,7 +142,7 @@ fun LoginScreen(
                     onClick = { onEvent(LoginEvent.RegisterClicked) },
                     enabled = !uiState.isLoading,
                     variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Prominent,
+                    size = OficiosButtonSize.Large,
                 )
             }
         }

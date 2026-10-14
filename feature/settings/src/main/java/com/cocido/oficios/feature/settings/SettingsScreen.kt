@@ -262,7 +262,7 @@ private fun SettingsContent(
                 text = stringResource(R.string.settings_logout),
                 onClick = onRequestLogout,
                 variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
+                size = OficiosButtonSize.Large,
                 loading = uiState.isLoggingOut,
                 enabled = !uiState.isLoggingOut,
                 modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth),
