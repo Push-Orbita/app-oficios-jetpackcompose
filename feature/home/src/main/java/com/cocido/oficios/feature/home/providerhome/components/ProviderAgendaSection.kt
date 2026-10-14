@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -26,13 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.calendar.CalendarDayState
 import com.cocido.oficios.core.designsystem.component.calendar.OficiosCalendarDay
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.ServiceOrderListItem
@@ -122,7 +122,7 @@ fun ProviderAgendaSection(
                     columns = GridCells.Fixed(7),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp * ((leadingBlanks + daysInMonth + 6) / 7)),
+                        .heightIn(min = OficiosComponentSize.agendaCell * ((leadingBlanks + daysInMonth + 6) / 7)),
                 ) {
                     items(leadingBlanks) {
                         Text(text = "", modifier = Modifier)

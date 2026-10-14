@@ -139,13 +139,13 @@ private fun OrderDetailSkeleton(message: String, modifier: Modifier = Modifier) 
             .semantics { contentDescription = message },
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        SkeletonBlock(modifier = Modifier.size(width = 160.dp, height = 32.dp))
+        SkeletonBlock(modifier = Modifier.size(width = OficiosComponentSize.skeletonBlockMd, height = OficiosComponentSize.iconLg))
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
             repeat(5) { SkeletonBlock(modifier = Modifier.size(OficiosComponentSize.iconLg), shape = CircleShape) }
         }
-        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(72.dp))
-        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(160.dp))
-        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(240.dp))
+        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.avatarSettings))
+        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockMd))
+        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockLg))
     }
 }
 

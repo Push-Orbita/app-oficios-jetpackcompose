@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -31,6 +30,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessSta
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
 @Composable
@@ -117,7 +117,7 @@ private fun StarSelector(
                 contentDescription = if (star == 1) "1 estrella" else "$star estrellas",
                 tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(OficiosComponentSize.ratingIcon)
                     .clickable { onSelect(star) },
             )
         }
