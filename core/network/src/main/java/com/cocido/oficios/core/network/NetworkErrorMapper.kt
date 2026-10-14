@@ -3,6 +3,9 @@ package com.cocido.oficios.core.network
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.toAppError
 import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -19,11 +22,16 @@ fun Throwable.toNetworkAppError(): AppError {
     if (this is HttpException) {
         return toHttpAppError()
     }
-    if (this is IOException) {
-        return toAppError()
-    }
-    return toAppError()
+    val chain = generateSequence(this) { it.cause }
+    val networkFailure = chain.firstOrNull { it.isDefiniteConnectivityFailure() }
+        ?: chain.firstOrNull { it is IOException }
+    return (networkFailure ?: this).toAppError()
 }
+
+private fun Throwable.isDefiniteConnectivityFailure(): Boolean =
+    this is UnknownHostException ||
+        this is SocketTimeoutException ||
+        this is TimeoutException
 
 private fun HttpException.toHttpAppError(): AppError {
     val body = response()?.errorBody()?.string().orEmpty()

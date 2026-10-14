@@ -1,6 +1,13 @@
 package com.cocido.oficios.core.network
 
+import com.cocido.oficios.core.common.result.AppError
+import com.cocido.oficios.core.common.result.userMessage
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NetworkErrorMapperTest {
@@ -101,5 +108,21 @@ class NetworkErrorMapperTest {
         """.trimIndent()
 
         assertEquals("SE01", parseErrorCode(body))
+    }
+
+    @Test
+    fun `unknown host, io and timeout map to a network error`() {
+        val cases = listOf(
+            UnknownHostException("no host"),
+            IOException("connection reset"),
+            SocketTimeoutException("timeout"),
+            TimeoutException("timeout"),
+            RuntimeException("wrapped", UnknownHostException("no host")),
+        )
+        cases.forEach { throwable ->
+            val error = throwable.toNetworkAppError()
+            assertTrue(throwable::class.java.simpleName, error is AppError.Network)
+            assertTrue(error.userMessage().isNotBlank())
+        }
     }
 }
