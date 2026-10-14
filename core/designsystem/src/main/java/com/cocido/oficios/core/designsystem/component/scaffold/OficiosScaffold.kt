@@ -42,6 +42,7 @@ fun OficiosScaffold(
     bottomBar: (@Composable () -> Unit)? = null,
     isLoading: Boolean = false,
     snackbarHostState: SnackbarHostState? = null,
+    contentWindowInsets: WindowInsets = WindowInsets.safeDrawing,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val snackbarState = snackbarHostState ?: remember { SnackbarHostState() }
@@ -56,7 +57,7 @@ fun OficiosScaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarState) },
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
-            contentWindowInsets = WindowInsets.safeDrawing,
+            contentWindowInsets = contentWindowInsets,
             content = content,
         )
 

@@ -49,6 +49,17 @@ fun LoginScreen(
                 enabled = !uiState.isLoading,
             )
         },
+        footer = {
+            OficiosButton(
+                text = stringResource(R.string.auth_login_button),
+                onClick = { onEvent(LoginEvent.Submit) },
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Prominent,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
     ) {
         val passwordFocus = remember { FocusRequester() }
         Column(
@@ -111,15 +122,6 @@ fun LoginScreen(
                 onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
                 label = stringResource(R.string.auth_remember_me),
                 enabled = !uiState.isLoading,
-            )
-            OficiosButton(
-                text = stringResource(R.string.auth_login_button),
-                onClick = { onEvent(LoginEvent.Submit) },
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Prominent,
-                modifier = Modifier.fillMaxWidth(),
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
