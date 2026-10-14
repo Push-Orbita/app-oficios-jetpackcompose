@@ -16,8 +16,8 @@ val OficiosColorBackground = Color(0xFF00358B)
 val OficiosColorOutlineFill = Color(0xFF004DA8)
 val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 
-/** Texto secundario / ítems inactivos — Figma rgb(127,154,197) */
-val OficiosColorSecondaryText = Color(0xFF7F9AC5)
+/** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
+val OficiosColorSecondaryText = Color(0xFF8EABD4)
 
 /** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)

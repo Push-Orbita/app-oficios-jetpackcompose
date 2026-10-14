@@ -30,6 +30,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.cocido.oficios.feature.home.common.HomeChromeViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -126,6 +128,7 @@ fun HomeSearchBar(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(OficiosSpacing.sm),
             )
+            .semantics(mergeDescendants = true) { contentDescription = hint }
             .clickable(onClick = onClick)
             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
         horizontalArrangement = Arrangement.SpaceBetween,
