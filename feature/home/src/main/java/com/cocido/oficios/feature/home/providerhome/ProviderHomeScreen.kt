@@ -100,8 +100,8 @@ private fun ProviderHomeSuccessContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
         ProviderHomeHeader(
             userName = content.userDisplayName,

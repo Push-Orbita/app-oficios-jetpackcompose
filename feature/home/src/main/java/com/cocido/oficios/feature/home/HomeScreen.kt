@@ -107,8 +107,8 @@ private fun HomeSuccessContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
         ClientHomeHeader(
             userName = content.userDisplayName,

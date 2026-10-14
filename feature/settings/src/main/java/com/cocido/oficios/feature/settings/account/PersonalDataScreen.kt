@@ -65,7 +65,7 @@ fun PersonalDataScreen(
                     .consumeWindowInsets(padding)
                     .imePadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(OficiosSpacing.lg)
+                    .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
                     .widthIn(max = OficiosComponentSize.contentMaxWidth),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                 horizontalAlignment = Alignment.CenterHorizontally,

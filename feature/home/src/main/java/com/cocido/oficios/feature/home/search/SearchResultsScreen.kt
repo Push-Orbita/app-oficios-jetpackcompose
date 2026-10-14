@@ -146,7 +146,7 @@ private fun SearchResultsHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
@@ -193,7 +193,7 @@ private fun ActiveFilterChips(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.lg),
+            .padding(horizontal = OficiosSpacing.md),
         userScrollEnabled = false,
     ) {
         item {
@@ -239,7 +239,7 @@ private fun WorkersList(
         state = listState,
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(
-            horizontal = OficiosSpacing.lg,
+            horizontal = OficiosSpacing.md,
             vertical = OficiosSpacing.sm,
         ),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),

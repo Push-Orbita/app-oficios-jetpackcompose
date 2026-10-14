@@ -127,7 +127,7 @@ private fun ClientDataList(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.lg),
+        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -285,7 +285,7 @@ private fun ContactEditor(
             .consumeWindowInsets(WindowInsets.safeDrawing)
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.lg),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
@@ -357,7 +357,7 @@ private fun DomicilioEditor(
             .consumeWindowInsets(WindowInsets.safeDrawing)
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.lg),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(

@@ -124,7 +124,7 @@ private fun SettingsContent(
     val user = profile.user
     val displayName = "${user.firstName} ${user.lastName}".trim().ifBlank { user.email }
     LazyColumn(
-        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.lg),
+        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
         contentPadding = PaddingValues(top = OficiosSpacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -279,7 +279,7 @@ private fun SettingsSectionTitle(title: String) {
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth).padding(top = OficiosSpacing.sm),
+        modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth).padding(top = OficiosSpacing.xs),
     )
 }
 
@@ -295,6 +295,7 @@ private fun SettingsActionRow(
         modifier = Modifier
             .fillMaxWidth()
             .widthIn(max = OficiosComponentSize.contentMaxWidth)
+            .heightIn(min = OficiosComponentSize.listRowMinHeight)
             .clickable(enabled = enabled, onClick = onClick),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

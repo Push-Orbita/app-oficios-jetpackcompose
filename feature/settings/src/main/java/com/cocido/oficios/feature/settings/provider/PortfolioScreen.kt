@@ -93,7 +93,7 @@ private fun PortfolioList(
     modifier: Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.lg),
+        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         item {
@@ -185,7 +185,7 @@ private fun CertificateEditor(
     modifier: Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(OficiosSpacing.lg),
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text("Identificá el documento con un nombre que el cliente pueda entender.", style = MaterialTheme.typography.bodyMedium)

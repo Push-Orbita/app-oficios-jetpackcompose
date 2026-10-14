@@ -56,7 +56,7 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
             else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = OficiosSpacing.lg),
+                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
                 item {
@@ -162,7 +162,7 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
             )
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(OficiosSpacing.lg),
+                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
             ) {
                 Text("Paso ${uiState.step.ordinal + 1} de ${AddServiceStep.entries.size}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
