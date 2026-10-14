@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,14 +25,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -133,16 +141,45 @@ private fun OficiosBottomNavItem(
             }
         }
         Spacer(Modifier.height(OficiosSpacing.xxxs))
-        Text(
+        BottomNavLabel(
             text = item.label,
-            style = MaterialTheme.typography.labelMedium,
             color = contentColor,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
+            baseStyle = MaterialTheme.typography.labelMedium,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = OficiosSpacing.xxxs),
+        )
+    }
+}
+
+@Composable
+private fun BottomNavLabel(
+    text: String,
+    color: Color,
+    baseStyle: TextStyle,
+    modifier: Modifier = Modifier,
+) {
+    val density = LocalDensity.current
+    val minFontSize = (11f / density.fontScale).coerceAtLeast(8f).sp
+    BoxWithConstraints(modifier) {
+        var fontSize by remember(text, maxWidth, baseStyle.fontSize) {
+            mutableStateOf(baseStyle.fontSize)
+        }
+        Text(
+            text = text,
+            color = color,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            style = baseStyle.copy(fontSize = fontSize),
+            modifier = Modifier.fillMaxWidth(),
+            onTextLayout = { result ->
+                if ((result.didOverflowWidth || result.hasVisualOverflow) && fontSize > minFontSize) {
+                    val scaled = fontSize * 0.9f
+                    fontSize = if (scaled < minFontSize) minFontSize else scaled
+                }
+            },
         )
     }
 }

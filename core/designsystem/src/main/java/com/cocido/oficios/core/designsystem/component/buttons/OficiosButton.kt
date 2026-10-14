@@ -5,21 +5,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
@@ -131,10 +136,18 @@ fun OficiosButton(
         else -> border
     }
 
+    val visualHeight = if (LocalDensity.current.fontScale <= 1.15f) {
+        Modifier.height(minHeight)
+    } else {
+        Modifier.heightIn(min = minHeight)
+    }
+    // Dp.Unspecified evita que Surface estire el fondo hasta 48.dp.
+    // El sistema igual expande el toque a 48.dp sin pintar ese extra.
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
     Button(
         onClick = { if (!loading) onClick() },
         modifier = modifier
-            .heightIn(min = minHeight)
+            .then(visualHeight)
             .then(
                 if (shadowColor != Color.Transparent && isInteractive) {
                     Modifier.shadow(
@@ -194,6 +207,7 @@ fun OficiosButton(
                 }
             }
         }
+    }
     }
 }
 
