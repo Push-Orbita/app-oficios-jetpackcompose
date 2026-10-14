@@ -8,7 +8,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,9 +58,11 @@ fun HomeScreen(
                 )
             }
             is HomeUiState.Error -> {
+                val refreshState = rememberSettledPullState(uiState.isRefreshing)
                 PullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = { onEvent(HomeEvent.Refresh) },
+                    state = refreshState,
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                 ) {
                     OficiosErrorState(
@@ -69,9 +74,11 @@ fun HomeScreen(
                 }
             }
             is HomeUiState.Success -> {
+                val refreshState = rememberSettledPullState(uiState.isRefreshing)
                 PullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = { onEvent(HomeEvent.Refresh) },
+                    state = refreshState,
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                 ) {
                     HomeSuccessContent(
@@ -83,6 +90,16 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun rememberSettledPullState(isRefreshing: Boolean): PullToRefreshState {
+    val state = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) state.snapTo(0f)
+    }
+    return state
 }
 
 @Composable

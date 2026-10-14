@@ -10,7 +10,7 @@ import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.repository.HomeRepository
 
 class FakeHomeRepository(
-    private var homeResult: AppResult<ClientHomeContent> = AppResult.Success(
+    var homeResult: AppResult<ClientHomeContent> = AppResult.Success(
         ClientHomeContent(
             userDisplayName = "Nicolas Ayala",
             emailVerified = true,

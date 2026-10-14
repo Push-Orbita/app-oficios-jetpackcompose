@@ -21,6 +21,8 @@ import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 class HomeRepositoryImpl @Inject constructor(
@@ -38,17 +40,21 @@ class HomeRepositoryImpl @Inject constructor(
         return withContext(dispatcherProvider.io) {
             when (val userResult = authRepository.getCurrentUser()) {
                 is AppResult.Error -> userResult
-                is AppResult.Success -> {
-                    when (val categoriesResult = catalogRepository.getCategories()) {
-                        is AppResult.Error -> categoriesResult
+                is AppResult.Success -> coroutineScope {
+                    val categoriesDeferred = async { catalogRepository.getCategories() }
+                    val featuredDeferred = async { loadFeaturedWorkers() }
+                    when (val categoriesResult = categoriesDeferred.await()) {
+                        is AppResult.Error -> {
+                            featuredDeferred.cancel()
+                            categoriesResult
+                        }
                         is AppResult.Success -> {
                             val categories = categoriesResult.data.toHomeCategoryItems()
                             val recent = resolveRecentSearches(categories)
-                            val featuredWorkers = loadFeaturedWorkers()
                             AppResult.Success(
                                 userResult.data.toClientHomeContent(
                                     recentSearches = recent,
-                                    featuredWorkers = featuredWorkers,
+                                    featuredWorkers = featuredDeferred.await(),
                                 ),
                             )
                         }

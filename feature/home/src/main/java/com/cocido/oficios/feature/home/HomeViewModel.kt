@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCoun
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -34,6 +36,9 @@ class HomeViewModel @Inject constructor(
 
     private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+
+    private var loadJob: Job? = null
+    private var loadGeneration = 0
 
     init {
         loadHome()
@@ -121,35 +126,50 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadHome(refreshing: Boolean = false) {
-        viewModelScope.launch {
+        val generation = ++loadGeneration
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             val previous = _uiState.value
             try {
-                if (refreshing && previous is HomeUiState.Success) {
-                    _uiState.update { previous.copy(isRefreshing = true) }
-                } else if (refreshing && previous is HomeUiState.Error) {
-                    _uiState.update { previous.copy(isRefreshing = true) }
-                } else {
-                    _uiState.update { HomeUiState.Loading }
+                when {
+                    refreshing && previous is HomeUiState.Success ->
+                        _uiState.value = previous.copy(isRefreshing = true)
+                    refreshing && previous is HomeUiState.Error ->
+                        _uiState.value = previous.copy(isRefreshing = true)
+                    else -> _uiState.value = HomeUiState.Loading
                 }
+                // Un frame con isRefreshing=true para que el indicador vea el
+                // pasaje a false. Si true y false caen en el mismo frame, el
+                // gesto queda clavado en el umbral.
+                if (refreshing) yield()
+                if (generation != loadGeneration) return@launch
                 when (val result = getClientHomeUseCase()) {
-                    is AppResult.Success -> _uiState.update { HomeUiState.Success(result.data) }
+                    is AppResult.Success -> {
+                        if (generation == loadGeneration) {
+                            _uiState.value = HomeUiState.Success(result.data)
+                        }
+                    }
                     is AppResult.Error -> {
+                        if (generation != loadGeneration) return@launch
                         val message = result.error.userMessage()
-                        if (previous is HomeUiState.Success) {
-                            _uiState.update { previous.copy(isRefreshing = false) }
+                        val kept = previous as? HomeUiState.Success
+                        if (kept != null) {
+                            _uiState.value = kept.copy(isRefreshing = false)
                             emitEffect(HomeEffect.ShowMessage(message))
                         } else {
-                            _uiState.update { HomeUiState.Error(message) }
+                            _uiState.value = HomeUiState.Error(message)
                             if (refreshing) emitEffect(HomeEffect.ShowMessage(message))
                         }
                     }
                 }
             } finally {
-                _uiState.update { state ->
-                    when (state) {
-                        is HomeUiState.Success -> state.copy(isRefreshing = false)
-                        is HomeUiState.Error -> state.copy(isRefreshing = false)
-                        HomeUiState.Loading -> state
+                if (generation == loadGeneration) {
+                    _uiState.update { state ->
+                        when (state) {
+                            is HomeUiState.Success -> state.copy(isRefreshing = false)
+                            is HomeUiState.Error -> state.copy(isRefreshing = false)
+                            HomeUiState.Loading -> state
+                        }
                     }
                 }
             }

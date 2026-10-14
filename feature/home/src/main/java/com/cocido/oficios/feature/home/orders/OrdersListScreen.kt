@@ -26,7 +26,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -113,6 +116,7 @@ private fun OrdersListBody(
         is OrdersListUiState.Error -> PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
             onRefresh = { onEvent(OrdersListEvent.Refresh) },
+            state = rememberSettledPullState(uiState.isRefreshing),
             modifier = modifier.fillMaxSize(),
         ) {
             RefreshablePlaceholder {
@@ -129,6 +133,7 @@ private fun OrdersListBody(
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { onEvent(OrdersListEvent.Refresh) },
+                state = rememberSettledPullState(uiState.isRefreshing),
                 modifier = Modifier.fillMaxSize(),
             ) {
                 if (uiState.visibleOrders.isEmpty()) {
@@ -156,6 +161,16 @@ private fun OrdersListBody(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun rememberSettledPullState(isRefreshing: Boolean): PullToRefreshState {
+    val state = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) state.snapTo(0f)
+    }
+    return state
 }
 
 /** Contenido que llena el viewport y aun así participa del nested scroll del pull-to-refresh. */
