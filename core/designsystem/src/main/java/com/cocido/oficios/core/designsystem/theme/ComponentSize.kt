@@ -3,14 +3,19 @@ package com.cocido.oficios.core.designsystem.theme
 import androidx.compose.ui.unit.dp
 
 object OficiosComponentSize {
-    val textFieldHeight = 48.dp
-    val buttonMinHeight = 36.dp
-    val buttonHeight = 48.dp
+    val textFieldHeight = 56.dp
+    val minTouchTarget = 48.dp
+    val buttonHeightLarge = 52.dp
+    val buttonHeightMedium = 44.dp
+    val buttonHeightSmall = 36.dp
+    val buttonMinHeight = buttonHeightSmall
+    /** Área táctil de íconos y controles que no son el CTA. */
+    val buttonHeight = minTouchTarget
     val buttonPaddingHorizontal = 12.dp
     val buttonPaddingVertical = 8.dp
-    val checkboxRowMinHeight = 40.dp
-    val checkboxRowPaddingVertical = 11.dp
-    val checkboxLabelGap = 11.dp
+    val checkboxRowMinHeight = 48.dp
+    val checkboxRowPaddingVertical = 12.dp
+    val checkboxLabelGap = 12.dp
     val iconSm = 16.dp
     val iconMd = 24.dp
     val iconLg = 32.dp
@@ -20,6 +25,15 @@ object OficiosComponentSize {
     val avatarSm = 48.dp
     val avatarMd = 64.dp
     val avatarLg = 96.dp
+    val avatarSettings = 72.dp
+    val ratingIcon = 36.dp
+    val categoryCardSize = 112.dp
+    /** Ancho de una card de carrusel, como fracción del viewport. */
+    val carouselWidthFraction = 0.82f
+    val agendaCell = 48.dp
+    val listRowMinHeight = 56.dp
+    val skeletonBlockMd = 160.dp
+    val skeletonBlockLg = 240.dp
     val contentMaxWidth = 640.dp
 
     // Marca auth — baseline Figma 440dp (nodos 356:22, 356:49)
