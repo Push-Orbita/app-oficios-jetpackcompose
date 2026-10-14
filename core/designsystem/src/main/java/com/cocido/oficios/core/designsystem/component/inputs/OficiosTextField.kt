@@ -3,6 +3,7 @@ package com.cocido.oficios.core.designsystem.component.inputs
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -28,10 +29,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import kotlinx.coroutines.launch
 
@@ -72,14 +73,21 @@ fun OficiosTextField(
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     var fieldSize by remember { mutableStateOf(IntSize.Zero) }
-    val ctaClearancePx = with(density) { 80.dp.toPx() }
+    val ctaClearancePx = with(density) {
+        (OficiosComponentSize.buttonHeightLarge + OficiosSpacing.md + OficiosComponentSize.buttonHeightSmall).toPx()
+    }
+    val fieldHeight = if (singleLine && density.fontScale <= 1.05f) {
+        Modifier.height(OficiosComponentSize.textFieldHeight)
+    } else {
+        Modifier.heightIn(min = OficiosComponentSize.textFieldHeight)
+    }
 
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = OficiosComponentSize.textFieldHeight)
+            .then(fieldHeight)
             .onSizeChanged { fieldSize = it }
             .bringIntoViewRequester(bringIntoViewRequester)
             .onFocusChanged { focusState ->
