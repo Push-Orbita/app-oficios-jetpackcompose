@@ -1,7 +1,5 @@
 package com.cocido.oficios.feature.auth.login
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,6 +24,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthScreenLayout
@@ -113,25 +112,12 @@ fun LoginScreen(
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.auth_no_account_yet),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
-            )
-            OficiosButton(
-                text = stringResource(R.string.auth_register_button),
-                onClick = { onEvent(LoginEvent.RegisterClicked) },
-                enabled = !uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
-            )
-        }
+        OficiosPromptActionRow(
+            prompt = stringResource(R.string.auth_no_account_yet),
+            actionLabel = stringResource(R.string.auth_register_button),
+            onAction = { onEvent(LoginEvent.RegisterClicked) },
+            enabled = !uiState.isLoading,
+        )
     }
 }
 
