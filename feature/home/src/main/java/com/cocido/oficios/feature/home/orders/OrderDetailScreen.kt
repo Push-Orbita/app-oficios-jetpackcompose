@@ -39,6 +39,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -79,6 +83,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.OficiosMotion
+import com.cocido.oficios.core.designsystem.theme.oficiosTween
 import com.cocido.oficios.core.ui.map.OficiosTrackingMap
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
@@ -569,6 +575,11 @@ private fun OrderProgress(status: ServiceRequestStatus, bookingStatus: BookingSt
     }
     val phases = orderTimelinePhases(status, bookingStatus)
     val active = orderTimelineActiveIndex(status, bookingStatus)
+    val progress by animateFloatAsState(
+        targetValue = active.toFloat(),
+        animationSpec = oficiosTween(OficiosMotion.DurationLong),
+        label = "OrderProgress",
+    )
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -577,7 +588,7 @@ private fun OrderProgress(status: ServiceRequestStatus, bookingStatus: BookingSt
     ) {
         steps.forEachIndexed { index, step ->
             if (index > 0) {
-                TimelineConnector(done = index <= active)
+                TimelineConnector(fill = { (progress - (index - 1)).coerceIn(0f, 1f) })
             }
             TimelineStep(step = step, phase = phases[index], index = index, total = steps.size)
         }
@@ -598,13 +609,16 @@ private fun OrderClosedBanner(status: ServiceRequestStatus, bookingStatus: Booki
 }
 
 @Composable
-private fun TimelineConnector(done: Boolean) {
+private fun TimelineConnector(fill: () -> Float) {
     Box(
         modifier = Modifier
             .padding(top = (OficiosComponentSize.iconMd - 2.dp) / 2)
             .width(OficiosSpacing.md)
             .height(2.dp)
-            .background(if (done) OficiosColorWhite else OficiosColorWhite.copy(alpha = 0.4f)),
+            .background(OficiosColorWhite.copy(alpha = 0.4f))
+            .drawBehind {
+                drawRect(color = OficiosColorWhite, size = size.copy(width = size.width * fill()))
+            },
     )
 }
 
@@ -625,21 +639,34 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase, ind
         },
     )
     val description = stringResource(R.string.orders_step_a11y, index + 1, total, label, stateLabel)
-    val circle = when (phase) {
-        OrderTimelinePhase.Done -> OficiosColorAction
-        OrderTimelinePhase.Current -> OficiosColorAccent
-        OrderTimelinePhase.Upcoming -> OficiosColorOutlineFill
-    }
-    val iconTint = when (phase) {
-        OrderTimelinePhase.Done -> OficiosColorWhite
-        OrderTimelinePhase.Current -> OficiosColorBackground
-        OrderTimelinePhase.Upcoming -> OficiosColorWhite.copy(alpha = 0.72f)
-    }
-    val labelColor = if (phase == OrderTimelinePhase.Upcoming) {
-        OficiosColorWhite.copy(alpha = 0.72f)
-    } else {
-        OficiosColorWhite
-    }
+    val colorSpec = oficiosTween<Color>(OficiosMotion.DurationLong)
+    val circle by animateColorAsState(
+        targetValue = when (phase) {
+            OrderTimelinePhase.Done -> OficiosColorAction
+            OrderTimelinePhase.Current -> OficiosColorAccent
+            OrderTimelinePhase.Upcoming -> OficiosColorOutlineFill
+        },
+        animationSpec = colorSpec,
+        label = "TimelineStepCircle",
+    )
+    val iconTint by animateColorAsState(
+        targetValue = when (phase) {
+            OrderTimelinePhase.Done -> OficiosColorWhite
+            OrderTimelinePhase.Current -> OficiosColorBackground
+            OrderTimelinePhase.Upcoming -> OficiosColorWhite.copy(alpha = 0.72f)
+        },
+        animationSpec = colorSpec,
+        label = "TimelineStepIcon",
+    )
+    val labelColor by animateColorAsState(
+        targetValue = if (phase == OrderTimelinePhase.Upcoming) {
+            OficiosColorWhite.copy(alpha = 0.72f)
+        } else {
+            OficiosColorWhite
+        },
+        animationSpec = colorSpec,
+        label = "TimelineStepLabel",
+    )
     Column(
         modifier = Modifier
             .widthIn(min = OficiosComponentSize.buttonHeight)
