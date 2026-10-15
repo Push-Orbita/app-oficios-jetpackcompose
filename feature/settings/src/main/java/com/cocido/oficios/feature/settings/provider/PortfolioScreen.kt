@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -41,6 +43,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkCertificateItem
 
@@ -176,9 +179,36 @@ private fun PortfolioList(
 
 @Composable
 private fun PortfolioHeader(title: String, action: String, onAction: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, style = MaterialTheme.typography.titleLarge)
-        OficiosButton(action, onAction, variant = OficiosButtonVariant.Ghost, leadingIcon = Icons.Outlined.AddAPhoto)
+    val stackAction = LocalDensity.current.fontScale >= 1.3f
+    if (stackAction) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        ) {
+            Text(title, style = MaterialTheme.typography.titleLarge)
+            OficiosButton(
+                text = action,
+                onClick = onAction,
+                variant = OficiosButtonVariant.Ghost,
+                leadingIcon = Icons.Outlined.AddAPhoto,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    } else {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            OficiosButton(
+                text = action,
+                onClick = onAction,
+                variant = OficiosButtonVariant.Ghost,
+                leadingIcon = Icons.Outlined.AddAPhoto,
+                modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
+            )
+        }
     }
 }
 
