@@ -1,6 +1,13 @@
 package com.cocido.oficios.core.designsystem.component.buttons
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,9 +24,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
@@ -35,8 +46,10 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorError
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.designsystem.theme.oficiosTween
 
 enum class OficiosButtonVariant {
     Primary,
@@ -141,12 +154,24 @@ fun OficiosButton(
     } else {
         Modifier.heightIn(min = minHeight)
     }
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val pressScale by animateFloatAsState(
+        targetValue = if (pressed && isInteractive) PressedScale else 1f,
+        animationSpec = oficiosTween(OficiosMotion.DurationShort),
+        label = "OficiosButtonPressScale",
+    )
     // Dp.Unspecified evita que Surface estire el fondo hasta 48.dp.
     // El sistema igual expande el toque a 48.dp sin pintar ese extra.
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
     Button(
         onClick = { if (!loading) onClick() },
+        interactionSource = interactionSource,
         modifier = modifier
+            .graphicsLayer {
+                scaleX = pressScale
+                scaleY = pressScale
+            }
             .then(visualHeight)
             .then(
                 if (shadowColor != Color.Transparent && isInteractive) {
@@ -181,35 +206,70 @@ fun OficiosButton(
             vertical = OficiosComponentSize.buttonPaddingVertical,
         ),
     ) {
-        if (loading) {
-            OficiosProgress(
-                modifier = Modifier.size(OficiosComponentSize.iconMd),
-                color = contentColor,
-            )
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (leadingIcon != null) {
-                    Icon(
-                        imageVector = leadingIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+        val labelFade = oficiosTween<Float>(OficiosMotion.DurationMedium)
+        AnimatedContent(
+            targetState = loading,
+            transitionSpec = {
+                (fadeIn(labelFade) togetherWith fadeOut(labelFade)).using(null)
+            },
+            contentAlignment = Alignment.Center,
+            label = "OficiosButtonContent",
+        ) { isLoading ->
+            if (isLoading) {
+                // La etiqueta invisible conserva el ancho del botón mientras gira el spinner.
+                Box(contentAlignment = Alignment.Center) {
+                    OficiosButtonLabel(
+                        text = text,
+                        leadingIcon = leadingIcon,
+                        trailingIcon = trailingIcon,
+                        modifier = Modifier.alpha(0f),
                     )
-                    Spacer(Modifier.width(OficiosSpacing.xxs))
-                }
-                Text(text = text, style = MaterialTheme.typography.labelLarge)
-                if (trailingIcon != null) {
-                    Spacer(Modifier.width(OficiosSpacing.xxs))
-                    Icon(
-                        imageVector = trailingIcon,
-                        contentDescription = null,
+                    OficiosProgress(
                         modifier = Modifier.size(OficiosComponentSize.iconMd),
+                        color = contentColor,
                     )
                 }
+            } else {
+                OficiosButtonLabel(
+                    text = text,
+                    leadingIcon = leadingIcon,
+                    trailingIcon = trailingIcon,
+                )
             }
         }
     }
     }
 }
+
+@Composable
+private fun OficiosButtonLabel(
+    text: String,
+    leadingIcon: ImageVector?,
+    trailingIcon: ImageVector?,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        if (leadingIcon != null) {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(OficiosComponentSize.iconMd),
+            )
+            Spacer(Modifier.width(OficiosSpacing.xxs))
+        }
+        Text(text = text, style = MaterialTheme.typography.labelLarge)
+        if (trailingIcon != null) {
+            Spacer(Modifier.width(OficiosSpacing.xxs))
+            Icon(
+                imageVector = trailingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(OficiosComponentSize.iconMd),
+            )
+        }
+    }
+}
+
+private const val PressedScale = 0.97f
 
 private data class ButtonColors(
     val container: Color,
@@ -224,6 +284,16 @@ private fun PrimaryButtonPreview() {
     OficiosTheme {
         Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
             OficiosButton(text = "Ingresar", onClick = {})
+        }
+    }
+}
+
+@Preview(name = "Primary Loading", showBackground = true, backgroundColor = 0xFF00358B)
+@Composable
+private fun PrimaryLoadingButtonPreview() {
+    OficiosTheme {
+        Box(Modifier.size(200.dp, 60.dp), contentAlignment = Alignment.Center) {
+            OficiosButton(text = "Ingresar", onClick = {}, loading = true)
         }
     }
 }
