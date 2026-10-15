@@ -76,6 +76,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.component.motion.oficiosShake
+import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosRejectShake
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
@@ -886,6 +888,7 @@ private fun FinalizeCodeDialog(
 ) {
     var code by remember { mutableStateOf("") }
     var visibleError by remember(error) { mutableStateOf(error) }
+    val shake = rememberOficiosRejectShake(rejectionKey = error)
     OficiosDialog(
         title = stringResource(R.string.orders_finish),
         message = stringResource(R.string.orders_finalize_message),
@@ -902,6 +905,7 @@ private fun FinalizeCodeDialog(
                     if (input.length <= 6) code = input.filter { ch -> ch.isDigit() }
                 },
                 label = stringResource(R.string.orders_code_label),
+                modifier = Modifier.oficiosShake(shake),
                 isError = visibleError != null,
                 supportingText = visibleError,
             )
