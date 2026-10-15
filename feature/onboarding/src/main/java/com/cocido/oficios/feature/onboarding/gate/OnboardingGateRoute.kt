@@ -1,7 +1,9 @@
 package com.cocido.oficios.feature.onboarding.gate
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +43,9 @@ fun OnboardingGateRoute(
         when (state) {
             OnboardingGateUiState.Loading -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
                     contentAlignment = Alignment.Center,
                 ) {
                     OficiosProgress()
