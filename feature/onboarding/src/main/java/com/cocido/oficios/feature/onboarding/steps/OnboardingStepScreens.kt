@@ -3,11 +3,15 @@ package com.cocido.oficios.feature.onboarding.steps
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,15 +23,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
+import com.cocido.oficios.core.designsystem.component.inputs.LocalScrollViewportHeightPx
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
@@ -64,33 +76,44 @@ fun OnboardingStepScaffold(
     submitText: String? = null,
     submitVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
     submitSize: OficiosButtonSize = OficiosButtonSize.Large,
+    showSubmitButton: Boolean = true,
+    itemSpacing: Dp = OficiosSpacing.md,
     onSubmit: () -> Unit,
     content: @Composable () -> Unit,
 ) {
     val buttonText = submitText ?: stringResource(R.string.onboarding_step_save)
-    OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .consumeWindowInsets(padding)
-                .imePadding()
-                .padding(OficiosSpacing.md)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        ) {
-            Text(text = title, style = MaterialTheme.typography.headlineSmall)
-            if (error != null) OficiosInlineAlert(message = error)
-            content()
-            OficiosButton(
-                text = buttonText,
-                onClick = onSubmit,
-                enabled = !isLoading,
-                loading = isLoading,
-                modifier = Modifier.fillMaxWidth(),
-                variant = submitVariant,
-                size = submitSize,
-            )
+    var viewportHeightPx by remember { mutableIntStateOf(0) }
+    OficiosScaffold(
+        modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime),
+    ) { padding ->
+        CompositionLocalProvider(LocalScrollViewportHeightPx provides viewportHeightPx) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .consumeWindowInsets(padding)
+                    .imePadding()
+                    .onSizeChanged { viewportHeightPx = it.height }
+                    .verticalScroll(rememberScrollState())
+                    .padding(OficiosSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(itemSpacing),
+            ) {
+                Text(text = title, style = MaterialTheme.typography.headlineSmall)
+                if (error != null) OficiosInlineAlert(message = error)
+                content()
+                if (showSubmitButton) {
+                    OficiosButton(
+                        text = buttonText,
+                        onClick = onSubmit,
+                        enabled = !isLoading,
+                        loading = isLoading,
+                        modifier = Modifier.fillMaxWidth(),
+                        variant = submitVariant,
+                        size = submitSize,
+                    )
+                }
+            }
         }
     }
 }

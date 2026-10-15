@@ -13,7 +13,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.steps.OnboardingStepScaffold
 
@@ -35,6 +37,8 @@ fun VerifyPhoneStepScreen(
         submitText = stringResource(R.string.onboarding_step_verify_phone_submit),
         submitVariant = OficiosButtonVariant.Secondary,
         submitSize = OficiosButtonSize.Large,
+        showSubmitButton = false,
+        itemSpacing = OficiosSpacing.lg,
         onSubmit = onSubmit,
     ) {
         Text(
@@ -49,38 +53,49 @@ fun VerifyPhoneStepScreen(
                 color = MaterialTheme.colorScheme.primary,
             )
         }
-        OficiosTextField(
-            value = uiState.code,
-            onValueChange = onCodeChanged,
-            label = stringResource(R.string.onboarding_step_verify_phone_code_label),
-            isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
-            supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done,
-            ),
-            keyboardActions = KeyboardActions(onDone = { onSubmit() }),
-        )
-        OficiosButton(
-            text = when {
-                uiState.isResending -> stringResource(R.string.onboarding_step_verify_phone_resending)
-                uiState.resendCooldownSeconds > 0 -> stringResource(
-                    R.string.onboarding_step_verify_phone_resend_cooldown,
-                    uiState.resendCooldownSeconds,
-                )
-                else -> stringResource(R.string.onboarding_step_verify_phone_resend)
-            },
-            onClick = onResend,
-            enabled = uiState.resendCooldownSeconds == 0 && !uiState.isResending && !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Ghost,
-        )
-        OficiosButton(
-            text = stringResource(R.string.onboarding_step_verify_phone_edit_number),
-            onClick = onEditNumber,
-            enabled = !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Ghost,
-        )
+        FieldAndCtaBlock {
+            OficiosTextField(
+                value = uiState.code,
+                onValueChange = onCodeChanged,
+                label = stringResource(R.string.onboarding_step_verify_phone_code_label),
+                isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
+                supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { onSubmit() }),
+            )
+            OficiosButton(
+                text = when {
+                    uiState.isResending -> stringResource(R.string.onboarding_step_verify_phone_resending)
+                    uiState.resendCooldownSeconds > 0 -> stringResource(
+                        R.string.onboarding_step_verify_phone_resend_cooldown,
+                        uiState.resendCooldownSeconds,
+                    )
+                    else -> stringResource(R.string.onboarding_step_verify_phone_resend)
+                },
+                onClick = onResend,
+                enabled = uiState.resendCooldownSeconds == 0 && !uiState.isResending && !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Ghost,
+            )
+            OficiosButton(
+                text = stringResource(R.string.onboarding_step_verify_phone_edit_number),
+                onClick = onEditNumber,
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Ghost,
+            )
+            OficiosButton(
+                text = stringResource(R.string.onboarding_step_verify_phone_submit),
+                onClick = onSubmit,
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
+            )
+        }
     }
 }
