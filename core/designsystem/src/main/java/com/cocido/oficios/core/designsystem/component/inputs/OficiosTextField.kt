@@ -70,6 +70,9 @@ fun OficiosTextField(
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
 ) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
+    // M3 oculta el placeholder en cuanto hay texto: sin label el campo queda sin nombre visible.
+    val fieldLabel = label.ifBlank { placeholder.orEmpty() }
+    val fieldPlaceholder = placeholder?.takeIf { label.isNotBlank() && it != label }
     val parentBringIntoView = LocalFieldAndCtaBringIntoView.current
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val scope = rememberCoroutineScope()
@@ -111,12 +114,12 @@ fun OficiosTextField(
                     }
                 }
             },
-        label = if (label.isNotBlank()) {
-            { Text(text = label, style = MaterialTheme.typography.bodyMedium) }
+        label = if (fieldLabel.isNotBlank()) {
+            { Text(text = fieldLabel, style = MaterialTheme.typography.bodyMedium) }
         } else {
             null
         },
-        placeholder = placeholder?.let { { Text(text = it, style = MaterialTheme.typography.bodyLarge, color = placeholderColor) } },
+        placeholder = fieldPlaceholder?.let { { Text(text = it, style = MaterialTheme.typography.bodyLarge, color = placeholderColor) } },
         enabled = enabled,
         readOnly = readOnly,
         isError = isError,

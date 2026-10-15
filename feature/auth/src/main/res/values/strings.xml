@@ -62,7 +62,9 @@
     <string name="auth_register_trade_description_hint">Ej: también hago tinturas personalizadas, trabajo a domicilio los fines de semana, etc.</string>
     <string name="auth_register_trade_experience_label">Rango de Experiencia:</string>
     <string name="auth_register_trade_experience_hint">Seleccioná un rango</string>
+    <string name="auth_register_trade_experience_field_label">Rango de experiencia</string>
     <string name="auth_register_trade_neighborhood_label">Barrio:</string>
+    <string name="auth_register_trade_neighborhood_field_label">Barrio</string>
     <string name="auth_register_trade_neighborhood_hint">Buscá tu barrio</string>
     <string name="auth_register_trade_work_days_label">Días laborables:</string>
     <string name="auth_register_trade_service_location_label">Lugar de atención:</string>

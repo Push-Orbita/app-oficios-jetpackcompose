@@ -59,7 +59,7 @@ class OficiosTextFieldHeightTest {
                 modifier = it,
             )
         },
-        FieldCase("solo_placeholder", hasLabel = false) {
+        FieldCase("solo_placeholder", hasLabel = true) {
             OficiosTextField(value = "Juan García", onValueChange = {}, label = "", placeholder = "Nombre completo", modifier = it)
         },
         FieldCase("contrasena_con_ojo", hasLabel = true) {

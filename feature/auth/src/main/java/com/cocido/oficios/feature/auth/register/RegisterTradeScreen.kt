@@ -82,7 +82,6 @@ fun RegisterTradeScreen(
                     label = stringResource(R.string.auth_register_trade_category_label),
                     placeholder = stringResource(R.string.auth_register_trade_category_hint),
                     enabled = !uiState.isLoadingCatalog && uiState.categoryOptions.isNotEmpty(),
-                    usePlaceholderOnly = true,
                 )
 
                 OficiosDropdownField(
@@ -92,7 +91,6 @@ fun RegisterTradeScreen(
                     label = stringResource(R.string.auth_register_trade_trade_label),
                     placeholder = stringResource(R.string.auth_register_trade_trade_hint),
                     enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
-                    usePlaceholderOnly = true,
                 )
 
                 RegisterTradeSpecializationsSection(
@@ -112,9 +110,8 @@ fun RegisterTradeScreen(
                             value = uiState.selectedExperienceRange,
                             options = uiState.experienceRanges,
                             onOptionSelected = { onEvent(RegisterTradeEvent.ExperienceRangeChanged(it)) },
-                            label = stringResource(R.string.auth_register_trade_experience_hint),
+                            label = stringResource(R.string.auth_register_trade_experience_field_label),
                             placeholder = stringResource(R.string.auth_register_trade_experience_hint),
-                            usePlaceholderOnly = true,
                         )
                     }
 
@@ -127,7 +124,7 @@ fun RegisterTradeScreen(
                             suggestions = uiState.neighborhoodOptions,
                             onSuggestionSelected = { onEvent(RegisterTradeEvent.NeighborhoodSelected(it)) },
                             suggestionLabel = { it.label },
-                            label = "",
+                            label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
                             placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
                             onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
                         )
@@ -179,18 +176,14 @@ fun RegisterTradeScreen(
                                         options = uiState.timeOptions,
                                         onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotFromChanged(index, it)) },
                                         label = stringResource(R.string.auth_register_trade_from_label),
-                                        placeholder = stringResource(R.string.auth_register_trade_from_label),
                                         modifier = Modifier.weight(1f),
-                                        usePlaceholderOnly = true,
                                     )
                                     OficiosDropdownField(
                                         value = slot.to,
                                         options = uiState.timeOptions,
                                         onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotToChanged(index, it)) },
                                         label = stringResource(R.string.auth_register_trade_to_label),
-                                        placeholder = stringResource(R.string.auth_register_trade_to_label),
                                         modifier = Modifier.weight(1f),
-                                        usePlaceholderOnly = true,
                                     )
                                 }
                             }
