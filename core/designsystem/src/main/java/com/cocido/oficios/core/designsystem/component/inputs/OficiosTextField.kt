@@ -82,13 +82,18 @@ fun OficiosTextField(
     val ctaClearancePx = with(density) {
         (OficiosComponentSize.buttonHeightLarge + OficiosSpacing.md + OficiosComponentSize.buttonHeightSmall).toPx()
     }
+    val fontScale = density.fontScale
+    val minFieldHeight = with(density) {
+        (OficiosComponentSize.textFieldHeight.toPx() * fontScale.coerceIn(1f, 2f)).toDp()
+    }
+    val fieldTextStyle = MaterialTheme.typography.bodyLarge
     // Sin altura fija: con label, M3 suma 8dp arriba de la caja de 56dp y el supportingText va debajo.
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = OficiosComponentSize.textFieldHeight)
+            .heightIn(min = minFieldHeight)
             .onSizeChanged { fieldSize = it }
             .onGloballyPositioned { fieldCoordinates = it }
             .then(
@@ -124,6 +129,7 @@ fun OficiosTextField(
         readOnly = readOnly,
         isError = isError,
         supportingText = supportingText?.let { { Text(text = it, style = MaterialTheme.typography.labelSmall) } },
+        textStyle = fieldTextStyle,
         singleLine = singleLine,
         minLines = if (singleLine) 1 else minLines.coerceAtLeast(1),
         maxLines = if (singleLine) 1 else maxLines.coerceAtLeast(minLines.coerceAtLeast(1)),
