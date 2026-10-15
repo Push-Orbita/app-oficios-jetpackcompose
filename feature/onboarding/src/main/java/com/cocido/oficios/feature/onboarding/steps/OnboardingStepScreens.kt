@@ -565,7 +565,6 @@ fun ProviderRubrosStepScreen(
             },
             label = stringResource(R.string.onboarding_step_rubros_category_label),
             placeholder = stringResource(R.string.onboarding_step_rubros_select_placeholder),
-            usePlaceholderOnly = true,
         )
         OficiosDropdownField(
             value = uiState.tradeOptions.find { it.id == uiState.selectedTradeId }?.label.orEmpty(),
@@ -575,7 +574,6 @@ fun ProviderRubrosStepScreen(
             },
             label = stringResource(R.string.onboarding_step_rubros_trade_label),
             placeholder = stringResource(R.string.onboarding_step_rubros_select_placeholder),
-            usePlaceholderOnly = true,
         )
         uiState.specializationOptions.forEach { option ->
             OficiosCheckbox(
@@ -651,18 +649,14 @@ fun ProviderAvailabilityStepScreen(
                             options = uiState.timeOptions,
                             onOptionSelected = { onTimeSlotFromChanged(index, it) },
                             label = stringResource(R.string.onboarding_step_availability_from),
-                            placeholder = stringResource(R.string.onboarding_step_availability_from),
                             modifier = Modifier.weight(1f),
-                            usePlaceholderOnly = true,
                         )
                         OficiosDropdownField(
                             value = slot.to,
                             options = uiState.timeOptions,
                             onOptionSelected = { onTimeSlotToChanged(index, it) },
                             label = stringResource(R.string.onboarding_step_availability_to),
-                            placeholder = stringResource(R.string.onboarding_step_availability_to),
                             modifier = Modifier.weight(1f),
-                            usePlaceholderOnly = true,
                         )
                     }
                 }

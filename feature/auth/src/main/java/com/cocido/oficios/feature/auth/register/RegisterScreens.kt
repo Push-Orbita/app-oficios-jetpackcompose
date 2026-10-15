@@ -154,8 +154,7 @@ fun RegisterFormScreen(
             OficiosTextField(
                 value = uiState.fullName,
                 onValueChange = { onEvent(RegisterFormEvent.FullNameChanged(it)) },
-                label = "",
-                placeholder = stringResource(R.string.auth_full_name_label),
+                label = stringResource(R.string.auth_full_name_label),
                 isError = uiState.hasAttemptedSubmit && uiState.fullNameError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.fullNameError else null,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -164,8 +163,7 @@ fun RegisterFormScreen(
             OficiosTextField(
                 value = uiState.document,
                 onValueChange = { onEvent(RegisterFormEvent.DocumentChanged(it)) },
-                label = "",
-                placeholder = stringResource(R.string.auth_document_label),
+                label = stringResource(R.string.auth_document_label),
                 isError = uiState.hasAttemptedSubmit && uiState.documentError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.documentError else null,
                 modifier = Modifier.focusRequester(documentFocus),
@@ -178,8 +176,7 @@ fun RegisterFormScreen(
             OficiosTextField(
                 value = uiState.email,
                 onValueChange = { onEvent(RegisterFormEvent.EmailChanged(it)) },
-                label = "",
-                placeholder = stringResource(R.string.auth_email_electronic_label),
+                label = stringResource(R.string.auth_email_electronic_label),
                 isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
                 modifier = Modifier.focusRequester(emailFocus),
@@ -197,8 +194,7 @@ fun RegisterFormScreen(
             OficiosPasswordField(
                 value = uiState.password,
                 onValueChange = { onEvent(RegisterFormEvent.PasswordChanged(it)) },
-                label = "",
-                placeholder = stringResource(R.string.auth_password_label),
+                label = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
                 modifier = Modifier.focusRequester(passwordFocus),
@@ -208,8 +204,7 @@ fun RegisterFormScreen(
             OficiosPasswordField(
                 value = uiState.confirmPassword,
                 onValueChange = { onEvent(RegisterFormEvent.ConfirmPasswordChanged(it)) },
-                label = "",
-                placeholder = stringResource(R.string.auth_repeat_password_label),
+                label = stringResource(R.string.auth_repeat_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.confirmPasswordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.confirmPasswordError else null,
                 modifier = Modifier.focusRequester(confirmFocus),
