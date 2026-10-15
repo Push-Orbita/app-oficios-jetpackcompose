@@ -4,8 +4,16 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosAnimatedSuccessOverlay
+import com.cocido.oficios.core.designsystem.theme.OficiosMotion
+import com.cocido.oficios.core.designsystem.theme.oficiosTween
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -22,6 +31,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.core.content.ContextCompat
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.UserRole
+import com.cocido.oficios.feature.home.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun OrderDetailRoute(
@@ -39,6 +50,7 @@ fun OrderDetailRoute(
     val snackbar = LocalOficiosSnackbarController.current
     val context = LocalContext.current
     var pendingLocationAction by remember { mutableStateOf<TrackingLocationAction?>(null) }
+    var showCompletionSuccess by remember { mutableStateOf(false) }
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { grants ->
@@ -78,7 +90,15 @@ fun OrderDetailRoute(
                 }
                 is OrderDetailEffect.StartForegroundTracking -> onStartTracking(effect.bookingId)
                 OrderDetailEffect.StopForegroundTracking -> onStopTracking()
+                OrderDetailEffect.CompletionConfirmed -> showCompletionSuccess = true
             }
+        }
+    }
+
+    LaunchedEffect(showCompletionSuccess) {
+        if (showCompletionSuccess) {
+            delay(COMPLETION_SUCCESS_HOLD_MILLIS)
+            showCompletionSuccess = false
         }
     }
 
@@ -91,13 +111,32 @@ fun OrderDetailRoute(
         if (canResume) onStartTracking(bookingId)
     }
 
-    OrderDetailScreen(
-        uiState = uiState,
-        onEvent = viewModel::onEvent,
-        onNavigateBack = onNavigateBack,
-        modifier = modifier,
-    )
+    Box(modifier = modifier) {
+        OrderDetailScreen(
+            uiState = uiState,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack,
+        )
+        val fade = oficiosTween<Float>(OficiosMotion.DurationMedium)
+        AnimatedVisibility(
+            visible = showCompletionSuccess,
+            enter = fadeIn(fade),
+            exit = fadeOut(fade),
+        ) {
+            OficiosAnimatedSuccessOverlay(
+                title = stringResource(R.string.orders_finalize_success_title),
+                description = stringResource(R.string.orders_finalize_success_description),
+                modifier = Modifier.clickable(
+                    interactionSource = null,
+                    indication = null,
+                    onClick = { showCompletionSuccess = false },
+                ),
+            )
+        }
+    }
 }
+
+private const val COMPLETION_SUCCESS_HOLD_MILLIS = 1_600L
 
 @Composable
 private fun ReloadOnResume(onReload: () -> Unit) {

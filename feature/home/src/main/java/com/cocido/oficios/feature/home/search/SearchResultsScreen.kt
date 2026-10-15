@@ -40,6 +40,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
+import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
@@ -198,6 +199,7 @@ private fun ActiveFilterChips(
     onRemove: (FilterChip) -> Unit,
 ) {
     if (chips.isEmpty()) return
+    val haptics = rememberOficiosHaptics()
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,7 +211,10 @@ private fun ActiveFilterChips(
         chips.forEach { chip ->
             FilterChip(
                 selected = true,
-                onClick = { onRemove(chip) },
+                onClick = {
+                    haptics.tick()
+                    onRemove(chip)
+                },
                 label = { Text(chip.label) },
             )
         }

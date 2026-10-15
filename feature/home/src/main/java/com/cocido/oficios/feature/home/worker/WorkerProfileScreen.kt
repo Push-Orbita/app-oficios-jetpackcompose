@@ -43,6 +43,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
+import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -75,6 +76,7 @@ fun WorkerProfileScreen(
 ) {
     var menuOpen by rememberSaveable { mutableStateOf(false) }
     var confirmReport by rememberSaveable { mutableStateOf(false) }
+    val haptics = rememberOficiosHaptics()
     OficiosScaffold(
         modifier = modifier,
         topBar = {
@@ -85,7 +87,10 @@ fun WorkerProfileScreen(
                     val success = uiState as? WorkerProfileUiState.Success
                     if (success?.canFavorite == true) {
                         IconButton(
-                            onClick = { onEvent(WorkerProfileEvent.FavoriteClicked) },
+                            onClick = {
+                                haptics.tick()
+                                onEvent(WorkerProfileEvent.FavoriteClicked)
+                            },
                             modifier = Modifier.size(OficiosComponentSize.buttonHeight),
                         ) {
                             Icon(

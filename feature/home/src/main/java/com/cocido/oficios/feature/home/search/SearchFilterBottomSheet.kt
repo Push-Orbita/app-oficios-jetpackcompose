@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -107,29 +108,17 @@ fun SearchFilterBottomSheet(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-                FilterChip(
-                    selected = state.selectedModality == AttentionModality.DOMICILIO,
-                    onClick = {
-                        val next = if (state.selectedModality == AttentionModality.DOMICILIO) {
-                            null
-                        } else {
-                            AttentionModality.DOMICILIO
-                        }
-                        onEvent(SearchResultsEvent.FilterModalitySelected(next))
-                    },
-                    label = { Text(stringResource(R.string.home_filter_modality_home)) },
+                ModalityFilterChip(
+                    modality = AttentionModality.DOMICILIO,
+                    label = stringResource(R.string.home_filter_modality_home),
+                    selectedModality = state.selectedModality,
+                    onEvent = onEvent,
                 )
-                FilterChip(
-                    selected = state.selectedModality == AttentionModality.LOCAL,
-                    onClick = {
-                        val next = if (state.selectedModality == AttentionModality.LOCAL) {
-                            null
-                        } else {
-                            AttentionModality.LOCAL
-                        }
-                        onEvent(SearchResultsEvent.FilterModalitySelected(next))
-                    },
-                    label = { Text(stringResource(R.string.home_filter_modality_local)) },
+                ModalityFilterChip(
+                    modality = AttentionModality.LOCAL,
+                    label = stringResource(R.string.home_filter_modality_local),
+                    selectedModality = state.selectedModality,
+                    onEvent = onEvent,
                 )
             }
 
@@ -190,4 +179,23 @@ fun SearchFilterBottomSheet(
             DatePicker(state = datePickerState)
         }
     }
+}
+
+@Composable
+private fun ModalityFilterChip(
+    modality: AttentionModality,
+    label: String,
+    selectedModality: AttentionModality?,
+    onEvent: (SearchResultsEvent) -> Unit,
+) {
+    val haptics = rememberOficiosHaptics()
+    val selected = selectedModality == modality
+    FilterChip(
+        selected = selected,
+        onClick = {
+            haptics.tick()
+            onEvent(SearchResultsEvent.FilterModalitySelected(if (selected) null else modality))
+        },
+        label = { Text(label) },
+    )
 }

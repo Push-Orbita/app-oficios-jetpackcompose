@@ -1,9 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.feedback
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.border
@@ -30,49 +27,60 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.theme.LocalReducedMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Confirmación de éxito de una acción importante (onboarding, finalizar, calificar).
+ * Acompaña la animación con el háptico [OficiosHaptics.confirm]; con reduced motion se muestra
+ * directamente el estado final.
+ */
 @Composable
 fun OficiosAnimatedSuccessOverlay(
     title: String,
     description: String,
     modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
 ) {
-    val iconScale = remember { Animatable(0.2f) }
-    val textAlpha = remember { Animatable(0f) }
-    val ringScale = remember { Animatable(0.6f) }
-    val ringAlpha = remember { Animatable(0.45f) }
+    val reducedMotion = LocalReducedMotion.current
+    val haptics = rememberOficiosHaptics()
+    val iconScale = remember { Animatable(if (reducedMotion) 1f else 0.6f) }
+    val textAlpha = remember { Animatable(if (reducedMotion) 1f else 0f) }
+    val ringScale = remember { Animatable(1f) }
+    val ringAlpha = remember { Animatable(if (reducedMotion) 0f else 0.45f) }
 
     LaunchedEffect(Unit) {
+        haptics.confirm()
+        if (reducedMotion) return@LaunchedEffect
         launch {
             iconScale.animateTo(
                 targetValue = 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMediumLow,
-                ),
+                animationSpec = OficiosMotion.tween(OficiosMotion.DurationLong, OficiosMotion.EmphasizedDecelerate),
             )
         }
         launch {
             ringScale.animateTo(
-                targetValue = 1.9f,
-                animationSpec = tween(durationMillis = 900),
-            )
-            ringAlpha.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(durationMillis = 350),
+                targetValue = 1.6f,
+                animationSpec = OficiosMotion.tween(OficiosMotion.DurationLong, OficiosMotion.EmphasizedDecelerate),
             )
         }
         launch {
-            delay(120)
+            ringAlpha.animateTo(
+                targetValue = 0f,
+                animationSpec = OficiosMotion.tween(OficiosMotion.DurationLong, OficiosMotion.EmphasizedAccelerate),
+            )
+        }
+        launch {
+            delay(OficiosMotion.DurationShort.toLong())
             textAlpha.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 450),
+                animationSpec = OficiosMotion.tween(OficiosMotion.DurationMedium, OficiosMotion.EmphasizedDecelerate),
             )
         }
     }
@@ -132,6 +140,12 @@ fun OficiosAnimatedSuccessOverlay(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.graphicsLayer { alpha = textAlpha.value },
             )
+            if (action != null) {
+                Spacer(Modifier.height(OficiosSpacing.lg))
+                Box(modifier = Modifier.graphicsLayer { alpha = textAlpha.value }) {
+                    action()
+                }
+            }
         }
     }
 }
