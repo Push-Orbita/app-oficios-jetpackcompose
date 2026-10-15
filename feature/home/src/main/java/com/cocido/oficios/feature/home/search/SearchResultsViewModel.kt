@@ -481,6 +481,9 @@ data class FilterSheetUiState(
     val selectedDate: String? = null,
 )
 
+internal fun hasRemovableFilterChips(chips: List<FilterChip>): Boolean =
+    chips.any { it.type != FilterChipType.QUERY }
+
 enum class FilterChipType {
     CATEGORY,
     RUBRO,

@@ -65,6 +65,49 @@ class SearchResultsViewModelTest {
     }
 
     @Test
+    fun `hasRemovableFilterChips ignores query chip only`() {
+        assertTrue(
+            hasRemovableFilterChips(
+                listOf(
+                    FilterChip(FilterChipType.QUERY, "plomero"),
+                    FilterChip(FilterChipType.RUBRO, "Gas"),
+                ),
+            ),
+        )
+        assertEquals(
+            false,
+            hasRemovableFilterChips(listOf(FilterChip(FilterChipType.QUERY, "plomero"))),
+        )
+    }
+
+    @Test
+    fun `clearFilters keeps search query`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(SearchResultsEvent.QueryChanged("electricista"))
+        viewModel.onEvent(SearchResultsEvent.QuerySubmitted)
+        advanceUntilIdle()
+
+        viewModel.onEvent(SearchResultsEvent.ClearFilters)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state is SearchResultsUiState.Success || state is SearchResultsUiState.Empty)
+        val filters = when (state) {
+            is SearchResultsUiState.Success -> state.activeFilters
+            is SearchResultsUiState.Empty -> state.activeFilters
+            else -> error("unexpected state")
+        }
+        assertEquals("electricista", filters.query)
+        val chips = when (state) {
+            is SearchResultsUiState.Success -> state.filterChips
+            is SearchResultsUiState.Empty -> state.filterChips
+            else -> error("unexpected state")
+        }
+        assertEquals(listOf(FilterChip(FilterChipType.QUERY, "electricista")), chips)
+    }
+
+    @Test
     fun `error emits error state`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             searchResult = AppResult.Error(AppError.Unknown()),
