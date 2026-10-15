@@ -34,6 +34,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -57,6 +59,7 @@ fun SearchResultsScreen(
     onEvent: (SearchResultsEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val searchFocusRequester = remember { FocusRequester() }
     OficiosScaffold(modifier = modifier) { paddingValues ->
         Column(
             modifier = Modifier
@@ -65,6 +68,7 @@ fun SearchResultsScreen(
         ) {
             SearchResultsHeader(
                 searchQuery = searchQuery,
+                searchFocusRequester = searchFocusRequester,
                 activeFilterCount = when (uiState) {
                     is SearchResultsUiState.Empty -> uiState.filterChips.size
                     is SearchResultsUiState.Success -> uiState.filterChips.size
@@ -106,7 +110,8 @@ fun SearchResultsScreen(
                             onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
                         )
                         val query = state.activeFilters.query?.takeIf { it.isNotBlank() }
-                        val hasRemovableFilters = state.filterChips.isNotEmpty()
+                        val hasRemovableFilters = hasRemovableFilterChips(state.filterChips)
+                        val hasQueryOnly = query != null && !hasRemovableFilters
                         OficiosEmptyState(
                             title = stringResource(R.string.home_search_results_empty_title),
                             description = if (query != null) {
@@ -115,15 +120,15 @@ fun SearchResultsScreen(
                                 stringResource(R.string.home_search_results_empty_description)
                             },
                             variant = OficiosEmptyVariant.NoResults,
-                            ctaLabel = if (hasRemovableFilters) {
-                                stringResource(R.string.home_search_clear_filters)
-                            } else {
-                                null
+                            ctaLabel = when {
+                                hasRemovableFilters -> stringResource(R.string.home_search_clear_filters)
+                                hasQueryOnly -> stringResource(R.string.home_search_change_query)
+                                else -> null
                             },
-                            onCta = if (hasRemovableFilters) {
-                                { onEvent(SearchResultsEvent.ClearFilters) }
-                            } else {
-                                null
+                            onCta = when {
+                                hasRemovableFilters -> ({ onEvent(SearchResultsEvent.ClearFilters) })
+                                hasQueryOnly -> ({ searchFocusRequester.requestFocus() })
+                                else -> null
                             },
                             modifier = Modifier.fillMaxWidth(),
                         )
@@ -161,6 +166,7 @@ fun SearchResultsScreen(
 @Composable
 private fun SearchResultsHeader(
     searchQuery: String,
+    searchFocusRequester: FocusRequester,
     activeFilterCount: Int,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
@@ -182,7 +188,9 @@ private fun SearchResultsHeader(
             onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
             onSearch = { onEvent(SearchResultsEvent.QuerySubmitted) },
             placeholder = stringResource(R.string.home_search_hint),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(searchFocusRequester),
         )
         IconButton(onClick = { onEvent(SearchResultsEvent.OpenFilters) }) {
             BadgedBox(
