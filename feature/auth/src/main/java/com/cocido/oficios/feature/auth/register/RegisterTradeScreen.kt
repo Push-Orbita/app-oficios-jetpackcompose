@@ -19,6 +19,7 @@ import com.cocido.oficios.core.designsystem.component.categories.CategoryGridIte
 import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
+import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
@@ -42,28 +43,6 @@ fun RegisterTradeScreen(
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading || uiState.isLoadingCatalog,
-        footer = if (uiState.selectedCategoryId != null) {
-            {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = OficiosComponentSize.buttonHeight),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    OficiosButton(
-                        text = stringResource(R.string.auth_continue),
-                        onClick = { onEvent(RegisterTradeEvent.Continue) },
-                        variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Large,
-                        enabled = !uiState.isLoading,
-                        loading = uiState.isLoading,
-                    )
-                }
-            }
-        } else {
-            null
-        },
     ) {
         Text(
             text = stringResource(R.string.auth_register_trade_title),
@@ -95,165 +74,183 @@ fun RegisterTradeScreen(
                 },
             )
         } else {
-            OficiosDropdownField(
-                value = uiState.selectedCategory,
-                options = uiState.categories,
-                onOptionSelected = { onEvent(RegisterTradeEvent.CategoryChanged(it)) },
-                label = stringResource(R.string.auth_register_trade_category_label),
-                placeholder = stringResource(R.string.auth_register_trade_category_hint),
-                enabled = !uiState.isLoadingCatalog && uiState.categoryOptions.isNotEmpty(),
-                usePlaceholderOnly = true,
-            )
+            FieldAndCtaBlock {
+                OficiosDropdownField(
+                    value = uiState.selectedCategory,
+                    options = uiState.categories,
+                    onOptionSelected = { onEvent(RegisterTradeEvent.CategoryChanged(it)) },
+                    label = stringResource(R.string.auth_register_trade_category_label),
+                    placeholder = stringResource(R.string.auth_register_trade_category_hint),
+                    enabled = !uiState.isLoadingCatalog && uiState.categoryOptions.isNotEmpty(),
+                    usePlaceholderOnly = true,
+                )
 
-            OficiosDropdownField(
-                value = uiState.selectedTrade,
-                options = uiState.trades,
-                onOptionSelected = { onEvent(RegisterTradeEvent.TradeChanged(it)) },
-                label = stringResource(R.string.auth_register_trade_trade_label),
-                placeholder = stringResource(R.string.auth_register_trade_trade_hint),
-                enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
-                usePlaceholderOnly = true,
-            )
+                OficiosDropdownField(
+                    value = uiState.selectedTrade,
+                    options = uiState.trades,
+                    onOptionSelected = { onEvent(RegisterTradeEvent.TradeChanged(it)) },
+                    label = stringResource(R.string.auth_register_trade_trade_label),
+                    placeholder = stringResource(R.string.auth_register_trade_trade_hint),
+                    enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
+                    usePlaceholderOnly = true,
+                )
 
-            RegisterTradeSpecializationsSection(
-                options = uiState.specializationOptions,
-                isLoading = uiState.isLoadingSpecializations,
-                selected = uiState.selectedSpecializations,
-                descriptionValue = uiState.otherSpecialization,
-                onToggle = { id, checked -> onEvent(RegisterTradeEvent.SpecializationToggled(id, checked)) },
-                onDescriptionChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
-            )
-        }
+                RegisterTradeSpecializationsSection(
+                    options = uiState.specializationOptions,
+                    isLoading = uiState.isLoadingSpecializations,
+                    selected = uiState.selectedSpecializations,
+                    descriptionValue = uiState.otherSpecialization,
+                    onToggle = { id, checked -> onEvent(RegisterTradeEvent.SpecializationToggled(id, checked)) },
+                    onDescriptionChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
+                )
 
-        if (uiState.selectedCategoryId != null) {
-        RegisterTradeLabeledSection(
-            title = stringResource(R.string.auth_register_trade_experience_label),
-        ) {
-            OficiosDropdownField(
-                value = uiState.selectedExperienceRange,
-                options = uiState.experienceRanges,
-                onOptionSelected = { onEvent(RegisterTradeEvent.ExperienceRangeChanged(it)) },
-                label = stringResource(R.string.auth_register_trade_experience_hint),
-                placeholder = stringResource(R.string.auth_register_trade_experience_hint),
-                usePlaceholderOnly = true,
-            )
-        }
-
-        RegisterTradeLabeledSection(
-            title = stringResource(R.string.auth_register_trade_neighborhood_label),
-        ) {
-            OficiosAutocompleteField(
-                value = uiState.neighborhoodQuery,
-                onValueChange = { onEvent(RegisterTradeEvent.NeighborhoodQueryChanged(it)) },
-                suggestions = uiState.neighborhoodOptions,
-                onSuggestionSelected = { onEvent(RegisterTradeEvent.NeighborhoodSelected(it)) },
-                suggestionLabel = { it.label },
-                label = "",
-                placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
-                onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
-            )
-        }
-
-        RegisterTradeLabeledSection(
-            title = stringResource(R.string.auth_register_trade_work_days_label),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
-                RegisterTradeUiState.defaultWorkDays.forEach { (dayId, dayLabel) ->
-                    OficiosCheckbox(
-                        checked = dayId in uiState.selectedWorkDays,
-                        onCheckedChange = { onEvent(RegisterTradeEvent.WorkDayToggled(dayId, it)) },
-                        label = dayLabel,
-                        compactRow = true,
-                    )
-                }
-            }
-        }
-
-        RegisterTradeLabeledSection(
-            title = stringResource(R.string.auth_register_trade_service_location_label),
-        ) {
-            OficiosCheckbox(
-                checked = uiState.servesAtClientHome,
-                onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtClientHomeChanged(it)) },
-                label = stringResource(R.string.auth_register_trade_serves_at_home),
-                compactRow = true,
-            )
-            OficiosCheckbox(
-                checked = uiState.servesAtLocal,
-                onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtLocalChanged(it)) },
-                label = stringResource(R.string.auth_register_trade_serves_at_local),
-                compactRow = true,
-            )
-        }
-
-        RegisterTradeLabeledSection(
-            title = stringResource(R.string.auth_register_trade_schedule_label),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                uiState.timeSlots.forEachIndexed { index, slot ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                if (uiState.selectedCategoryId != null) {
+                    RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_experience_label),
                     ) {
                         OficiosDropdownField(
-                            value = slot.from,
-                            options = uiState.timeOptions,
-                            onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotFromChanged(index, it)) },
-                            label = stringResource(R.string.auth_register_trade_from_label),
-                            placeholder = stringResource(R.string.auth_register_trade_from_label),
-                            modifier = Modifier.weight(1f),
-                            usePlaceholderOnly = true,
-                        )
-                        OficiosDropdownField(
-                            value = slot.to,
-                            options = uiState.timeOptions,
-                            onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotToChanged(index, it)) },
-                            label = stringResource(R.string.auth_register_trade_to_label),
-                            placeholder = stringResource(R.string.auth_register_trade_to_label),
-                            modifier = Modifier.weight(1f),
+                            value = uiState.selectedExperienceRange,
+                            options = uiState.experienceRanges,
+                            onOptionSelected = { onEvent(RegisterTradeEvent.ExperienceRangeChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_experience_hint),
+                            placeholder = stringResource(R.string.auth_register_trade_experience_hint),
                             usePlaceholderOnly = true,
                         )
                     }
-                }
-                RegisterTradeCenteredAction(
-                    text = stringResource(R.string.auth_register_trade_add_schedule),
-                    onClick = { onEvent(RegisterTradeEvent.AddTimeSlot) },
-                )
-            }
-        }
 
-        RegisterTradeLabeledSection(
-            title = stringResource(R.string.auth_register_trade_payment_label),
-        ) {
-            Text(
-                text = stringResource(R.string.auth_register_trade_payment_hint),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            OficiosCheckbox(
-                checked = ProviderPaymentMethods.EFECTIVO in uiState.selectedPaymentMethods,
-                onCheckedChange = {
-                    onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, it))
-                },
-                label = stringResource(R.string.auth_register_trade_payment_efectivo),
-                compactRow = true,
-            )
-            OficiosCheckbox(
-                checked = ProviderPaymentMethods.TRANSFERENCIA in uiState.selectedPaymentMethods,
-                onCheckedChange = {
-                    onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.TRANSFERENCIA, it))
-                },
-                label = stringResource(R.string.auth_register_trade_payment_transferencia),
-                compactRow = true,
-            )
-            OficiosCheckbox(
-                checked = ProviderPaymentMethods.MERCADOPAGO in uiState.selectedPaymentMethods,
-                onCheckedChange = {
-                    onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.MERCADOPAGO, it))
-                },
-                label = stringResource(R.string.auth_register_trade_payment_mercadopago),
-                compactRow = true,
-            )
-        }
+                    RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_neighborhood_label),
+                    ) {
+                        OficiosAutocompleteField(
+                            value = uiState.neighborhoodQuery,
+                            onValueChange = { onEvent(RegisterTradeEvent.NeighborhoodQueryChanged(it)) },
+                            suggestions = uiState.neighborhoodOptions,
+                            onSuggestionSelected = { onEvent(RegisterTradeEvent.NeighborhoodSelected(it)) },
+                            suggestionLabel = { it.label },
+                            label = "",
+                            placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
+                            onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
+                        )
+                    }
+
+                    RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_work_days_label),
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
+                            RegisterTradeUiState.defaultWorkDays.forEach { (dayId, dayLabel) ->
+                                OficiosCheckbox(
+                                    checked = dayId in uiState.selectedWorkDays,
+                                    onCheckedChange = { onEvent(RegisterTradeEvent.WorkDayToggled(dayId, it)) },
+                                    label = dayLabel,
+                                    compactRow = true,
+                                )
+                            }
+                        }
+                    }
+
+                    RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_service_location_label),
+                    ) {
+                        OficiosCheckbox(
+                            checked = uiState.servesAtClientHome,
+                            onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtClientHomeChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_serves_at_home),
+                            compactRow = true,
+                        )
+                        OficiosCheckbox(
+                            checked = uiState.servesAtLocal,
+                            onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtLocalChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_serves_at_local),
+                            compactRow = true,
+                        )
+                    }
+
+                    RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_schedule_label),
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+                            uiState.timeSlots.forEachIndexed { index, slot ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                                ) {
+                                    OficiosDropdownField(
+                                        value = slot.from,
+                                        options = uiState.timeOptions,
+                                        onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotFromChanged(index, it)) },
+                                        label = stringResource(R.string.auth_register_trade_from_label),
+                                        placeholder = stringResource(R.string.auth_register_trade_from_label),
+                                        modifier = Modifier.weight(1f),
+                                        usePlaceholderOnly = true,
+                                    )
+                                    OficiosDropdownField(
+                                        value = slot.to,
+                                        options = uiState.timeOptions,
+                                        onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotToChanged(index, it)) },
+                                        label = stringResource(R.string.auth_register_trade_to_label),
+                                        placeholder = stringResource(R.string.auth_register_trade_to_label),
+                                        modifier = Modifier.weight(1f),
+                                        usePlaceholderOnly = true,
+                                    )
+                                }
+                            }
+                            RegisterTradeCenteredAction(
+                                text = stringResource(R.string.auth_register_trade_add_schedule),
+                                onClick = { onEvent(RegisterTradeEvent.AddTimeSlot) },
+                            )
+                        }
+                    }
+
+                    RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_payment_label),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.auth_register_trade_payment_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        OficiosCheckbox(
+                            checked = ProviderPaymentMethods.EFECTIVO in uiState.selectedPaymentMethods,
+                            onCheckedChange = {
+                                onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, it))
+                            },
+                            label = stringResource(R.string.auth_register_trade_payment_efectivo),
+                            compactRow = true,
+                        )
+                        OficiosCheckbox(
+                            checked = ProviderPaymentMethods.TRANSFERENCIA in uiState.selectedPaymentMethods,
+                            onCheckedChange = {
+                                onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.TRANSFERENCIA, it))
+                            },
+                            label = stringResource(R.string.auth_register_trade_payment_transferencia),
+                            compactRow = true,
+                        )
+                        OficiosCheckbox(
+                            checked = ProviderPaymentMethods.MERCADOPAGO in uiState.selectedPaymentMethods,
+                            onCheckedChange = {
+                                onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.MERCADOPAGO, it))
+                            },
+                            label = stringResource(R.string.auth_register_trade_payment_mercadopago),
+                            compactRow = true,
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = OficiosComponentSize.buttonHeight),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OficiosButton(
+                            text = stringResource(R.string.auth_continue),
+                            onClick = { onEvent(RegisterTradeEvent.Continue) },
+                            variant = OficiosButtonVariant.Secondary,
+                            size = OficiosButtonSize.Large,
+                            enabled = !uiState.isLoading,
+                            loading = uiState.isLoading,
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -3,9 +3,7 @@ package com.cocido.oficios.feature.auth.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,11 +48,9 @@ fun AuthFormLayout(
             )
         }
 
-        Spacer(Modifier.height(OficiosSpacing.sm))
-
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             content = content,
         )
     }
