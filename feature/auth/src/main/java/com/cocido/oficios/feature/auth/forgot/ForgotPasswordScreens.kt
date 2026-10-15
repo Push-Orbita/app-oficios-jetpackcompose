@@ -7,8 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,6 +14,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessState
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
@@ -35,6 +34,8 @@ fun ForgotPasswordScreen(
             title = stringResource(R.string.auth_forgot_title),
             description = stringResource(R.string.auth_forgot_success),
             modifier = modifier,
+            ctaLabel = stringResource(R.string.auth_back_to_login),
+            onCta = onBackToLogin,
         )
         return
     }
@@ -59,11 +60,7 @@ fun ForgotPasswordScreen(
                 keyboardActions = KeyboardActions(onDone = { onEvent(ForgotPasswordEvent.Submit) }),
             )
             if (uiState.generalError != null) {
-                Text(
-                    text = uiState.generalError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                OficiosInlineAlert(message = uiState.generalError)
             }
             OficiosButton(
                 text = stringResource(R.string.auth_forgot_button),
@@ -96,6 +93,8 @@ fun ResetPasswordScreen(
             title = stringResource(R.string.auth_reset_title),
             description = stringResource(R.string.auth_reset_success),
             modifier = modifier,
+            ctaLabel = stringResource(R.string.auth_back_to_login),
+            onCta = onBackToLogin,
         )
         return
     }
@@ -141,11 +140,7 @@ fun ResetPasswordScreen(
                 keyboardActions = KeyboardActions(onDone = { onEvent(ResetPasswordEvent.Submit) }),
             )
             if (uiState.generalError != null) {
-                Text(
-                    text = uiState.generalError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                OficiosInlineAlert(message = uiState.generalError)
             }
             OficiosButton(
                 text = stringResource(R.string.auth_reset_button),

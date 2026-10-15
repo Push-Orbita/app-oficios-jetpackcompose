@@ -14,7 +14,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +33,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -95,22 +95,11 @@ fun RegisterRoleSelectionScreen(
                 )
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.auth_already_have_account),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                OficiosButton(
-                    text = stringResource(R.string.auth_start_session_button),
-                    onClick = onNavigateToLogin,
-                    variant = OficiosButtonVariant.Secondary,
-                )
-            }
+            OficiosPromptActionRow(
+                prompt = stringResource(R.string.auth_already_have_account),
+                actionLabel = stringResource(R.string.auth_start_session_button),
+                onAction = onNavigateToLogin,
+            )
         }
     }
 }
@@ -133,7 +122,7 @@ fun RegisterFormScreen(
     ) {
         Text(
             text = screenTitle,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
@@ -242,24 +231,12 @@ fun RegisterFormScreen(
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.auth_already_have_account),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            OficiosButton(
-                text = stringResource(R.string.auth_login_button),
-                onClick = { onEvent(RegisterFormEvent.LoginClicked) },
-                enabled = !uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Small,
-            )
-        }
+        OficiosPromptActionRow(
+            prompt = stringResource(R.string.auth_already_have_account),
+            actionLabel = stringResource(R.string.auth_login_button),
+            onAction = { onEvent(RegisterFormEvent.LoginClicked) },
+            enabled = !uiState.isLoading,
+        )
     }
 }
 
