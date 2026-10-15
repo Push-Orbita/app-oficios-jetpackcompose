@@ -44,6 +44,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
+import com.cocido.oficios.core.designsystem.component.motion.oficiosBounce
+import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosBounce
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -86,6 +88,7 @@ fun WorkerProfileScreen(
                 actions = {
                     val success = uiState as? WorkerProfileUiState.Success
                     if (success?.canFavorite == true) {
+                        val favoriteBounce = rememberOficiosBounce(selectionKey = success.isFavorite.takeIf { it })
                         IconButton(
                             onClick = {
                                 haptics.tick()
@@ -107,6 +110,7 @@ fun WorkerProfileScreen(
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
                                 },
+                                modifier = Modifier.oficiosBounce(favoriteBounce),
                             )
                         }
                     }

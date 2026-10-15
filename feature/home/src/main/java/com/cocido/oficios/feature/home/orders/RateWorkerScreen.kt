@@ -32,6 +32,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosAnimatedSu
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.motion.oficiosBounce
+import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosBounce
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -128,6 +130,7 @@ private fun StarSelector(
     val haptics = rememberOficiosHaptics()
     Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
         for (star in 1..maxStars) {
+            val bounce = rememberOficiosBounce(selectionKey = star.takeIf { it == selected })
             Icon(
                 imageVector = if (star <= selected) Icons.Filled.Star else Icons.Outlined.StarBorder,
                 contentDescription = if (star == 1) {
@@ -138,6 +141,7 @@ private fun StarSelector(
                 tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier
                     .size(OficiosComponentSize.ratingIcon)
+                    .oficiosBounce(bounce)
                     .clickable {
                         haptics.tick()
                         onSelect(star)
