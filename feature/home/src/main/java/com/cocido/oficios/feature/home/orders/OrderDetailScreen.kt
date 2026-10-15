@@ -48,6 +48,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
@@ -586,17 +587,35 @@ private fun OrderProgress(status: ServiceRequestStatus, bookingStatus: BookingSt
         animationSpec = oficiosTween(OficiosMotion.DurationLong),
         label = "OrderProgress",
     )
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        verticalAlignment = Alignment.Top,
-    ) {
-        steps.forEachIndexed { index, step ->
-            if (index > 0) {
-                TimelineConnector(fill = { (progress - (index - 1)).coerceIn(0f, 1f) })
+    val useVerticalSteps = LocalDensity.current.fontScale >= 1.3f
+    if (useVerticalSteps) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        ) {
+            steps.forEachIndexed { index, step ->
+                TimelineStep(
+                    step = step,
+                    phase = phases[index],
+                    index = index,
+                    total = steps.size,
+                    expanded = true,
+                )
             }
-            TimelineStep(step = step, phase = phases[index], index = index, total = steps.size)
+        }
+    } else {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.Top,
+        ) {
+            steps.forEachIndexed { index, step ->
+                if (index > 0) {
+                    TimelineConnector(fill = { (progress - (index - 1)).coerceIn(0f, 1f) })
+                }
+                TimelineStep(step = step, phase = phases[index], index = index, total = steps.size)
+            }
         }
     }
 }
@@ -629,7 +648,13 @@ private fun TimelineConnector(fill: () -> Float) {
 }
 
 @Composable
-private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase, index: Int, total: Int) {
+private fun TimelineStep(
+    step: OrderTimelineStep,
+    phase: OrderTimelinePhase,
+    index: Int,
+    total: Int,
+    expanded: Boolean = false,
+) {
     val label = when (step) {
         OrderTimelineStep.REQUESTED -> stringResource(R.string.orders_step_requested)
         OrderTimelineStep.CONFIRMED -> stringResource(R.string.orders_step_confirmed)
@@ -673,38 +698,68 @@ private fun TimelineStep(step: OrderTimelineStep, phase: OrderTimelinePhase, ind
         animationSpec = colorSpec,
         label = "TimelineStepLabel",
     )
-    Column(
-        modifier = Modifier
-            .widthIn(min = OficiosComponentSize.buttonHeight)
-            .clearAndSetSemantics { contentDescription = description },
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
+    if (expanded) {
+        Row(
             modifier = Modifier
-                .size(OficiosComponentSize.iconMd)
-                .clip(CircleShape)
-                .background(circle),
-            contentAlignment = Alignment.Center,
+                .fillMaxWidth()
+                .clearAndSetSemantics { contentDescription = description },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
         ) {
-            Icon(
-                imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(OficiosComponentSize.iconSm),
+            Box(
+                modifier = Modifier
+                    .size(OficiosComponentSize.iconMd)
+                    .clip(CircleShape)
+                    .background(circle),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge.copy(hyphens = Hyphens.None),
+                color = labelColor,
             )
         }
-        Text(
-            text = label,
-            modifier = Modifier.padding(top = OficiosSpacing.xxs),
-            style = MaterialTheme.typography.labelSmall.copy(
-                letterSpacing = 0.sp,
-                hyphens = Hyphens.None,
-            ),
-            color = labelColor,
-            textAlign = TextAlign.Center,
-            softWrap = true,
-            maxLines = 2,
-        )
+    } else {
+        Column(
+            modifier = Modifier
+                .widthIn(min = OficiosComponentSize.buttonHeight)
+                .clearAndSetSemantics { contentDescription = description },
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(OficiosComponentSize.iconMd)
+                    .clip(CircleShape)
+                    .background(circle),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                )
+            }
+            Text(
+                text = label,
+                modifier = Modifier.padding(top = OficiosSpacing.xxs),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    letterSpacing = 0.sp,
+                    hyphens = Hyphens.None,
+                ),
+                color = labelColor,
+                textAlign = TextAlign.Center,
+                softWrap = true,
+                maxLines = 2,
+            )
+        }
     }
 }
 
