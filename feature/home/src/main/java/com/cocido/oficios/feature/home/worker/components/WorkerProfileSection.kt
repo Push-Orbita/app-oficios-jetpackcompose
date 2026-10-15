@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.worker.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.oficiosTween
 
 @Composable
 fun WorkerProfileSection(
@@ -30,7 +33,10 @@ fun WorkerProfileSection(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             contentPadding = androidx.compose.foundation.layout.PaddingValues(OficiosSpacing.md),
         ) {
-            Column(content = content)
+            Column(
+                modifier = Modifier.animateContentSize(oficiosTween(OficiosMotion.DurationLong)),
+                content = content,
+            )
         }
     }
 }
