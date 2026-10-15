@@ -1,7 +1,5 @@
 package com.cocido.oficios.feature.auth.forgot
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,9 +17,9 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessState
+import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthFormLayout
 
@@ -47,7 +45,7 @@ fun ForgotPasswordScreen(
         modifier = modifier,
         isLoading = uiState.isLoading,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+        FieldAndCtaBlock {
             OficiosTextField(
                 value = uiState.email,
                 onValueChange = { onEvent(ForgotPasswordEvent.EmailChanged(it)) },
@@ -76,13 +74,13 @@ fun ForgotPasswordScreen(
                 variant = OficiosButtonVariant.Secondary,
                 size = OficiosButtonSize.Large,
             )
-            OficiosButton(
-                text = stringResource(R.string.auth_back_to_login),
-                onClick = onBackToLogin,
-                modifier = Modifier.fillMaxWidth(),
-                variant = OficiosButtonVariant.Ghost,
-            )
         }
+        OficiosButton(
+            text = stringResource(R.string.auth_back_to_login),
+            onClick = onBackToLogin,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Ghost,
+        )
     }
 }
 
@@ -109,7 +107,7 @@ fun ResetPasswordScreen(
     ) {
         val passwordFocus = remember { FocusRequester() }
         val confirmFocus = remember { FocusRequester() }
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+        FieldAndCtaBlock {
             OficiosTextField(
                 value = uiState.code,
                 onValueChange = { onEvent(ResetPasswordEvent.CodeChanged(it)) },
@@ -158,12 +156,12 @@ fun ResetPasswordScreen(
                 variant = OficiosButtonVariant.Secondary,
                 size = OficiosButtonSize.Large,
             )
-            OficiosButton(
-                text = stringResource(R.string.auth_back_to_login),
-                onClick = onBackToLogin,
-                modifier = Modifier.fillMaxWidth(),
-                variant = OficiosButtonVariant.Ghost,
-            )
         }
+        OficiosButton(
+            text = stringResource(R.string.auth_back_to_login),
+            onClick = onBackToLogin,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Ghost,
+        )
     }
 }

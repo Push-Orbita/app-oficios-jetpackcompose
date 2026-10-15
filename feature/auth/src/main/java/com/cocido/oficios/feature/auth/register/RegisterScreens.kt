@@ -30,6 +30,7 @@ import com.cocido.oficios.feature.auth.components.AuthScreenLayout
 import com.cocido.oficios.feature.auth.components.AuthSupportCard
 import com.cocido.oficios.feature.auth.components.RegisterRoleCard
 import com.cocido.oficios.core.designsystem.R as DesignSystemR
+import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -59,7 +60,7 @@ fun RegisterRoleSelectionScreen(
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
         ) {
             OficiosBrandRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -129,17 +130,6 @@ fun RegisterFormScreen(
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
-        footer = {
-            OficiosButton(
-                text = stringResource(R.string.auth_next_button),
-                onClick = { onEvent(RegisterFormEvent.Submit) },
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        },
     ) {
         Text(
             text = screenTitle,
@@ -156,10 +146,7 @@ fun RegisterFormScreen(
         val emailFocus = remember { FocusRequester() }
         val passwordFocus = remember { FocusRequester() }
         val confirmFocus = remember { FocusRequester() }
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        ) {
+        FieldAndCtaBlock {
             if (uiState.generalError != null) {
                 OficiosInlineAlert(message = uiState.generalError)
             }
@@ -247,26 +234,36 @@ fun RegisterFormScreen(
                 )
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-
-            Row(
+            OficiosButton(
+                text = stringResource(R.string.auth_next_button),
+                onClick = { onEvent(RegisterFormEvent.Submit) },
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.auth_already_have_account),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                OficiosButton(
-                    text = stringResource(R.string.auth_login_button),
-                    onClick = { onEvent(RegisterFormEvent.LoginClicked) },
-                    enabled = !uiState.isLoading,
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Small,
-                )
-            }
+            )
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.auth_already_have_account),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            OficiosButton(
+                text = stringResource(R.string.auth_login_button),
+                onClick = { onEvent(RegisterFormEvent.LoginClicked) },
+                enabled = !uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Small,
+            )
         }
     }
 }
