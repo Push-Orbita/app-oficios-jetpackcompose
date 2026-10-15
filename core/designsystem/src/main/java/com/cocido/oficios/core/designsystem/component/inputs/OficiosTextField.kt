@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -32,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -196,24 +196,26 @@ fun OficiosTextField(
         }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Box(
-            modifier = fieldModifier
-                .clip(MaterialTheme.shapes.small)
-                .background(containerColor, MaterialTheme.shapes.small)
-                .border(BorderStroke(FieldBorderWidth, borderColor), MaterialTheme.shapes.small),
-        ) {
-            Row(
+        Box(modifier = fieldModifier) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = horizontalPadding,
-                        end = horizontalPadding,
-                        top = contentTopPadding,
-                        bottom = verticalPadding,
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                    .matchParentSize()
+                    .background(containerColor, MaterialTheme.shapes.small)
+                    .border(BorderStroke(FieldBorderWidth, borderColor), MaterialTheme.shapes.small),
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .padding(
+                            start = horizontalPadding,
+                            end = horizontalPadding,
+                            top = contentTopPadding,
+                            bottom = verticalPadding,
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                ) {
                 if (leadingIcon != null) {
                     Icon(
                         imageVector = leadingIcon,
@@ -292,6 +294,7 @@ fun OficiosTextField(
                 }
                 if (trailingContent != null) {
                     trailingContent()
+                }
                 }
             }
             if (fieldLabel.isNotBlank()) {
