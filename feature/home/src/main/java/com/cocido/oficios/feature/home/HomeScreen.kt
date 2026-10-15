@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.OficiosActionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ClientHomeContent
@@ -48,46 +49,45 @@ fun HomeScreen(
             )
         },
     ) { paddingValues ->
-        when (uiState) {
-            HomeUiState.Loading -> {
-                HomeDashboardSkeleton(
-                    contentDescription = stringResource(R.string.home_loading),
-                    modifier = Modifier.padding(paddingValues),
-                )
-            }
-            is HomeUiState.Error -> {
-                val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
-                    onEvent(HomeEvent.Refresh)
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                HomeUiState.Loading -> {
+                    HomeDashboardSkeleton(contentDescription = stringResource(R.string.home_loading))
                 }
-                PullToRefreshBox(
-                    isRefreshing = pullRefresh.isRefreshing,
-                    onRefresh = pullRefresh.onRefresh,
-                    state = pullRefresh.state,
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    OficiosErrorState(
-                        title = stringResource(R.string.home_error_title),
-                        description = uiState.message,
-                        onRetry = { onEvent(HomeEvent.Retry) },
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    )
+                is HomeUiState.Error -> {
+                    val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                        onEvent(HomeEvent.Refresh)
+                    }
+                    PullToRefreshBox(
+                        isRefreshing = pullRefresh.isRefreshing,
+                        onRefresh = pullRefresh.onRefresh,
+                        state = pullRefresh.state,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(HomeEvent.Retry) },
+                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        )
+                    }
                 }
-            }
-            is HomeUiState.Success -> {
-                val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
-                    onEvent(HomeEvent.Refresh)
-                }
-                PullToRefreshBox(
-                    isRefreshing = pullRefresh.isRefreshing,
-                    onRefresh = pullRefresh.onRefresh,
-                    state = pullRefresh.state,
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    HomeSuccessContent(
-                        content = uiState.content,
-                        unreadNotificationCount = unreadNotificationCount,
-                        onEvent = onEvent,
-                    )
+                is HomeUiState.Success -> {
+                    val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                        onEvent(HomeEvent.Refresh)
+                    }
+                    PullToRefreshBox(
+                        isRefreshing = pullRefresh.isRefreshing,
+                        onRefresh = pullRefresh.onRefresh,
+                        state = pullRefresh.state,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        HomeSuccessContent(
+                            content = state.content,
+                            unreadNotificationCount = unreadNotificationCount,
+                            onEvent = onEvent,
+                        )
+                    }
                 }
             }
         }

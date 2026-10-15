@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -54,75 +55,87 @@ fun CategoriesScreen(
             )
         },
     ) { paddingValues ->
-        when (uiState) {
-            CategoriesUiState.Loading -> {
-                OficiosLoadingState(
-                    modifier = Modifier.padding(paddingValues),
-                    message = stringResource(R.string.home_loading),
-                )
-            }
-            is CategoriesUiState.Error -> {
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { onEvent(CategoriesEvent.Refresh) },
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    OficiosErrorState(
-                        title = stringResource(R.string.home_error_title),
-                        description = uiState.message,
-                        onRetry = { onEvent(CategoriesEvent.Retry) },
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                CategoriesUiState.Loading -> {
+                    OficiosLoadingState(message = stringResource(R.string.home_loading))
                 }
-            }
-            is CategoriesUiState.Success -> PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(CategoriesEvent.Refresh) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            ) {
-                var searchQuery by rememberSaveable { mutableStateOf("") }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                is CategoriesUiState.Error -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(CategoriesEvent.Refresh) },
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        IconButton(onClick = { onEvent(CategoriesEvent.Back) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = stringResource(R.string.home_back),
-                            )
-                        }
-                        OficiosNotificationBadge(count = unreadNotificationCount) {
-                            IconButton(onClick = { onEvent(CategoriesEvent.OpenNotifications) }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Notifications,
-                                    contentDescription = stringResource(R.string.home_notifications),
-                                    modifier = Modifier.size(OficiosComponentSize.iconMd),
-                                )
-                            }
-                        }
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(CategoriesEvent.Retry) },
+                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        )
                     }
-                    HomeSearchEntryField(
-                        query = searchQuery,
-                        onQueryChange = { searchQuery = it },
-                        onSearch = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
-                        placeholder = stringResource(R.string.home_search_categories_hint),
-                    )
-                    HomeCategoriesGrid(
-                        categories = uiState.categories,
-                        onCategoryClick = { onEvent(CategoriesEvent.CategorySelected(it)) },
-                        showSeeAll = false,
-                        modifier = Modifier.weight(1f),
+                }
+                is CategoriesUiState.Success -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(CategoriesEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    CategoriesContent(
+                        state = state,
+                        unreadNotificationCount = unreadNotificationCount,
+                        onEvent = onEvent,
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CategoriesContent(
+    state: CategoriesUiState.Success,
+    unreadNotificationCount: Int,
+    onEvent: (CategoriesEvent) -> Unit,
+) {
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = { onEvent(CategoriesEvent.Back) }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(R.string.home_back),
+                )
+            }
+            OficiosNotificationBadge(count = unreadNotificationCount) {
+                IconButton(onClick = { onEvent(CategoriesEvent.OpenNotifications) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = stringResource(R.string.home_notifications),
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
+                }
+            }
+        }
+        HomeSearchEntryField(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearch = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
+            placeholder = stringResource(R.string.home_search_categories_hint),
+        )
+        HomeCategoriesGrid(
+            categories = state.categories,
+            onCategoryClick = { onEvent(CategoriesEvent.CategorySelected(it)) },
+            showSeeAll = false,
+            modifier = Modifier.weight(1f),
+        )
     }
 }

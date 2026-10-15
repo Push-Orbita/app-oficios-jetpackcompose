@@ -42,6 +42,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -158,31 +159,27 @@ fun WorkerProfileScreen(
             }
         },
     ) { paddingValues ->
-        when (uiState) {
-            WorkerProfileUiState.Loading -> WorkerProfileSkeleton(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-            )
-            is WorkerProfileUiState.Error -> {
-                OficiosErrorState(
-                    title = stringResource(R.string.home_worker_profile_error_title),
-                    description = uiState.message,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    onRetry = { onEvent(WorkerProfileEvent.Retry) },
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                WorkerProfileUiState.Loading -> WorkerProfileSkeleton(
+                    modifier = Modifier.fillMaxSize(),
                 )
-            }
-            is WorkerProfileUiState.Success -> {
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { onEvent(WorkerProfileEvent.Refresh) },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                ) {
-                    WorkerProfileContent(uiState = uiState, onEvent = onEvent)
+                is WorkerProfileUiState.Error -> {
+                    OficiosErrorState(
+                        title = stringResource(R.string.home_worker_profile_error_title),
+                        description = state.message,
+                        modifier = Modifier.fillMaxSize(),
+                        onRetry = { onEvent(WorkerProfileEvent.Retry) },
+                    )
+                }
+                is WorkerProfileUiState.Success -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(WorkerProfileEvent.Refresh) },
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        WorkerProfileContent(uiState = state, onEvent = onEvent)
+                    }
                 }
             }
         }

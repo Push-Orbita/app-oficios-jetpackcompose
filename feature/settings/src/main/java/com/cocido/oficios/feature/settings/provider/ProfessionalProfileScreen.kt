@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -36,62 +38,83 @@ fun ProfessionalProfileScreen(
     OficiosScaffold(
         topBar = { OficiosBackTopBar(title = stringResource(R.string.professional_profile_title), onBack = { onEvent(ProfessionalProfileEvent.Back) }) },
     ) { padding ->
-        when {
-            uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
-            uiState.loadFailed -> OficiosErrorState(
-                title = stringResource(R.string.professional_profile_load_error),
-                description = uiState.errorMessage ?: stringResource(R.string.professional_profile_retry),
-                onRetry = { onEvent(ProfessionalProfileEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(padding),
-            )
-            else -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
-                    .widthIn(max = OficiosComponentSize.contentMaxWidth),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            ) {
-                Text(
-                    text = stringResource(R.string.professional_profile_intro),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.professional_profile_load_error),
+                    description = state.errorMessage ?: stringResource(R.string.professional_profile_retry),
+                    onRetry = { onEvent(ProfessionalProfileEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
                 )
-                OficiosTextField(
-                    value = uiState.description,
-                    onValueChange = { onEvent(ProfessionalProfileEvent.DescriptionChanged(it)) },
-                    label = stringResource(R.string.professional_profile_description),
-                    placeholder = stringResource(R.string.professional_profile_description_hint),
-                    singleLine = false,
-                )
-                OficiosTextField(
-                    value = uiState.experience,
-                    onValueChange = { onEvent(ProfessionalProfileEvent.ExperienceChanged(it)) },
-                    label = stringResource(R.string.professional_profile_experience),
-                    placeholder = stringResource(R.string.professional_profile_experience_hint),
-                    singleLine = false,
-                )
-                Text(
-                    text = stringResource(R.string.professional_profile_payments),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                PaymentOption(stringResource(R.string.professional_profile_cash), ProviderPaymentMethods.EFECTIVO, uiState, onEvent)
-                PaymentOption(stringResource(R.string.professional_profile_transfer), ProviderPaymentMethods.TRANSFERENCIA, uiState, onEvent)
-                PaymentOption(stringResource(R.string.professional_profile_mercadopago), ProviderPaymentMethods.MERCADOPAGO, uiState, onEvent)
-                uiState.errorMessage?.let { OficiosInlineAlert(it) }
-                OficiosButton(
-                    text = stringResource(R.string.professional_profile_save),
-                    onClick = { onEvent(ProfessionalProfileEvent.Save) },
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Large,
-                    loading = uiState.isSaving,
-                    enabled = !uiState.isSaving,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> ProfessionalProfileForm(state = state, onEvent = onEvent)
             }
         }
+    }
+}
+
+private fun ProfessionalProfileUiState.phase(): OficiosContentPhase = when {
+    isLoading -> OficiosContentPhase.Loading
+    loadFailed -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
+}
+
+@Composable
+private fun ProfessionalProfileForm(
+    state: ProfessionalProfileUiState,
+    onEvent: (ProfessionalProfileEvent) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
+            .widthIn(max = OficiosComponentSize.contentMaxWidth),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        Text(
+            text = stringResource(R.string.professional_profile_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        OficiosTextField(
+            value = state.description,
+            onValueChange = { onEvent(ProfessionalProfileEvent.DescriptionChanged(it)) },
+            label = stringResource(R.string.professional_profile_description),
+            placeholder = stringResource(R.string.professional_profile_description_hint),
+            singleLine = false,
+        )
+        OficiosTextField(
+            value = state.experience,
+            onValueChange = { onEvent(ProfessionalProfileEvent.ExperienceChanged(it)) },
+            label = stringResource(R.string.professional_profile_experience),
+            placeholder = stringResource(R.string.professional_profile_experience_hint),
+            singleLine = false,
+        )
+        Text(
+            text = stringResource(R.string.professional_profile_payments),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        PaymentOption(stringResource(R.string.professional_profile_cash), ProviderPaymentMethods.EFECTIVO, state, onEvent)
+        PaymentOption(stringResource(R.string.professional_profile_transfer), ProviderPaymentMethods.TRANSFERENCIA, state, onEvent)
+        PaymentOption(stringResource(R.string.professional_profile_mercadopago), ProviderPaymentMethods.MERCADOPAGO, state, onEvent)
+        state.errorMessage?.let { OficiosInlineAlert(it) }
+        OficiosButton(
+            text = stringResource(R.string.professional_profile_save),
+            onClick = { onEvent(ProfessionalProfileEvent.Save) },
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Large,
+            loading = state.isSaving,
+            enabled = !state.isSaving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

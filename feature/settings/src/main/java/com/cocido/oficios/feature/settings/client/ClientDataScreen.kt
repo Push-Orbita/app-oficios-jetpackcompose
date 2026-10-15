@@ -45,9 +45,11 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
@@ -83,31 +85,27 @@ fun ClientDataScreen(
             )
         },
     ) { padding ->
-        when {
-            uiState.isLoading && uiState.contacts.isEmpty() && uiState.domicilios.isEmpty() ->
-                OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
-            uiState.errorMessage != null && uiState.personaId == null && uiState.mode == ClientDataMode.LIST ->
-                OficiosErrorState(
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
                     title = stringResource(R.string.client_data_load_error),
-                    description = uiState.errorMessage,
+                    description = state.errorMessage.orEmpty(),
                     onRetry = { onEvent(ClientDataEvent.Retry) },
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier.fillMaxSize(),
                 )
-            uiState.mode == ClientDataMode.LIST -> ClientDataList(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(padding),
-            )
-            uiState.mode == ClientDataMode.CONTACT -> ContactEditor(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(padding),
-            )
-            uiState.mode == ClientDataMode.DOMICILIO -> DomicilioEditor(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(padding),
-            )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> when (state.mode) {
+                    ClientDataMode.LIST -> ClientDataList(uiState = state, onEvent = onEvent)
+                    ClientDataMode.CONTACT -> ContactEditor(uiState = state, onEvent = onEvent)
+                    ClientDataMode.DOMICILIO -> DomicilioEditor(uiState = state, onEvent = onEvent)
+                }
+            }
         }
     }
     uiState.pendingDelete?.let { target ->
@@ -120,6 +118,12 @@ fun ClientDataScreen(
             onDismiss = { onEvent(ClientDataEvent.DismissDelete) },
         )
     }
+}
+
+private fun ClientDataUiState.phase(): OficiosContentPhase = when {
+    isLoading && contacts.isEmpty() && domicilios.isEmpty() -> OficiosContentPhase.Loading
+    errorMessage != null && personaId == null && mode == ClientDataMode.LIST -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
 }
 
 @Composable

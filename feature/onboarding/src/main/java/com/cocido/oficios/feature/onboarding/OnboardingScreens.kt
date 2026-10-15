@@ -18,6 +18,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.layout.CenterContent
@@ -62,30 +63,31 @@ fun ProviderOnboardingChecklistScreen(
     finalizeError: String? = null,
     onDismissBanner: (() -> Unit)? = null,
 ) {
-    when (uiState) {
-        OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
-        is OnboardingChecklistUiState.Error -> OficiosErrorState(
-            title = "Error",
-            description = uiState.message,
-            onRetry = onRetry,
-        )
-        is OnboardingChecklistUiState.Success -> {
-            val showFinalize = uiState.steps.any {
-                it.id == "finalizar_perfil" && it.status != OnboardingStepStatus.COMPLETE
-            }
-            ChecklistContent(
-                title = stringResource(R.string.onboarding_provider_title),
-                subtitle = stringResource(R.string.onboarding_provider_subtitle),
-                steps = uiState.steps.filterNot { showFinalize && it.id == "finalizar_perfil" },
-                onLogout = onLogout,
-                onStepClick = onStepClick,
-                showFinalize = showFinalize,
-                onFinalizeProfile = onFinalizeProfile,
-                isFinalizing = isFinalizing,
-                isLoggingOut = isLoggingOut,
-                extraMessage = finalizeError,
-                modifier = modifier,
+    OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
+        when (state) {
+            OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+            is OnboardingChecklistUiState.Error -> OficiosErrorState(
+                title = "Error",
+                description = state.message,
+                onRetry = onRetry,
             )
+            is OnboardingChecklistUiState.Success -> {
+                val showFinalize = state.steps.any {
+                    it.id == "finalizar_perfil" && it.status != OnboardingStepStatus.COMPLETE
+                }
+                ChecklistContent(
+                    title = stringResource(R.string.onboarding_provider_title),
+                    subtitle = stringResource(R.string.onboarding_provider_subtitle),
+                    steps = state.steps.filterNot { showFinalize && it.id == "finalizar_perfil" },
+                    onLogout = onLogout,
+                    onStepClick = onStepClick,
+                    showFinalize = showFinalize,
+                    onFinalizeProfile = onFinalizeProfile,
+                    isFinalizing = isFinalizing,
+                    isLoggingOut = isLoggingOut,
+                    extraMessage = finalizeError,
+                )
+            }
         }
     }
 }
@@ -99,23 +101,24 @@ fun ProviderPendingApprovalScreen(
     modifier: Modifier = Modifier,
     isLoggingOut: Boolean = false,
 ) {
-    when (uiState) {
-        ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
-        is ProviderStatusUiState.Error -> OficiosErrorState(
-            title = "Error",
-            description = uiState.message,
-            onRetry = onRetry,
-        )
-        is ProviderStatusUiState.Pending -> ChecklistContent(
-            title = stringResource(R.string.onboarding_pending_title),
-            subtitle = stringResource(R.string.onboarding_pending_subtitle),
-            steps = uiState.steps,
-            onLogout = onLogout,
-            onStepClick = onStepClick,
-            isLoggingOut = isLoggingOut,
-            modifier = modifier,
-        )
-        is ProviderStatusUiState.Rejected -> Unit
+    OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
+        when (state) {
+            ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+            is ProviderStatusUiState.Error -> OficiosErrorState(
+                title = "Error",
+                description = state.message,
+                onRetry = onRetry,
+            )
+            is ProviderStatusUiState.Pending -> ChecklistContent(
+                title = stringResource(R.string.onboarding_pending_title),
+                subtitle = stringResource(R.string.onboarding_pending_subtitle),
+                steps = state.steps,
+                onLogout = onLogout,
+                onStepClick = onStepClick,
+                isLoggingOut = isLoggingOut,
+            )
+            is ProviderStatusUiState.Rejected -> Unit
+        }
     }
 }
 
@@ -129,26 +132,27 @@ fun ProviderRejectedScreen(
     modifier: Modifier = Modifier,
     isLoggingOut: Boolean = false,
 ) {
-    when (uiState) {
-        ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
-        is ProviderStatusUiState.Error -> OficiosErrorState(
-            title = "Error",
-            description = uiState.message,
-            onRetry = onRetry,
-        )
-        is ProviderStatusUiState.Rejected -> ChecklistContent(
-            title = stringResource(R.string.onboarding_rejected_title),
-            subtitle = stringResource(R.string.onboarding_rejected_subtitle),
-            steps = uiState.steps,
-            extraMessage = uiState.reason?.let { stringResource(R.string.onboarding_rejected_reason, it) },
-            primaryActionLabel = stringResource(R.string.onboarding_fix_profile),
-            onPrimaryAction = onFixProfile,
-            onLogout = onLogout,
-            onStepClick = onStepClick,
-            isLoggingOut = isLoggingOut,
-            modifier = modifier,
-        )
-        is ProviderStatusUiState.Pending -> Unit
+    OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
+        when (state) {
+            ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+            is ProviderStatusUiState.Error -> OficiosErrorState(
+                title = "Error",
+                description = state.message,
+                onRetry = onRetry,
+            )
+            is ProviderStatusUiState.Rejected -> ChecklistContent(
+                title = stringResource(R.string.onboarding_rejected_title),
+                subtitle = stringResource(R.string.onboarding_rejected_subtitle),
+                steps = state.steps,
+                extraMessage = state.reason?.let { stringResource(R.string.onboarding_rejected_reason, it) },
+                primaryActionLabel = stringResource(R.string.onboarding_fix_profile),
+                onPrimaryAction = onFixProfile,
+                onLogout = onLogout,
+                onStepClick = onStepClick,
+                isLoggingOut = isLoggingOut,
+            )
+            is ProviderStatusUiState.Pending -> Unit
+        }
     }
 }
 
@@ -195,22 +199,23 @@ private fun OnboardingChecklistScaffold(
     modifier: Modifier = Modifier,
     isLoggingOut: Boolean = false,
 ) {
-    when (uiState) {
-        OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = modifier.fillMaxSize())
-        is OnboardingChecklistUiState.Error -> OficiosErrorState(
-            title = "Error",
-            description = uiState.message,
-            onRetry = onRetry,
-        )
-        is OnboardingChecklistUiState.Success -> ChecklistContent(
-            title = title,
-            subtitle = subtitle,
-            steps = uiState.steps,
-            onLogout = onLogout,
-            onStepClick = onStepClick,
-            isLoggingOut = isLoggingOut,
-            modifier = modifier,
-        )
+    OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
+        when (state) {
+            OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+            is OnboardingChecklistUiState.Error -> OficiosErrorState(
+                title = "Error",
+                description = state.message,
+                onRetry = onRetry,
+            )
+            is OnboardingChecklistUiState.Success -> ChecklistContent(
+                title = title,
+                subtitle = subtitle,
+                steps = state.steps,
+                onLogout = onLogout,
+                onStepClick = onStepClick,
+                isLoggingOut = isLoggingOut,
+            )
+        }
     }
 }
 

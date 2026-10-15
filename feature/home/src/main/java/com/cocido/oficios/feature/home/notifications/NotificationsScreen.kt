@@ -28,7 +28,10 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
+import com.cocido.oficios.core.designsystem.component.feedback.oficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -66,35 +69,40 @@ fun NotificationsScreen(
                 onRefresh = { onEvent(NotificationsEvent.Refresh) },
                 modifier = Modifier.fillMaxSize(),
             ) {
-            when {
-                uiState.isLoading -> OficiosSkeletonList(
-                    contentDescription = stringResource(R.string.notifications_loading),
-                    showAvatar = false,
-                    lines = 3,
-                )
-                uiState.errorMessage != null && uiState.items.isEmpty() -> OficiosErrorState(
-                    title = stringResource(R.string.notifications_load_error),
-                    description = uiState.errorMessage,
-                    onRetry = { onEvent(NotificationsEvent.Retry) },
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                )
-                uiState.items.isEmpty() -> OficiosEmptyState(
-                    title = stringResource(R.string.notifications_empty_title),
-                    description = stringResource(R.string.notifications_empty_description),
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                )
-                else -> NotificationsList(
-                    items = uiState.items,
-                    contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-                    onItemClick = { onEvent(NotificationsEvent.NotificationClicked(it)) },
-                    onLoadMore = { onEvent(NotificationsEvent.LoadMore) },
-                    hasMore = uiState.hasMore,
-                )
+            OficiosStateContent(targetState = uiState, contentKey = { it.phase() }) { state ->
+                when (state.phase()) {
+                    OficiosContentPhase.Loading -> OficiosSkeletonList(
+                        contentDescription = stringResource(R.string.notifications_loading),
+                        showAvatar = false,
+                        lines = 3,
+                    )
+                    OficiosContentPhase.Error -> OficiosErrorState(
+                        title = stringResource(R.string.notifications_load_error),
+                        description = state.errorMessage.orEmpty(),
+                        onRetry = { onEvent(NotificationsEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                    OficiosContentPhase.Empty -> OficiosEmptyState(
+                        title = stringResource(R.string.notifications_empty_title),
+                        description = stringResource(R.string.notifications_empty_description),
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                    OficiosContentPhase.Content -> NotificationsList(
+                        items = state.items,
+                        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+                        onItemClick = { onEvent(NotificationsEvent.NotificationClicked(it)) },
+                        onLoadMore = { onEvent(NotificationsEvent.LoadMore) },
+                        hasMore = state.hasMore,
+                    )
+                }
             }
             }
         }
     }
 }
+
+private fun NotificationsUiState.phase(): OficiosContentPhase =
+    oficiosContentPhase(isLoading = isLoading, hasError = errorMessage != null, isEmpty = items.isEmpty())
 
 @Composable
 private fun NotificationFilterRow(

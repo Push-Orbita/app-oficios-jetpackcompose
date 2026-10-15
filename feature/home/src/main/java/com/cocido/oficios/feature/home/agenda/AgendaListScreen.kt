@@ -53,6 +53,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonLine
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -97,33 +98,35 @@ fun AgendaListScreen(
             )
         },
     ) { paddingValues ->
-        when (uiState) {
-            AgendaListUiState.Loading -> AgendaSkeleton(
-                contentDescription = stringResource(R.string.agenda_loading),
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            is AgendaListUiState.Error -> PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(AgendaListEvent.Refresh) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            ) {
-                OficiosErrorState(
-                    title = stringResource(R.string.agenda_load_error),
-                    description = uiState.message,
-                    onRetry = { onEvent(AgendaListEvent.Retry) },
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                )
-            }
-            is AgendaListUiState.Success -> PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(AgendaListEvent.Refresh) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            ) {
-                AgendaListContent(
-                    uiState = uiState,
-                    onEvent = onEvent,
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                AgendaListUiState.Loading -> AgendaSkeleton(
+                    contentDescription = stringResource(R.string.agenda_loading),
                     modifier = Modifier.fillMaxSize(),
                 )
+                is AgendaListUiState.Error -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(AgendaListEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    OficiosErrorState(
+                        title = stringResource(R.string.agenda_load_error),
+                        description = state.message,
+                        onRetry = { onEvent(AgendaListEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+                }
+                is AgendaListUiState.Success -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(AgendaListEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    AgendaListContent(
+                        uiState = state,
+                        onEvent = onEvent,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }

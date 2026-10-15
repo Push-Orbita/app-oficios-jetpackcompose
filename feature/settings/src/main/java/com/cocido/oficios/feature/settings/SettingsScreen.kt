@@ -48,8 +48,10 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -81,23 +83,30 @@ fun SettingsScreen(
         },
         bottomBar = bottomBar,
     ) { paddingValues ->
-        when {
-            uiState.isLoading && uiState.profile == null -> OficiosLoadingState(
-                message = stringResource(R.string.settings_loading),
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            uiState.errorMessage != null && uiState.profile == null -> OficiosErrorState(
-                title = stringResource(R.string.settings_load_error_title),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(SettingsEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            else -> SettingsContent(
-                uiState = uiState,
-                onEvent = onEvent,
-                onRequestLogout = { confirmLogout = true },
-                modifier = Modifier.padding(paddingValues),
-            )
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(paddingValues),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(
+                    message = stringResource(R.string.settings_loading),
+                    modifier = Modifier.fillMaxSize(),
+                )
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.settings_load_error_title),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(SettingsEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> SettingsContent(
+                    uiState = state,
+                    onEvent = onEvent,
+                    onRequestLogout = { confirmLogout = true },
+                )
+            }
         }
     }
     if (confirmLogout) {
@@ -113,6 +122,12 @@ fun SettingsScreen(
             onDismiss = { confirmLogout = false },
         )
     }
+}
+
+private fun SettingsUiState.phase(): OficiosContentPhase = when {
+    isLoading && profile == null -> OficiosContentPhase.Loading
+    errorMessage != null && profile == null -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
 }
 
 @Composable

@@ -29,6 +29,7 @@ import com.cocido.oficios.core.designsystem.component.calendar.ScheduleSlotState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -59,22 +60,23 @@ fun CreateOrderScreen(
             OficiosBackTopBar(title = stringResource(R.string.create_order_title), onBack = handleBack)
         },
     ) { paddingValues ->
-        when (uiState) {
-            CreateOrderUiState.Loading -> OficiosLoadingState(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = stringResource(R.string.create_order_loading),
-            )
-            is CreateOrderUiState.Error -> OficiosErrorState(
-                title = stringResource(R.string.create_order_error),
-                description = uiState.message,
-                onRetry = { onEvent(CreateOrderEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            is CreateOrderUiState.Success -> CreateOrderForm(
-                state = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(paddingValues),
-            )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                CreateOrderUiState.Loading -> OficiosLoadingState(
+                    modifier = Modifier.fillMaxSize(),
+                    message = stringResource(R.string.create_order_loading),
+                )
+                is CreateOrderUiState.Error -> OficiosErrorState(
+                    title = stringResource(R.string.create_order_error),
+                    description = state.message,
+                    onRetry = { onEvent(CreateOrderEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                is CreateOrderUiState.Success -> CreateOrderForm(
+                    state = state,
+                    onEvent = onEvent,
+                )
+            }
         }
     }
 }

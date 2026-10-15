@@ -35,6 +35,7 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -103,45 +104,61 @@ private fun OrdersListBody(
     onEvent: (OrdersListEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (uiState) {
-        OrdersListUiState.Loading -> OficiosSkeletonList(
-            contentDescription = stringResource(R.string.orders_loading),
-            modifier = modifier,
-            lines = 3,
-        )
-        is OrdersListUiState.Error -> {
-            val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
-                onEvent(OrdersListEvent.Refresh)
-            }
-            PullToRefreshBox(
-                isRefreshing = pullRefresh.isRefreshing,
-                onRefresh = pullRefresh.onRefresh,
-                state = pullRefresh.state,
-                modifier = modifier.fillMaxSize(),
-            ) {
-            RefreshablePlaceholder {
-                OficiosErrorState(
-                    title = stringResource(R.string.orders_error_title),
-                    description = uiState.message,
-                    onRetry = { onEvent(OrdersListEvent.Retry) },
+    OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
+        when (state) {
+            OrdersListUiState.Loading -> OficiosSkeletonList(
+                contentDescription = stringResource(R.string.orders_loading),
+                lines = 3,
+            )
+            is OrdersListUiState.Error -> {
+                val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                    onEvent(OrdersListEvent.Refresh)
+                }
+                PullToRefreshBox(
+                    isRefreshing = pullRefresh.isRefreshing,
+                    onRefresh = pullRefresh.onRefresh,
+                    state = pullRefresh.state,
                     modifier = Modifier.fillMaxSize(),
-                )
+                ) {
+                    RefreshablePlaceholder {
+                        OficiosErrorState(
+                            title = stringResource(R.string.orders_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(OrdersListEvent.Retry) },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                }
             }
+            is OrdersListUiState.Success -> OrdersListSuccess(state = state, onEvent = onEvent)
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OrdersListSuccess(
+    state: OrdersListUiState.Success,
+    onEvent: (OrdersListEvent) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        OrdersFilterRow(selected = state.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
+        val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+            onEvent(OrdersListEvent.Refresh)
         }
-        is OrdersListUiState.Success -> Column(modifier = modifier.fillMaxSize()) {
-            OrdersFilterRow(selected = uiState.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
-            val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
-                onEvent(OrdersListEvent.Refresh)
-            }
-            PullToRefreshBox(
-                isRefreshing = pullRefresh.isRefreshing,
-                onRefresh = pullRefresh.onRefresh,
-                state = pullRefresh.state,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                if (uiState.visibleOrders.isEmpty()) {
-                    val history = uiState.filter == OrdersListFilter.HISTORY
+        PullToRefreshBox(
+            isRefreshing = pullRefresh.isRefreshing,
+            onRefresh = pullRefresh.onRefresh,
+            state = pullRefresh.state,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            OficiosStateContent(
+                targetState = state,
+                contentKey = { it.visibleOrders.isEmpty() },
+                label = "OrdersListEmptyTransition",
+            ) { current ->
+                if (current.visibleOrders.isEmpty()) {
+                    val history = current.filter == OrdersListFilter.HISTORY
                     RefreshablePlaceholder {
                         OficiosEmptyState(
                             title = stringResource(if (history) R.string.orders_empty_history_title else R.string.orders_empty_active_title),
@@ -157,7 +174,7 @@ private fun OrdersListBody(
                         contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
-                        items(uiState.visibleOrders, key = { it.id }) { order ->
+                        items(current.visibleOrders, key = { it.id }) { order ->
                             OrderListItemCard(order = order, onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) })
                         }
                     }

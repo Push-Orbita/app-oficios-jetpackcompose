@@ -31,10 +31,12 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.cards.WorkGalleryCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -60,16 +62,27 @@ fun PortfolioScreen(
             )
         },
     ) { padding ->
-        when {
-            uiState.isLoading && uiState.gallery.isEmpty() && uiState.certificates.isEmpty() -> OficiosLoadingState(Modifier.fillMaxSize().padding(padding))
-            uiState.errorMessage != null && uiState.gallery.isEmpty() && uiState.certificates.isEmpty() && !uiState.certificateEditorVisible -> OficiosErrorState(
-                title = stringResource(R.string.portfolio_load_error),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(PortfolioEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(padding),
-            )
-            uiState.certificateEditorVisible -> CertificateEditor(uiState, onEvent, onPickCertificateFile, Modifier.padding(padding))
-            else -> PortfolioList(uiState, onEvent, onPickGalleryImage, Modifier.padding(padding))
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.portfolio_load_error),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(PortfolioEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> if (state.certificateEditorVisible) {
+                    CertificateEditor(state, onEvent, onPickCertificateFile)
+                } else {
+                    PortfolioList(state, onEvent, onPickGalleryImage)
+                }
+            }
         }
     }
     uiState.pendingDelete?.let { target ->
@@ -87,12 +100,21 @@ fun PortfolioScreen(
     }
 }
 
+private fun PortfolioUiState.phase(): OficiosContentPhase {
+    val isEmpty = gallery.isEmpty() && certificates.isEmpty()
+    return when {
+        isLoading && isEmpty -> OficiosContentPhase.Loading
+        errorMessage != null && isEmpty && !certificateEditorVisible -> OficiosContentPhase.Error
+        else -> OficiosContentPhase.Content
+    }
+}
+
 @Composable
 private fun PortfolioList(
     state: PortfolioUiState,
     onEvent: (PortfolioEvent) -> Unit,
     onPickGalleryImage: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
@@ -184,7 +206,7 @@ private fun CertificateEditor(
     state: PortfolioUiState,
     onEvent: (PortfolioEvent) -> Unit,
     onPickCertificateFile: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
