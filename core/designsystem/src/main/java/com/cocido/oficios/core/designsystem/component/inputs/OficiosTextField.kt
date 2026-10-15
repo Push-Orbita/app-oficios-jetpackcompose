@@ -1,16 +1,28 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,17 +30,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
@@ -42,12 +63,15 @@ import kotlinx.coroutines.launch
 // OficiosTextField
 //
 // Estados visuales (de Figma):
-//   default  → border outline (#413764)
-//   focused  → border primary (#A32F56)
-//   error    → border error (#CF6679)
+//   default  → border outline
+//   focused  → border primary
+//   error    → border error
 //   disabled → alpha reducido
 //   readonly → sin interacción
 // ---------------------------------------------------------------------------
+
+private val FieldBorderWidth = 1.dp
+private val LabelBackgroundPadding = 4.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -71,7 +95,6 @@ fun OficiosTextField(
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
 ) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
-    // M3 oculta el placeholder en cuanto hay texto: sin label el campo queda sin nombre visible.
     val fieldLabel = label.ifBlank { placeholder.orEmpty() }
     val fieldPlaceholder = placeholder?.takeIf { label.isNotBlank() && it != label }
     val parentBringIntoView = LocalFieldAndCtaBringIntoView.current
@@ -83,90 +106,229 @@ fun OficiosTextField(
     val ctaClearancePx = with(density) {
         (OficiosComponentSize.buttonHeightLarge + OficiosSpacing.md + OficiosComponentSize.buttonHeightSmall).toPx()
     }
+
     val fontScale = density.fontScale.coerceAtLeast(1f)
+    fun scaled(dp: Dp): Dp = (dp.value * fontScale).dp
+
     val fieldTextStyle = MaterialTheme.typography.bodyLarge
     val labelTextStyle = MaterialTheme.typography.bodyMedium
+    val horizontalPadding = OficiosSpacing.md
+    val verticalPadding = scaled(OficiosSpacing.xs)
+    val labelValueGap = scaled(OficiosSpacing.xs)
+
+    val resolvedMinLines = if (singleLine) 1 else minLines.coerceAtLeast(1)
+    val resolvedMaxLines = if (singleLine) 1 else maxLines.coerceAtLeast(resolvedMinLines)
+
+    val labelLineHeightDp = with(density) { labelTextStyle.lineHeight.toDp() }
+    val valueLineHeightDp = with(density) { fieldTextStyle.lineHeight.toDp() }
+
     val minFieldHeight = with(density) {
         val scaledBase = OficiosComponentSize.textFieldHeight.toPx() * fontScale
-        val fromTypography = if (fieldLabel.isNotBlank()) {
-            labelTextStyle.lineHeight.toPx() * 0.5f +
-                fieldTextStyle.lineHeight.toPx() +
-                16.dp.toPx() * fontScale
-        } else {
-            fieldTextStyle.lineHeight.toPx() + 16.dp.toPx() * fontScale
-        }
+        val labelHeight = if (fieldLabel.isNotBlank()) labelTextStyle.lineHeight.toPx() else 0f
+        val valueHeight = if (singleLine) fieldTextStyle.lineHeight.toPx() else fieldTextStyle.lineHeight.toPx() * resolvedMinLines
+        val verticalInsets = verticalPadding.toPx() * 2
+        val gap = if (fieldLabel.isNotBlank()) labelValueGap.toPx() else 0f
+        val labelInset = if (fieldLabel.isNotBlank()) labelHeight / 2f + gap else 0f
+        val fromTypography = labelInset + valueHeight + verticalInsets
         maxOf(scaledBase, fromTypography).toDp()
     }
-    // Sin altura fija: con label, M3 suma 8dp arriba de la caja de 56dp y el supportingText va debajo.
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = minFieldHeight)
-            .onSizeChanged { fieldSize = it }
-            .onGloballyPositioned { fieldCoordinates = it }
-            .then(
-                if (parentBringIntoView == null) {
-                    Modifier.bringIntoViewRequester(bringIntoViewRequester)
-                } else {
-                    Modifier
-                },
-            )
-            .onFocusChanged { focusState ->
-                if (parentBringIntoView != null) {
-                    parentBringIntoView.onFieldFocus(focusState.isFocused, fieldCoordinates)
-                } else if (focusState.isFocused && fieldSize != IntSize.Zero) {
-                    scope.launch {
-                        bringIntoViewRequester.bringIntoView(
-                            Rect(
-                                left = 0f,
-                                top = 0f,
-                                right = fieldSize.width.toFloat(),
-                                bottom = fieldSize.height + ctaClearancePx,
-                            ),
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+
+    val borderColor = when {
+        !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled)
+        isError -> MaterialTheme.colorScheme.error
+        isFocused -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.outline
+    }
+    val labelColor = when {
+        !enabled -> placeholderColor.copy(alpha = OficiosAlpha.disabled)
+        isError -> MaterialTheme.colorScheme.error
+        isFocused -> MaterialTheme.colorScheme.primary
+        else -> placeholderColor
+    }
+    val valueColor = when {
+        !enabled -> OficiosColorMutedText
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    val containerColor = if (!enabled) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        Color.Transparent
+    }
+    val labelBackgroundColor = if (!enabled) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    val showValueEllipsis = !isFocused && value.isNotEmpty()
+    val displayedValue = remember(value, visualTransformation) {
+        visualTransformation.filter(AnnotatedString(value)).text
+    }
+
+    val contentTopPadding = if (fieldLabel.isNotBlank()) {
+        labelLineHeightDp / 2 + labelValueGap
+    } else {
+        verticalPadding
+    }
+
+    val fieldModifier = Modifier
+        .fillMaxWidth()
+        .heightIn(min = minFieldHeight)
+        .onSizeChanged { fieldSize = it }
+        .onGloballyPositioned { fieldCoordinates = it }
+        .then(
+            if (parentBringIntoView == null) {
+                Modifier.bringIntoViewRequester(bringIntoViewRequester)
+            } else {
+                Modifier
+            },
+        )
+        .semantics {
+            if (fieldLabel.isNotBlank()) {
+                contentDescription = fieldLabel
+            }
+            if (supportingText != null) {
+                stateDescription = supportingText
+            }
+        }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = fieldModifier
+                .clip(MaterialTheme.shapes.small)
+                .background(containerColor, MaterialTheme.shapes.small)
+                .border(BorderStroke(FieldBorderWidth, borderColor), MaterialTheme.shapes.small),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = horizontalPadding,
+                        end = horizontalPadding,
+                        top = contentTopPadding,
+                        bottom = verticalPadding,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            ) {
+                if (leadingIcon != null) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .defaultMinSize(minHeight = valueLineHeightDp),
+                ) {
+                    if (value.isEmpty() && fieldPlaceholder != null) {
+                        Text(
+                            text = fieldPlaceholder,
+                            style = fieldTextStyle,
+                            color = placeholderColor,
+                            maxLines = resolvedMaxLines,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
+                    if (showValueEllipsis) {
+                        Text(
+                            text = displayedValue,
+                            style = fieldTextStyle,
+                            color = valueColor,
+                            maxLines = resolvedMaxLines,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(modifier)
+                            .then(
+                                if (showValueEllipsis && singleLine) {
+                                    Modifier.heightIn(max = valueLineHeightDp)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .onFocusChanged { focusState ->
+                                if (parentBringIntoView != null) {
+                                    parentBringIntoView.onFieldFocus(focusState.isFocused, fieldCoordinates)
+                                } else if (focusState.isFocused && fieldSize != IntSize.Zero) {
+                                    scope.launch {
+                                        bringIntoViewRequester.bringIntoView(
+                                            Rect(
+                                                left = 0f,
+                                                top = 0f,
+                                                right = fieldSize.width.toFloat(),
+                                                bottom = fieldSize.height + ctaClearancePx,
+                                            ),
+                                        )
+                                    }
+                                }
+                            },
+                        enabled = enabled,
+                        readOnly = readOnly,
+                        textStyle = fieldTextStyle.copy(
+                            color = if (showValueEllipsis) Color.Transparent else valueColor,
+                        ),
+                        keyboardOptions = keyboardOptions,
+                        keyboardActions = keyboardActions,
+                        singleLine = singleLine,
+                        minLines = resolvedMinLines,
+                        maxLines = resolvedMaxLines,
+                        visualTransformation = visualTransformation,
+                        interactionSource = interactionSource,
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    )
                 }
-            },
-        label = if (fieldLabel.isNotBlank()) {
-            { Text(text = fieldLabel, style = MaterialTheme.typography.bodyMedium) }
-        } else {
-            null
-        },
-        placeholder = fieldPlaceholder?.let { { Text(text = it, style = fieldTextStyle, color = placeholderColor) } },
-        enabled = enabled,
-        readOnly = readOnly,
-        isError = isError,
-        supportingText = supportingText?.let { { Text(text = it, style = MaterialTheme.typography.labelSmall) } },
-        textStyle = fieldTextStyle,
-        singleLine = singleLine,
-        minLines = if (singleLine) 1 else minLines.coerceAtLeast(1),
-        maxLines = if (singleLine) 1 else maxLines.coerceAtLeast(minLines.coerceAtLeast(1)),
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        shape = MaterialTheme.shapes.small,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            errorBorderColor = MaterialTheme.colorScheme.error,
-            disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled),
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-            disabledTextColor = OficiosColorMutedText,
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            errorContainerColor = Color.Transparent,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = placeholderColor,
-            errorLabelColor = MaterialTheme.colorScheme.error,
-            disabledLabelColor = placeholderColor.copy(alpha = OficiosAlpha.disabled),
-            cursorColor = MaterialTheme.colorScheme.primary,
-        ),
-        trailingIcon = trailingContent,
-    )
+                if (trailingContent != null) {
+                    trailingContent()
+                }
+            }
+            if (fieldLabel.isNotBlank()) {
+                Text(
+                    text = fieldLabel,
+                    style = labelTextStyle,
+                    color = labelColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(y = -labelLineHeightDp / 2)
+                        .padding(start = horizontalPadding - LabelBackgroundPadding)
+                        .background(
+                            color = labelBackgroundColor,
+                            shape = MaterialTheme.shapes.extraSmall,
+                        )
+                        .padding(horizontal = LabelBackgroundPadding),
+                )
+            }
+        }
+        if (supportingText != null) {
+            Text(
+                text = supportingText,
+                style = MaterialTheme.typography.labelSmall,
+                color = if (isError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.padding(
+                    start = horizontalPadding,
+                    top = OficiosSpacing.xxs,
+                ),
+            )
+        }
+    }
 }
 
 @Preview(name = "TextFields States", showBackground = true, backgroundColor = 0xFF00358B)
