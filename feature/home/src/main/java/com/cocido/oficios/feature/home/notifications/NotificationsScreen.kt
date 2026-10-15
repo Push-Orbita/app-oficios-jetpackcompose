@@ -27,6 +27,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
@@ -86,6 +87,7 @@ fun NotificationsScreen(
                     OficiosContentPhase.Empty -> OficiosEmptyState(
                         title = stringResource(R.string.notifications_empty_title),
                         description = stringResource(R.string.notifications_empty_description),
+                        variant = OficiosEmptyVariant.NoMessages,
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                     )
                     OficiosContentPhase.Content -> NotificationsList(

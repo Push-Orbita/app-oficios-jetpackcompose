@@ -155,7 +155,7 @@ private fun ProviderBenefitsSection(
     ) {
         Text(
             text = stringResource(R.string.provider_home_benefits_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
