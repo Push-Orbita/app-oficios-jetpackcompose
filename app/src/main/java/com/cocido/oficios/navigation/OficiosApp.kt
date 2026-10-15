@@ -79,11 +79,16 @@ fun AppNavHost(
     val context = LocalContext.current
     val snackbar = LocalOficiosSnackbarController.current
     val showMessage: (String) -> Unit = { message -> snackbar.show(message) }
+    val transitions = rememberOficiosNavTransitions()
 
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
+        enterTransition = transitions.enter,
+        exitTransition = transitions.exit,
+        popEnterTransition = transitions.popEnter,
+        popExitTransition = transitions.popExit,
     ) {
         authGraph(
             onNavigateFromSplash = { destination ->
