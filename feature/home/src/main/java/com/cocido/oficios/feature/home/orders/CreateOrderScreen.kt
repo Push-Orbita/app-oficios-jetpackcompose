@@ -208,6 +208,9 @@ private fun CreateOrderForm(
             onValueChange = { onEvent(CreateOrderEvent.DescriptionChanged(it)) },
             label = stringResource(R.string.create_order_description),
             placeholder = stringResource(R.string.create_order_description_hint),
+            singleLine = false,
+            minLines = 3,
+            maxLines = 6,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onEvent(CreateOrderEvent.Submit) }),
         )

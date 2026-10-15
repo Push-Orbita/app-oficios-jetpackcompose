@@ -3,7 +3,6 @@ package com.cocido.oficios.core.designsystem.component.inputs
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -76,18 +75,13 @@ fun OficiosTextField(
     val ctaClearancePx = with(density) {
         (OficiosComponentSize.buttonHeightLarge + OficiosSpacing.md + OficiosComponentSize.buttonHeightSmall).toPx()
     }
-    val fieldHeight = if (singleLine && density.fontScale <= 1.05f) {
-        Modifier.height(OficiosComponentSize.textFieldHeight)
-    } else {
-        Modifier.heightIn(min = OficiosComponentSize.textFieldHeight)
-    }
-
+    // Sin altura fija: con label, M3 suma 8dp arriba de la caja de 56dp y el supportingText va debajo.
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .then(fieldHeight)
+            .heightIn(min = OficiosComponentSize.textFieldHeight)
             .onSizeChanged { fieldSize = it }
             .bringIntoViewRequester(bringIntoViewRequester)
             .onFocusChanged { focusState ->

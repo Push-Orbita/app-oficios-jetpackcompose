@@ -82,6 +82,9 @@ fun RateWorkerScreen(
                     onValueChange = { onEvent(RateWorkerEvent.CommentChanged(it)) },
                     label = stringResource(R.string.rate_worker_review),
                     placeholder = stringResource(R.string.rate_worker_review_hint),
+                    singleLine = false,
+                    minLines = 3,
+                    maxLines = 6,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { onEvent(RateWorkerEvent.Submit) }),
                 )
