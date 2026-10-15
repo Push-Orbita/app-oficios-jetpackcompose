@@ -94,7 +94,7 @@ private fun CreateOrderForm(
             .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
         Text(
             text = stringResource(R.string.create_order_request, state.workerName),
