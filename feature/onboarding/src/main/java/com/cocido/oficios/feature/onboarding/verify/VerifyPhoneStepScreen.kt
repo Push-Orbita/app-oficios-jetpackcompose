@@ -65,7 +65,7 @@ fun VerifyPhoneStepScreen(
                 isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
+                    keyboardType = KeyboardType.NumberPassword,
                     imeAction = ImeAction.Done,
                 ),
                 keyboardActions = KeyboardActions(onDone = { onSubmit() }),
