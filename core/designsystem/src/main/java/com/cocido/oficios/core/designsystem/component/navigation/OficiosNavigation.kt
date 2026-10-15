@@ -1,5 +1,8 @@
 package com.cocido.oficios.core.designsystem.component.navigation
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.semantics
@@ -25,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -42,8 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosMotion
+import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.designsystem.theme.oficiosTween
 
 // ---------------------------------------------------------------------------
 // OficiosNavItem — modelo para un ítem de navegación inferior
@@ -71,6 +79,13 @@ fun OficiosBottomNavigationBar(
     onItemSelected: (OficiosNavItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Cada pantalla-tab compone su propia barra: arrancar desde la última tab mostrada
+    // hace que el indicador se desplace en vez de aparecer ya seleccionado.
+    var indicatorRoute by remember { mutableStateOf(BottomNavIndicatorMemory.lastRoute ?: currentRoute) }
+    LaunchedEffect(currentRoute) {
+        indicatorRoute = currentRoute
+        BottomNavIndicatorMemory.lastRoute = currentRoute
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         HorizontalDivider(
             thickness = 1.dp,
@@ -88,13 +103,17 @@ fun OficiosBottomNavigationBar(
             items.forEach { item ->
                 OficiosBottomNavItem(
                     item = item,
-                    selected = currentRoute == item.route,
+                    selected = indicatorRoute == item.route,
                     onClick = { onItemSelected(item) },
                     modifier = Modifier.weight(1f),
                 )
             }
         }
     }
+}
+
+private object BottomNavIndicatorMemory {
+    var lastRoute: String? = null
 }
 
 @Composable
@@ -104,11 +123,31 @@ private fun OficiosBottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onSurface
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val colorSpec = oficiosTween<Color>(OficiosMotion.DurationMedium)
+    val contentColor by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.onSurface
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = colorSpec,
+        label = "BottomNavContentColor",
+    )
+    val indicatorColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
+        animationSpec = colorSpec,
+        label = "BottomNavIndicatorColor",
+    )
+    val indicatorWidth by animateDpAsState(
+        targetValue = if (selected) IndicatorWidthSelected else OficiosComponentSize.iconMd,
+        animationSpec = oficiosTween(OficiosMotion.DurationMedium),
+        label = "BottomNavIndicatorWidth",
+    )
+    val iconScale by animateFloatAsState(
+        targetValue = if (selected) SelectedIconScale else 1f,
+        animationSpec = oficiosTween(OficiosMotion.DurationMedium),
+        label = "BottomNavIconScale",
+    )
 
     Column(
         modifier = modifier
@@ -119,24 +158,25 @@ private fun OficiosBottomNavItem(
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            modifier = Modifier
-                .background(
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.surfaceContainer
-                    } else {
-                        Color.Transparent
-                    },
-                    shape = RoundedCornerShape(OficiosSpacing.sm),
-                )
-                .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xxs),
+            modifier = Modifier.size(width = IndicatorWidthSelected, height = IndicatorHeight),
             contentAlignment = Alignment.Center,
         ) {
+            Box(
+                modifier = Modifier
+                    .size(width = indicatorWidth, height = IndicatorHeight)
+                    .background(color = indicatorColor, shape = RoundedCornerShape(OficiosRadius.pill)),
+            )
             OficiosNotificationBadge(count = item.badgeCount) {
                 Icon(
                     imageVector = item.icon,
                     contentDescription = null,
                     tint = contentColor,
-                    modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    modifier = Modifier
+                        .size(OficiosComponentSize.iconMd)
+                        .graphicsLayer {
+                            scaleX = iconScale
+                            scaleY = iconScale
+                        },
                 )
             }
         }
@@ -151,6 +191,10 @@ private fun OficiosBottomNavItem(
         )
     }
 }
+
+private val IndicatorHeight = OficiosComponentSize.iconMd + OficiosSpacing.xs
+private val IndicatorWidthSelected = OficiosComponentSize.iconMd + OficiosSpacing.md * 2
+private const val SelectedIconScale = 1.08f
 
 @Composable
 private fun BottomNavLabel(
