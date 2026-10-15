@@ -42,6 +42,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonLi
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
@@ -257,6 +258,7 @@ private fun WorkersList(
                 viewProfileLabel = stringResource(R.string.home_worker_view_profile),
                 onContact = { onEvent(SearchResultsEvent.WorkerContact(worker)) },
                 onViewProfile = { onEvent(SearchResultsEvent.WorkerViewProfile(worker)) },
+                modifier = oficiosAnimateItem(),
             )
         }
         if (isLoadingPage) {
