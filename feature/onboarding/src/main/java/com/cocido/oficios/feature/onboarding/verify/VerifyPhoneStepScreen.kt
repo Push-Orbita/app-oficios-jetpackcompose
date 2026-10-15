@@ -15,6 +15,8 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.motion.oficiosShake
+import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosRejectShake
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.steps.OnboardingStepScaffold
@@ -28,6 +30,7 @@ fun VerifyPhoneStepScreen(
     onEditNumber: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val shake = rememberOficiosRejectShake(rejectionKey = uiState.codeRejections.takeIf { it > 0 })
     OnboardingStepScaffold(
         title = stringResource(R.string.onboarding_step_verify_phone_title),
         modifier = modifier,
@@ -58,6 +61,7 @@ fun VerifyPhoneStepScreen(
                 value = uiState.code,
                 onValueChange = onCodeChanged,
                 label = stringResource(R.string.onboarding_step_verify_phone_code_label),
+                modifier = Modifier.oficiosShake(shake),
                 isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
                 keyboardOptions = KeyboardOptions(

@@ -35,6 +35,7 @@ data class VerifyPhoneUiState(
     val error: String? = null,
     val canSubmit: Boolean = false,
     val hasAttemptedSubmit: Boolean = false,
+    val codeRejections: Int = 0,
 )
 
 sealed interface VerifyPhoneEffect {
@@ -90,7 +91,13 @@ class VerifyPhoneViewModel @Inject constructor(
     fun submit() {
         val codeError = AuthValidators.validateVerificationCode(_uiState.value.code)
         if (codeError != null) {
-            _uiState.update { it.copy(codeError = codeError, hasAttemptedSubmit = true) }
+            _uiState.update {
+                it.copy(
+                    codeError = codeError,
+                    hasAttemptedSubmit = true,
+                    codeRejections = it.codeRejections + 1,
+                )
+            }
             return
         }
 
@@ -119,7 +126,11 @@ class VerifyPhoneViewModel @Inject constructor(
                 }
                 is AppResult.Error -> {
                     _uiState.update {
-                        it.copy(isLoading = false, error = result.error.userMessage())
+                        it.copy(
+                            isLoading = false,
+                            error = result.error.userMessage(),
+                            codeRejections = it.codeRejections + 1,
+                        )
                     }
                 }
             }
