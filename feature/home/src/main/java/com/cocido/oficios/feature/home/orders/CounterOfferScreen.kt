@@ -47,7 +47,7 @@ fun CounterOfferScreen(
                     .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             ) {
                 Text(
                     text = stringResource(R.string.counter_offer_body),
