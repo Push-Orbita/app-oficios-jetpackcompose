@@ -394,6 +394,14 @@ class SearchResultsViewModel @Inject constructor(
 
     private fun removeFilterChip(chip: FilterChip) {
         activeFilters = when (chip.type) {
+            FilterChipType.CATEGORY -> activeFilters.copy(
+                categoryId = null,
+                categoryLabel = null,
+                rubroId = null,
+                rubroLabel = null,
+                subRubroId = null,
+                subRubroLabel = null,
+            )
             FilterChipType.RUBRO -> activeFilters.copy(
                 rubroId = null,
                 rubroLabel = null,
@@ -417,6 +425,7 @@ class SearchResultsViewModel @Inject constructor(
     }
 
     private fun buildActiveFilterChips(filters: WorkerSearchFilters): List<FilterChip> = buildList {
+        filters.categoryLabel?.let { add(FilterChip(FilterChipType.CATEGORY, it)) }
         filters.rubroLabel?.let { add(FilterChip(FilterChipType.RUBRO, it)) }
         filters.subRubroLabel?.let { add(FilterChip(FilterChipType.SUBRUBRO, it)) }
         filters.barrioLabel?.let { add(FilterChip(FilterChipType.BARRIO, it)) }
@@ -473,6 +482,7 @@ data class FilterSheetUiState(
 )
 
 enum class FilterChipType {
+    CATEGORY,
     RUBRO,
     SUBRUBRO,
     BARRIO,

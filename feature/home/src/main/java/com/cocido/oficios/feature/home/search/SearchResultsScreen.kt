@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
@@ -105,12 +106,24 @@ fun SearchResultsScreen(
                             onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
                         )
                         val query = state.activeFilters.query?.takeIf { it.isNotBlank() }
+                        val hasRemovableFilters = state.filterChips.isNotEmpty()
                         OficiosEmptyState(
                             title = stringResource(R.string.home_search_results_empty_title),
                             description = if (query != null) {
                                 stringResource(R.string.home_search_results_empty_query_description, query)
                             } else {
                                 stringResource(R.string.home_search_results_empty_description)
+                            },
+                            variant = OficiosEmptyVariant.NoResults,
+                            ctaLabel = if (hasRemovableFilters) {
+                                stringResource(R.string.home_search_clear_filters)
+                            } else {
+                                null
+                            },
+                            onCta = if (hasRemovableFilters) {
+                                { onEvent(SearchResultsEvent.ClearFilters) }
+                            } else {
+                                null
                             },
                             modifier = Modifier.fillMaxWidth(),
                         )

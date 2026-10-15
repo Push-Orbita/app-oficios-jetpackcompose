@@ -15,7 +15,6 @@ import androidx.compose.material.icons.outlined.Assignment
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
@@ -35,9 +34,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
+import com.cocido.oficios.core.designsystem.component.layout.HomeUserIdentityColumn
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBottomNavigationBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosNavItem
@@ -70,26 +69,11 @@ fun ClientHomeHeader(
                 size = OficiosComponentSize.avatarSm,
                 showBorder = true,
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-            ) {
-                Text(
-                    text = userName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (emailVerified) {
-                    Icon(
-                        imageVector = Icons.Outlined.Verified,
-                        contentDescription = stringResource(R.string.home_verified_user),
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(OficiosComponentSize.iconMd),
-                    )
-                }
-            }
+            HomeUserIdentityColumn(
+                userName = userName,
+                isVerified = emailVerified,
+                verifiedContentDescription = stringResource(R.string.home_verified_user),
+            )
         }
         OficiosNotificationBadge(count = unreadNotificationCount) {
             IconButton(

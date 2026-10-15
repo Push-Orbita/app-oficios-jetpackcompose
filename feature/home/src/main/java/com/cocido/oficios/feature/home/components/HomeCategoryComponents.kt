@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -70,8 +71,11 @@ fun HomeFeaturedWorkersSection(
         ) {
             Text(
                 text = stringResource(R.string.home_featured_workers_title),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             OficiosButton(
                 text = stringResource(R.string.home_featured_workers_see_all),
@@ -116,7 +120,7 @@ fun HomeRecentSearchesSection(
     ) {
         Text(
             text = stringResource(R.string.home_recent_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
         LazyRow(
@@ -124,35 +128,13 @@ fun HomeRecentSearchesSection(
             contentPadding = PaddingValues(end = OficiosSpacing.xs),
         ) {
             items(searches, key = { "${it.type}-${it.id}" }) { entry ->
-                HomeRecentSearchCard(
-                    entry = entry,
+                OficiosChip(
+                    label = entry.label,
                     onClick = { onSearchClick(entry) },
-                    modifier = Modifier
-                        .width(OficiosComponentSize.categoryCardSize)
-                        .height(OficiosComponentSize.categoryCardSize),
                 )
             }
         }
     }
-}
-
-@Composable
-private fun HomeRecentSearchCard(
-    entry: RecentSearchEntry,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val icon = CategoryIconResolver.iconFor(
-        categoryId = entry.categoryId ?: entry.id,
-        categoryName = entry.label,
-    )
-    HomeCategoryCard(
-        title = entry.label,
-        icon = icon,
-        onClick = onClick,
-        compact = true,
-        modifier = modifier,
-    )
 }
 
 @Composable
