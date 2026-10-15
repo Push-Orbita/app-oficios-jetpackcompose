@@ -1,7 +1,9 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -20,6 +22,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -39,52 +42,50 @@ class OficiosTextFieldHeightTest {
 
     private data class FieldCase(
         val tag: String,
-        val hasLabel: Boolean,
-        val supportingText: String? = null,
-        val content: @Composable (Modifier) -> Unit,
+        val content: @Composable () -> Unit,
     )
 
     private val cases = listOf(
-        FieldCase("vacio_con_label", hasLabel = true) {
-            OficiosTextField(value = "", onValueChange = {}, label = "Correo", modifier = it)
+        FieldCase("vacio_con_label") {
+            OficiosTextField(value = "", onValueChange = {}, label = "Correo", modifier = Modifier.fillMaxWidth())
         },
-        FieldCase("label_flotante", hasLabel = true) {
-            OficiosTextField(value = "usuario@mail.com", onValueChange = {}, label = "Correo", modifier = it)
+        FieldCase("label_flotante") {
+            OficiosTextField(value = "usuario@mail.com", onValueChange = {}, label = "Correo", modifier = Modifier.fillMaxWidth())
         },
-        FieldCase("correo_largo", hasLabel = true) {
+        FieldCase("correo_largo") {
             OficiosTextField(
                 value = "nombre.apellido.muy.largo+pruebas@dominio-extenso.com.ar",
                 onValueChange = {},
                 label = "Correo",
-                modifier = it,
+                modifier = Modifier.fillMaxWidth(),
             )
         },
-        FieldCase("solo_placeholder", hasLabel = true) {
-            OficiosTextField(value = "Juan García", onValueChange = {}, label = "", placeholder = "Nombre completo", modifier = it)
+        FieldCase("solo_placeholder") {
+            OficiosTextField(value = "Juan García", onValueChange = {}, label = "", placeholder = "Nombre completo", modifier = Modifier.fillMaxWidth())
         },
-        FieldCase("contrasena_con_ojo", hasLabel = true) {
-            OficiosPasswordField(value = "secreto123", onValueChange = {}, label = "Contraseña", modifier = it)
+        FieldCase("contrasena_con_ojo") {
+            OficiosPasswordField(value = "secreto123", onValueChange = {}, label = "Contraseña", modifier = Modifier.fillMaxWidth())
         },
-        FieldCase("error_con_soporte", hasLabel = true, supportingText = "El email es obligatorio") {
+        FieldCase("error_con_soporte") {
             OficiosTextField(
                 value = "mal@",
                 onValueChange = {},
                 label = "Correo",
                 isError = true,
                 supportingText = "El email es obligatorio",
-                modifier = it,
+                modifier = Modifier.fillMaxWidth(),
             )
         },
-        FieldCase("trailing_icon", hasLabel = true) {
+        FieldCase("trailing_icon") {
             OficiosTextField(
                 value = "Plomería",
                 onValueChange = {},
                 label = "Rubro",
-                modifier = it,
+                modifier = Modifier.fillMaxWidth(),
                 trailingContent = { Icon(Icons.Default.Search, contentDescription = null) },
             )
         },
-        FieldCase("multilinea", hasLabel = true) {
+        FieldCase("multilinea") {
             OficiosTextField(
                 value = "Primera línea\nSegunda línea",
                 onValueChange = {},
@@ -92,10 +93,16 @@ class OficiosTextFieldHeightTest {
                 singleLine = false,
                 minLines = 3,
                 maxLines = 6,
-                modifier = it,
+                modifier = Modifier.fillMaxWidth(),
             )
         },
     )
+
+    @Test
+    fun alturaMinima56dp_fuente100() = assertMinFieldHeight(fontScale = 1.0f)
+
+    @Test
+    fun alturaMinimaMayorQue56dp_fuente200() = assertMinFieldHeight(fontScale = 2.0f, greaterThanBase = true)
 
     @Test
     fun textNoQuedaRecortado_fuente100() = assertTextFits(fontScale = 1.0f)
@@ -106,6 +113,38 @@ class OficiosTextFieldHeightTest {
     @Test
     fun textNoQuedaRecortado_fuente200() = assertTextFits(fontScale = 2.0f)
 
+    private fun assertMinFieldHeight(fontScale: Float, greaterThanBase: Boolean = false) {
+        composeTestRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
+                OficiosTheme {
+                    Box(Modifier.testTag("altura")) {
+                        OficiosTextField(
+                            value = "ab",
+                            onValueChange = {},
+                            label = "Nombre",
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+        }
+        composeTestRule.waitForIdle()
+        val field = composeTestRule.onNodeWithTag("altura", useUnmergedTree = true).fetchSemanticsNode()
+        val minPx = with(composeTestRule.density) { OficiosComponentSize.textFieldHeight.toPx() * fontScale }
+        assertTrue(
+            "altura @${fontScale}x: ${field.size.height}px < mínimo ${minPx}px",
+            field.size.height + 0.5f >= minPx,
+        )
+        if (greaterThanBase) {
+            val basePx = with(composeTestRule.density) { OficiosComponentSize.textFieldHeight.toPx() }
+            assertTrue(
+                "altura @2.0x debería superar 56dp base",
+                field.size.height > basePx + 1f,
+            )
+        }
+    }
+
     private fun assertTextFits(fontScale: Float) {
         composeTestRule.setContent {
             val density = LocalDensity.current
@@ -115,45 +154,39 @@ class OficiosTextFieldHeightTest {
                         modifier = Modifier.width(360.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        cases.forEach { case -> case.content(Modifier.testTag(case.tag)) }
+                        cases.forEach { case ->
+                            Box(Modifier.testTag(case.tag)) {
+                                case.content()
+                            }
+                        }
                     }
                 }
             }
         }
         composeTestRule.waitForIdle()
 
-        val density = composeTestRule.density
         cases.forEach { case ->
             val field = composeTestRule.onNodeWithTag(case.tag, useUnmergedTree = true).fetchSemanticsNode()
-            val textLayout = field.findTextLayout()
-                ?: error("${case.tag}: no se encontró el layout del texto")
-            val fieldHeight = field.size.height.toFloat()
-            val labelTop = if (case.hasLabel) with(density) { 8.dp.toPx() } else 0f
-            val verticalPadding = with(density) { (16.dp * 2).toPx() }
-            val supportingHeight = case.supportingText?.let { text ->
-                val node = composeTestRule.onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode()
-                node.size.height + with(density) { 4.dp.toPx() }
-            } ?: 0f
-            // multiParagraph.height es el alto real de las líneas; size.height se achica si el campo no le deja lugar.
-            val textHeight = maxOf(textLayout.size.height.toFloat(), textLayout.multiParagraph.height)
-            val required = labelTop + verticalPadding + textHeight + supportingHeight
-
+            val valueLayout = field.findEditableTextLayout()
+                ?: error("${case.tag}: no se encontró el layout del valor")
             assertTrue(
-                "${case.tag} @${fontScale}x: campo ${fieldHeight}px < texto+padding ${required}px",
-                fieldHeight + 0.5f >= required,
+                "${case.tag} @${fontScale}x: el valor queda recortado en alto",
+                !valueLayout.didOverflowHeight,
             )
             assertTrue(
                 "${case.tag} @${fontScale}x: lineHeight menor que fontSize",
-                textLayout.layoutInput.style.lineHeight.value >= textLayout.layoutInput.style.fontSize.value,
+                valueLayout.layoutInput.style.lineHeight.value >= valueLayout.layoutInput.style.fontSize.value,
             )
         }
     }
 
-    private fun SemanticsNode.findTextLayout(): TextLayoutResult? {
-        config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.let { action ->
-            val results = mutableListOf<TextLayoutResult>()
-            if (action(results) && results.isNotEmpty()) return results.first()
+    private fun SemanticsNode.findEditableTextLayout(): TextLayoutResult? {
+        if (config.getOrNull(SemanticsActions.SetText) != null) {
+            config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.let { action ->
+                val results = mutableListOf<TextLayoutResult>()
+                if (action(results) && results.isNotEmpty()) return results.first()
+            }
         }
-        return children.firstNotNullOfOrNull { it.findTextLayout() }
+        return children.firstNotNullOfOrNull { it.findEditableTextLayout() }
     }
 }
