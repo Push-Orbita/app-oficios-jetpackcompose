@@ -19,7 +19,10 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
+import com.cocido.oficios.core.designsystem.component.feedback.oficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -67,36 +70,41 @@ fun FavoritesScreen(
             onRefresh = { onEvent(FavoritesEvent.Refresh) },
             modifier = Modifier.fillMaxSize().padding(paddingValues),
         ) {
-        when {
-            uiState.isLoading -> OficiosSkeletonList(
-                contentDescription = stringResource(R.string.favorites_loading),
-            )
-            uiState.errorMessage != null && uiState.items.isEmpty() -> OficiosErrorState(
-                title = stringResource(R.string.favorites_load_error),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(FavoritesEvent.Retry) },
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-            )
-            uiState.items.isEmpty() -> OficiosEmptyState(
-                title = stringResource(R.string.favorites_empty_title),
-                description = stringResource(R.string.favorites_empty_description),
-                ctaLabel = stringResource(R.string.favorites_empty_cta),
-                onCta = { onEvent(FavoritesEvent.SearchClicked) },
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-            )
-            else -> FavoritesList(
-                items = uiState.items,
-                hasMore = uiState.hasMore,
-                isLoadingMore = uiState.isLoadingMore,
-                onHire = { onEvent(FavoritesEvent.HireClicked(it)) },
-                onViewProfile = { onEvent(FavoritesEvent.ProfileClicked(it)) },
-                onLoadMore = { onEvent(FavoritesEvent.LoadMore) },
-                modifier = Modifier.fillMaxSize(),
-            )
+        OficiosStateContent(targetState = uiState, contentKey = { it.phase() }) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosSkeletonList(
+                    contentDescription = stringResource(R.string.favorites_loading),
+                )
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.favorites_load_error),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(FavoritesEvent.Retry) },
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                )
+                OficiosContentPhase.Empty -> OficiosEmptyState(
+                    title = stringResource(R.string.favorites_empty_title),
+                    description = stringResource(R.string.favorites_empty_description),
+                    ctaLabel = stringResource(R.string.favorites_empty_cta),
+                    onCta = { onEvent(FavoritesEvent.SearchClicked) },
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                )
+                OficiosContentPhase.Content -> FavoritesList(
+                    items = state.items,
+                    hasMore = state.hasMore,
+                    isLoadingMore = state.isLoadingMore,
+                    onHire = { onEvent(FavoritesEvent.HireClicked(it)) },
+                    onViewProfile = { onEvent(FavoritesEvent.ProfileClicked(it)) },
+                    onLoadMore = { onEvent(FavoritesEvent.LoadMore) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
         }
     }
 }
+
+private fun FavoritesUiState.phase(): OficiosContentPhase =
+    oficiosContentPhase(isLoading = isLoading, hasError = errorMessage != null, isEmpty = items.isEmpty())
 
 @Composable
 private fun FavoritesList(

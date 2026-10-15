@@ -20,9 +20,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -64,30 +66,39 @@ fun DeleteAccountScreen(
             )
         },
     ) { padding ->
-        when {
-            uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
-            uiState.errorMessage != null &&
-                !uiState.hasPendingGrace &&
-                uiState.password.isEmpty() &&
-                uiState.confirmation.isEmpty() &&
-                !uiState.isSubmitting -> OficiosErrorState(
-                title = stringResource(R.string.settings_delete_account_load_error),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(DeleteAccountEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(padding),
-            )
-            uiState.hasPendingGrace -> DeleteAccountGraceContent(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(padding),
-            )
-            else -> DeleteAccountForm(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.padding(padding),
-            )
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.settings_delete_account_load_error),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(DeleteAccountEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> if (state.hasPendingGrace) {
+                    DeleteAccountGraceContent(uiState = state, onEvent = onEvent)
+                } else {
+                    DeleteAccountForm(uiState = state, onEvent = onEvent)
+                }
+            }
         }
     }
+}
+
+private fun DeleteAccountUiState.phase(): OficiosContentPhase = when {
+    isLoading -> OficiosContentPhase.Loading
+    errorMessage != null &&
+        !hasPendingGrace &&
+        password.isEmpty() &&
+        confirmation.isEmpty() &&
+        !isSubmitting -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
 }
 
 @Composable

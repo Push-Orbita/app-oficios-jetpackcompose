@@ -19,9 +19,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -71,64 +73,79 @@ fun WorkerReportScreen(
             )
         },
     ) { paddingValues ->
-        when {
-            uiState.isLoadingReasons -> OficiosLoadingState(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-            )
-            uiState.reasonsErrorMessage != null && uiState.reasons.isEmpty() -> OficiosErrorState(
-                title = stringResource(R.string.worker_report_reasons_error_title),
-                description = uiState.reasonsErrorMessage,
-                onRetry = { onEvent(WorkerReportEvent.Retry) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-            )
-            else -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(OficiosSpacing.lg)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
-            ) {
-                Text(
-                    text = stringResource(R.string.worker_report_intro, uiState.workerName),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(paddingValues),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.worker_report_reasons_error_title),
+                    description = state.reasonsErrorMessage.orEmpty(),
+                    onRetry = { onEvent(WorkerReportEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
                 )
-                OficiosDropdownField(
-                    value = uiState.selectedReasonLabel,
-                    options = uiState.reasons.map { it.label },
-                    onOptionSelected = { onEvent(WorkerReportEvent.ReasonSelected(it)) },
-                    label = stringResource(R.string.worker_report_reason_label),
-                    placeholder = stringResource(R.string.worker_report_reason_placeholder),
-                    enabled = uiState.reasons.isNotEmpty() && !uiState.isSubmitting,
-                )
-                OficiosTextField(
-                    value = uiState.description,
-                    onValueChange = { onEvent(WorkerReportEvent.DescriptionChanged(it)) },
-                    label = stringResource(R.string.worker_report_description_label),
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = stringResource(R.string.worker_report_description_placeholder),
-                    enabled = !uiState.isSubmitting,
-                    supportingText = uiState.descriptionHint,
-                    singleLine = false,
-                    minLines = 4,
-                    maxLines = 8,
-                )
-                uiState.errorMessage?.let { OficiosInlineAlert(it) }
-                OficiosButton(
-                    text = stringResource(R.string.worker_report_submit),
-                    onClick = { onEvent(WorkerReportEvent.Submit) },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !uiState.isSubmitting,
-                    loading = uiState.isSubmitting,
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Large,
-                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> WorkerReportForm(state = state, onEvent = onEvent)
             }
         }
     }
+}
+
+@Composable
+private fun WorkerReportForm(
+    state: WorkerReportUiState,
+    onEvent: (WorkerReportEvent) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(OficiosSpacing.lg)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+    ) {
+        Text(
+            text = stringResource(R.string.worker_report_intro, state.workerName),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OficiosDropdownField(
+            value = state.selectedReasonLabel,
+            options = state.reasons.map { it.label },
+            onOptionSelected = { onEvent(WorkerReportEvent.ReasonSelected(it)) },
+            label = stringResource(R.string.worker_report_reason_label),
+            placeholder = stringResource(R.string.worker_report_reason_placeholder),
+            enabled = state.reasons.isNotEmpty() && !state.isSubmitting,
+        )
+        OficiosTextField(
+            value = state.description,
+            onValueChange = { onEvent(WorkerReportEvent.DescriptionChanged(it)) },
+            label = stringResource(R.string.worker_report_description_label),
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = stringResource(R.string.worker_report_description_placeholder),
+            enabled = !state.isSubmitting,
+            supportingText = state.descriptionHint,
+            singleLine = false,
+            minLines = 4,
+            maxLines = 8,
+        )
+        state.errorMessage?.let { OficiosInlineAlert(it) }
+        OficiosButton(
+            text = stringResource(R.string.worker_report_submit),
+            onClick = { onEvent(WorkerReportEvent.Submit) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !state.isSubmitting,
+            loading = state.isSubmitting,
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Large,
+        )
+    }
+}
+
+private fun WorkerReportUiState.phase(): OficiosContentPhase = when {
+    isLoadingReasons -> OficiosContentPhase.Loading
+    reasonsErrorMessage != null && reasons.isEmpty() -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
 }

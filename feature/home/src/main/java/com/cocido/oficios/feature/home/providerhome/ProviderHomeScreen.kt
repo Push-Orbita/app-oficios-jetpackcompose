@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.BenefitCard
 import com.cocido.oficios.core.designsystem.component.cards.ProfileCompletionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -53,38 +54,37 @@ fun ProviderHomeScreen(
             )
         },
     ) { paddingValues ->
-        when (uiState) {
-            ProviderHomeUiState.Loading -> {
-                HomeDashboardSkeleton(
-                    contentDescription = stringResource(R.string.home_loading),
-                    modifier = Modifier.padding(paddingValues),
-                )
-            }
-            is ProviderHomeUiState.Error -> {
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { onEvent(ProviderHomeEvent.Refresh) },
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    OficiosErrorState(
-                        title = stringResource(R.string.home_error_title),
-                        description = uiState.message,
-                        onRetry = { onEvent(ProviderHomeEvent.Retry) },
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                ProviderHomeUiState.Loading -> {
+                    HomeDashboardSkeleton(contentDescription = stringResource(R.string.home_loading))
                 }
-            }
-            is ProviderHomeUiState.Success -> {
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { onEvent(ProviderHomeEvent.Refresh) },
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    ProviderHomeSuccessContent(
-                        content = uiState.content,
-                        unreadNotificationCount = unreadNotificationCount,
-                        onEvent = onEvent,
-                    )
+                is ProviderHomeUiState.Error -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(ProviderHomeEvent.Refresh) },
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(ProviderHomeEvent.Retry) },
+                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        )
+                    }
+                }
+                is ProviderHomeUiState.Success -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(ProviderHomeEvent.Refresh) },
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        ProviderHomeSuccessContent(
+                            content = state.content,
+                            unreadNotificationCount = unreadNotificationCount,
+                            onEvent = onEvent,
+                        )
+                    }
                 }
             }
         }

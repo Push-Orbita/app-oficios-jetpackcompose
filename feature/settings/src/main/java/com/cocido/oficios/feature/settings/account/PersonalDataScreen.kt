@@ -29,9 +29,11 @@ import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -49,106 +51,125 @@ fun PersonalDataScreen(
         modifier = modifier,
         topBar = { OficiosBackTopBar(title = stringResource(R.string.personal_data_title), onBack = { onEvent(PersonalDataEvent.Back) }) },
     ) { padding ->
-        when {
-            uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize().padding(padding))
-            uiState.errorMessage != null && uiState.userId == 0L -> OficiosErrorState(
-                title = stringResource(R.string.personal_data_load_error),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(PersonalDataEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(padding),
-            )
-            else -> {
-            val lastNameFocus = remember { FocusRequester() }
-            val emailFocus = remember { FocusRequester() }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding)
-                    .imePadding()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
-                    .widthIn(max = OficiosComponentSize.contentMaxWidth),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.personal_data_intro),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.fillMaxWidth(),
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding).consumeWindowInsets(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.personal_data_load_error),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(PersonalDataEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
                 )
-                OficiosAvatar(
-                    name = "${uiState.firstName} ${uiState.lastName}",
-                    imageUrl = when {
-                        uiState.removePhoto -> null
-                        uiState.selectedPhotoPath != null -> uiState.selectedPhotoPath
-                        else -> uiState.currentPhotoUrl
-                    },
-                    size = OficiosComponentSize.avatarLg,
-                    showBorder = true,
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-                ) {
-                    OficiosButton(
-                        text = stringResource(R.string.personal_data_change_photo),
-                        onClick = onRequestPhoto,
-                        variant = OficiosButtonVariant.Outlined,
-                        modifier = Modifier.weight(1f),
-                    )
-                    OficiosButton(
-                        text = stringResource(R.string.personal_data_remove_photo),
-                        onClick = { onEvent(PersonalDataEvent.RemovePhoto) },
-                        variant = OficiosButtonVariant.Ghost,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                OficiosTextField(
-                    value = uiState.firstName,
-                    onValueChange = { onEvent(PersonalDataEvent.FirstNameChanged(it)) },
-                    label = stringResource(R.string.personal_data_first_name),
-                    isError = uiState.firstNameError != null,
-                    supportingText = uiState.firstNameError,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { lastNameFocus.requestFocus() }),
-                )
-                OficiosTextField(
-                    value = uiState.lastName,
-                    onValueChange = { onEvent(PersonalDataEvent.LastNameChanged(it)) },
-                    label = stringResource(R.string.personal_data_last_name),
-                    isError = uiState.lastNameError != null,
-                    supportingText = uiState.lastNameError,
-                    modifier = Modifier.focusRequester(lastNameFocus),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
-                )
-                OficiosTextField(
-                    value = uiState.email,
-                    onValueChange = { onEvent(PersonalDataEvent.EmailChanged(it)) },
-                    label = stringResource(R.string.personal_data_email),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { onEvent(PersonalDataEvent.Save) }),
-                    isError = uiState.emailError != null,
-                    supportingText = uiState.emailError ?: stringResource(R.string.personal_data_email_hint),
-                    modifier = Modifier.focusRequester(emailFocus),
-                )
-                uiState.errorMessage?.let { OficiosInlineAlert(message = it) }
-                OficiosButton(
-                    text = stringResource(R.string.personal_data_save),
-                    onClick = { onEvent(PersonalDataEvent.Save) },
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Large,
-                    loading = uiState.isSaving,
-                    enabled = !uiState.isSaving,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> PersonalDataForm(state = state, onEvent = onEvent, onRequestPhoto = onRequestPhoto)
             }
         }
+    }
+}
+
+private fun PersonalDataUiState.phase(): OficiosContentPhase = when {
+    isLoading -> OficiosContentPhase.Loading
+    errorMessage != null && userId == 0L -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
+}
+
+@Composable
+private fun PersonalDataForm(
+    state: PersonalDataUiState,
+    onEvent: (PersonalDataEvent) -> Unit,
+    onRequestPhoto: () -> Unit,
+) {
+    val lastNameFocus = remember { FocusRequester() }
+    val emailFocus = remember { FocusRequester() }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
+            .widthIn(max = OficiosComponentSize.contentMaxWidth),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = stringResource(R.string.personal_data_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OficiosAvatar(
+            name = "${state.firstName} ${state.lastName}",
+            imageUrl = when {
+                state.removePhoto -> null
+                state.selectedPhotoPath != null -> state.selectedPhotoPath
+                else -> state.currentPhotoUrl
+            },
+            size = OficiosComponentSize.avatarLg,
+            showBorder = true,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        ) {
+            OficiosButton(
+                text = stringResource(R.string.personal_data_change_photo),
+                onClick = onRequestPhoto,
+                variant = OficiosButtonVariant.Outlined,
+                modifier = Modifier.weight(1f),
+            )
+            OficiosButton(
+                text = stringResource(R.string.personal_data_remove_photo),
+                onClick = { onEvent(PersonalDataEvent.RemovePhoto) },
+                variant = OficiosButtonVariant.Ghost,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        OficiosTextField(
+            value = state.firstName,
+            onValueChange = { onEvent(PersonalDataEvent.FirstNameChanged(it)) },
+            label = stringResource(R.string.personal_data_first_name),
+            isError = state.firstNameError != null,
+            supportingText = state.firstNameError,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { lastNameFocus.requestFocus() }),
+        )
+        OficiosTextField(
+            value = state.lastName,
+            onValueChange = { onEvent(PersonalDataEvent.LastNameChanged(it)) },
+            label = stringResource(R.string.personal_data_last_name),
+            isError = state.lastNameError != null,
+            supportingText = state.lastNameError,
+            modifier = Modifier.focusRequester(lastNameFocus),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
+        )
+        OficiosTextField(
+            value = state.email,
+            onValueChange = { onEvent(PersonalDataEvent.EmailChanged(it)) },
+            label = stringResource(R.string.personal_data_email),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = { onEvent(PersonalDataEvent.Save) }),
+            isError = state.emailError != null,
+            supportingText = state.emailError ?: stringResource(R.string.personal_data_email_hint),
+            modifier = Modifier.focusRequester(emailFocus),
+        )
+        state.errorMessage?.let { OficiosInlineAlert(message = it) }
+        OficiosButton(
+            text = stringResource(R.string.personal_data_save),
+            onClick = { onEvent(PersonalDataEvent.Save) },
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Large,
+            loading = state.isSaving,
+            enabled = !state.isSaving,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

@@ -39,6 +39,7 @@ import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.R
@@ -79,7 +80,8 @@ fun SearchResultsScreen(
                 onRefresh = { onEvent(SearchResultsEvent.Refresh) },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
             ) {
-            when (uiState) {
+            OficiosStateContent(targetState = uiState) { state ->
+            when (state) {
                 SearchResultsUiState.Loading -> {
                     OficiosSkeletonList(
                         contentDescription = stringResource(R.string.home_search_results_loading),
@@ -89,7 +91,7 @@ fun SearchResultsScreen(
                 is SearchResultsUiState.Error -> {
                     OficiosErrorState(
                         title = stringResource(R.string.home_error_title),
-                        description = uiState.message,
+                        description = state.message,
                         onRetry = { onEvent(SearchResultsEvent.Retry) },
                         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                     )
@@ -97,10 +99,10 @@ fun SearchResultsScreen(
                 is SearchResultsUiState.Empty -> {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                         ActiveFilterChips(
-                            chips = uiState.filterChips,
+                            chips = state.filterChips,
                             onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
                         )
-                        val query = uiState.activeFilters.query?.takeIf { it.isNotBlank() }
+                        val query = state.activeFilters.query?.takeIf { it.isNotBlank() }
                         OficiosEmptyState(
                             title = stringResource(R.string.home_search_results_empty_title),
                             description = if (query != null) {
@@ -115,18 +117,19 @@ fun SearchResultsScreen(
                 is SearchResultsUiState.Success -> {
                     Column(Modifier.fillMaxSize()) {
                         ActiveFilterChips(
-                            chips = uiState.filterChips,
+                            chips = state.filterChips,
                             onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
                         )
                         WorkersList(
-                            workers = uiState.workers,
-                            isLoadingPage = uiState.isLoadingPage,
-                            endReached = uiState.endReached,
+                            workers = state.workers,
+                            isLoadingPage = state.isLoadingPage,
+                            endReached = state.endReached,
                             onEvent = onEvent,
                             modifier = Modifier.weight(1f),
                         )
                     }
                 }
+            }
             }
             }
         }

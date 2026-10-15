@@ -29,9 +29,11 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
@@ -49,50 +51,22 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
     OficiosScaffold(
         topBar = { OficiosBackTopBar(stringResource(R.string.services_title), onBack = { onEvent(ServicesEvent.Back) }) },
     ) { padding ->
-        when {
-            uiState.isLoading && uiState.services.isEmpty() -> OficiosLoadingState(Modifier.fillMaxSize().padding(padding))
-            uiState.errorMessage != null && uiState.services.isEmpty() -> OficiosErrorState(
-                title = stringResource(R.string.services_load_error),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(ServicesEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(padding),
-            )
-            else -> LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = OficiosSpacing.md),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            ) {
-                item {
-                    Text(
-                        stringResource(R.string.services_intro),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                uiState.errorMessage?.let { message -> item { OficiosInlineAlert(message) } }
-                if (uiState.services.isEmpty()) {
-                    item {
-                        OficiosEmptyState(
-                            title = stringResource(R.string.services_empty_title),
-                            description = stringResource(R.string.services_empty_description),
-                            ctaLabel = stringResource(R.string.services_add),
-                            onCta = { onEvent(ServicesEvent.AddService) },
-                        )
-                    }
-                } else {
-                    items(uiState.services, key = { it.id }) { service ->
-                        ServiceCard(service, uiState.isDeleting, onEvent)
-                    }
-                    item {
-                        OficiosButton(
-                            text = stringResource(R.string.services_add_another),
-                            leadingIcon = Icons.Outlined.Add,
-                            onClick = { onEvent(ServicesEvent.AddService) },
-                            modifier = Modifier.fillMaxWidth(),
-                            variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Large,
-                        )
-                    }
-                }
-                item { Column(Modifier.padding(bottom = OficiosSpacing.xl)) {} }
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.services_load_error),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(ServicesEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> ServicesList(state = state, onEvent = onEvent)
             }
         }
     }
@@ -105,6 +79,53 @@ fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
             onConfirm = { onEvent(ServicesEvent.ConfirmDelete) },
             onDismiss = { onEvent(ServicesEvent.DismissDelete) },
         )
+    }
+}
+
+private fun ServicesUiState.phase(): OficiosContentPhase = when {
+    isLoading && services.isEmpty() -> OficiosContentPhase.Loading
+    errorMessage != null && services.isEmpty() -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
+}
+
+@Composable
+private fun ServicesList(state: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        item {
+            Text(
+                stringResource(R.string.services_intro),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        state.errorMessage?.let { message -> item { OficiosInlineAlert(message) } }
+        if (state.services.isEmpty()) {
+            item {
+                OficiosEmptyState(
+                    title = stringResource(R.string.services_empty_title),
+                    description = stringResource(R.string.services_empty_description),
+                    ctaLabel = stringResource(R.string.services_add),
+                    onCta = { onEvent(ServicesEvent.AddService) },
+                )
+            }
+        } else {
+            items(state.services, key = { it.id }) { service ->
+                ServiceCard(service, state.isDeleting, onEvent)
+            }
+            item {
+                OficiosButton(
+                    text = stringResource(R.string.services_add_another),
+                    leadingIcon = Icons.Outlined.Add,
+                    onClick = { onEvent(ServicesEvent.AddService) },
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Large,
+                )
+            }
+        }
+        item { Column(Modifier.padding(bottom = OficiosSpacing.xl)) {} }
     }
 }
 
@@ -163,48 +184,65 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
     OficiosScaffold(
         topBar = { OficiosBackTopBar(stringResource(R.string.services_add), onBack = { onEvent(AddServiceEvent.Previous) }) },
     ) { padding ->
-        if (uiState.isLoading && uiState.categories.isEmpty()) {
-            OficiosLoadingState(Modifier.fillMaxSize().padding(padding))
-        } else if (uiState.errorMessage != null && uiState.categories.isEmpty()) {
-            OficiosErrorState(
-                title = stringResource(R.string.services_form_error),
-                description = uiState.errorMessage,
-                onRetry = { onEvent(AddServiceEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(padding),
-            )
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            ) {
-                Text(stringResource(R.string.services_step_counter, uiState.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
-                Text(stepTitle(uiState.step), style = MaterialTheme.typography.headlineSmall)
-                Text(stepDescription(uiState.step), style = MaterialTheme.typography.bodyMedium)
-                when (uiState.step) {
-                    AddServiceStep.TRADE -> TradeStep(uiState, onEvent)
-                    AddServiceStep.MODALITY -> ModalityStep(uiState, onEvent)
-                    AddServiceStep.SCHEDULE -> ScheduleStep(uiState, onEvent)
-                    AddServiceStep.PAYMENT -> PaymentStep(uiState, onEvent)
-                    AddServiceStep.REVIEW -> ReviewStep(uiState)
-                }
-                uiState.errorMessage?.let { OficiosInlineAlert(it) }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                    if (uiState.step != AddServiceStep.TRADE) {
-                        OficiosButton(stringResource(R.string.services_back), { onEvent(AddServiceEvent.Previous) }, Modifier.weight(1f), OficiosButtonVariant.Outlined)
-                    }
-                    OficiosButton(
-                        text = if (uiState.step == AddServiceStep.REVIEW) stringResource(R.string.services_publish) else stringResource(R.string.services_continue),
-                        onClick = { onEvent(if (uiState.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next) },
-                        modifier = Modifier.weight(1f),
-                        loading = uiState.isSaving,
-                        enabled = !uiState.isSaving,
-                        variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Large,
-                    )
-                }
-                Column(Modifier.padding(bottom = OficiosSpacing.lg)) {}
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it.phase() },
+        ) { state ->
+            when (state.phase()) {
+                OficiosContentPhase.Loading -> OficiosLoadingState(Modifier.fillMaxSize())
+                OficiosContentPhase.Error -> OficiosErrorState(
+                    title = stringResource(R.string.services_form_error),
+                    description = state.errorMessage.orEmpty(),
+                    onRetry = { onEvent(AddServiceEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                OficiosContentPhase.Empty,
+                OficiosContentPhase.Content,
+                -> AddServiceForm(state = state, onEvent = onEvent)
             }
         }
+    }
+}
+
+private fun AddServiceUiState.phase(): OficiosContentPhase = when {
+    isLoading && categories.isEmpty() -> OficiosContentPhase.Loading
+    errorMessage != null && categories.isEmpty() -> OficiosContentPhase.Error
+    else -> OficiosContentPhase.Content
+}
+
+@Composable
+private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        Text(stringResource(R.string.services_step_counter, state.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
+        Text(stepTitle(state.step), style = MaterialTheme.typography.headlineSmall)
+        Text(stepDescription(state.step), style = MaterialTheme.typography.bodyMedium)
+        when (state.step) {
+            AddServiceStep.TRADE -> TradeStep(state, onEvent)
+            AddServiceStep.MODALITY -> ModalityStep(state, onEvent)
+            AddServiceStep.SCHEDULE -> ScheduleStep(state, onEvent)
+            AddServiceStep.PAYMENT -> PaymentStep(state, onEvent)
+            AddServiceStep.REVIEW -> ReviewStep(state)
+        }
+        state.errorMessage?.let { OficiosInlineAlert(it) }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+            if (state.step != AddServiceStep.TRADE) {
+                OficiosButton(stringResource(R.string.services_back), { onEvent(AddServiceEvent.Previous) }, Modifier.weight(1f), OficiosButtonVariant.Outlined)
+            }
+            OficiosButton(
+                text = if (state.step == AddServiceStep.REVIEW) stringResource(R.string.services_publish) else stringResource(R.string.services_continue),
+                onClick = { onEvent(if (state.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next) },
+                modifier = Modifier.weight(1f),
+                loading = state.isSaving,
+                enabled = !state.isSaving,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
+            )
+        }
+        Column(Modifier.padding(bottom = OficiosSpacing.lg)) {}
     }
 }
 

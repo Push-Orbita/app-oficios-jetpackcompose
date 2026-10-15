@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.R
@@ -41,71 +42,78 @@ fun RubrosScreen(
     modifier: Modifier = Modifier,
 ) {
     OficiosScaffold(modifier = modifier) { paddingValues ->
-        when (uiState) {
-            RubrosUiState.Loading -> {
-                OficiosLoadingState(
-                    modifier = Modifier.padding(paddingValues),
-                    message = stringResource(R.string.home_rubros_loading),
-                )
-            }
-            is RubrosUiState.Error -> {
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { onEvent(RubrosEvent.Refresh) },
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                ) {
-                    OficiosErrorState(
-                        title = stringResource(R.string.home_error_title),
-                        description = uiState.message,
-                        onRetry = { onEvent(RubrosEvent.Retry) },
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                RubrosUiState.Loading -> {
+                    OficiosLoadingState(message = stringResource(R.string.home_rubros_loading))
                 }
-            }
-            is RubrosUiState.Success -> PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(RubrosEvent.Refresh) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            ) {
-                var searchQuery by rememberSaveable { mutableStateOf("") }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
+                is RubrosUiState.Error -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(RubrosEvent.Refresh) },
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        IconButton(onClick = { onEvent(RubrosEvent.Back) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = stringResource(R.string.home_back),
-                                modifier = Modifier.size(OficiosSpacing.lg),
-                            )
-                        }
-                        Text(
-                            text = uiState.categoryName,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(start = OficiosSpacing.xs),
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(RubrosEvent.Retry) },
+                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                         )
                     }
-                    HomeSearchEntryField(
-                        query = searchQuery,
-                        onQueryChange = { searchQuery = it },
-                        onSearch = { onEvent(RubrosEvent.SearchSubmitted(searchQuery)) },
-                        placeholder = stringResource(R.string.home_search_rubros_hint),
-                    )
-                    HomeRubrosGrid(
-                        rubros = uiState.rubros,
-                        onRubroClick = { onEvent(RubrosEvent.RubroSelected(it)) },
-                        modifier = Modifier.weight(1f),
-                    )
+                }
+                is RubrosUiState.Success -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(RubrosEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    RubrosContent(state = state, onEvent = onEvent)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RubrosContent(
+    state: RubrosUiState.Success,
+    onEvent: (RubrosEvent) -> Unit,
+) {
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = { onEvent(RubrosEvent.Back) }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(R.string.home_back),
+                    modifier = Modifier.size(OficiosSpacing.lg),
+                )
+            }
+            Text(
+                text = state.categoryName,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(start = OficiosSpacing.xs),
+            )
+        }
+        HomeSearchEntryField(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearch = { onEvent(RubrosEvent.SearchSubmitted(searchQuery)) },
+            placeholder = stringResource(R.string.home_search_rubros_hint),
+        )
+        HomeRubrosGrid(
+            rubros = state.rubros,
+            onRubroClick = { onEvent(RubrosEvent.RubroSelected(it)) },
+            modifier = Modifier.weight(1f),
+        )
     }
 }

@@ -68,6 +68,7 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -95,36 +96,38 @@ fun OrderDetailScreen(
         modifier = modifier,
         topBar = { OficiosBackTopBar(title = stringResource(R.string.orders_detail_title), onBack = onNavigateBack) },
     ) { paddingValues ->
-        when (uiState) {
-            OrderDetailUiState.Loading -> OrderDetailSkeleton(
-                message = stringResource(R.string.orders_detail_loading),
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            is OrderDetailUiState.Error -> PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(OrderDetailEvent.Refresh) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            ) {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    item {
-                        OficiosErrorState(
-                            title = stringResource(R.string.orders_detail_error_title),
-                            description = uiState.message.ifBlank { stringResource(R.string.orders_detail_error_description) },
-                            onRetry = { onEvent(OrderDetailEvent.Retry) },
-                            modifier = Modifier.fillParentMaxSize(),
-                        )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                OrderDetailUiState.Loading -> OrderDetailSkeleton(
+                    message = stringResource(R.string.orders_detail_loading),
+                    modifier = Modifier.fillMaxSize(),
+                )
+                is OrderDetailUiState.Error -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(OrderDetailEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        item {
+                            OficiosErrorState(
+                                title = stringResource(R.string.orders_detail_error_title),
+                                description = state.message.ifBlank { stringResource(R.string.orders_detail_error_description) },
+                                onRetry = { onEvent(OrderDetailEvent.Retry) },
+                                modifier = Modifier.fillParentMaxSize(),
+                            )
+                        }
                     }
                 }
-            }
-            is OrderDetailUiState.Success -> PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { onEvent(OrderDetailEvent.Refresh) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            ) {
-                OrderDetailContent(
-                    state = uiState,
-                    onEvent = onEvent,
-                )
+                is OrderDetailUiState.Success -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(OrderDetailEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    OrderDetailContent(
+                        state = state,
+                        onEvent = onEvent,
+                    )
+                }
             }
         }
     }

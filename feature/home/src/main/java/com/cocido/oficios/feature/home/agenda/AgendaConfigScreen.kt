@@ -30,6 +30,7 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -48,22 +49,24 @@ fun AgendaConfigScreen(
         modifier = modifier,
         topBar = { OficiosBackTopBar(title = stringResource(R.string.agenda_config_title), onBack = onNavigateBack) },
     ) { paddingValues ->
-        when (uiState) {
-            AgendaConfigUiState.Loading -> OficiosLoadingState(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = stringResource(R.string.agenda_config_loading),
-            )
-            is AgendaConfigUiState.Error -> OficiosErrorState(
-                title = stringResource(R.string.agenda_config_error),
-                description = uiState.message,
-                onRetry = { onEvent(AgendaConfigEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            is AgendaConfigUiState.Success -> AgendaConfigContent(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                AgendaConfigUiState.Loading -> OficiosLoadingState(
+                    modifier = Modifier.fillMaxSize(),
+                    message = stringResource(R.string.agenda_config_loading),
+                )
+                is AgendaConfigUiState.Error -> OficiosErrorState(
+                    title = stringResource(R.string.agenda_config_error),
+                    description = state.message,
+                    onRetry = { onEvent(AgendaConfigEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                is AgendaConfigUiState.Success -> AgendaConfigContent(
+                    uiState = state,
+                    onEvent = onEvent,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }
