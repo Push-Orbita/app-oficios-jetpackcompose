@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Oficios" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Oficios" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Fondo de ventana = azul de marca (igual que el splash y colorScheme.background).
+             Evita el flash blanco en transiciones (p. ej. login → Home) antes de que Compose pinte. -->
+        <item name="android:windowBackground">@color/oficios_splash_background</item>
+    </style>
 
     <style name="Theme.Oficios.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/oficios_splash_background</item>
