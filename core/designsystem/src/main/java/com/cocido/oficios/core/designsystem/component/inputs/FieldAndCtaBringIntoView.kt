@@ -19,12 +19,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -36,7 +35,8 @@ internal val LocalFieldAndCtaBringIntoView = staticCompositionLocalOf<FieldAndCt
 
 /**
  * Lleva a la vista el tramo que va del campo enfocado al CTA.
- * Si no entra en el alto libre sobre el teclado, alinea el borde inferior (el CTA).
+ * Si no entra el bloque completo en el viewport, prioriza que el campo enfocado quede visible;
+ * el CTA sigue alcanzable con scroll.
  */
 @OptIn(ExperimentalFoundationApi::class)
 internal class FieldAndCtaBringIntoView(
@@ -48,6 +48,8 @@ internal class FieldAndCtaBringIntoView(
     private var blockSize: IntSize = IntSize.Zero
     private var blockCoordinates: LayoutCoordinates? = null
     private var focusedTopPx: Float = 0f
+    private var focusedHeightPx: Float = 0f
+    var fieldMarginPx: Float = 0f
 
     fun onBlockPositioned(coordinates: LayoutCoordinates) {
         blockCoordinates = coordinates
@@ -69,6 +71,7 @@ internal class FieldAndCtaBringIntoView(
         val block = blockCoordinates
         if (field != null && block != null && block.isAttached && field.isAttached) {
             focusedTopPx = block.localPositionOf(field, Offset.Zero).y.coerceAtLeast(0f)
+            focusedHeightPx = field.size.height.toFloat().coerceAtLeast(0f)
         }
     }
 
@@ -79,20 +82,15 @@ internal class FieldAndCtaBringIntoView(
             requester.bringIntoView()
             return
         }
-        val bottom = height.toFloat()
-        val fieldTop = focusedTopPx.coerceIn(0f, bottom)
-        val span = (bottom - fieldTop).coerceAtLeast(1f)
-        val viewport = viewportHeightPx
-        val visible = if (viewport > 1) min(span, viewport - 1f) else span
-        val top = (bottom - visible).coerceAtLeast(0f)
-        requester.bringIntoView(
-            Rect(
-                left = 0f,
-                top = top,
-                right = width.toFloat(),
-                bottom = bottom,
-            ),
+        val rect = fieldFocusedBringIntoViewRect(
+            blockWidth = width,
+            blockHeight = height,
+            fieldTopPx = focusedTopPx,
+            fieldHeightPx = focusedHeightPx,
+            fieldMarginPx = fieldMarginPx,
+            viewportHeightPx = viewportHeightPx,
         )
+        requester.bringIntoView(rect)
     }
 }
 
@@ -102,8 +100,12 @@ private fun rememberFieldAndCtaBringIntoView(): FieldAndCtaBringIntoView {
     val requester = remember { BringIntoViewRequester() }
     val scope = rememberCoroutineScope()
     val state = remember(requester) { FieldAndCtaBringIntoView(requester, scope) }
+    val density = LocalDensity.current
     val viewport = LocalScrollViewportHeightPx.current
-    SideEffect { state.viewportHeightPx = viewport }
+    SideEffect {
+        state.viewportHeightPx = viewport
+        state.fieldMarginPx = with(density) { OficiosSpacing.sm.toPx() }
+    }
     LaunchedEffect(viewport) {
         state.viewportHeightPx = viewport
         if (state.focused) state.bringIntoView()
