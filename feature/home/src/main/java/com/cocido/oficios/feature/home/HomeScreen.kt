@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.OficiosActionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ClientHomeContent
@@ -25,6 +24,7 @@ import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeHeader
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
 import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
@@ -50,9 +50,9 @@ fun HomeScreen(
     ) { paddingValues ->
         when (uiState) {
             HomeUiState.Loading -> {
-                OficiosLoadingState(
+                HomeDashboardSkeleton(
+                    contentDescription = stringResource(R.string.home_loading),
                     modifier = Modifier.padding(paddingValues),
-                    message = stringResource(R.string.home_loading),
                 )
             }
             is HomeUiState.Error -> {

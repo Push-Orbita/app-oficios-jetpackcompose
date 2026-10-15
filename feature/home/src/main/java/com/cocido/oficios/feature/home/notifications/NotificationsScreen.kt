@@ -28,7 +28,7 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -67,7 +67,11 @@ fun NotificationsScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
             when {
-                uiState.isLoading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
+                uiState.isLoading -> OficiosSkeletonList(
+                    contentDescription = stringResource(R.string.notifications_loading),
+                    showAvatar = false,
+                    lines = 3,
+                )
                 uiState.errorMessage != null && uiState.items.isEmpty() -> OficiosErrorState(
                     title = stringResource(R.string.notifications_load_error),
                     description = uiState.errorMessage,

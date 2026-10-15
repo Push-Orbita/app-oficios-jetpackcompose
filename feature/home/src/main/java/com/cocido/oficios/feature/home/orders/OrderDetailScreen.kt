@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -69,6 +67,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -139,26 +138,14 @@ private fun OrderDetailSkeleton(message: String, modifier: Modifier = Modifier) 
             .semantics { contentDescription = message },
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        SkeletonBlock(modifier = Modifier.size(width = OficiosComponentSize.skeletonBlockMd, height = OficiosComponentSize.iconLg))
+        OficiosSkeleton(modifier = Modifier.size(width = OficiosComponentSize.skeletonBlockMd, height = OficiosComponentSize.iconLg))
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
-            repeat(5) { SkeletonBlock(modifier = Modifier.size(OficiosComponentSize.iconLg), shape = CircleShape) }
+            repeat(5) { OficiosSkeleton(modifier = Modifier.size(OficiosComponentSize.iconLg), shape = CircleShape) }
         }
-        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.avatarSettings))
-        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockMd))
-        SkeletonBlock(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockLg))
+        OficiosSkeleton(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.avatarSettings))
+        OficiosSkeleton(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockMd))
+        OficiosSkeleton(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockLg))
     }
-}
-
-@Composable
-private fun SkeletonBlock(
-    modifier: Modifier,
-    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(OficiosSpacing.md),
-) {
-    Spacer(
-        modifier = modifier
-            .clip(shape)
-            .background(OficiosColorOutlineFill),
-    )
 }
 
 @Composable

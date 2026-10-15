@@ -19,7 +19,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -68,8 +68,8 @@ fun FavoritesScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
         ) {
         when {
-            uiState.isLoading -> OficiosLoadingState(
-                modifier = Modifier.fillMaxSize(),
+            uiState.isLoading -> OficiosSkeletonList(
+                contentDescription = stringResource(R.string.favorites_loading),
             )
             uiState.errorMessage != null && uiState.items.isEmpty() -> OficiosErrorState(
                 title = stringResource(R.string.favorites_load_error),
