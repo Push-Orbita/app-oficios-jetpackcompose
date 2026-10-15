@@ -25,7 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -186,11 +189,11 @@ private fun NotificationRow(
                 fontWeight = if (item.isRead) FontWeight.Normal else FontWeight.SemiBold,
             )
             if (!item.isRead) {
-                Text(
-                    text = stringResource(R.string.notifications_unread_label),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
+                OficiosChip(
+                    label = stringResource(R.string.notifications_unread_label),
+                    containerColor = OficiosColorAction,
+                    contentColor = OficiosColorWhite,
+                    borderColor = OficiosColorAction,
                 )
             }
             if (item.body.isNotBlank()) {
