@@ -71,6 +71,21 @@ fun clientTabRoute(tab: ClientHomeTab, anchor: String, settingsRoute: String): S
     ClientHomeTab.AJUSTES -> settingsRoute
 }
 
+/** Destinos raíz de la bottom nav: entre ellos la navegación es un cambio de tab, no un push. */
+fun isClientTabRoute(route: String?, settingsRoute: String): Boolean = when (route) {
+    null -> false
+    settingsRoute -> true
+    else -> route in clientTabRootRoutes
+}
+
+private val clientTabRootRoutes = setOf(
+    HomeDestination.inicio,
+    ProviderHomeDestination.inicio,
+    OrdersDestination.ordersList,
+    SharedHomeDestination.favorites,
+    SharedHomeDestination.help,
+)
+
 private fun NavHostController.clientTabAnchor(): String =
     if (isOnBackStack(ProviderHomeDestination.inicio)) {
         ProviderHomeDestination.inicio
