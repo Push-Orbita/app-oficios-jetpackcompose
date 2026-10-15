@@ -41,6 +41,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBa
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.domain.model.ServiceOrderListItem
@@ -175,7 +176,11 @@ private fun OrdersListSuccess(
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
                         items(current.visibleOrders, key = { it.id }) { order ->
-                            OrderListItemCard(order = order, onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) })
+                            OrderListItemCard(
+                                order = order,
+                                onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) },
+                                modifier = oficiosAnimateItem(),
+                            )
                         }
                     }
                 }
@@ -232,9 +237,13 @@ private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun OrderListItemCard(order: ServiceOrderListItem, onClick: () -> Unit) {
+private fun OrderListItemCard(
+    order: ServiceOrderListItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     OficiosCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         onClick = onClick,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {

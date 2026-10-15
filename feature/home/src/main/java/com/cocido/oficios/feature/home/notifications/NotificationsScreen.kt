@@ -35,6 +35,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.oficiosContentPha
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.feature.home.R
 
@@ -146,7 +147,7 @@ private fun NotificationsList(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         items(items, key = { it.id }) { item ->
-            NotificationRow(item = item, onClick = { onItemClick(item) })
+            NotificationRow(item = item, onClick = { onItemClick(item) }, modifier = oficiosAnimateItem())
         }
         if (hasMore) {
             item(key = "load_more") {

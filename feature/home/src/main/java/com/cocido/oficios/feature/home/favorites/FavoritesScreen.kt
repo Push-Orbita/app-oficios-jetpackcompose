@@ -27,6 +27,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.domain.model.FavoriteWorker
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
@@ -132,6 +133,7 @@ private fun FavoritesList(
                 viewProfileLabel = stringResource(R.string.home_worker_view_profile),
                 onContact = { onHire(worker.workerId) },
                 onViewProfile = { onViewProfile(worker.workerId) },
+                modifier = oficiosAnimateItem(),
             )
         }
         if (hasMore) {
