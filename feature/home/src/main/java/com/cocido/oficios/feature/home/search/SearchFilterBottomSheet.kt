@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.OficiosDialogActions
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -155,9 +156,11 @@ fun SearchFilterBottomSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                OficiosButton(
-                    text = stringResource(R.string.home_filter_apply),
-                    onClick = {
+                OficiosDialogActions(
+                    dismissLabel = stringResource(R.string.home_back),
+                    onDismiss = { showDatePicker = false },
+                    confirmLabel = stringResource(R.string.home_filter_apply),
+                    onConfirm = {
                         val millis = datePickerState.selectedDateMillis
                         val formatted = millis?.let {
                             SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(it))
@@ -165,16 +168,9 @@ fun SearchFilterBottomSheet(
                         onEvent(SearchResultsEvent.FilterDateChanged(formatted))
                         showDatePicker = false
                     },
-                    variant = OficiosButtonVariant.Ghost,
                 )
             },
-            dismissButton = {
-                OficiosButton(
-                    text = stringResource(R.string.home_back),
-                    onClick = { showDatePicker = false },
-                    variant = OficiosButtonVariant.Ghost,
-                )
-            },
+            dismissButton = {},
         ) {
             DatePicker(state = datePickerState)
         }
