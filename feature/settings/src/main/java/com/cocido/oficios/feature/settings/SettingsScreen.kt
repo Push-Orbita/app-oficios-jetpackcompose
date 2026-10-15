@@ -168,7 +168,7 @@ private fun SettingsContent(
                             text = user.email,
                             style = MaterialTheme.typography.bodyMedium,
                             color = OficiosColorSecondaryText,
-                            maxLines = 1,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
                         Row(
