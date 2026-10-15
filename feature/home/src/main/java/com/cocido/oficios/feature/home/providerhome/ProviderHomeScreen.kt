@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.BenefitCard
 import com.cocido.oficios.core.designsystem.component.cards.ProfileCompletionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -29,6 +28,7 @@ import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.providerhome.components.ProviderActiveBookingBanner
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
@@ -55,9 +55,9 @@ fun ProviderHomeScreen(
     ) { paddingValues ->
         when (uiState) {
             ProviderHomeUiState.Loading -> {
-                OficiosLoadingState(
+                HomeDashboardSkeleton(
+                    contentDescription = stringResource(R.string.home_loading),
                     modifier = Modifier.padding(paddingValues),
-                    message = stringResource(R.string.home_loading),
                 )
             }
             is ProviderHomeUiState.Error -> {

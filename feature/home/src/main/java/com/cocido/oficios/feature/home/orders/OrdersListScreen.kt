@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Schedule
@@ -31,18 +29,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
-import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
@@ -108,10 +104,11 @@ private fun OrdersListBody(
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
-        OrdersListUiState.Loading -> Column(modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            OficiosLoadingState(message = stringResource(R.string.orders_loading))
-            repeat(3) { OrderSkeletonCard() }
-        }
+        OrdersListUiState.Loading -> OficiosSkeletonList(
+            contentDescription = stringResource(R.string.orders_loading),
+            modifier = modifier,
+            lines = 3,
+        )
         is OrdersListUiState.Error -> {
             val pullRefresh = rememberSettledPullRefresh(uiState.isRefreshing) {
                 onEvent(OrdersListEvent.Refresh)
@@ -247,16 +244,5 @@ private fun IconLine(icon: androidx.compose.ui.graphics.vector.ImageVector, text
     Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(OficiosComponentSize.iconSm))
         Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-    }
-}
-
-@Composable
-private fun OrderSkeletonCard() {
-    OficiosCard(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            Box(Modifier.size(OficiosComponentSize.avatarSm).clip(RoundedCornerShape(OficiosRadius.xl)))
-            Box(Modifier.fillMaxWidth().height(OficiosComponentSize.iconSm))
-            Box(Modifier.fillMaxWidth(0.6f).height(OficiosSpacing.sm))
-        }
     }
 }

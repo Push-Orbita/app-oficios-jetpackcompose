@@ -133,6 +133,7 @@
     <string name="favorites_empty_description">Tocá el corazón en el perfil de un trabajador para guardarlo acá y encontrarlo más rápido.</string>
     <string name="favorites_empty_cta">Buscar oficios</string>
     <string name="favorites_load_error">No pudimos cargar tus favoritos</string>
+    <string name="favorites_loading">Cargando favoritos…</string>
     <string name="favorites_load_more">Ver más</string>
     <string name="favorites_specialty_fallback">Trabajador de oficio</string>
 
@@ -140,6 +141,7 @@
     <string name="notifications_empty_title">Sin notificaciones</string>
     <string name="notifications_empty_description">Cuando tengas novedades sobre pedidos o tu cuenta, las vas a ver acá.</string>
     <string name="notifications_load_error">No pudimos cargar tus notificaciones</string>
+    <string name="notifications_loading">Cargando notificaciones…</string>
     <string name="notifications_filter_all">Todas</string>
     <string name="notifications_filter_unread">No leídas</string>
     <string name="notifications_mark_read_error">No pudimos marcar la notificación como leída</string>

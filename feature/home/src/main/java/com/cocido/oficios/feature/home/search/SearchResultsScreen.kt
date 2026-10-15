@@ -38,7 +38,7 @@ import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.R
@@ -81,8 +81,9 @@ fun SearchResultsScreen(
             ) {
             when (uiState) {
                 SearchResultsUiState.Loading -> {
-                    OficiosLoadingState(
-                        message = stringResource(R.string.home_search_results_loading),
+                    OficiosSkeletonList(
+                        contentDescription = stringResource(R.string.home_search_results_loading),
+                        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
                     )
                 }
                 is SearchResultsUiState.Error -> {

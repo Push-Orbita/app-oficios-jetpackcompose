@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
@@ -35,6 +36,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -47,7 +50,9 @@ import com.cocido.oficios.core.designsystem.component.calendar.ScheduleSlotState
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonLine
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -93,9 +98,9 @@ fun AgendaListScreen(
         },
     ) { paddingValues ->
         when (uiState) {
-            AgendaListUiState.Loading -> OficiosLoadingState(
+            AgendaListUiState.Loading -> AgendaSkeleton(
+                contentDescription = stringResource(R.string.agenda_loading),
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = stringResource(R.string.agenda_loading),
             )
             is AgendaListUiState.Error -> PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,
@@ -231,7 +236,15 @@ private fun AgendaListContent(
         }
 
         if (uiState.isLoadingSlots) {
-            item { OficiosLoadingState(message = stringResource(R.string.agenda_updating)) }
+            item(key = "slots_loading") {
+                val updating = stringResource(R.string.agenda_updating)
+                Column(
+                    modifier = Modifier.semantics { contentDescription = updating },
+                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                ) {
+                    repeat(2) { OficiosSkeletonCard(showAvatar = false) }
+                }
+            }
         } else if (uiState.selectedDateSlots.isEmpty()) {
             item {
                 OficiosEmptyState(
@@ -260,6 +273,21 @@ private fun AgendaListContent(
             onDismiss = { onEvent(AgendaListEvent.DismissDeleteSlot) },
             isDangerous = true,
         )
+    }
+}
+
+@Composable
+private fun AgendaSkeleton(contentDescription: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
+            .semantics { this.contentDescription = contentDescription },
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        OficiosSkeleton(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.buttonHeightSmall))
+        OficiosSkeleton(modifier = Modifier.fillMaxWidth().height(OficiosComponentSize.skeletonBlockLg))
+        OficiosSkeletonLine(widthFraction = 0.5f, height = OficiosComponentSize.iconSm)
+        repeat(2) { OficiosSkeletonCard(showAvatar = false) }
     }
 }
 

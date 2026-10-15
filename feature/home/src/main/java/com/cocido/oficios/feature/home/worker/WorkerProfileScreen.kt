@@ -41,6 +41,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -282,21 +283,19 @@ private fun WorkerProfileSkeleton(modifier: Modifier = Modifier) {
         modifier = modifier.padding(OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
-        Surface(
+        OficiosSkeleton(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(OficiosSpacing.xxxl),
-            color = MaterialTheme.colorScheme.surfaceContainer,
             shape = MaterialTheme.shapes.large,
-        ) {}
+        )
         repeat(3) {
-            Surface(
+            OficiosSkeleton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(OficiosSpacing.xxl),
-                color = MaterialTheme.colorScheme.surfaceContainer,
                 shape = MaterialTheme.shapes.large,
-            ) {}
+            )
         }
     }
 }
