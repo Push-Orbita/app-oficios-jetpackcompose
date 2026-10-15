@@ -23,6 +23,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.VisualTransformation
@@ -68,10 +70,12 @@ fun OficiosTextField(
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
 ) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
+    val parentBringIntoView = LocalFieldAndCtaBringIntoView.current
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     var fieldSize by remember { mutableStateOf(IntSize.Zero) }
+    var fieldCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val ctaClearancePx = with(density) {
         (OficiosComponentSize.buttonHeightLarge + OficiosSpacing.md + OficiosComponentSize.buttonHeightSmall).toPx()
     }
@@ -83,9 +87,18 @@ fun OficiosTextField(
             .fillMaxWidth()
             .heightIn(min = OficiosComponentSize.textFieldHeight)
             .onSizeChanged { fieldSize = it }
-            .bringIntoViewRequester(bringIntoViewRequester)
+            .onGloballyPositioned { fieldCoordinates = it }
+            .then(
+                if (parentBringIntoView == null) {
+                    Modifier.bringIntoViewRequester(bringIntoViewRequester)
+                } else {
+                    Modifier
+                },
+            )
             .onFocusChanged { focusState ->
-                if (focusState.isFocused && fieldSize != IntSize.Zero) {
+                if (parentBringIntoView != null) {
+                    parentBringIntoView.onFieldFocus(focusState.isFocused, fieldCoordinates)
+                } else if (focusState.isFocused && fieldSize != IntSize.Zero) {
                     scope.launch {
                         bringIntoViewRequester.bringIntoView(
                             Rect(
