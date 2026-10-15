@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.cocido.oficios.core.designsystem.component.OficiosDialogActions
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import java.time.Instant
@@ -56,19 +57,18 @@ fun DateTimePickerButton(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                OficiosButton(
-                    text = "Continuar",
-                    onClick = {
+                OficiosDialogActions(
+                    dismissLabel = "Cancelar",
+                    onDismiss = { showDatePicker = false },
+                    confirmLabel = "Continuar",
+                    onConfirm = {
                         pickedDateMillis = datePickerState.selectedDateMillis
                         showDatePicker = false
                         showTimePicker = true
                     },
-                    variant = OficiosButtonVariant.Ghost,
                 )
             },
-            dismissButton = {
-                OficiosButton(text = "Cancelar", onClick = { showDatePicker = false }, variant = OficiosButtonVariant.Ghost)
-            },
+            dismissButton = {},
         ) {
             DatePicker(state = datePickerState)
         }
@@ -81,9 +81,11 @@ fun DateTimePickerButton(
             title = { Text("Elegí un horario") },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
-                OficiosButton(
-                    text = "Confirmar",
-                    onClick = {
+                OficiosDialogActions(
+                    dismissLabel = "Cancelar",
+                    onDismiss = { showTimePicker = false },
+                    confirmLabel = "Confirmar",
+                    onConfirm = {
                         val millis = pickedDateMillis
                         if (millis != null) {
                             val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
@@ -91,16 +93,9 @@ fun DateTimePickerButton(
                         }
                         showTimePicker = false
                     },
-                    variant = OficiosButtonVariant.Ghost,
                 )
             },
-            dismissButton = {
-                OficiosButton(
-                    text = "Cancelar",
-                    onClick = { showTimePicker = false },
-                    variant = OficiosButtonVariant.Ghost,
-                )
-            },
+            dismissButton = {},
         )
     }
 }

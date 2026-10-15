@@ -2,7 +2,6 @@ package com.cocido.oficios.core.designsystem.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -79,28 +78,53 @@ fun OficiosDialog(
                     content()
                 }
                 Spacer(Modifier.height(OficiosSpacing.lg))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                ) {
-                    OficiosButton(
-                        text = dismissLabel,
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        variant = OficiosButtonVariant.Ghost,
-                        size = actionSize,
-                    )
-                    OficiosButton(
-                        text = confirmLabel,
-                        onClick = onConfirm,
-                        modifier = Modifier.weight(1f),
-                        enabled = confirmEnabled,
-                        size = actionSize,
-                        variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Secondary,
-                    )
-                }
+                OficiosDialogActions(
+                    dismissLabel = dismissLabel,
+                    onDismiss = onDismiss,
+                    confirmLabel = confirmLabel,
+                    onConfirm = onConfirm,
+                    confirmEnabled = confirmEnabled,
+                    isDangerous = isDangerous,
+                    actionSize = actionSize,
+                )
             }
         }
+    }
+}
+
+/**
+ * Acciones de diálogo apiladas a ancho completo para que el texto no se parta con font scale alto.
+ */
+@Composable
+fun OficiosDialogActions(
+    dismissLabel: String,
+    onDismiss: () -> Unit,
+    confirmLabel: String,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
+    confirmEnabled: Boolean = true,
+    isDangerous: Boolean = false,
+    actionSize: OficiosButtonSize = OficiosButtonSize.Large,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+    ) {
+        OficiosButton(
+            text = dismissLabel,
+            onClick = onDismiss,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Ghost,
+            size = actionSize,
+        )
+        OficiosButton(
+            text = confirmLabel,
+            onClick = onConfirm,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = confirmEnabled,
+            size = actionSize,
+            variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Secondary,
+        )
     }
 }
 
