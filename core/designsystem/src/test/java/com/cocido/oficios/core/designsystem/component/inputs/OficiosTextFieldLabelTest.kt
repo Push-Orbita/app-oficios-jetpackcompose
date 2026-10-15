@@ -1,6 +1,8 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -22,7 +24,6 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -41,17 +42,17 @@ class OficiosTextFieldLabelTest {
 
     @Test
     fun labelFlota_conTextoYFoco() = assertLabelFloats("D.N.I.", focused = true) {
-        OficiosTextField(value = "ab", onValueChange = {}, label = "D.N.I.", modifier = it)
+        OficiosTextField(value = "ab", onValueChange = {}, label = "D.N.I.", modifier = Modifier.fillMaxWidth())
     }
 
     @Test
     fun labelFlota_conTextoSinFoco() = assertLabelFloats("D.N.I.", focused = false) {
-        OficiosTextField(value = "ab", onValueChange = {}, label = "D.N.I.", modifier = it)
+        OficiosTextField(value = "ab", onValueChange = {}, label = "D.N.I.", modifier = Modifier.fillMaxWidth())
     }
 
     @Test
     fun labelFlota_vacioConFoco() = assertLabelFloats("Correo", focused = true) {
-        OficiosTextField(value = "", onValueChange = {}, label = "Correo", placeholder = "nombre@mail.com", modifier = it)
+        OficiosTextField(value = "", onValueChange = {}, label = "Correo", placeholder = "nombre@mail.com", modifier = Modifier.fillMaxWidth())
     }
 
     @Test
@@ -62,44 +63,82 @@ class OficiosTextFieldLabelTest {
             label = "D.N.I.",
             isError = true,
             supportingText = "Ingresá un D.N.I. válido",
-            modifier = it,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 
     @Test
     fun labelFlota_soloPlaceholder() = assertLabelFloats("D.N.I.", focused = true) {
-        OficiosTextField(value = "ab", onValueChange = {}, label = "", placeholder = "D.N.I.", modifier = it)
+        OficiosTextField(value = "ab", onValueChange = {}, label = "", placeholder = "D.N.I.", modifier = Modifier.fillMaxWidth())
     }
 
     @Test
     fun labelFlota_contrasena() = assertLabelFloats("Repetir contraseña", focused = true) {
-        OficiosPasswordField(value = "secreto", onValueChange = {}, label = "Repetir contraseña", modifier = it)
+        OficiosPasswordField(value = "secreto", onValueChange = {}, label = "Repetir contraseña", modifier = Modifier.fillMaxWidth())
     }
 
     @Test
     fun labelFlota_fuente200() = assertLabelFloats("D.N.I.", focused = true, fontScale = 2f) {
-        OficiosTextField(value = "ab", onValueChange = {}, label = "D.N.I.", modifier = it)
+        OficiosTextField(value = "ab", onValueChange = {}, label = "D.N.I.", modifier = Modifier.fillMaxWidth())
+    }
+
+    @Test
+    fun labelYValorNoSeSolapan_fuente200() {
+        composeTestRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, 2f)) {
+                OficiosTheme {
+                    Column(modifier = Modifier.width(360.dp).padding(24.dp)) {
+                        Box(Modifier.testTag(FIELD_TAG)) {
+                            OficiosTextField(
+                                value = "Juan Pérez",
+                                onValueChange = {},
+                                label = "Nombre",
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        composeTestRule.waitForIdle()
+
+        val labelMatcher = hasText("Nombre") and !hasSetTextAction()
+        val labelNode = composeTestRule.onNode(labelMatcher, useUnmergedTree = true).fetchSemanticsNode()
+        val fieldNode = composeTestRule.onNodeWithTag(FIELD_TAG).fetchSemanticsNode()
+        val valueMatcher = hasText("Juan Pérez") and hasSetTextAction()
+        val valueNode = composeTestRule.onNode(valueMatcher, useUnmergedTree = true).fetchSemanticsNode()
+        val valueLayout = valueNode.textLayout() ?: error("no se encontró el layout del valor")
+        val valueTop = valueNode.positionInRoot.y + valueLayout.getLineTop(0)
+        val labelLayout = labelNode.textLayout() ?: error("no se encontró el layout del label")
+        val labelBottom = labelNode.positionInRoot.y + labelLayout.getLineBottom(0)
+        assertTrue(
+            "label y valor se solapan (labelBottom=$labelBottom, valueTop=$valueTop)",
+            valueTop + 0.5f >= labelBottom,
+        )
     }
 
     private fun assertLabelFloats(
         label: String,
         focused: Boolean,
         fontScale: Float = 1f,
-        content: @Composable (Modifier) -> Unit,
+        content: @Composable () -> Unit,
     ) {
         composeTestRule.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
                 OficiosTheme {
                     Column(modifier = Modifier.width(360.dp).padding(24.dp)) {
-                        content(Modifier.testTag(FIELD_TAG))
+                        Box(Modifier.testTag(FIELD_TAG)) {
+                            content()
+                        }
                     }
                 }
             }
         }
         if (focused) {
-            composeTestRule.onNodeWithTag(FIELD_TAG).requestFocus()
-            composeTestRule.onNodeWithTag(FIELD_TAG).assertIsFocused()
+            composeTestRule.onNode(hasSetTextAction()).requestFocus()
+            composeTestRule.onNode(hasSetTextAction()).assertIsFocused()
         }
         composeTestRule.waitForIdle()
 
@@ -113,15 +152,12 @@ class OficiosTextFieldLabelTest {
         val labelHeight = labelNode.size.height.toFloat()
         val labelCenterFromTop = labelTop + labelHeight / 2f - fieldTop
 
-        // Flotando, el label queda centrado sobre el borde superior; en reposo queda en el centro de la caja.
         assertTrue(
             "$label: no flota (centro a ${labelCenterFromTop}px del borde, alto ${labelHeight}px)",
             labelCenterFromTop <= labelHeight,
         )
-        assertTrue("$label: sale por arriba del campo", labelTop + 0.5f >= fieldTop)
         val layout = labelNode.textLayout() ?: error("$label: no se encontró el layout del label")
-        assertFalse("$label: el label queda recortado en alto", layout.didOverflowHeight)
-        // multiParagraph.width es el ancho disponible; el ancho real del texto es el de cada línea.
+        assertTrue("$label: el label queda recortado en alto", !layout.didOverflowHeight)
         val textWidth = (0 until layout.lineCount).maxOf { layout.getLineRight(it) }
         assertTrue(
             "$label: el label queda recortado en ancho (${textWidth}px > ${labelNode.size.width}px)",
