@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -72,6 +73,9 @@ import kotlinx.coroutines.launch
 
 private val FieldBorderWidth = 1.dp
 private val LabelBackgroundPadding = 4.dp
+
+/** Visible en tests para comparar bounds del label con el borde del campo. */
+internal const val OFICIOS_TEXT_FIELD_BORDER_TEST_TAG = "oficios_text_field_border"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -200,6 +204,7 @@ fun OficiosTextField(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .testTag(OFICIOS_TEXT_FIELD_BORDER_TEST_TAG)
                     .background(containerColor, MaterialTheme.shapes.small)
                     .border(BorderStroke(FieldBorderWidth, borderColor), MaterialTheme.shapes.small),
             ) {
