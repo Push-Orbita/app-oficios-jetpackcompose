@@ -261,6 +261,8 @@
     <string name="orders_reject_title">Rechazar solicitud</string>
     <string name="orders_finalize_message">Pedile al cliente el código de finalización e ingresalo para cerrar el servicio.</string>
     <string name="orders_finalize_confirm">Finalizar</string>
+    <string name="orders_finalize_success_title">¡Trabajo finalizado!</string>
+    <string name="orders_finalize_success_description">El código es correcto y el servicio quedó cerrado.</string>
     <string name="orders_dialog_cancel">Cancelar</string>
     <string name="orders_code_label">Código de 6 dígitos</string>
     <string name="orders_reason_message">Contanos el motivo para que la otra persona lo vea.</string>

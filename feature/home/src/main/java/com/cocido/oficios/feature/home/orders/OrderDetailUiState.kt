@@ -48,4 +48,5 @@ sealed interface OrderDetailEffect {
     data class StartForegroundTracking(val bookingId: Long) : OrderDetailEffect
     data object StopForegroundTracking : OrderDetailEffect
     data class NavigateToWorker(val workerId: Long) : OrderDetailEffect
+    data object CompletionConfirmed : OrderDetailEffect
 }

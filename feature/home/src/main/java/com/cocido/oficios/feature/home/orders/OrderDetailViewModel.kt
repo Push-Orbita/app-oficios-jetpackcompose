@@ -231,7 +231,10 @@ class OrderDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { current.copy(isActionInProgress = true, completionCodeError = null) }
             when (val result = orderUseCases.finalizeBooking(bookingId, code)) {
-                is AppResult.Success -> load()
+                is AppResult.Success -> {
+                    emitEffect(OrderDetailEffect.CompletionConfirmed)
+                    load()
+                }
                 is AppResult.Error -> _uiState.update {
                     current.copy(
                         isActionInProgress = false,
