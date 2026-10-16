@@ -53,9 +53,6 @@ fun OficiosDropdownField(
             readOnly = true,
             isError = isError,
             supportingText = supportingText,
-            singleLine = false,
-            minLines = 1,
-            maxLines = 2,
             trailingContent = {
                 Icon(
                     imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,

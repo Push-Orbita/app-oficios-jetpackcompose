@@ -167,7 +167,7 @@ fun OficiosTextField(
         MaterialTheme.colorScheme.surface
     }
 
-    val showValueEllipsis = !isFocused && value.isNotEmpty()
+    val showValueEllipsis = value.isNotEmpty() && (readOnly || !isFocused)
     val displayedValue = remember(value, visualTransformation) {
         visualTransformation.filter(AnnotatedString(value)).text
     }
