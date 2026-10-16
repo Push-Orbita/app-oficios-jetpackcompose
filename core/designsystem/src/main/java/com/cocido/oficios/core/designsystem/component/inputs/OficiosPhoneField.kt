@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -59,21 +60,36 @@ fun OficiosPhoneField(
     value: String,
     onValueChange: (String) -> Unit,
     selectedCountry: PhoneCountryOption,
-    onCountrySelected: (PhoneCountryOption) -> Unit,
+    onCountrySelected: (PhoneCountryOption) -> Unit = {},
     label: String,
     modifier: Modifier = Modifier,
+    numberModifier: Modifier = Modifier,
     countryLabel: String = "País",
     countries: List<PhoneCountryOption> = PhoneCountryOptions.DEFAULT,
     isError: Boolean = false,
     supportingText: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val countrySelectable = countries.size > 1
 
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
+        if (!countrySelectable) {
+            OficiosTextField(
+                value = "${selectedCountry.flagEmoji} ${selectedCountry.dialCode}",
+                onValueChange = {},
+                label = countryLabel,
+                modifier = Modifier.width(COUNTRY_FIELD_WIDTH),
+                readOnly = true,
+                enabled = false,
+                isError = isError,
+            )
+        } else {
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it },
@@ -116,15 +132,17 @@ fun OficiosPhoneField(
                 }
             }
         }
+        }
         OficiosTextField(
             value = value,
             onValueChange = onValueChange,
             label = label,
             placeholder = selectedCountry.localExample,
-            modifier = Modifier.weight(1f),
+            modifier = numberModifier.weight(1f),
             isError = isError,
             supportingText = supportingText,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Phone),
+            keyboardActions = keyboardActions,
         )
     }
 }

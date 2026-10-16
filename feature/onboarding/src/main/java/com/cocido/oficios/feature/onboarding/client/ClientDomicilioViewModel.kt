@@ -6,9 +6,11 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
+import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -29,6 +31,9 @@ data class ClientDomicilioUiState(
     val calle: String = "",
     val numero: String = "",
     val nombre: String = "Domicilio principal",
+    val latitud: Double? = null,
+    val longitud: Double? = null,
+    val isLocating: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 ) {
@@ -44,6 +49,7 @@ class ClientDomicilioViewModel @Inject constructor(
     private val saveClientDomicilioUseCase: SaveClientDomicilioUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientDomicilioUiState())
@@ -82,10 +88,37 @@ class ClientDomicilioViewModel @Inject constructor(
 
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
     fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
+    fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
+        it.copy(latitud = latitude, longitud = longitude, error = null)
+    }
+    fun onLocationPermissionDenied() = _uiState.update {
+        it.copy(error = "Permití la ubicación o marcá manualmente el punto en el mapa.")
+    }
+    fun useCurrentLocation() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocating = true, error = null) }
+            when (val result = getCurrentLocationUseCase()) {
+                is AppResult.Success -> _uiState.update {
+                    it.copy(
+                        isLocating = false,
+                        latitud = result.data.latitude,
+                        longitud = result.data.longitude,
+                    )
+                }
+                is AppResult.Error -> _uiState.update {
+                    it.copy(isLocating = false, error = result.error.userMessage())
+                }
+            }
+        }
+    }
 
     fun submit() {
         val state = _uiState.value
-        val barrioId = state.selectedBarrioId ?: return
+        val barrioId = state.selectedBarrioId
+        if (barrioId == null || state.calle.isBlank()) {
+            _uiState.update { it.copy(error = "Completá barrio y calle") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             val personaId = when (val user = getCurrentUserUseCase()) {
@@ -104,6 +137,8 @@ class ClientDomicilioViewModel @Inject constructor(
                         nombre = state.nombre,
                         calle = state.calle.trim(),
                         numero = state.numero.trim().ifBlank { null },
+                        latitud = GeoCoordinates.roundForApi(state.latitud),
+                        longitud = GeoCoordinates.roundForApi(state.longitud),
                         favorito = true,
                     ),
                 )

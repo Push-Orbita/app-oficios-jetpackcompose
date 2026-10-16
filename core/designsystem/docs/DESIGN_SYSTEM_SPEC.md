@@ -11,18 +11,37 @@
 
 | Token | Valor | Uso |
 |---|---|---|
-| `OficiosColorBackground` | `#231D38` | Fondo de pantalla principal |
-| `OficiosColorSurface` | `#2A2340` | Superficies secundarias |
-| `OficiosColorSurfaceVariant` | `#332A4E` | Superficies terciarias / hover |
-| `OficiosColorContainer` | `#413764` | Contenedores, chips, BottomNav indicator |
-| `OficiosColorOutline` | `#413764` | Bordes de inputs, cards, separadores |
-| `OficiosColorPrimary` | `#A32F56` | Botón primario, color de acento principal |
-| `OficiosColorPrimaryBorder` | `rgba(209,151,171,0.5)` | Borde del botón primario |
-| `OficiosColorWhite` | `#FFFFFF` | Texto sobre fondo oscuro |
-| `OficiosColorMutedText` | `#918E9B` | Texto secundario / placeholder / metadatos |
-| `OficiosColorTertiary` | `#F4A426` | Casco del logo → estrellas de rating, advertencias |
-| `OficiosColorSuccess` | `#4CAF7D` | Estado confirmado / aprobado |
-| `OficiosColorError` | `#CF6679` | Estado rechazado / cancelado / errores |
+| `OficiosColorBackground` | `#00358B` | Fondo de pantalla |
+| `OficiosColorOutlineFill` | `#004DA8` | Borde e inset de cards |
+| `OficiosColorSecondaryText` | `#7F9AC5` | Texto secundario e inactivo |
+| `OficiosColorAction` | `#006DEF` | CTA azul, jerarquía media |
+| `OficiosColorUnavailable` | `#003C9A` | Turnos no disponibles |
+| `OficiosColorWhite` | `#FFFFFF` | Texto sobre navy y CTA de máxima énfasis |
+| `OficiosColorBrandMark` | `#006AF0` | Casco del logo (Figma `666:2`). No usar en UI de acento |
+| `OficiosColorAccent` | `#F8AE1A` | Badges “AHORA” y acentos de UI. No es el casco |
+| `OficiosColorAccentBorder` | `#E49E1B` | Borde del acento |
+| `OficiosColorAlert` | `#BA6380` | Peligro |
+| `OficiosColorAlertText` | `#D197AB` | Texto de peligro sobre navy |
+
+Los alias `OficiosColorPrimary`, `OficiosColorContainer`, `OficiosColorMutedText` y `OficiosColorTertiary` están deprecados y apuntan a la paleta navy. No usar la paleta violeta (`#231D38`, `#A32F56`).
+
+### Jerarquía de botones (frames de producto, página `3:3`)
+
+| Variante | Fill medido | Texto | Cuándo |
+|---|---|---|---|
+| `Secondary` (énfasis) | `#FFFFFF` | `#00358B` | CTA dominante: Aceptar, Estoy en camino, Registrarse, Contactar de login |
+| `Primary` (acción) | `#006DEF` | `#FFFFFF` | Acción media: Reagendar, Contactar en card de trabajador |
+| `Outlined` | transparente + borde `#004DA8` | blanco | Acción terciaria |
+| `OutlinedDanger` | transparente + borde alerta | `#D197AB` | Rechazar / cancelar |
+| `Ghost` | fondo | blanco | Enlaces de formulario (olvidé mi contraseña) |
+
+Altura: los frames de CTA miden **36dp** (`210:29` Aceptar, `198:697` Estoy en camino). `Prominent` usa esa altura (`buttonMinHeight`). Radius de botón: **8dp**.
+
+### Marca
+
+- Logotipo (`12:101` y pantallas de producto) sigue dibujado en dorado `#F8AE1A` dentro de varios frames.
+- El casco azul de la página Thumbnail es el vector `666:2`: fill `#006AF0` (rgb 0, 106, 240) y cuerpo blanco `#FFFFFF`.
+- `ic_casco` del registro de rol queda en blanco: es la variante sobre navy, no el logotipo de marca.
 
 ### Esquemas M3
 
@@ -129,8 +148,8 @@ Fallback actual: `FontFamily.SansSerif`.
 | Token | Valor |
 |---|---|
 | `textFieldHeight` | 48dp |
-| `buttonMinHeight` | 36dp |
-| `buttonHeight` | 48dp |
+| `buttonMinHeight` | 36dp (`Compact` y `Prominent`) |
+| `buttonHeight` | 48dp (filas e íconos, no el CTA) |
 | `iconSm` | 16dp |
 | `iconMd` | 24dp |
 | `iconLg` | 32dp |

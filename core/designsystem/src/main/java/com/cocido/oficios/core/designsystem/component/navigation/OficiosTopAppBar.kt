@@ -2,6 +2,7 @@ package com.cocido.oficios.core.designsystem.component.navigation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,6 +35,7 @@ fun OficiosTopAppBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     showDivider: Boolean = true,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     val colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
         containerColor = MaterialTheme.colorScheme.background,
@@ -58,6 +60,7 @@ fun OficiosTopAppBar(
             },
             navigationIcon = navigationIcon ?: {},
             actions = actions,
+            windowInsets = windowInsets,
             colors = colors,
         )
         if (showDivider) {

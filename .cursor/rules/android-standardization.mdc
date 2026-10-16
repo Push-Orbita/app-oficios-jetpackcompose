@@ -56,7 +56,7 @@ Prioridad: **un solo patrón por intención de producto**, no dos implementacion
 | Con bottom nav | `OficiosScaffold(bottomBar = { ... })` — el slot aplica `OficiosBottomBarSlot` automáticamente |
 | Layouts de auth/onboarding | `AuthScreenLayout` / `OnboardingStepScaffold` (ya usan `OficiosScaffold`) |
 | Top bar custom fuera del slot | `OficiosTopBarSlot` |
-| Teclado | `imePadding()` además del padding del scaffold (ej. auth) |
+| Teclado | Nada manual: `OficiosScaffold` usa `contentWindowInsets = WindowInsets.safeDrawing`, que ya incluye el IME. Agregar `imePadding()` encima duplica el padding inferior (deja un hueco vacío del alto del teclado). |
 
 **Prohibido:** `navigationBarsPadding()`, `windowInsetsBottomHeight` o lógica de insets ad hoc en features. Centralizar en `core/designsystem/component/scaffold/`.
 

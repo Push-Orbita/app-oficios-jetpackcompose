@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,21 +17,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.OficiosActionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ClientHomeContent
+import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeHeader
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
 import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
-import com.cocido.oficios.feature.home.components.HomeSupportSection
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
+    unreadNotificationCount: Int,
     selectedTab: ClientHomeTab,
     onEvent: (HomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
@@ -44,27 +49,46 @@ fun HomeScreen(
             )
         },
     ) { paddingValues ->
-        when (uiState) {
-            HomeUiState.Loading -> {
-                OficiosLoadingState(
-                    modifier = Modifier.padding(paddingValues),
-                    message = stringResource(R.string.home_loading),
-                )
-            }
-            is HomeUiState.Error -> {
-                OficiosErrorState(
-                    title = stringResource(R.string.home_error_title),
-                    description = uiState.message,
-                    onRetry = { onEvent(HomeEvent.Retry) },
-                    modifier = Modifier.padding(paddingValues),
-                )
-            }
-            is HomeUiState.Success -> {
-                HomeSuccessContent(
-                    content = uiState.content,
-                    onEvent = onEvent,
-                    modifier = Modifier.padding(paddingValues),
-                )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                HomeUiState.Loading -> {
+                    HomeDashboardSkeleton(contentDescription = stringResource(R.string.home_loading))
+                }
+                is HomeUiState.Error -> {
+                    val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                        onEvent(HomeEvent.Refresh)
+                    }
+                    PullToRefreshBox(
+                        isRefreshing = pullRefresh.isRefreshing,
+                        onRefresh = pullRefresh.onRefresh,
+                        state = pullRefresh.state,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(HomeEvent.Retry) },
+                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        )
+                    }
+                }
+                is HomeUiState.Success -> {
+                    val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                        onEvent(HomeEvent.Refresh)
+                    }
+                    PullToRefreshBox(
+                        isRefreshing = pullRefresh.isRefreshing,
+                        onRefresh = pullRefresh.onRefresh,
+                        state = pullRefresh.state,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        HomeSuccessContent(
+                            content = state.content,
+                            unreadNotificationCount = unreadNotificationCount,
+                            onEvent = onEvent,
+                        )
+                    }
+                }
             }
         }
     }
@@ -73,6 +97,7 @@ fun HomeScreen(
 @Composable
 private fun HomeSuccessContent(
     content: ClientHomeContent,
+    unreadNotificationCount: Int,
     onEvent: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,13 +107,14 @@ private fun HomeSuccessContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {
         ClientHomeHeader(
             userName = content.userDisplayName,
             emailVerified = content.emailVerified,
             profilePhotoUrl = content.profilePhotoUrl,
+            unreadNotificationCount = unreadNotificationCount,
             onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
         )
         HomeSearchEntryField(
@@ -96,7 +122,6 @@ private fun HomeSuccessContent(
             onQueryChange = { searchQuery = it },
             onSearch = { onEvent(HomeEvent.SearchSubmitted(searchQuery)) },
             placeholder = stringResource(R.string.home_search_hint),
-            onMicClick = { onEvent(HomeEvent.VoiceSearch) },
         )
         OficiosActionCard(
             title = stringResource(R.string.home_my_orders_title),
@@ -108,7 +133,7 @@ private fun HomeSuccessContent(
             HomeFeaturedWorkersSection(
                 workers = content.featuredWorkers,
                 onViewProfile = { onEvent(HomeEvent.WorkerViewProfile(it.id)) },
-                onContact = { onEvent(HomeEvent.WorkerContact) },
+                onContact = { onEvent(HomeEvent.WorkerContact(it.id)) },
                 onSeeAll = { onEvent(HomeEvent.SeeAllWorkers) },
             )
         }
@@ -118,9 +143,5 @@ private fun HomeSuccessContent(
                 onSearchClick = { onEvent(HomeEvent.RecentSearchSelected(it)) },
             )
         }
-        HomeSupportSection(
-            onContactClick = { onEvent(HomeEvent.ContactSupport) },
-            modifier = Modifier.padding(top = OficiosSpacing.md),
-        )
     }
 }

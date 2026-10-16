@@ -21,6 +21,7 @@ import com.cocido.oficios.feature.home.common.toWorkerSearchFiltersWithExtras
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -69,6 +70,7 @@ class SearchResultsViewModel @Inject constructor(
     fun onEvent(event: SearchResultsEvent) {
         when (event) {
             SearchResultsEvent.Retry -> refresh()
+            SearchResultsEvent.Refresh -> pullToRefresh()
             SearchResultsEvent.Back -> emitEffect(SearchResultsEffect.NavigateBack)
             SearchResultsEvent.LoadNextPage -> loadNextPage()
             SearchResultsEvent.OpenFilters -> openFilters()
@@ -81,7 +83,9 @@ class SearchResultsViewModel @Inject constructor(
             is SearchResultsEvent.WorkerViewProfile -> {
                 emitEffect(SearchResultsEffect.NavigateToWorker(event.worker.id))
             }
-            SearchResultsEvent.WorkerContact -> emitEffect(SearchResultsEffect.ShowComingSoon)
+            is SearchResultsEvent.WorkerContact -> {
+                emitEffect(SearchResultsEffect.NavigateToHire(event.worker.id))
+            }
             is SearchResultsEvent.FilterCategorySelected -> onFilterCategorySelected(event.category)
             is SearchResultsEvent.FilterRubroSelected -> onFilterRubroSelected(event.rubro)
             is SearchResultsEvent.FilterSubRubroSelected -> onFilterSubRubroSelected(event.subRubro)
@@ -140,17 +144,36 @@ class SearchResultsViewModel @Inject constructor(
         loadPage(page = 1, append = false)
     }
 
+    private fun pullToRefresh() {
+        currentPage = 0
+        endReached = false
+        loadPage(page = 1, append = false, refreshing = true)
+    }
+
     private fun loadNextPage() {
         val state = _uiState.value
         if (state !is SearchResultsUiState.Success || state.isLoadingPage || endReached) return
         loadPage(page = currentPage + 1, append = true)
     }
 
-    private fun loadPage(page: Int, append: Boolean) {
+    private fun loadPage(page: Int, append: Boolean, refreshing: Boolean = false) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
+            val previous = _uiState.value
+            try {
             if (!append) {
-                _uiState.update { SearchResultsUiState.Loading }
+                if (refreshing) {
+                    _uiState.update {
+                        when (previous) {
+                            is SearchResultsUiState.Success -> previous.copy(isRefreshing = true)
+                            is SearchResultsUiState.Empty -> previous.copy(isRefreshing = true)
+                            is SearchResultsUiState.Error -> previous.copy(isRefreshing = true)
+                            SearchResultsUiState.Loading -> SearchResultsUiState.Loading
+                        }
+                    }
+                } else {
+                    _uiState.update { SearchResultsUiState.Loading }
+                }
             } else {
                 val current = _uiState.value
                 if (current is SearchResultsUiState.Success) {
@@ -192,14 +215,37 @@ class SearchResultsViewModel @Inject constructor(
                     }
                 }
                 is AppResult.Error -> {
+                    val message = result.error.userMessage()
                     if (append) {
                         val current = _uiState.value
                         if (current is SearchResultsUiState.Success) {
-                            _uiState.update { current.copy(isLoadingPage = false) }
+                            _uiState.update { current.copy(isLoadingPage = false, isRefreshing = false) }
                         }
-                        emitEffect(SearchResultsEffect.ShowMessage(result.error.userMessage()))
+                        emitEffect(SearchResultsEffect.ShowMessage(message))
+                    } else if (previous is SearchResultsUiState.Success || previous is SearchResultsUiState.Empty) {
+                        _uiState.update {
+                            when (previous) {
+                                is SearchResultsUiState.Success -> previous.copy(isRefreshing = false)
+                                is SearchResultsUiState.Empty -> previous.copy(isRefreshing = false)
+                                else -> previous
+                            }
+                        }
+                        if (refreshing) emitEffect(SearchResultsEffect.ShowMessage(message))
                     } else {
-                        _uiState.update { SearchResultsUiState.Error(result.error.userMessage()) }
+                        _uiState.update { SearchResultsUiState.Error(message) }
+                        if (refreshing) emitEffect(SearchResultsEffect.ShowMessage(message))
+                    }
+                }
+            }
+            } finally {
+                if (isActive) {
+                    _uiState.update { state ->
+                        when (state) {
+                            is SearchResultsUiState.Success -> state.copy(isRefreshing = false, isLoadingPage = false)
+                            is SearchResultsUiState.Empty -> state.copy(isRefreshing = false)
+                            is SearchResultsUiState.Error -> state.copy(isRefreshing = false)
+                            SearchResultsUiState.Loading -> state
+                        }
                     }
                 }
             }
@@ -348,6 +394,14 @@ class SearchResultsViewModel @Inject constructor(
 
     private fun removeFilterChip(chip: FilterChip) {
         activeFilters = when (chip.type) {
+            FilterChipType.CATEGORY -> activeFilters.copy(
+                categoryId = null,
+                categoryLabel = null,
+                rubroId = null,
+                rubroLabel = null,
+                subRubroId = null,
+                subRubroLabel = null,
+            )
             FilterChipType.RUBRO -> activeFilters.copy(
                 rubroId = null,
                 rubroLabel = null,
@@ -371,6 +425,7 @@ class SearchResultsViewModel @Inject constructor(
     }
 
     private fun buildActiveFilterChips(filters: WorkerSearchFilters): List<FilterChip> = buildList {
+        filters.categoryLabel?.let { add(FilterChip(FilterChipType.CATEGORY, it)) }
         filters.rubroLabel?.let { add(FilterChip(FilterChipType.RUBRO, it)) }
         filters.subRubroLabel?.let { add(FilterChip(FilterChipType.SUBRUBRO, it)) }
         filters.barrioLabel?.let { add(FilterChip(FilterChipType.BARRIO, it)) }
@@ -394,12 +449,17 @@ sealed interface SearchResultsUiState {
         val filterChips: List<FilterChip>,
         val isLoadingPage: Boolean,
         val endReached: Boolean,
+        val isRefreshing: Boolean = false,
     ) : SearchResultsUiState
     data class Empty(
         val activeFilters: WorkerSearchFilters,
         val filterChips: List<FilterChip>,
+        val isRefreshing: Boolean = false,
     ) : SearchResultsUiState
-    data class Error(val message: String) : SearchResultsUiState
+    data class Error(
+        val message: String,
+        val isRefreshing: Boolean = false,
+    ) : SearchResultsUiState
 }
 
 data class FilterSheetUiState(
@@ -421,7 +481,11 @@ data class FilterSheetUiState(
     val selectedDate: String? = null,
 )
 
+internal fun hasRemovableFilterChips(chips: List<FilterChip>): Boolean =
+    chips.any { it.type != FilterChipType.QUERY }
+
 enum class FilterChipType {
+    CATEGORY,
     RUBRO,
     SUBRUBRO,
     BARRIO,
@@ -437,6 +501,7 @@ data class FilterChip(
 
 sealed interface SearchResultsEvent {
     data object Retry : SearchResultsEvent
+    data object Refresh : SearchResultsEvent
     data object Back : SearchResultsEvent
     data object LoadNextPage : SearchResultsEvent
     data object OpenFilters : SearchResultsEvent
@@ -447,7 +512,7 @@ sealed interface SearchResultsEvent {
     data object QuerySubmitted : SearchResultsEvent
     data object VoiceSearch : SearchResultsEvent
     data class WorkerViewProfile(val worker: WorkerSummary) : SearchResultsEvent
-    data object WorkerContact : SearchResultsEvent
+    data class WorkerContact(val worker: WorkerSummary) : SearchResultsEvent
     data class FilterCategorySelected(val category: CatalogOption) : SearchResultsEvent
     data class FilterRubroSelected(val rubro: CatalogOption) : SearchResultsEvent
     data class FilterSubRubroSelected(val subRubro: CatalogOption) : SearchResultsEvent
@@ -463,6 +528,7 @@ sealed interface SearchResultsEvent {
 sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect
     data class NavigateToWorker(val workerId: Long) : SearchResultsEffect
+    data class NavigateToHire(val workerId: Long) : SearchResultsEffect
     data object ShowComingSoon : SearchResultsEffect
     data class ShowMessage(val message: String) : SearchResultsEffect
 }

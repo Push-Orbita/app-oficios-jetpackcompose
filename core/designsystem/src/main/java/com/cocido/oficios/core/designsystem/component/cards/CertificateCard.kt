@@ -32,8 +32,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 @Composable
 fun CertificateCard(
     title: String,
-    issuedBy: String,
-    expiryDate: String?,
+    issuedBy: String? = null,
+    expiryDate: String? = null,
     isVerified: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -60,11 +60,13 @@ fun CertificateCard(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Text(
-                        text = issuedBy,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OficiosColorMutedText,
-                    )
+                    if (issuedBy != null) {
+                        Text(
+                            text = issuedBy,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = OficiosColorMutedText,
+                        )
+                    }
                     if (expiryDate != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(

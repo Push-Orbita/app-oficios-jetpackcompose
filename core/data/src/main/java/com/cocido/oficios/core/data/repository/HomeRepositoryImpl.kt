@@ -5,7 +5,6 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.data.mapper.toHomeCategoryItems
 import com.cocido.oficios.domain.model.ClientHomeContent
 import com.cocido.oficios.domain.model.HomeCategoryItem
-import com.cocido.oficios.domain.model.ProviderBenefit
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ProviderProfileStatus
 import com.cocido.oficios.domain.model.RecentSearchEntry
@@ -22,6 +21,8 @@ import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 class HomeRepositoryImpl @Inject constructor(
@@ -39,17 +40,21 @@ class HomeRepositoryImpl @Inject constructor(
         return withContext(dispatcherProvider.io) {
             when (val userResult = authRepository.getCurrentUser()) {
                 is AppResult.Error -> userResult
-                is AppResult.Success -> {
-                    when (val categoriesResult = catalogRepository.getCategories()) {
-                        is AppResult.Error -> categoriesResult
+                is AppResult.Success -> coroutineScope {
+                    val categoriesDeferred = async { catalogRepository.getCategories() }
+                    val featuredDeferred = async { loadFeaturedWorkers() }
+                    when (val categoriesResult = categoriesDeferred.await()) {
+                        is AppResult.Error -> {
+                            featuredDeferred.cancel()
+                            categoriesResult
+                        }
                         is AppResult.Success -> {
                             val categories = categoriesResult.data.toHomeCategoryItems()
                             val recent = resolveRecentSearches(categories)
-                            val featuredWorkers = loadFeaturedWorkers()
                             AppResult.Success(
                                 userResult.data.toClientHomeContent(
                                     recentSearches = recent,
-                                    featuredWorkers = featuredWorkers,
+                                    featuredWorkers = featuredDeferred.await(),
                                 ),
                             )
                         }
@@ -82,7 +87,7 @@ class HomeRepositoryImpl @Inject constructor(
                                     primarySpecialtyLabel = primarySpecialtyLabel,
                                     profileCompletionPercent = status.toCompletionPercent(),
                                     missingProfileItems = missingItems,
-                                    benefits = staticProviderBenefits(),
+                                    benefits = emptyList(),
                                     hasActiveBooking = upcomingOrders.any {
                                         it.bookingStatus == com.cocido.oficios.domain.model.BookingStatus.IN_PROGRESS
                                     },
@@ -127,22 +132,6 @@ class HomeRepositoryImpl @Inject constructor(
         val completed = milestones.count { it }
         return (completed * 100) / milestones.size
     }
-
-    /**
-     * Contenido estático: el swagger real (apioficios.pushsoftware.com.ar/api-json) no tiene
-     * ningún tag de "beneficios" — se deja este placeholder local hasta que el backend lo exponga.
-     */
-    private fun staticProviderBenefits(): List<ProviderBenefit> = listOf(
-        ProviderBenefit(
-            title = "Ferretería El Clavo",
-            description = "Descuento en materiales de construcción para trabajadores registrados.",
-            discountLabel = "10% OFF",
-        ),
-        ProviderBenefit(
-            title = "Seguro de responsabilidad civil",
-            description = "Cobertura preferencial para trabajadores de oficio activos.",
-        ),
-    )
 
     override suspend fun getCategories(): AppResult<List<HomeCategoryItem>> {
         return withContext(dispatcherProvider.io) {

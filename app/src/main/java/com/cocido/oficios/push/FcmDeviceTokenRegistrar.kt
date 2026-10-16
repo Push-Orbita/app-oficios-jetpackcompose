@@ -1,6 +1,8 @@
 package com.cocido.oficios.push
 
 import android.content.Context
+import android.util.Log
+import com.cocido.oficios.BuildConfig
 import com.cocido.oficios.core.common.contract.DeviceTokenRegistrar
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.usecase.notifications.RegisterDeviceTokenUseCase
@@ -18,7 +20,16 @@ class FcmDeviceTokenRegistrar @Inject constructor(
 ) : DeviceTokenRegistrar {
 
     override suspend fun syncCurrentToken() {
-        val token = fetchFcmToken() ?: return
+        if (!BuildConfig.FIREBASE_ENABLED) {
+            Log.d(TAG, "Firebase deshabilitado (google-services.json stub). Saltando registro de token.")
+            return
+        }
+        val token = try {
+            fetchFcmToken()
+        } catch (error: Exception) {
+            Log.w(TAG, "No se pudo obtener el token de Firebase.", error)
+            null
+        } ?: return
         val deviceId = android.provider.Settings.Secure.getString(
             context.contentResolver,
             android.provider.Settings.Secure.ANDROID_ID,
@@ -32,6 +43,13 @@ class FcmDeviceTokenRegistrar @Inject constructor(
     private suspend fun fetchFcmToken(): String? = suspendCancellableCoroutine { continuation ->
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token -> continuation.resume(token) }
-            .addOnFailureListener { continuation.resume(null) }
+            .addOnFailureListener { error ->
+                Log.w(TAG, "Firebase no devolvió token.", error)
+                continuation.resume(null)
+            }
+    }
+
+    companion object {
+        private const val TAG = "FcmDeviceTokenRegistrar"
     }
 }

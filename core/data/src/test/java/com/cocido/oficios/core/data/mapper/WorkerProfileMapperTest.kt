@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.worker.dto.CalificacionDto
 import com.cocido.oficios.core.network.api.worker.dto.TrabajadorOficioPerfilCompletoDto
 import com.cocido.oficios.domain.model.WorkerProfile
 import kotlinx.serialization.json.Json
+import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -65,6 +66,86 @@ class WorkerProfileMapperTest {
         assertEquals(4, review.punctualityScore)
         assertEquals("Comentario", review.comment)
         assertEquals("Ana", review.clientLabel)
+        assertEquals(formatReviewDate("2026-01-01T11:00:00Z"), review.reviewedAt)
+        assertEquals(500L, review.bookingId)
+    }
+
+    @Test
+    fun `la resena muestra solo el nombre y la fecha en es-AR`() {
+        val zone = ZoneId.of("America/Argentina/Buenos_Aires")
+        assertEquals("Ana", reviewAuthorLabel("Ana"))
+        assertEquals("María G.", reviewAuthorLabel("María Gómez | Tel: +543704000000 | Email: ana@mail.com"))
+        assertNull(reviewAuthorLabel("Tel: 3704000000 | Email: ana@mail.com"))
+        assertEquals("1 oct 2026", formatReviewDate("2026-10-01T14:00:00.000Z", zone))
+    }
+
+    @Test
+    fun `zone uses barrio and localidad and drops street`() {
+        assertEquals("San Francisco, Formosa", formatWorkerZone("San Francisco", "Formosa"))
+        assertEquals("Centro", formatWorkerZone("Centro", "  "))
+        assertNull(formatWorkerZone(null, null))
+
+        val dto = json.decodeFromString(
+            TrabajadorOficioPerfilCompletoDto.serializer(),
+            """
+            {
+              "id": 9,
+              "usuario": {
+                "email": "a@b.c",
+                "emailVerificado": false,
+                "persona": { "nombres": "Ana", "apellido": "Gómez" }
+              },
+              "estado": "PENDIENTE",
+              "descripcion": "   ",
+              "domicilios": [{
+                "id": 1,
+                "calle": "Av. 25 de Mayo",
+                "numero": "100",
+                "barrio": { "id": 3, "nombre": "San Francisco", "localidad": "Formosa" }
+              }]
+            }
+            """.trimIndent(),
+        )
+        val profile = dto.toWorkerProfile()
+        assertEquals("San Francisco, Formosa", profile.zoneLabel)
+        assertNull(profile.about)
+        assertNull(profile.workAddresses.first().calle)
+        assertFalse(profile.isVerified)
+    }
+
+    @Test
+    fun `decodes staging trabajador-oficio 11 with localidad object and tinyint favorito`() {
+        val dto = json.decodeFromString(
+            TrabajadorOficioPerfilCompletoDto.serializer(),
+            FIXTURE_STAGING_TRABAJADOR_OFICIO_11,
+        )
+
+        val profile = dto.toWorkerProfile()
+
+        assertEquals(11L, profile.id)
+        assertEquals("QA Trabajador", profile.displayName)
+        assertEquals("Plomería", profile.specialties.first().rubroName)
+        assertTrue(profile.specialties.first().servesAtHome)
+        assertEquals("Lun - Sab · 08:00 - 18:00", profile.availability?.summaryLabel)
+        assertEquals("Villa Hermosa, Ciudad de Formosa", profile.zoneLabel)
+        assertTrue(profile.isVerified)
+    }
+
+    @Test
+    fun `about is shown only when descripcion is not blank`() {
+        val dto = json.decodeFromString(
+            TrabajadorOficioPerfilCompletoDto.serializer(),
+            """
+            {
+              "id": 10,
+              "usuario": { "email": "a@b.c", "persona": { "nombres": "Ana", "apellido": "Gómez" } },
+              "estado": "VALIDADO",
+              "descripcion": " Arreglo cañerías "
+            }
+            """.trimIndent(),
+        )
+        assertEquals("Arreglo cañerías", dto.toWorkerProfile().about)
+        assertTrue(dto.toWorkerProfile().isVerified)
     }
 
     private companion object {
@@ -122,6 +203,94 @@ class WorkerProfileMapperTest {
               "certificados": [],
               "galeriaTrabajos": [],
               "domicilios": []
+            }
+        """.trimIndent()
+
+        /**
+         * GET trabajador-oficio/11 en staging (200). PII redactada.
+         * `barrio.localidad` llega como objeto y `favorito` como TINYINT 1.
+         */
+        private val FIXTURE_STAGING_TRABAJADOR_OFICIO_11 = """
+            {
+              "id": 11,
+              "usuario": {
+                "id": 26,
+                "email": "qa.trabajador@example.test",
+                "fotoPerfil": null,
+                "emailVerificado": true,
+                "persona": { "id": 26, "nombres": "QA", "apellido": "Trabajador" },
+                "rolUsuario": { "id": 1, "nombre": "TRABAJADOR_DE_OFICIOS" }
+              },
+              "estado": "VALIDADO",
+              "documento": "30111222",
+              "rubros": [
+                {
+                  "id": 11,
+                  "rubro": {
+                    "id": 1,
+                    "nombre": "Plomería",
+                    "plazoCancelacionHorasDefault": 24,
+                    "categoria": { "id": 1, "nombre": "Hogar y Construcción" }
+                  },
+                  "principal": true,
+                  "subRubros": [
+                    {
+                      "id": 29,
+                      "subRubro": { "id": 1, "nombre": "Reparación de cañerías" },
+                      "lugarDomicilio": true,
+                      "lugarLocal": false,
+                      "requiereTurnos": true,
+                      "plazoCancelacionHoras": null,
+                      "slotsTurno": []
+                    }
+                  ],
+                  "diasLaborales": [
+                    {
+                      "id": 11,
+                      "diaInicio": "LUNES",
+                      "diaFin": "SABADO",
+                      "horariosLaborales": [
+                        { "id": 11, "horaInicio": "08:00:00", "horaFin": "18:00:00" }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "reputacion": null,
+              "certificados": [],
+              "galeriaTrabajos": [],
+              "domicilios": [
+                {
+                  "id": 9,
+                  "barrioId": 107,
+                  "personaId": 26,
+                  "persona": {
+                    "id": 26,
+                    "nombres": "QA",
+                    "apellido": "Trabajador",
+                    "usuario": {
+                      "id": 26,
+                      "email": "qa.trabajador@example.test",
+                      "fotoPerfil": null,
+                      "rolUsuario": { "id": 1, "nombre": "TRABAJADOR_DE_OFICIOS" }
+                    }
+                  },
+                  "barrio": {
+                    "id": 107,
+                    "nombre": "Villa Hermosa",
+                    "localidad": { "id": 4, "nombre": "Ciudad de Formosa" }
+                  },
+                  "nombre": "Base QA",
+                  "calle": "Av. 25 de Mayo",
+                  "numero": "500",
+                  "casaTorre": null,
+                  "departamento": null,
+                  "piso": null,
+                  "latitud": -26.1852,
+                  "longitud": -58.1735,
+                  "favorito": 1
+                }
+              ]
             }
         """.trimIndent()
 

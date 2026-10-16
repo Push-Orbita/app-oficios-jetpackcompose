@@ -43,6 +43,7 @@ class RateWorkerViewModel @Inject constructor(
 
     private fun submit() {
         val form = uiState.value as? RateWorkerUiState.Form ?: return
+        if (form.isSubmitting) return
         _uiState.update { form.copy(hasAttemptedSubmit = true) }
         if (form.qualityStars == 0 || form.punctualityStars == 0) return
 

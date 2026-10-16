@@ -28,6 +28,11 @@ robolectric = "4.11.1"
 coil = "2.7.0"
 googleServices = "4.4.2"
 firebaseBom = "33.7.0"
+# 8.x exige compileSdk 37/AGP 9.1 y 6.10 usa Kotlin 2.2. 6.4.1 fue
+# publicada con Kotlin 2.0.21, exactamente el toolchain actual del proyecto.
+mapsCompose = "6.4.1"
+# 21.4.0 fue compilado con Kotlin 2.3; el proyecto usa Kotlin 2.0.21.
+playServicesLocation = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -71,6 +76,9 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -202,8 +202,8 @@ Usado por: `OrderCard`, `OficiosStatusChip`, `ScheduleSlotData`.
 
 ```kotlin
 // Colores
-MaterialTheme.colorScheme.primary          // #A32F56
-MaterialTheme.colorScheme.background       // #231D38
+MaterialTheme.colorScheme.primary          // #006DEF
+MaterialTheme.colorScheme.background       // #00358B
 MaterialTheme.colorScheme.outline          // #413764
 MaterialTheme.colorScheme.tertiary         // #F4A426
 OficiosColorSuccess                        // #4CAF7D

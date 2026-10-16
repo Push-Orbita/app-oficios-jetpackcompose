@@ -7,9 +7,11 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,35 +24,53 @@ import kotlinx.coroutines.launch
 class HomeViewModel @Inject constructor(
     private val getClientHomeUseCase: GetClientHomeUseCase,
     private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val _unreadNotificationCount = MutableStateFlow(getUnreadNotificationCountUseCase.lastKnown() ?: 0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
+
     private val _effects = Channel<HomeEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
+    private var loadJob: Job? = null
+    private var loadGeneration = 0
+
     init {
         loadHome()
+        refreshUnreadCount()
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.Retry -> loadHome()
+            HomeEvent.Refresh -> loadHome(refreshing = true)
             HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
-            HomeEvent.OpenNotifications -> emitComingSoon()
-            HomeEvent.ContactSupport -> emitEffect(HomeEffect.ContactSupport)
+            HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             HomeEvent.VoiceSearch -> emitComingSoon()
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
             HomeEvent.NavigateToSettings -> emitEffect(HomeEffect.NavigateToSettings)
-            HomeEvent.NavigateToProfile -> emitEffect(HomeEffect.NavigateToProfile)
             HomeEvent.NavigateToFavorites -> emitEffect(HomeEffect.NavigateToFavorites)
             HomeEvent.NavigateToHelp -> emitEffect(HomeEffect.NavigateToHelp)
             is HomeEvent.WorkerViewProfile -> emitEffect(HomeEffect.NavigateToWorker(event.workerId))
-            HomeEvent.WorkerContact -> emitComingSoon()
+            is HomeEvent.WorkerContact -> emitEffect(HomeEffect.NavigateToHire(event.workerId))
             HomeEvent.SeeAllWorkers -> emitEffect(HomeEffect.NavigateToSearchResults())
             HomeEvent.OpenMyOrders -> emitEffect(HomeEffect.NavigateToMyOrders)
+        }
+    }
+
+    fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.value = result.data
+                is AppResult.Error -> getUnreadNotificationCountUseCase.lastKnown()?.let { known ->
+                    _unreadNotificationCount.value = known
+                }
+            }
         }
     }
 
@@ -106,13 +126,48 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadHome() {
-        viewModelScope.launch {
-            _uiState.update { HomeUiState.Loading }
-            when (val result = getClientHomeUseCase()) {
-                is AppResult.Success -> _uiState.update { HomeUiState.Success(result.data) }
-                is AppResult.Error -> {
-                    _uiState.update { HomeUiState.Error(result.error.userMessage()) }
+    private fun loadHome(refreshing: Boolean = false) {
+        val generation = ++loadGeneration
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            val previous = _uiState.value
+            try {
+                when {
+                    refreshing && previous is HomeUiState.Success ->
+                        _uiState.value = previous.copy(isRefreshing = true)
+                    refreshing && previous is HomeUiState.Error ->
+                        _uiState.value = previous.copy(isRefreshing = true)
+                    else -> _uiState.value = HomeUiState.Loading
+                }
+                if (generation != loadGeneration) return@launch
+                when (val result = getClientHomeUseCase()) {
+                    is AppResult.Success -> {
+                        if (generation == loadGeneration) {
+                            _uiState.value = HomeUiState.Success(result.data)
+                        }
+                    }
+                    is AppResult.Error -> {
+                        if (generation != loadGeneration) return@launch
+                        val message = result.error.userMessage()
+                        val kept = previous as? HomeUiState.Success
+                        if (kept != null) {
+                            _uiState.value = kept.copy(isRefreshing = false)
+                            emitEffect(HomeEffect.ShowMessage(message))
+                        } else {
+                            _uiState.value = HomeUiState.Error(message)
+                            if (refreshing) emitEffect(HomeEffect.ShowMessage(message))
+                        }
+                    }
+                }
+            } finally {
+                if (generation == loadGeneration) {
+                    _uiState.update { state ->
+                        when (state) {
+                            is HomeUiState.Success -> state.copy(isRefreshing = false)
+                            is HomeUiState.Error -> state.copy(isRefreshing = false)
+                            HomeUiState.Loading -> state
+                        }
+                    }
                 }
             }
         }

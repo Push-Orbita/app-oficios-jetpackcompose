@@ -6,4 +6,5 @@ object AppRoutes {
     const val HOME = "home"
     const val SETTINGS = "settings"
     const val ONBOARDING_GATE = "onboarding/gate"
+    const val TERMS = "legal/terms"
 }

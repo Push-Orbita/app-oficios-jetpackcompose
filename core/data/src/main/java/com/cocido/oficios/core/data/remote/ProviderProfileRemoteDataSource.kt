@@ -33,4 +33,8 @@ class ProviderProfileRemoteDataSource @Inject constructor(
     suspend fun getProviderProfile() = safeApiCall {
         authApi.getProviderProfile()
     }
+
+    suspend fun deleteRubro(id: Long) = safeApiCall {
+        providerProfileApi.deleteRubro(id)
+    }
 }

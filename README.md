@@ -106,6 +106,8 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 
 Abrir en Android Studio y ejecutar en emulador/dispositivo (minSdk 27).
 
+El mapa del pedido lee `MAPS_API_KEY` desde `local.properties` (ese archivo no se versiona). Sin la clave, el detalle muestra la dirección y un botón para abrir Maps. Ver `local.properties.example`.
+
 ## Cómo correr tests
 
 ```bash

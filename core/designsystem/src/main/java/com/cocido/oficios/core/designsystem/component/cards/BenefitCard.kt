@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -76,7 +78,12 @@ fun BenefitCard(
                     color = OficiosColorMutedText,
                 )
                 if (ctaLabel != null && onCtaClick != null) {
-                    OficiosButton(text = ctaLabel, onClick = onCtaClick)
+                    OficiosButton(
+                        text = ctaLabel,
+                        onClick = onCtaClick,
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Medium,
+                    )
                 }
             }
         }

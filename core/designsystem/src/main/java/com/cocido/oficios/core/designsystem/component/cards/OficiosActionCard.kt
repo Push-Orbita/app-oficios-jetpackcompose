@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -33,13 +34,20 @@ fun OficiosActionCard(
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Text(text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             Text(text = description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            OficiosButton(text = primaryActionLabel, onClick = onPrimaryAction, modifier = Modifier.fillMaxWidth())
+            OficiosButton(
+                text = primaryActionLabel,
+                onClick = onPrimaryAction,
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Medium,
+            )
             if (secondaryActionLabel != null && onSecondaryAction != null) {
                 OficiosButton(
                     text = secondaryActionLabel,
                     onClick = onSecondaryAction,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Medium,
                 )
             }
         }

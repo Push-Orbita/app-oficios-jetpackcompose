@@ -12,5 +12,17 @@ class HomeMapperTest {
 
         assertEquals(3L, item.id)
         assertEquals("Construcción", item.name)
+        assertEquals(null, item.iconUrl)
+    }
+
+    @Test
+    fun `keeps category icon url when the catalog sends one`() {
+        val item = CatalogOption(
+            id = 3,
+            label = "Construcción",
+            iconUrl = "https://cdn.example/construccion.png",
+        ).toHomeCategoryItem()
+
+        assertEquals("https://cdn.example/construccion.png", item.iconUrl)
     }
 }

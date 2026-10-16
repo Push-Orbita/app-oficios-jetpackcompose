@@ -6,6 +6,7 @@ import com.cocido.oficios.core.network.api.catalog.dto.BarrioDto
 import com.cocido.oficios.core.network.api.profile.dto.CertificadoTrabajoDto
 import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
 import com.cocido.oficios.core.network.api.search.dto.ReputacionResumenDto
+import com.cocido.oficios.core.network.serialization.FlexibleBooleanSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -46,6 +47,7 @@ data class DomicilioEnrichedDto(
     val piso: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
+    @Serializable(with = FlexibleBooleanSerializer::class)
     val favorito: Boolean = false,
 )
 
