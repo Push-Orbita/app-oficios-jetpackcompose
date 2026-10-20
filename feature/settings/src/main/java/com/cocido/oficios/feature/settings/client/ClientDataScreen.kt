@@ -25,11 +25,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -218,7 +216,9 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
                 Text(contact.telefonoWhatsapp, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = if (contact.telefonoVerificado) Icons.Outlined.Verified else Icons.Outlined.ErrorOutline,
+                        imageVector = ImageVector.vectorResource(
+                            if (contact.telefonoVerificado) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert
+                        ),
                         contentDescription = null,
                         tint = if (contact.telefonoVerificado) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error,
                     )
@@ -230,10 +230,17 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
                 }
             }
             IconButton(onClick = { onEvent(ClientDataEvent.ToggleContactFavorite(contact.id, !contact.favorito)) }) {
-                Icon(if (contact.favorito) Icons.Outlined.Star else Icons.Outlined.StarBorder, stringResource(R.string.client_data_primary_contact))
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Star),
+                    contentDescription = stringResource(R.string.client_data_primary_contact),
+                    tint = if (contact.favorito) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                )
             }
             IconButton(onClick = { onEvent(ClientDataEvent.EditContact(contact)) }) {
-                Icon(Icons.Outlined.Edit, stringResource(R.string.client_data_edit_contact))
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Pencil),
+                    contentDescription = stringResource(R.string.client_data_edit_contact)
+                )
             }
             val deleteContactLabel = stringResource(R.string.client_data_delete_contact)
             IconButton(onClick = {
@@ -268,10 +275,17 @@ private fun DomicilioCard(domicilio: ClientDomicilio, onEvent: (ClientDataEvent)
                 }
             }
             IconButton(onClick = { onEvent(ClientDataEvent.ToggleDomicilioFavorite(domicilio.id, !domicilio.favorito)) }) {
-                Icon(if (domicilio.favorito) Icons.Outlined.Star else Icons.Outlined.StarBorder, stringResource(R.string.client_data_primary_address))
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Star),
+                    contentDescription = stringResource(R.string.client_data_primary_address),
+                    tint = if (domicilio.favorito) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                )
             }
             IconButton(onClick = { onEvent(ClientDataEvent.EditDomicilio(domicilio)) }) {
-                Icon(Icons.Outlined.Edit, stringResource(R.string.client_data_edit_address))
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Pencil),
+                    contentDescription = stringResource(R.string.client_data_edit_address)
+                )
             }
             val deleteAddressLabel = stringResource(R.string.client_data_delete_address)
             IconButton(onClick = {
