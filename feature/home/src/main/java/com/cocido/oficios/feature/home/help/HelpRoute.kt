@@ -70,7 +70,7 @@ fun HelpScreen(
         bottomBar = {
             if (!showBackNavigation) {
                 ClientHomeBottomBar(
-                    selectedTab = ClientHomeTabNavigator.tabForDestination(SharedHomeDestination.help),
+                    selectedTab = ClientHomeTab.AJUSTES,
                     onTabSelected = onTabSelected,
                 )
             }

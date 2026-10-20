@@ -26,11 +26,6 @@ class ClientHomeTabNavigatorTest {
     }
 
     @Test
-    fun `ayuda tab navigates to help`() {
-        assertEquals(ClientHomeTabNavigation.Help, ClientHomeTabNavigator.navigationFor(ClientHomeTab.AYUDA))
-    }
-
-    @Test
     fun `ajustes tab navigates to settings`() {
         assertEquals(ClientHomeTabNavigation.Settings, ClientHomeTabNavigator.navigationFor(ClientHomeTab.AJUSTES))
     }
@@ -44,7 +39,6 @@ class ClientHomeTabNavigatorTest {
             onStay = { stayed = true },
             onNavigateToOrders = { ordersCalled = true },
             onNavigateToSettings = {},
-            onNavigateToHelp = {},
             onNavigateToFavorites = {},
         )
         assertEquals(false, stayed)
@@ -69,7 +63,6 @@ class ClientHomeTabNavigatorTest {
             onStay = { stayed = true },
             onNavigateToOrders = { ordersCalled = true },
             onNavigateToSettings = {},
-            onNavigateToHelp = {},
             onNavigateToFavorites = {},
         )
         assertEquals(true, stayed)
@@ -81,7 +74,6 @@ class ClientHomeTabNavigatorTest {
         assertEquals("home/inicio", clientTabRoute(ClientHomeTab.INICIO, "home/inicio", "settings"))
         assertEquals("orders/mine", clientTabRoute(ClientHomeTab.PEDIDOS, "home/inicio", "settings"))
         assertEquals("favorites", clientTabRoute(ClientHomeTab.FAVORITOS, "home/inicio", "settings"))
-        assertEquals("help", clientTabRoute(ClientHomeTab.AYUDA, "home/inicio", "settings"))
         assertEquals("settings", clientTabRoute(ClientHomeTab.AJUSTES, "home/inicio", "settings"))
         assertEquals(
             "providerHome/inicio",
