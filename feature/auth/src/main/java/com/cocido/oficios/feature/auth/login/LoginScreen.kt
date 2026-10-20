@@ -8,7 +8,19 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.app.Activity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAlertText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorLoginAction
+import com.cocido.oficios.core.designsystem.theme.OficiosColorLoginBackground
+import com.cocido.oficios.core.designsystem.theme.OficiosColorLoginOutline
+import com.cocido.oficios.core.designsystem.theme.OficiosColorLoginSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorLoginSurface
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +44,69 @@ import com.cocido.oficios.feature.auth.components.AuthSupportCard
 
 @Composable
 fun LoginScreen(
+    uiState: LoginUiState,
+    onEvent: (LoginEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LoginSystemBarsEffect()
+    // Fondo oscuro solo en login: se sobreescribe el esquema localmente, sin tocar el tema global.
+    MaterialTheme(colorScheme = loginColorScheme()) {
+        LoginScreenContent(uiState = uiState, onEvent = onEvent, modifier = modifier)
+    }
+}
+
+@Composable
+private fun loginColorScheme() = MaterialTheme.colorScheme.copy(
+    background = OficiosColorLoginBackground,
+    onBackground = OficiosColorWhite,
+    surface = OficiosColorLoginBackground,
+    onSurface = OficiosColorWhite,
+    surfaceVariant = OficiosColorLoginSurface,
+    onSurfaceVariant = OficiosColorLoginSecondaryText,
+    surfaceContainer = OficiosColorLoginSurface,
+    surfaceContainerHigh = OficiosColorLoginSurface,
+    outline = OficiosColorLoginOutline,
+    outlineVariant = OficiosColorLoginOutline.copy(alpha = 0.5f),
+    primary = OficiosColorLoginAction,
+    onPrimary = OficiosColorWhite,
+    // OficiosColorAlert (#BA6380) da 4.4:1 sobre #111827; el tono claro da 7.4:1.
+    error = OficiosColorAlertText,
+    onError = OficiosColorLoginBackground,
+)
+
+/** Barras del sistema del color del fondo de login (íconos claros); restaura al salir. */
+@Composable
+private fun LoginSystemBarsEffect() {
+    val view = LocalView.current
+    if (view.isInEditMode) return
+    DisposableEffect(view) {
+        val window = (view.context as Activity).window
+        val controller = WindowCompat.getInsetsController(window, view)
+        @Suppress("DEPRECATION")
+        val previousStatus = window.statusBarColor
+        @Suppress("DEPRECATION")
+        val previousNav = window.navigationBarColor
+        val previousLightStatus = controller.isAppearanceLightStatusBars
+        val previousLightNav = controller.isAppearanceLightNavigationBars
+        @Suppress("DEPRECATION")
+        window.statusBarColor = OficiosColorLoginBackground.toArgb()
+        @Suppress("DEPRECATION")
+        window.navigationBarColor = OficiosColorLoginBackground.toArgb()
+        controller.isAppearanceLightStatusBars = false
+        controller.isAppearanceLightNavigationBars = false
+        onDispose {
+            @Suppress("DEPRECATION")
+            window.statusBarColor = previousStatus
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = previousNav
+            controller.isAppearanceLightStatusBars = previousLightStatus
+            controller.isAppearanceLightNavigationBars = previousLightNav
+        }
+    }
+}
+
+@Composable
+private fun LoginScreenContent(
     uiState: LoginUiState,
     onEvent: (LoginEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -91,7 +166,7 @@ fun LoginScreen(
                 text = stringResource(R.string.auth_forgot_password),
                 onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
                 enabled = !uiState.isLoading,
-                variant = OficiosButtonVariant.Ghost,
+                variant = OficiosButtonVariant.Outlined,
                 modifier = Modifier.align(Alignment.End),
             )
 
@@ -121,7 +196,7 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF00358B)
+@Preview(showBackground = true, backgroundColor = 0xFF111827)
 @Composable
 private fun LoginScreenPreview() {
     OficiosTheme {
@@ -129,7 +204,7 @@ private fun LoginScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF00358B, name = "Login error")
+@Preview(showBackground = true, backgroundColor = 0xFF111827, name = "Login error")
 @Composable
 private fun LoginScreenErrorPreview() {
     OficiosTheme {
