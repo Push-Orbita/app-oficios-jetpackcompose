@@ -7,6 +7,9 @@ import androidx.compose.ui.graphics.Color
 // ---------------------------------------------------------------------------
 // Primitivos — fuente de verdad: handoff de diseño "Oficios Formosa" v2
 // (design-tokens.css, "Mode 1" — único tema activo del Figma).
+//
+// NOTA (Decisión Matías, 20/10/2026): Copy tone será "usted" según Figma.
+// Los strings no se modifican en este PR; se aplicará en PRs de pantallas individuales.
 // ---------------------------------------------------------------------------
 
 /** Fondo principal — Figma rgb(0,53,139) */
@@ -18,6 +21,11 @@ val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 
 /** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
 val OficiosColorSecondaryText = Color(0xFF8EABD4)
+
+/** Texto secundario — valor de Figma rgb(127,154,197). Contraste 3.9:1 (AA solo para texto grande).
+ * TODO: Decisión pendiente: mantener #8EABD4 (AA 4.7:1) o usar valor Figma 1:1 #7F9AC5 (AA grande).
+ * Ver tokens.md §1 y PLAN_COMPLETO_1a1.md bloqueante #2. */
+val OficiosColorSecondaryTextFigma = Color(0xFF7F9AC5)
 
 /** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)
@@ -36,6 +44,12 @@ val OficiosColorAccentBorder = Color(0xFFE49E1B)
 /** Alertas / dar de baja — stroke rgb(186,99,128), texto rgb(209,151,171) */
 val OficiosColorAlert = Color(0xFFBA6380)
 val OficiosColorAlertText = Color(0xFFD197AB)
+
+/** Texto deshabilitado — Figma rgb(145,142,155). Para días fuera de mes/deshabilitados. */
+val OficiosColorDisabledText = Color(0xFF918E9B)
+
+/** Borde de input con error — Figma rgb(163,47,86). */
+val OficiosColorErrorBorder = Color(0xFFA32F56)
 
 val OficiosColorWhite = Color(0xFFFFFFFF)
 /** Placeholders sobre fondo — rgba(255,255,255,0.5) */

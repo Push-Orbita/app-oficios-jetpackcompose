@@ -3,7 +3,8 @@ package com.cocido.oficios.core.designsystem.theme
 import androidx.compose.ui.unit.dp
 
 object OficiosComponentSize {
-    val textFieldHeight = 56.dp
+    /** Altura de inputs — Figma h-48 px-16 py-12 r8 borde 1px */
+    val textFieldHeight = 48.dp
     val minTouchTarget = 48.dp
     val buttonHeightLarge = 52.dp
     val buttonHeightMedium = 44.dp
