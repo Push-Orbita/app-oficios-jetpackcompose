@@ -21,11 +21,10 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 fun OficiosBrandRow(
     modifier: Modifier = Modifier,
     iconWidth: Dp = OficiosComponentSize.authLogoIconWidthCompact,
+    iconHeight: Dp = iconWidth * (270f / 165f),
     wordmarkHeight: Dp = OficiosComponentSize.authWordmarkHeight,
     spacing: Dp = OficiosSpacing.sm,
 ) {
-    val iconHeight = iconWidth * (270f / 165f)
-
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(spacing),

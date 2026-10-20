@@ -37,6 +37,8 @@ fun OficiosPasswordField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     floatingLabel: Boolean = true,
+    hiddenVisibilityIconRes: Int = OficiosIcons.Eye,
+    visibleVisibilityIconRes: Int = OficiosIcons.EyeClosed,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -56,7 +58,7 @@ fun OficiosPasswordField(
         trailingContent = {
             Icon(
                 imageVector = ImageVector.vectorResource(
-                    if (passwordVisible) OficiosIcons.EyeClosed else OficiosIcons.Eye,
+                    if (passwordVisible) visibleVisibilityIconRes else hiddenVisibilityIconRes,
                 ),
                 contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
