@@ -3,19 +3,26 @@ package com.cocido.oficios.feature.home.worker
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.domain.usecase.OrderUseCases
+import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
+import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 private const val REVIEWS_PAGE_SIZE = 10
 
@@ -24,6 +31,9 @@ class WorkerProfileViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getWorkerProfileUseCase: GetWorkerProfileUseCase,
     private val getWorkerReviewsUseCase: GetWorkerReviewsUseCase,
+    private val getFavoriteStatusUseCase: GetFavoriteStatusUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val orderUseCases: OrderUseCases,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -48,43 +58,93 @@ class WorkerProfileViewModel @Inject constructor(
     fun onEvent(event: WorkerProfileEvent) {
         when (event) {
             WorkerProfileEvent.Retry -> loadInitial()
+            WorkerProfileEvent.Refresh -> refresh()
             WorkerProfileEvent.Back -> emitEffect(WorkerProfileEffect.NavigateBack)
             WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
-            WorkerProfileEvent.RateClicked -> emitEffect(
-                WorkerProfileEffect.ShowMessage(
-                    "Vas a poder calificar a este trabajador cuando termines un pedido con él",
-                ),
-            )
-            WorkerProfileEvent.ReportProfileClicked -> emitEffect(
-                WorkerProfileEffect.ShowMessage("La denuncia de perfiles va a estar disponible próximamente"),
-            )
+            WorkerProfileEvent.RateClicked -> {
+                val state = uiState.value as? WorkerProfileUiState.Success ?: return
+                val bookingId = state.rateBookingId ?: return
+                emitEffect(WorkerProfileEffect.NavigateToRate(bookingId, state.profile.displayName))
+            }
+            WorkerProfileEvent.ReportProfileClicked -> {
+                val profile = (uiState.value as? WorkerProfileUiState.Success)?.profile ?: return
+                emitEffect(WorkerProfileEffect.NavigateToReport(workerId, profile.displayName))
+            }
+            WorkerProfileEvent.FavoriteClicked -> toggleFavorite()
             WorkerProfileEvent.LoadNextReviews -> loadNextReviews()
+        }
+    }
+
+    private fun refresh() {
+        val current = _uiState.value as? WorkerProfileUiState.Success
+        if (current == null) {
+            loadInitial()
+            return
+        }
+        viewModelScope.launch {
+            try {
+                _uiState.update { state ->
+                    if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = true) else state
+                }
+                when (val profileResult = getWorkerProfileUseCase(workerId)) {
+                    is AppResult.Success -> loadReviewsAndSetSuccess(
+                        profile = profileResult.data,
+                        pageNumber = 1,
+                        canFavorite = current.canFavorite,
+                        isFavorite = current.isFavorite,
+                    )
+                    is AppResult.Error -> {
+                        emitEffect(WorkerProfileEffect.ShowMessage(profileResult.error.userMessage()))
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    if (state is WorkerProfileUiState.Success) state.copy(isRefreshing = false) else state
+                }
+            }
         }
     }
 
     private fun loadInitial() {
         viewModelScope.launch {
             _uiState.update { WorkerProfileUiState.Loading }
-
-            when (val profileResult = getWorkerProfileUseCase(workerId)) {
-                is AppResult.Success -> {
-                    val profile = profileResult.data
-                    loadReviewsAndSetSuccess(profile, pageNumber = 1)
-                }
-
-                is AppResult.Error -> {
-                    _uiState.update { WorkerProfileUiState.Error(profileResult.error.userMessage()) }
+            coroutineScope {
+                val profileDeferred = async { getWorkerProfileUseCase(workerId) }
+                val favoriteDeferred = async { getFavoriteStatusUseCase(workerId) }
+                when (val profileResult = profileDeferred.await()) {
+                    is AppResult.Success -> {
+                        val favoriteFlags = favoriteDeferred.await().toFavoriteFlags()
+                        loadReviewsAndSetSuccess(
+                            profile = profileResult.data,
+                            pageNumber = 1,
+                            canFavorite = favoriteFlags.canFavorite,
+                            isFavorite = favoriteFlags.isFavorite,
+                        )
+                    }
+                    is AppResult.Error -> {
+                        _uiState.update { WorkerProfileUiState.Error(profileResult.error.userMessage()) }
+                    }
                 }
             }
         }
     }
 
-    private suspend fun loadReviewsAndSetSuccess(profile: com.cocido.oficios.domain.model.WorkerProfile, pageNumber: Int) {
+    private suspend fun loadReviewsAndSetSuccess(
+        profile: WorkerProfile,
+        pageNumber: Int,
+        canFavorite: Boolean,
+        isFavorite: Boolean,
+    ) {
         when (val reviewsResult = getWorkerReviewsUseCase(workerId, pageNumber, REVIEWS_PAGE_SIZE)) {
             is AppResult.Success -> {
                 val paged = reviewsResult.data
                 currentReviewsPage = paged.pageNumber
                 hasMoreReviews = paged.hasMore
+                val rateBookingId = pendingRatingBookingId(
+                    workerId = workerId,
+                    orders = clientOrders(),
+                    ratedBookingIds = paged.items.mapNotNull { review -> review.bookingId }.toSet(),
+                )
                 _uiState.update {
                     WorkerProfileUiState.Success(
                         profile = profile,
@@ -93,10 +153,12 @@ class WorkerProfileViewModel @Inject constructor(
                         hasMoreReviews = paged.hasMore,
                         reviewsPageNumber = paged.pageNumber,
                         totalReviewsPages = paged.totalPages,
+                        canFavorite = canFavorite,
+                        isFavorite = isFavorite,
+                        rateBookingId = rateBookingId,
                     )
                 }
             }
-
             is AppResult.Error -> {
                 _uiState.update {
                     WorkerProfileUiState.Success(
@@ -104,7 +166,46 @@ class WorkerProfileViewModel @Inject constructor(
                         reviews = emptyList(),
                         isLoadingReviews = false,
                         hasMoreReviews = false,
+                        canFavorite = canFavorite,
+                        isFavorite = isFavorite,
                     )
+                }
+            }
+        }
+    }
+
+    private fun toggleFavorite() {
+        val state = uiState.value as? WorkerProfileUiState.Success ?: return
+        if (!state.canFavorite || state.isTogglingFavorite) return
+        val previous = state.isFavorite
+        _uiState.update { current ->
+            if (current is WorkerProfileUiState.Success) {
+                current.copy(isFavorite = !previous, isTogglingFavorite = true)
+            } else {
+                current
+            }
+        }
+        viewModelScope.launch {
+            when (val result = toggleFavoriteUseCase(workerId, currentlyFavorite = previous)) {
+                is AppResult.Success -> {
+                    _uiState.update { current ->
+                        if (current is WorkerProfileUiState.Success) {
+                            current.copy(isTogglingFavorite = false)
+                        } else {
+                            current
+                        }
+                    }
+                    emitEffect(WorkerProfileEffect.ShowFavoriteResult(added = !previous))
+                }
+                is AppResult.Error -> {
+                    _uiState.update { current ->
+                        if (current is WorkerProfileUiState.Success) {
+                            current.copy(isFavorite = previous, isTogglingFavorite = false)
+                        } else {
+                            current
+                        }
+                    }
+                    emitEffect(WorkerProfileEffect.ShowMessage(result.error.userMessage()))
                 }
             }
         }
@@ -141,7 +242,6 @@ class WorkerProfileViewModel @Inject constructor(
                         } else current
                     }
                 }
-
                 is AppResult.Error -> {
                     _uiState.update { current ->
                         if (current is WorkerProfileUiState.Success) current.copy(isLoadingReviews = false) else current
@@ -152,8 +252,23 @@ class WorkerProfileViewModel @Inject constructor(
         }
     }
 
+    private suspend fun clientOrders() =
+        (orderUseCases.getClientOrders() as? AppResult.Success)?.data.orEmpty()
+
     private fun emitEffect(effect: WorkerProfileEffect) {
         viewModelScope.launch { _effects.send(effect) }
     }
 }
 
+private data class FavoriteFlags(
+    val canFavorite: Boolean,
+    val isFavorite: Boolean,
+)
+
+private fun AppResult<com.cocido.oficios.domain.model.FavoriteStatus>.toFavoriteFlags(): FavoriteFlags = when (this) {
+    is AppResult.Success -> FavoriteFlags(canFavorite = true, isFavorite = data.isFavorite)
+    is AppResult.Error -> FavoriteFlags(
+        canFavorite = error !is AppError.Forbidden,
+        isFavorite = false,
+    )
+}

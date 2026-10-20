@@ -72,3 +72,30 @@ data class CreateContactoRequestDto(
     val email: String? = null,
     val favorito: Boolean = false,
 )
+
+@Serializable
+data class UpdateDomicilioRequestDto(
+    val barrioId: Long,
+    val nombre: String? = null,
+    val calle: String? = null,
+    val numero: String? = null,
+    val casaTorre: String? = null,
+    val departamento: String? = null,
+    val piso: String? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
+    val favorito: Boolean = false,
+)
+
+@Serializable
+data class UpdateContactoRequestDto(
+    val nombre: String,
+    val telefonoWhatsapp: String,
+    val email: String? = null,
+    val favorito: Boolean = false,
+)
+
+@Serializable
+data class UpdateFavoriteRequestDto(
+    val favorito: Boolean,
+)

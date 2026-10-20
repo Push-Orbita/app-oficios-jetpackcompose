@@ -103,7 +103,7 @@ class ProviderOnboardingViewModel @Inject constructor(
     ): com.cocido.oficios.domain.model.ProviderProfileStatus {
         syncRegisterTradeDraftFromProfileUseCase()
 
-        if (status.missingSteps.none { it in TRADE_DRAFT_MISSING_STEPS }) return status
+        if (status.missingSteps.none { it in TRADE_DRAFT_SYNC_TRIGGER_STEPS }) return status
         if (!status.isIdentityVerified) return status
 
         val draft = registerTradeDraftRepository.get()
@@ -190,14 +190,12 @@ class ProviderOnboardingViewModel @Inject constructor(
     }
 
     private companion object {
-        val TRADE_DRAFT_MISSING_STEPS = setOf(
+        // POST /trabajador-oficio-rubro/full sólo corresponde cuando todavía no existe
+        // el servicio principal. Usarlo para disponibilidad, pagos o descripción sobre
+        // un perfil existente intenta duplicar el rubro principal.
+        val TRADE_DRAFT_SYNC_TRIGGER_STEPS = setOf(
             "rubro_principal",
             "subrubros",
-            "disponibilidad",
-            "agenda_turnos",
-            "metodos_pago",
-            "descripcion",
-            "experiencia",
         )
     }
 }

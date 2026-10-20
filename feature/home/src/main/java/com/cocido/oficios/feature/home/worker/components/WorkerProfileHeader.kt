@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.worker.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,79 +12,148 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.theme.OficiosColorTertiary
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.feature.home.R
+import java.util.Locale
 
 @Composable
 fun WorkerProfileHeader(
     profile: WorkerProfile,
     modifier: Modifier = Modifier,
 ) {
-    val reputation = profile.reputation
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    val trade = profile.specialties.firstOrNull { it.isPrimary }?.rubroName
+        ?: profile.specialties.firstOrNull()?.rubroName
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
-        OficiosAvatar(
-            name = profile.displayName,
-            imageUrl = profile.avatarUrl,
-            size = OficiosComponentSize.avatarMd,
-        )
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        ) {
+            OficiosAvatar(
+                name = profile.displayName,
+                imageUrl = profile.avatarUrl,
+                size = OficiosComponentSize.avatarLg,
+                showBorder = true,
+                circular = true,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+            ) {
                 Text(
                     text = profile.displayName,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                if (profile.isVerified) {
-                    Spacer(Modifier.width(OficiosSpacing.xxs))
-                    Icon(
-                        imageVector = Icons.Default.Verified,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(OficiosComponentSize.iconSm),
+                if (!trade.isNullOrBlank()) {
+                    Text(
+                        text = trade,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-            }
-
-            reputation?.rating?.let { rating ->
-                Spacer(Modifier.padding(top = OficiosSpacing.xxxs))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = OficiosColorTertiary,
-                        modifier = Modifier.size(OficiosComponentSize.iconSm),
-                    )
-                    Spacer(Modifier.width(OficiosSpacing.xxxs))
-                    Text(
-                        text = String.format("%.1f", rating),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = OficiosColorTertiary,
-                    )
-                    reputation.reviewCount?.let { count ->
+                if (profile.isVerified) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Verified,
+                            contentDescription = stringResource(R.string.home_worker_verified_cd),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(OficiosComponentSize.iconSm),
+                        )
+                        Spacer(Modifier.width(OficiosSpacing.xxs))
                         Text(
-                            text = "($count)",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = OficiosSpacing.xxxs),
+                            text = stringResource(R.string.home_verified_user),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
+                ReputationLine(profile)
+                profile.zoneLabel?.let { zone ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.LocationOn,
+                            contentDescription = stringResource(R.string.home_worker_zone_cd),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(OficiosComponentSize.iconSm),
+                        )
+                        Spacer(Modifier.width(OficiosSpacing.xxs))
+                        Text(
+                            text = zone,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReputationLine(profile: WorkerProfile) {
+    val reputation = profile.reputation
+    val count = reputation?.reviewCount ?: 0
+    val rating = reputation?.rating
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = OficiosColorTertiary,
+                modifier = Modifier.size(OficiosComponentSize.iconSm),
+            )
+            Spacer(Modifier.width(OficiosSpacing.xxs))
+            if (rating == null || count <= 0) {
+                Text(
+                    text = stringResource(R.string.home_worker_new),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            } else {
+                Text(
+                    text = String.format(Locale.US, "%.1f", rating),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = pluralStringResource(R.plurals.home_worker_review_count, count, count),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(start = OficiosSpacing.xxs),
+                )
             }
         }
     }

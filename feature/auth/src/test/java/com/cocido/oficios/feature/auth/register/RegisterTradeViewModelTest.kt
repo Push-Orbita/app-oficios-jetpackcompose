@@ -4,15 +4,22 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
+import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderProfileSync
+import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.repository.CatalogRepository
+import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
+import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -31,6 +38,7 @@ class RegisterTradeViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private val fakeCatalogRepository = FakeCatalogRepository()
     private val fakeDraftRepository = FakeRegisterTradeDraftRepository()
+    private val fakeProviderProfileRepository = FakeProviderProfileRepository()
 
     @Before
     fun setUp() {
@@ -131,6 +139,38 @@ class RegisterTradeViewModelTest {
     }
 
     @Test
+    fun `continue navigates to onboarding even when immediate rubro sync fails`() = runTest {
+        fakeCatalogRepository.categories = listOf(CatalogOption(id = 1, label = "Hogar y Construcción"))
+        fakeCatalogRepository.rubros = listOf(CatalogOption(id = 10, label = "Plomería"))
+        fakeCatalogRepository.subRubros = listOf(CatalogOption(id = 100, label = "Desatasco"))
+        fakeProviderProfileRepository.submitRubroFullResult =
+            AppResult.Error(AppError.Validation("DNI pendiente de aprobación"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        val effects = mutableListOf<RegisterTradeEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.onEvent(RegisterTradeEvent.CategoryChanged("Hogar y Construcción"))
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.TradeChanged("Plomería"))
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.SpecializationToggled("100", checked = true))
+        viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))
+        viewModel.onEvent(RegisterTradeEvent.NeighborhoodQueryChanged("Centro"))
+        viewModel.onEvent(RegisterTradeEvent.NeighborhoodSelected(CatalogOption(id = 5, label = "Centro")))
+        viewModel.onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, checked = true))
+        viewModel.onEvent(RegisterTradeEvent.TimeSlotFromChanged(0, "08:00"))
+        viewModel.onEvent(RegisterTradeEvent.TimeSlotToChanged(0, "12:00"))
+        viewModel.onEvent(RegisterTradeEvent.Continue)
+        advanceUntilIdle()
+
+        assertNotNull(fakeDraftRepository.savedDraft)
+        assertTrue(effects.any { it is RegisterTradeEffect.NavigateToOnboarding })
+        job.cancel()
+    }
+
+    @Test
     fun `catalog error is exposed when categories fail`() = runTest {
         fakeCatalogRepository.categoriesResult = AppResult.Error(AppError.Network("Sin conexión"))
 
@@ -147,6 +187,15 @@ class RegisterTradeViewModelTest {
         getSubRubrosByRubroUseCase = GetSubRubrosByRubroUseCase(fakeCatalogRepository),
         searchBarriosUseCase = SearchBarriosUseCase(fakeCatalogRepository),
         registerTradeDraftRepository = fakeDraftRepository,
+        submitRegisterTradeDraftUseCase = SubmitRegisterTradeDraftUseCase(
+            providerProfileRepository = fakeProviderProfileRepository,
+            registerTradeDraftRepository = fakeDraftRepository,
+            catalogRepository = fakeCatalogRepository,
+            syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                providerProfileRepository = fakeProviderProfileRepository,
+                registerTradeDraftRepository = fakeDraftRepository,
+            ),
+        ),
     )
 
     private class FakeCatalogRepository : CatalogRepository {
@@ -166,6 +215,25 @@ class RegisterTradeViewModelTest {
 
         override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> =
             AppResult.Success(listOf(CatalogOption(id = 5, label = "Centro")))
+    }
+
+    private class FakeProviderProfileRepository : ProviderProfileRepository {
+        var submitRubroFullResult: AppResult<Unit> = AppResult.Success(Unit)
+
+        override suspend fun updateProfessionalInfo(request: ProviderProfessionalInfoRequest) =
+            AppResult.Success(Unit)
+
+        override suspend fun submitRubroFull(request: ProviderRubroFullRequest) = submitRubroFullResult
+
+        override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) = submitRubroFullResult
+
+        override suspend fun finalizeProfile() = AppResult.Success(Unit)
+
+        override suspend fun loadProviderProfileForSync() =
+            AppResult.Success(ProviderProfileSync(tradeDraft = null))
+
+        override suspend fun getMySubRubros() =
+            AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
     }
 
     private class FakeRegisterTradeDraftRepository : RegisterTradeDraftRepository {

@@ -11,7 +11,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -21,8 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.OficiosDialogActions
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -107,29 +109,17 @@ fun SearchFilterBottomSheet(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-                FilterChip(
-                    selected = state.selectedModality == AttentionModality.DOMICILIO,
-                    onClick = {
-                        val next = if (state.selectedModality == AttentionModality.DOMICILIO) {
-                            null
-                        } else {
-                            AttentionModality.DOMICILIO
-                        }
-                        onEvent(SearchResultsEvent.FilterModalitySelected(next))
-                    },
-                    label = { Text(stringResource(R.string.home_filter_modality_home)) },
+                ModalityFilterChip(
+                    modality = AttentionModality.DOMICILIO,
+                    label = stringResource(R.string.home_filter_modality_home),
+                    selectedModality = state.selectedModality,
+                    onEvent = onEvent,
                 )
-                FilterChip(
-                    selected = state.selectedModality == AttentionModality.LOCAL,
-                    onClick = {
-                        val next = if (state.selectedModality == AttentionModality.LOCAL) {
-                            null
-                        } else {
-                            AttentionModality.LOCAL
-                        }
-                        onEvent(SearchResultsEvent.FilterModalitySelected(next))
-                    },
-                    label = { Text(stringResource(R.string.home_filter_modality_local)) },
+                ModalityFilterChip(
+                    modality = AttentionModality.LOCAL,
+                    label = stringResource(R.string.home_filter_modality_local),
+                    selectedModality = state.selectedModality,
+                    onEvent = onEvent,
                 )
             }
 
@@ -147,12 +137,14 @@ fun SearchFilterBottomSheet(
                 OficiosButton(
                     text = stringResource(R.string.home_filter_clear),
                     onClick = { onEvent(SearchResultsEvent.ClearFilters) },
-                    variant = OficiosButtonVariant.Secondary,
+                    variant = OficiosButtonVariant.Ghost,
                     modifier = Modifier.weight(1f),
                 )
                 OficiosButton(
                     text = stringResource(R.string.home_filter_apply),
                     onClick = { onEvent(SearchResultsEvent.ApplyFilters) },
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Large,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -164,8 +156,11 @@ fun SearchFilterBottomSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
-                    onClick = {
+                OficiosDialogActions(
+                    dismissLabel = stringResource(R.string.home_back),
+                    onDismiss = { showDatePicker = false },
+                    confirmLabel = stringResource(R.string.home_filter_apply),
+                    onConfirm = {
                         val millis = datePickerState.selectedDateMillis
                         val formatted = millis?.let {
                             SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(it))
@@ -173,17 +168,30 @@ fun SearchFilterBottomSheet(
                         onEvent(SearchResultsEvent.FilterDateChanged(formatted))
                         showDatePicker = false
                     },
-                ) {
-                    Text(stringResource(R.string.home_filter_apply))
-                }
+                )
             },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(stringResource(R.string.home_back))
-                }
-            },
+            dismissButton = {},
         ) {
             DatePicker(state = datePickerState)
         }
     }
+}
+
+@Composable
+private fun ModalityFilterChip(
+    modality: AttentionModality,
+    label: String,
+    selectedModality: AttentionModality?,
+    onEvent: (SearchResultsEvent) -> Unit,
+) {
+    val haptics = rememberOficiosHaptics()
+    val selected = selectedModality == modality
+    FilterChip(
+        selected = selected,
+        onClick = {
+            haptics.tick()
+            onEvent(SearchResultsEvent.FilterModalitySelected(if (selected) null else modality))
+        },
+        label = { Text(label) },
+    )
 }

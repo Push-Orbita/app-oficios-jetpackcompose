@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.agenda
 
+import com.cocido.oficios.feature.home.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,11 +22,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -41,24 +47,26 @@ fun AgendaConfigScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = "Configurar agenda", onBack = onNavigateBack) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.agenda_config_title), onBack = onNavigateBack) },
     ) { paddingValues ->
-        when (uiState) {
-            AgendaConfigUiState.Loading -> OficiosLoadingState(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                message = "Cargando configuración…",
-            )
-            is AgendaConfigUiState.Error -> OficiosErrorState(
-                title = "No pudimos cargar tu configuración",
-                description = uiState.message,
-                onRetry = { onEvent(AgendaConfigEvent.Retry) },
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
-            is AgendaConfigUiState.Success -> AgendaConfigContent(
-                uiState = uiState,
-                onEvent = onEvent,
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-            )
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                AgendaConfigUiState.Loading -> OficiosLoadingState(
+                    modifier = Modifier.fillMaxSize(),
+                    message = stringResource(R.string.agenda_config_loading),
+                )
+                is AgendaConfigUiState.Error -> OficiosErrorState(
+                    title = stringResource(R.string.agenda_config_error),
+                    description = state.message,
+                    onRetry = { onEvent(AgendaConfigEvent.Retry) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                is AgendaConfigUiState.Success -> AgendaConfigContent(
+                    uiState = state,
+                    onEvent = onEvent,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }
@@ -71,8 +79,8 @@ private fun AgendaConfigContent(
 ) {
     if (uiState.subRubroOptions.isEmpty()) {
         OficiosEmptyState(
-            title = "Todavía no tenés especialidades con agenda",
-            description = "Configurá tus rubros y sub-rubros para poder armar tu agenda de turnos.",
+            title = stringResource(R.string.agenda_config_empty_title),
+            description = stringResource(R.string.agenda_config_empty_description),
             icon = Icons.Outlined.EventBusy,
             modifier = modifier,
         )
@@ -81,7 +89,7 @@ private fun AgendaConfigContent(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         if (uiState.subRubroOptions.size > 1) {
@@ -94,14 +102,14 @@ private fun AgendaConfigContent(
                             onEvent(AgendaConfigEvent.SubRubroSelected(it.id))
                         }
                     },
-                    label = "Especialidad",
+                    label = stringResource(R.string.agenda_config_specialty),
                 )
             }
         }
 
         item {
             Text(
-                text = "Duración e intervalo de turnos",
+                text = stringResource(R.string.agenda_config_duration_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -113,7 +121,7 @@ private fun AgendaConfigContent(
                     OficiosTextField(
                         value = uiState.durationInput,
                         onValueChange = { onEvent(AgendaConfigEvent.DurationChanged(it)) },
-                        label = "Duración del turno (minutos)",
+                        label = stringResource(R.string.agenda_config_duration),
                         isError = uiState.durationError != null,
                         supportingText = uiState.durationError,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -121,15 +129,17 @@ private fun AgendaConfigContent(
                     OficiosTextField(
                         value = uiState.intervalInput,
                         onValueChange = { onEvent(AgendaConfigEvent.IntervalChanged(it)) },
-                        label = "Intervalo entre turnos (minutos, opcional)",
+                        label = stringResource(R.string.agenda_config_interval),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     OficiosButton(
-                        text = "Guardar",
+                        text = stringResource(R.string.agenda_config_save),
                         onClick = { onEvent(AgendaConfigEvent.Save) },
                         enabled = !uiState.isSaving,
                         loading = uiState.isSaving,
                         modifier = Modifier.fillMaxWidth(),
+                        variant = OficiosButtonVariant.Secondary,
+                        size = OficiosButtonSize.Large,
                     )
                 }
             }
@@ -138,15 +148,30 @@ private fun AgendaConfigContent(
         if (uiState.sessions.isNotEmpty()) {
             item {
                 Text(
-                    text = "Configuraciones guardadas",
+                    text = stringResource(R.string.agenda_config_saved),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             items(uiState.sessions, key = { it.id }) { session ->
-                SessionRow(session = session, onDeleteClick = { onEvent(AgendaConfigEvent.DeleteSession(session.id)) })
+                SessionRow(
+                    session = session,
+                    onDeleteClick = { onEvent(AgendaConfigEvent.RequestDeleteSession(session.id)) },
+                )
             }
         }
+    }
+
+    if (uiState.sessionPendingDeleteId != null) {
+        OficiosDialog(
+            title = stringResource(R.string.agenda_config_delete_title),
+            message = stringResource(R.string.agenda_config_delete_message),
+            confirmLabel = stringResource(R.string.agenda_config_delete_confirm),
+            confirmEnabled = !uiState.isDeleting,
+            onConfirm = { onEvent(AgendaConfigEvent.ConfirmDeleteSession) },
+            onDismiss = { onEvent(AgendaConfigEvent.DismissDeleteSession) },
+            isDangerous = true,
+        )
     }
 }
 
@@ -165,7 +190,7 @@ private fun SessionRow(session: AgendaSessionConfig, onDeleteClick: () -> Unit) 
                 )
                 session.intervalMinutes?.let {
                     Text(
-                        text = "Intervalo: $it min",
+                        text = stringResource(R.string.agenda_config_interval_value, it),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -174,7 +199,7 @@ private fun SessionRow(session: AgendaSessionConfig, onDeleteClick: () -> Unit) 
             IconButton(onClick = onDeleteClick) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
-                    contentDescription = "Eliminar configuración",
+                    contentDescription = stringResource(R.string.agenda_config_delete_title),
                     tint = MaterialTheme.colorScheme.error,
                 )
             }

@@ -1,7 +1,9 @@
 package com.cocido.oficios.core.network.api.auth.dto
 
 import com.cocido.oficios.core.network.api.profile.dto.ProviderDomicilioDto
+import com.cocido.oficios.core.network.api.profile.dto.CertificadoTrabajoDto
 import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
+import com.cocido.oficios.core.network.api.account.dto.WorkGalleryDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -46,12 +48,13 @@ data class RefreshTokenResponseDto(
 
 @Serializable
 data class UsuarioDto(
-    val id: Long,
-    val email: String,
+    val id: Long = 0L,
+    val email: String = "",
     val emailVerificado: Boolean = false,
     val fotoPerfil: JsonElement? = null,
     val persona: PersonaDto? = null,
     val rolUsuario: RolUsuarioDto? = null,
+    val telefonoWhatsapp: String? = null,
 )
 
 @Serializable
@@ -59,12 +62,13 @@ data class PersonaDto(
     val id: Long? = null,
     val nombres: String? = null,
     val apellido: String? = null,
+    val telefono: String? = null,
 )
 
 @Serializable
 data class RolUsuarioDto(
-    val id: Long,
-    val nombre: String,
+    val id: Long = 0L,
+    val nombre: String = "",
 )
 
 @Serializable
@@ -170,6 +174,8 @@ data class TrabajadorOficioPerfilMeDto(
     val domicilios: List<ProviderDomicilioDto> = emptyList(),
     val metodosPago: List<String> = emptyList(),
     val documentoIdentidad: ImgDocumentoSimpleDto? = null,
+    val certificados: List<CertificadoTrabajoDto> = emptyList(),
+    val galeriaTrabajos: List<WorkGalleryDto> = emptyList(),
     val usuario: UsuarioDto? = null,
 )
 

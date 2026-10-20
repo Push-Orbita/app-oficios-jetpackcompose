@@ -41,6 +41,7 @@ class CounterOfferViewModel @Inject constructor(
 
     private fun submit() {
         val form = uiState.value as? CounterOfferUiState.Form ?: return
+        if (form.isSubmitting) return
         _uiState.update { form.copy(hasAttemptedSubmit = true) }
         val dateTime = form.dateTime ?: return
 

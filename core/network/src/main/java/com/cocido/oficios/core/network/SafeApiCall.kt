@@ -1,14 +1,17 @@
 package com.cocido.oficios.core.network
 
-import com.cocido.oficios.core.common.result.AppError
+import android.util.Log
 import com.cocido.oficios.core.common.result.AppResult
-import com.cocido.oficios.core.common.result.toAppError
-import retrofit2.HttpException
+import java.util.concurrent.CancellationException
+import kotlinx.serialization.SerializationException
 
 suspend fun <T> safeApiCall(block: suspend () -> T): AppResult<T> = try {
     AppResult.Success(block())
-} catch (exception: HttpException) {
-    AppResult.Error(exception.toNetworkAppError())
+} catch (cancellation: CancellationException) {
+    throw cancellation
 } catch (throwable: Throwable) {
-    AppResult.Error(throwable.toAppError())
+    if (throwable is SerializationException) {
+        Log.e("OficiosApi", "No se pudo interpretar la respuesta", throwable)
+    }
+    AppResult.Error(throwable.toNetworkAppError())
 }

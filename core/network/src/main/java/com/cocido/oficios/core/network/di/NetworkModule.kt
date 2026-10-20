@@ -2,6 +2,8 @@ package com.cocido.oficios.core.network.di
 
 import com.cocido.oficios.core.network.BuildConfig
 import com.cocido.oficios.core.network.api.DemoApiService
+import com.cocido.oficios.core.network.api.account.AccountApi
+import com.cocido.oficios.core.network.api.account.WorkGalleryApi
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.catalog.CatalogApi
@@ -14,6 +16,8 @@ import com.cocido.oficios.core.network.api.worker.WorkerProfileApi
 import com.cocido.oficios.core.network.api.worker.WorkerReviewsApi
 import com.cocido.oficios.core.network.api.notifications.NotificationsApi
 import com.cocido.oficios.core.network.api.orders.OrdersApi
+import com.cocido.oficios.core.network.api.safety.ReportsApi
+import com.cocido.oficios.core.network.api.social.FavoritesApi
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -32,7 +36,9 @@ import java.util.concurrent.TimeUnit
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val TIMEOUT_SECONDS = 30L
+    private const val CONNECT_TIMEOUT_SECONDS = 10L
+    private const val READ_TIMEOUT_SECONDS = 20L
+    private const val WRITE_TIMEOUT_SECONDS = 20L
 
     @Provides
     @Singleton
@@ -49,9 +55,9 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
-            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .authenticator(tokenAuthenticator)
             .addInterceptor(authInterceptor)
 
@@ -83,9 +89,9 @@ object NetworkModule {
     fun provideDemoRetrofit(json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         val demoClient = OkHttpClient.Builder()
-            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .apply {
                 if (BuildConfig.DEBUG) {
                     addInterceptor(SanitizedLoggingInterceptor())
@@ -105,6 +111,16 @@ object NetworkModule {
     fun provideAuthApi(@ApiRetrofit retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideAccountApi(@ApiRetrofit retrofit: Retrofit): AccountApi =
+        retrofit.create(AccountApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideWorkGalleryApi(@ApiRetrofit retrofit: Retrofit): WorkGalleryApi =
+        retrofit.create(WorkGalleryApi::class.java)
 
     @Provides
     @Singleton
@@ -170,6 +186,18 @@ object NetworkModule {
     @Singleton
     fun provideAgendaApi(@ApiRetrofit retrofit: Retrofit): AgendaApi {
         return retrofit.create(AgendaApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFavoritesApi(@ApiRetrofit retrofit: Retrofit): FavoritesApi {
+        return retrofit.create(FavoritesApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReportsApi(@ApiRetrofit retrofit: Retrofit): ReportsApi {
+        return retrofit.create(ReportsApi::class.java)
     }
 
     @Provides

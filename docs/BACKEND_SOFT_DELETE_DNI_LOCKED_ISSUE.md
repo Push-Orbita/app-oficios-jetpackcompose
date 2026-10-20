@@ -10,7 +10,7 @@
 
 ```
 POST /auth/login
-{"email":"devmatiasbritez@gmail.com","contrasena":"astral514"}
+{"email":"<EMAIL_DE_PRUEBA>","contrasena":"<CONTRASENA_DE_PRUEBA>"}
 
 → 404 Not Found
 {
@@ -18,7 +18,7 @@ POST /auth/login
   "errorDetails": {
     "code": "DB03",
     "message": "Registro no encontrado en la base de datos.",
-    "details": "{\"email\":\"devmatiasbritez@gmail.com\"}"
+    "details": "{\"email\":\"<EMAIL_DE_PRUEBA>\"}"
   }
 }
 ```
@@ -29,8 +29,8 @@ Se intentó crear una cuenta completamente distinta (email nunca usado antes) re
 
 ```
 POST /auth/signup (multipart/form-data)
-nombres=Test, apellido=Reproduccion, email=test.reproduccion.dni@gmail.com,
-contrasena=test123456, rolId=2, documento=43453547
+nombres=Test, apellido=Reproduccion, email=<EMAIL_NUEVO_DE_PRUEBA>,
+contrasena=<CONTRASENA_DE_PRUEBA>, rolId=2, documento=<DNI_DE_PRUEBA>
 
 → 409 Conflict
 {
@@ -38,7 +38,7 @@ contrasena=test123456, rolId=2, documento=43453547
   "errorDetails": {
     "code": "US04",
     "message": "El documento ya está registrado. No podés volver a registrarte con el mismo DNI.",
-    "details": "{\"documento\":\"43453547\"}"
+    "details": "{\"documento\":\"<DNI_DE_PRUEBA>\"}"
   }
 }
 ```

@@ -16,6 +16,8 @@ sealed interface AgendaConfigUiState {
         val durationInput: String = "60",
         val intervalInput: String = "",
         val isSaving: Boolean = false,
+        val sessionPendingDeleteId: Long? = null,
+        val isDeleting: Boolean = false,
         val hasAttemptedSubmit: Boolean = false,
         val error: String? = null,
     ) : AgendaConfigUiState {
@@ -40,7 +42,9 @@ sealed interface AgendaConfigEvent {
     data class DurationChanged(val value: String) : AgendaConfigEvent
     data class IntervalChanged(val value: String) : AgendaConfigEvent
     data object Save : AgendaConfigEvent
-    data class DeleteSession(val sessionId: Long) : AgendaConfigEvent
+    data class RequestDeleteSession(val sessionId: Long) : AgendaConfigEvent
+    data object ConfirmDeleteSession : AgendaConfigEvent
+    data object DismissDeleteSession : AgendaConfigEvent
 }
 
 sealed interface AgendaConfigEffect {

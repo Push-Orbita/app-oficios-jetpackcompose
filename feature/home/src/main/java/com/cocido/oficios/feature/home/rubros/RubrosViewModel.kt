@@ -43,6 +43,7 @@ class RubrosViewModel @Inject constructor(
     fun onEvent(event: RubrosEvent) {
         when (event) {
             RubrosEvent.Retry -> loadRubros()
+            RubrosEvent.Refresh -> loadRubros(refreshing = true)
             RubrosEvent.Back -> emitEffect(RubrosEffect.NavigateBack)
             is RubrosEvent.RubroSelected -> onRubroSelected(event.rubro)
             is RubrosEvent.SearchSubmitted -> onSearchSubmitted(event.query)
@@ -86,20 +87,44 @@ class RubrosViewModel @Inject constructor(
         }
     }
 
-    private fun loadRubros() {
+    private fun loadRubros(refreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { RubrosUiState.Loading }
-            when (val result = getRubrosByCategoryUseCase(categoryId)) {
-                is AppResult.Success -> {
-                    _uiState.update {
-                        RubrosUiState.Success(
-                            categoryName = categoryName,
-                            rubros = result.data,
-                        )
+            val previous = _uiState.value
+            try {
+                if (refreshing && previous is RubrosUiState.Success) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else if (refreshing && previous is RubrosUiState.Error) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else {
+                    _uiState.update { RubrosUiState.Loading }
+                }
+                when (val result = getRubrosByCategoryUseCase(categoryId)) {
+                    is AppResult.Success -> {
+                        _uiState.update {
+                            RubrosUiState.Success(
+                                categoryName = categoryName,
+                                rubros = result.data,
+                            )
+                        }
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is RubrosUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            emitEffect(RubrosEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { RubrosUiState.Error(message) }
+                            if (refreshing) emitEffect(RubrosEffect.ShowMessage(message))
+                        }
                     }
                 }
-                is AppResult.Error -> {
-                    _uiState.update { RubrosUiState.Error(result.error.userMessage()) }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is RubrosUiState.Success -> state.copy(isRefreshing = false)
+                        is RubrosUiState.Error -> state.copy(isRefreshing = false)
+                        RubrosUiState.Loading -> state
+                    }
                 }
             }
         }
@@ -115,12 +140,17 @@ sealed interface RubrosUiState {
     data class Success(
         val categoryName: String,
         val rubros: List<CatalogOption>,
+        val isRefreshing: Boolean = false,
     ) : RubrosUiState
-    data class Error(val message: String) : RubrosUiState
+    data class Error(
+        val message: String,
+        val isRefreshing: Boolean = false,
+    ) : RubrosUiState
 }
 
 sealed interface RubrosEvent {
     data object Retry : RubrosEvent
+    data object Refresh : RubrosEvent
     data object Back : RubrosEvent
     data class RubroSelected(val rubro: CatalogOption) : RubrosEvent
     data class SearchSubmitted(val query: String) : RubrosEvent
@@ -130,6 +160,7 @@ sealed interface RubrosEvent {
 sealed interface RubrosEffect {
     data object NavigateBack : RubrosEffect
     data object ShowComingSoon : RubrosEffect
+    data class ShowMessage(val message: String) : RubrosEffect
     data class NavigateToSearchResults(
         val rubroId: Long,
         val rubroLabel: String,

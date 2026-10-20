@@ -76,6 +76,7 @@ class ProviderFinalizeViewModelTest {
                         AppResult.Success(Unit)
                     override suspend fun finalizeProfile() = result
                     override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
+                    override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                 },
             ),
         )

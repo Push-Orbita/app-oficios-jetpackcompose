@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- El APK instrumentado del módulo no hereda el manifest de :app. Una clave
+             aislada evita el crash del SDK; estos tests no solicitan tiles remotos. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="test-only-key" />
+        <activity
+            android:name="com.cocido.oficios.feature.settings.TestHostActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+    </application>
+</manifest>

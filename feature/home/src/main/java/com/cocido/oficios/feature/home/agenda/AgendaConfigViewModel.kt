@@ -45,7 +45,11 @@ class AgendaConfigViewModel @Inject constructor(
                 it.copy(intervalInput = event.value.filter(Char::isDigit))
             }
             AgendaConfigEvent.Save -> save()
-            is AgendaConfigEvent.DeleteSession -> deleteSession(event.sessionId)
+            is AgendaConfigEvent.RequestDeleteSession -> updateSuccess {
+                it.copy(sessionPendingDeleteId = event.sessionId)
+            }
+            AgendaConfigEvent.ConfirmDeleteSession -> confirmDeleteSession()
+            AgendaConfigEvent.DismissDeleteSession -> updateSuccess { it.copy(sessionPendingDeleteId = null) }
         }
     }
 
@@ -54,7 +58,7 @@ class AgendaConfigViewModel @Inject constructor(
             _uiState.update { AgendaConfigUiState.Loading }
             when (val result = getMySubRubrosUseCase()) {
                 is AppResult.Success -> {
-                    val options = result.data
+                    val options = result.data.filter { it.requiresTurns }
                     val firstId = options.firstOrNull()?.id
                     _uiState.update {
                         AgendaConfigUiState.Success(subRubroOptions = options, selectedSubRubroId = firstId)
@@ -112,15 +116,22 @@ class AgendaConfigViewModel @Inject constructor(
         }
     }
 
-    private fun deleteSession(sessionId: Long) {
-        val subRubroId = (_uiState.value as? AgendaConfigUiState.Success)?.selectedSubRubroId ?: return
+    private fun confirmDeleteSession() {
+        val state = _uiState.value as? AgendaConfigUiState.Success ?: return
+        val sessionId = state.sessionPendingDeleteId ?: return
+        val subRubroId = state.selectedSubRubroId ?: return
         viewModelScope.launch {
+            updateSuccess { it.copy(isDeleting = true) }
             when (val result = agendaUseCases.deleteSession(sessionId)) {
                 is AppResult.Success -> {
+                    updateSuccess { it.copy(isDeleting = false, sessionPendingDeleteId = null) }
                     emitEffect(AgendaConfigEffect.ShowMessage("Configuración eliminada"))
                     loadSessions(subRubroId)
                 }
-                is AppResult.Error -> emitEffect(AgendaConfigEffect.ShowMessage(result.error.userMessage()))
+                is AppResult.Error -> {
+                    updateSuccess { it.copy(isDeleting = false, sessionPendingDeleteId = null) }
+                    emitEffect(AgendaConfigEffect.ShowMessage(result.error.userMessage()))
+                }
             }
         }
     }

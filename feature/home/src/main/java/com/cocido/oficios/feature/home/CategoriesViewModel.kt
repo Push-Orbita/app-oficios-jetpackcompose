@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.usecase.GetHomeCategoriesUseCase
 import com.cocido.oficios.domain.usecase.TrackRecentCategoryUseCase
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -21,25 +22,40 @@ import kotlinx.coroutines.launch
 class CategoriesViewModel @Inject constructor(
     private val getHomeCategoriesUseCase: GetHomeCategoriesUseCase,
     private val trackRecentCategoryUseCase: TrackRecentCategoryUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CategoriesUiState>(CategoriesUiState.Loading)
     val uiState: StateFlow<CategoriesUiState> = _uiState.asStateFlow()
+
+    private val _unreadNotificationCount = MutableStateFlow(0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
     private val _effects = Channel<CategoriesEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
     init {
         loadCategories()
+        refreshUnreadCount()
+    }
+
+    fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.update { result.data }
+                is AppResult.Error -> Unit
+            }
+        }
     }
 
     fun onEvent(event: CategoriesEvent) {
         when (event) {
             CategoriesEvent.Retry -> loadCategories()
+            CategoriesEvent.Refresh -> loadCategories(refreshing = true)
             CategoriesEvent.Back -> emitEffect(CategoriesEffect.NavigateBack)
+            CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.NavigateToNotifications)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
             is CategoriesEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            CategoriesEvent.VoiceSearch -> emitEffect(CategoriesEffect.ShowComingSoon)
         }
     }
 
@@ -57,15 +73,39 @@ class CategoriesViewModel @Inject constructor(
         }
     }
 
-    private fun loadCategories() {
+    private fun loadCategories(refreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { CategoriesUiState.Loading }
-            when (val result = getHomeCategoriesUseCase()) {
-                is AppResult.Success -> {
-                    _uiState.update { CategoriesUiState.Success(result.data) }
+            val previous = _uiState.value
+            try {
+                if (refreshing && previous is CategoriesUiState.Success) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else if (refreshing && previous is CategoriesUiState.Error) {
+                    _uiState.update { previous.copy(isRefreshing = true) }
+                } else {
+                    _uiState.update { CategoriesUiState.Loading }
                 }
-                is AppResult.Error -> {
-                    _uiState.update { CategoriesUiState.Error(result.error.userMessage()) }
+                when (val result = getHomeCategoriesUseCase()) {
+                    is AppResult.Success -> {
+                        _uiState.update { CategoriesUiState.Success(result.data) }
+                    }
+                    is AppResult.Error -> {
+                        val message = result.error.userMessage()
+                        if (previous is CategoriesUiState.Success) {
+                            _uiState.update { previous.copy(isRefreshing = false) }
+                            emitEffect(CategoriesEffect.ShowMessage(message))
+                        } else {
+                            _uiState.update { CategoriesUiState.Error(message) }
+                            if (refreshing) emitEffect(CategoriesEffect.ShowMessage(message))
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { state ->
+                    when (state) {
+                        is CategoriesUiState.Success -> state.copy(isRefreshing = false)
+                        is CategoriesUiState.Error -> state.copy(isRefreshing = false)
+                        CategoriesUiState.Loading -> state
+                    }
                 }
             }
         }

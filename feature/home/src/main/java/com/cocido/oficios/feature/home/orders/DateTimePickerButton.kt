@@ -6,8 +6,8 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -16,12 +16,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.cocido.oficios.core.designsystem.component.OficiosDialogActions
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -47,23 +50,25 @@ fun DateTimePickerButton(
     )
 
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = pickedDateMillis ?: System.currentTimeMillis(),
+            selectableDates = UpcomingDates,
+        )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                OficiosButton(
-                    text = "Continuar",
-                    onClick = {
+                OficiosDialogActions(
+                    dismissLabel = "Cancelar",
+                    onDismiss = { showDatePicker = false },
+                    confirmLabel = "Continuar",
+                    onConfirm = {
                         pickedDateMillis = datePickerState.selectedDateMillis
                         showDatePicker = false
                         showTimePicker = true
                     },
-                    variant = OficiosButtonVariant.Ghost,
                 )
             },
-            dismissButton = {
-                OficiosButton(text = "Cancelar", onClick = { showDatePicker = false }, variant = OficiosButtonVariant.Ghost)
-            },
+            dismissButton = {},
         ) {
             DatePicker(state = datePickerState)
         }
@@ -76,18 +81,29 @@ fun DateTimePickerButton(
             title = { Text("Elegí un horario") },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
-                TextButton(onClick = {
-                    val millis = pickedDateMillis
-                    if (millis != null) {
-                        val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
-                        onDateTimeSelected(LocalDateTime.of(date, LocalTime.of(timePickerState.hour, timePickerState.minute)))
-                    }
-                    showTimePicker = false
-                }) { Text("Confirmar") }
+                OficiosDialogActions(
+                    dismissLabel = "Cancelar",
+                    onDismiss = { showTimePicker = false },
+                    confirmLabel = "Confirmar",
+                    onConfirm = {
+                        val millis = pickedDateMillis
+                        if (millis != null) {
+                            val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
+                            onDateTimeSelected(LocalDateTime.of(date, LocalTime.of(timePickerState.hour, timePickerState.minute)))
+                        }
+                        showTimePicker = false
+                    },
+                )
             },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancelar") }
-            },
+            dismissButton = {},
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+private object UpcomingDates : SelectableDates {
+    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+        val day = Instant.ofEpochMilli(utcTimeMillis).atZone(ZoneOffset.UTC).toLocalDate()
+        return !day.isBefore(LocalDate.now())
     }
 }

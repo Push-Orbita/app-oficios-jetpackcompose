@@ -1,6 +1,5 @@
 package com.cocido.oficios.feature.home.worker
 
-import com.cocido.oficios.domain.model.PagedWorkerReviews
 import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.domain.model.WorkerReview
 
@@ -17,6 +16,11 @@ sealed interface WorkerProfileUiState {
         val hasMoreReviews: Boolean = false,
         val reviewsPageNumber: Int = 1,
         val totalReviewsPages: Int? = null,
+        val canFavorite: Boolean = false,
+        val isFavorite: Boolean = false,
+        val isTogglingFavorite: Boolean = false,
+        val isRefreshing: Boolean = false,
+        val rateBookingId: Long? = null,
     ) : WorkerProfileUiState
 }
 

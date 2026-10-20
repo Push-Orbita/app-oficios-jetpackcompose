@@ -14,7 +14,7 @@ object AuthValidators {
     fun validatePassword(password: String): String? = when {
         password.isBlank() -> "La contraseña es obligatoria"
         password.length < MIN_PASSWORD_LENGTH ->
-            "La contraseña debe tener al menos $MIN_PASSWORD_LENGTH caracteres"
+            "La contraseña tiene que tener al menos $MIN_PASSWORD_LENGTH caracteres"
         else -> null
     }
 
@@ -48,22 +48,22 @@ object AuthValidators {
 
     fun validateVerificationCode(code: String): String? = when {
         code.isBlank() -> "Ingresá el código"
-        code.length != 6 || code.any { !it.isDigit() } -> "El código debe tener 6 dígitos"
+        code.length != 6 || code.any { !it.isDigit() } -> "El código tiene que tener 6 dígitos"
         else -> null
     }
 
     /**
-     * El backend espera el teléfono como número local (10 u 11 dígitos, sin "+54"/"54").
-     * Normaliza formatos comunes que el usuario puede tipear o pegar
-     * (+54 9 3705 219109, 54 9 3705219109, +543705219109, etc.) al formato que acepta la API.
+     * Número local de celular argentino: 11 dígitos y empieza con 9 (WhatsApp +549…).
+     * Si el usuario pega +54 o tipea 10 dígitos sin el 9, se antepone el 9.
      */
     fun normalizeArgentinePhone(raw: String): String {
         val digits = raw.trim().removePrefix("+").filter(Char::isDigit)
-        return if (digits.startsWith(ARGENTINA_COUNTRY_CODE) && digits.length - ARGENTINA_COUNTRY_CODE.length in 10..11) {
+        val local = if (digits.startsWith(ARGENTINA_COUNTRY_CODE) && digits.length - ARGENTINA_COUNTRY_CODE.length in 10..11) {
             digits.removePrefix(ARGENTINA_COUNTRY_CODE)
         } else {
             digits
         }
+        return if (local.length == 10 && !local.startsWith("9")) "9$local" else local
     }
 
     private const val ARGENTINA_COUNTRY_CODE = "54"

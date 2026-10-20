@@ -33,9 +33,7 @@ fun OficiosDropdownField(
     enabled: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
-    usePlaceholderOnly: Boolean = false,
 ) {
-    val fieldPlaceholder = placeholder ?: label
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -46,11 +44,11 @@ fun OficiosDropdownField(
         OficiosTextField(
             value = value,
             onValueChange = {},
-            label = if (usePlaceholderOnly) "" else label,
+            label = label,
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-            placeholder = fieldPlaceholder,
+            placeholder = placeholder,
             enabled = enabled,
             readOnly = true,
             isError = isError,

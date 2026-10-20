@@ -18,4 +18,12 @@ class WorkCertificateRemoteDataSource @Inject constructor(
     suspend fun searchCertificates() = safeApiCall {
         workCertificateApi.searchCertificates()
     }
+
+    suspend fun updateCertificate(id: Long, name: String, currentUrl: String?, filePath: String?) = safeApiCall {
+        workCertificateUploadDataSource.updateCertificate(id, name, currentUrl, filePath)
+    }
+
+    suspend fun deleteCertificate(id: Long) = safeApiCall {
+        workCertificateApi.deleteCertificate(id)
+    }
 }

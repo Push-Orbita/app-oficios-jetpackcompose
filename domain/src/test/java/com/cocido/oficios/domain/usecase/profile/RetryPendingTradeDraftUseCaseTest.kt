@@ -5,6 +5,7 @@ import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderProfileSync
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.ProviderSubRubroOption
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
 import com.cocido.oficios.domain.repository.CatalogRepository
@@ -46,6 +47,7 @@ class RetryPendingTradeDraftUseCaseTest {
 
             override suspend fun finalizeProfile() = AppResult.Success(Unit)
             override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
+            override suspend fun getMySubRubros() = AppResult.Success(emptyList<ProviderSubRubroOption>())
         }
         val submitUseCase = SubmitRegisterTradeDraftUseCase(
             providerProfileRepository = providerProfileRepository,

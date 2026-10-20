@@ -52,6 +52,9 @@ fun ClientContactDomicilioRoute(
         onNumeroChanged = viewModel::onNumeroChanged,
         onPisoChanged = viewModel::onPisoChanged,
         onDepartamentoChanged = viewModel::onDepartamentoChanged,
+        onMapLocationSelected = viewModel::onMapLocationSelected,
+        onUseCurrentLocation = viewModel::useCurrentLocation,
+        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
         onSubmit = viewModel::submit,
     )
 }
@@ -70,6 +73,9 @@ fun ClientDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
         onNumeroChanged = viewModel::onNumeroChanged,
+        onMapLocationSelected = viewModel::onMapLocationSelected,
+        onUseCurrentLocation = viewModel::useCurrentLocation,
+        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
         onSubmit = viewModel::submit,
     )
 }
@@ -198,6 +204,9 @@ fun ProviderLocalRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
+        onMapLocationSelected = viewModel::onMapLocationSelected,
+        onUseCurrentLocation = viewModel::useCurrentLocation,
+        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
         onSubmit = viewModel::submit,
     )
 }

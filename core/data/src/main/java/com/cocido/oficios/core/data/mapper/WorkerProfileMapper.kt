@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.data.mapper
 
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.DiaLaboralSimpleDto
 import com.cocido.oficios.core.network.api.worker.dto.CalificacionDto
@@ -13,8 +14,12 @@ import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.domain.model.WorkerReputation
 import com.cocido.oficios.domain.model.WorkerReview
 import com.cocido.oficios.domain.model.WorkerSpecialty
+import com.cocido.oficios.domain.model.WorkerTimeRange
 import com.cocido.oficios.domain.model.WorkerWorkAddress
 import com.cocido.oficios.domain.model.WorkerWorkDay
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 // NOTE: This mapper is intentionally tolerant: the backend may return partial sections (null reputacion, empty arrays).
 
@@ -51,6 +56,8 @@ fun TrabajadorOficioPerfilCompletoDto.toWorkerProfile(): WorkerProfile {
         gallery = gallery,
         certificates = certificates,
         workAddresses = addresses,
+        zoneLabel = addresses.firstNotNullOfOrNull { it.zoneLabel },
+        about = descripcion?.trim()?.takeIf { it.isNotEmpty() },
     )
 }
 
@@ -81,12 +88,17 @@ private fun List<DiaLaboralSimpleDto>.toAvailability(): WorkerAvailability? {
 }
 
 private fun DiaLaboralSimpleDto.toWorkDay(): WorkerWorkDay? {
-    val firstHorario = horariosLaborales.firstOrNull() ?: return null
+    val hours = horariosLaborales.map { horario ->
+        WorkerTimeRange(
+            startTime = horario.horaInicio.normalizeTime(),
+            endTime = horario.horaFin.normalizeTime(),
+        )
+    }
+    if (hours.isEmpty()) return null
     return WorkerWorkDay(
         dayStart = diaInicio,
         dayEnd = diaFin,
-        startTime = firstHorario.horaInicio,
-        endTime = firstHorario.horaFin,
+        hours = hours,
     )
 }
 
@@ -142,13 +154,19 @@ private fun GaleriaTrabajoSimpleDto.toGalleryItem(): WorkGalleryItem? {
 
 private fun com.cocido.oficios.core.network.api.worker.dto.DomicilioEnrichedDto.toWorkAddress(): WorkerWorkAddress? {
     val addressId = id ?: return null
-    val label = nombre ?: listOfNotNull(calle, null).joinToString(" ").ifBlank { null }
+    val zone = formatWorkerZone(barrio?.nombre, barrio?.localidad)
     return WorkerWorkAddress(
         id = addressId,
         barrioId = barrioId,
-        label = label,
-        calle = calle,
+        label = zone,
+        calle = null,
+        zoneLabel = zone,
     )
+}
+
+fun formatWorkerZone(barrio: String?, localidad: String?): String? {
+    val parts = listOfNotNull(barrio?.trim()?.takeIf { it.isNotEmpty() }, localidad?.trim()?.takeIf { it.isNotEmpty() })
+    return parts.joinToString(", ").ifBlank { null }
 }
 
 fun PaginatedResponseDto<CalificacionDto>.toPagedWorkerReviews(
@@ -177,7 +195,32 @@ private fun CalificacionDto.toWorkerReview(): WorkerReview? {
         qualityScore = calidad,
         punctualityScore = puntualidad,
         comment = comentario,
-        clientLabel = booking?.contactoTexto ?: booking?.domicilioTexto,
+        clientLabel = reviewAuthorLabel(booking?.contactoTexto),
+        reviewedAt = formatReviewDate(booking?.finConfirmado ?: booking?.inicioConfirmado),
+        bookingId = booking?.id,
     )
+}
+
+/** El contacto del booking viene como "Nombre Apellido | Tel: … | Email: …". */
+fun reviewAuthorLabel(contactoTexto: String?): String? {
+    val head = contactoTexto
+        ?.substringBefore("|")
+        ?.substringBefore("Tel:")
+        ?.substringBefore("Email:")
+        ?.trim()
+        .orEmpty()
+    val parts = head.split(Regex("\\s+")).filter { part ->
+        part.isNotBlank() && !part.contains("@") && part.any { it.isLetter() }
+    }
+    if (parts.isEmpty()) return null
+    if (parts.size == 1) return parts.first()
+    return "${parts.dropLast(1).joinToString(" ")} ${parts.last().first().uppercaseChar()}."
+}
+
+fun formatReviewDate(iso: String?, zone: ZoneId = DisplayDateTime.ARGENTINA): String? {
+    val zoned = DisplayDateTime.toZonedDateTime(iso, zone) ?: return null
+    return DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-AR"))
+        .format(zoned)
+        .replace(".", "")
 }
 

@@ -9,6 +9,8 @@ import com.cocido.oficios.feature.home.orders.CounterOfferRoute
 import com.cocido.oficios.feature.home.orders.CreateOrderRoute
 import com.cocido.oficios.feature.home.orders.OrderDetailRoute
 import com.cocido.oficios.feature.home.orders.OrdersListRoute
+import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.navigation.HomeDestination
 import com.cocido.oficios.feature.home.orders.RateWorkerRoute
 
 /**
@@ -19,6 +21,8 @@ import com.cocido.oficios.feature.home.orders.RateWorkerRoute
 fun NavGraphBuilder.ordersScreen(
     navController: NavHostController,
     onShowMessage: (String) -> Unit,
+    onStartTracking: (Long) -> Unit,
+    onStopTracking: () -> Unit,
 ) {
     composable(
         route = OrdersDestination.createOrder,
@@ -41,11 +45,14 @@ fun NavGraphBuilder.ordersScreen(
     ) {
         OrderDetailRoute(
             onNavigateBack = { navController.popBackStack() },
+            onNavigateToWorker = { workerId -> navController.navigate(HomeDestination.workerProfile(workerId)) },
             onNavigateToCounterOffer = { orderId -> navController.navigate(OrdersDestination.counterOffer(orderId)) },
             onNavigateToRate = { bookingId, _, workerName ->
                 navController.navigate(OrdersDestination.rateWorker(bookingId, workerName))
             },
             onShowMessage = onShowMessage,
+            onStartTracking = onStartTracking,
+            onStopTracking = onStopTracking,
         )
     }
 
@@ -76,6 +83,9 @@ fun NavGraphBuilder.ordersScreen(
         OrdersListRoute(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
+            onNavigateToSearch = { navController.openClientTab(ClientHomeTab.INICIO, settingsRoute = "settings") },
+            showBackNavigation = false,
+            onTabSelected = { navController.openClientTab(it, settingsRoute = "settings") },
         )
     }
 }

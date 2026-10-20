@@ -3,6 +3,7 @@ package com.cocido.oficios.core.data.remote
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
 import com.cocido.oficios.core.network.api.agenda.dto.CreateSesionRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.CreateSlotTurnoRequestDto
+import com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.safeApiCall
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -11,8 +12,30 @@ import javax.inject.Singleton
 class AgendaRemoteDataSource @Inject constructor(
     private val agendaApi: AgendaApi,
 ) {
-    suspend fun searchSlots(subRubroId: Long) = safeApiCall {
-        agendaApi.searchSlots(subRubroId)
+    suspend fun getSlotsDisponibles(subRubroId: Long, fromIso: String, toIso: String) = safeApiCall {
+        agendaApi.getSlotsDisponibles(subRubroId, fromIso, toIso)
+    }
+
+    suspend fun searchSlots(subRubroId: Long, fromIso: String?, toIso: String?) = safeApiCall {
+        agendaApi.searchSlots(subRubroId = subRubroId, fromIso = fromIso, toIso = toIso)
+    }
+
+    suspend fun updateSlot(
+        id: Long,
+        subRubroId: Long,
+        inicio: String,
+        fin: String,
+        autoAceptacion: Boolean,
+    ) = safeApiCall {
+        agendaApi.updateSlot(
+            id = id,
+            request = UpdateSlotTurnoRequestDto(
+                trabajadorOficioSubRubroId = subRubroId,
+                inicio = inicio,
+                fin = fin,
+                autoAceptacion = autoAceptacion,
+            ),
+        )
     }
 
     suspend fun createSlot(subRubroId: Long, inicio: String, fin: String, autoAceptacion: Boolean) = safeApiCall {
