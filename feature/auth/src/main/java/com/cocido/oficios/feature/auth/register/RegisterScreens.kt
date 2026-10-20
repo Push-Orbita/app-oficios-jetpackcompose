@@ -32,6 +32,8 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosColorDisabledText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -78,7 +80,7 @@ fun RegisterRoleSelectionScreen(
         Spacer(Modifier.height(OficiosComponentSize.authRoleHeaderToSubtitle))
         Text(
             text = stringResource(R.string.auth_register_role_subtitle),
-            style = MaterialTheme.typography.titleMedium,
+            style = OficiosAuthGlyphSubtitleStyle,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -141,7 +143,7 @@ fun RegisterFormScreen(
         Spacer(Modifier.height(OficiosComponentSize.authRegisterTitleToSubtitle))
         Text(
             text = stringResource(R.string.auth_register_subtitle),
-            style = MaterialTheme.typography.titleMedium,
+            style = OficiosAuthGlyphSubtitleStyle,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(OficiosComponentSize.authRegisterSubtitleToField))
@@ -200,7 +202,7 @@ fun RegisterFormScreen(
         Spacer(Modifier.height(OficiosComponentSize.authRegisterEmailToHint))
         Text(
             text = stringResource(R.string.auth_register_email_hint),
-            style = MaterialTheme.typography.bodyLarge,
+            style = OficiosAuthGlyphBodyStyle,
             color = OficiosColorDisabledText,
         )
         Spacer(Modifier.height(OficiosComponentSize.authRegisterHintToPassword))

@@ -27,6 +27,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
@@ -53,16 +54,28 @@ fun AuthSupportCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = minHeight),
-            contentPadding = PaddingValues(OficiosSpacing.md),
+            contentPadding = PaddingValues(
+                start = OficiosSpacing.md,
+                top = OficiosComponentSize.authSupportCardPaddingTop,
+                end = OficiosSpacing.md,
+                bottom = OficiosComponentSize.authSupportCardPaddingBottom,
+            ),
+            expandContent = true,
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(
+                        min = minHeight -
+                            OficiosComponentSize.authSupportCardPaddingTop -
+                            OficiosComponentSize.authSupportCardPaddingBottom,
+                    ),
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             ) {
                 Text(
                     text = resolvedMessage,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = OficiosAuthGlyphBodyStyle,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f),
                 )
@@ -83,7 +96,10 @@ fun AuthSupportCard(
                     x = OficiosComponentSize.authSupportBadgeOffsetX,
                     y = -OficiosComponentSize.authSupportBadgeOffsetY,
                 )
-                .size(OficiosComponentSize.authSupportBadgeSize)
+                .size(
+                    width = OficiosComponentSize.authSupportBadgeWidth,
+                    height = OficiosComponentSize.authSupportBadgeHeight,
+                )
                 .clip(badgeShape)
                 .drawBehind { drawRect(OficiosColorBackground) }
                 .border(1.dp, OficiosColorOutlineFill, badgeShape),
@@ -91,7 +107,7 @@ fun AuthSupportCard(
         ) {
             Text(
                 text = "?",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                style = OficiosAuthGlyphBodyStyle.copy(fontWeight = FontWeight.Bold),
                 color = OficiosColorWhite,
             )
         }

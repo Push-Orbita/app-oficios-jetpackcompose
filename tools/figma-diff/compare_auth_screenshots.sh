@@ -46,3 +46,10 @@ compare login "AuthScreenshotTest.login.png" "02-ingrese-sus-datos-para-iniciar-
 compare login_error "AuthScreenshotTest.loginError.png" "04-los-datos-de-sesion-no-coinciden.png"
 compare role "AuthScreenshotTest.role.png" "13-elegi-como-registrarte.png"
 compare register "AuthScreenshotTest.register.png" "07-registro-de-usuario.png"
+
+# Pixel 9 Pro (427dp xxhdpi): no estirar a 440 para QA de layout; figma_diff
+# igual reescala para un diff visual opcional.
+compare login_p9 "AuthPixel9ScreenshotTest.login.png" "02-ingrese-sus-datos-para-iniciar-sesion.png"
+compare login_error_p9 "AuthPixel9ScreenshotTest.loginError.png" "04-los-datos-de-sesion-no-coinciden.png"
+compare role_p9 "AuthPixel9ScreenshotTest.role.png" "13-elegi-como-registrarte.png"
+compare register_p9 "AuthPixel9ScreenshotTest.register.png" "07-registro-de-usuario.png"

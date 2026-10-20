@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -44,7 +45,7 @@ fun OficiosPromptActionRow(
         ) {
             Text(
                 text = prompt,
-                style = MaterialTheme.typography.bodyLarge,
+                style = OficiosAuthGlyphBodyStyle,
                 color = MaterialTheme.colorScheme.onBackground,
             )
             OficiosButton(
@@ -64,7 +65,7 @@ fun OficiosPromptActionRow(
         ) {
             Text(
                 text = prompt,
-                style = MaterialTheme.typography.bodyLarge,
+                style = OficiosAuthGlyphBodyStyle,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
             )

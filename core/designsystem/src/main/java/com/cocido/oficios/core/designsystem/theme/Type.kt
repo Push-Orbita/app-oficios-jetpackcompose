@@ -184,17 +184,36 @@ val OficiosTypography = Typography(
     ),
 )
 
+private val AuthGlyphPlatformStyle = PlatformTextStyle(includeFontPadding = false)
+
+private val AuthGlyphLineHeightStyle = LineHeightStyle(
+    alignment = LineHeightStyle.Alignment.Center,
+    trim = LineHeightStyle.Trim.Both,
+)
+
+/** Quita el padding extra de D-DIN que en xxhdpi suma ~2–3dp por Text. */
+fun TextStyle.asAuthGlyph(): TextStyle = copy(
+    platformStyle = AuthGlyphPlatformStyle,
+    lineHeightStyle = AuthGlyphLineHeightStyle,
+)
+
 /**
- * Título de registro: mismo 36sp D-DIN Bold, sin padding extra de fuente
- * para que el glifo caiga en el top del layout (Figma y=75).
+ * Título de registro: 36sp D-DIN Bold, lineHeight = fontSize para no dejar
+ * 7dp extra bajo el baseline (Figma 21dp título→subtítulo, no 31).
+ * Sin padding de fuente: mayúsculas en el top del layout en mdpi y xxhdpi.
  */
 val OficiosAuthGlyphTitleStyle = OficiosTypography.headlineLarge.copy(
-    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeight = 36.sp,
+    platformStyle = AuthGlyphPlatformStyle,
     lineHeightStyle = LineHeightStyle(
         alignment = LineHeightStyle.Alignment.Top,
         trim = LineHeightStyle.Trim.Both,
     ),
 )
+
+val OficiosAuthGlyphSubtitleStyle = OficiosTypography.titleMedium.asAuthGlyph()
+
+val OficiosAuthGlyphBodyStyle = OficiosTypography.bodyLarge.asAuthGlyph()
 
 /** Título "Registro de oficio" — Figma 356:610 */
 val OficiosRegisterTradeTitleStyle = TextStyle(
