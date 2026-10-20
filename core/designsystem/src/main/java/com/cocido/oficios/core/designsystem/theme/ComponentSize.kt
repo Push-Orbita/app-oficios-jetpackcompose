@@ -60,9 +60,8 @@ object OficiosComponentSize {
     val authLoginContentTopPadding = 63.dp
     /** Login error: «!» 22dp, centrado con la línea de texto. */
     val authLoginErrorIconSize = 22.dp
-    val authLoginErrorIconOffsetY = 0.dp
-    /** Login error: gap mensaje→campo. Compensa la fila 22dp para dejar el campo en y_rel 413. */
-    val authLoginErrorToField = 13.dp
+    /** Login error: gap mensaje→campo. 15dp deja el bloque de error en ±2.3 de Figma. */
+    val authLoginErrorToField = 15.dp
     /** Login: wordmark → subtítulo. +6 vs r6 para bajar el bloque a y_rel 377. */
     val authLoginBrandToSubtitle = 64.dp
     /** Forgot password reutilizaba el gap de login; se queda en el valor previo. */
