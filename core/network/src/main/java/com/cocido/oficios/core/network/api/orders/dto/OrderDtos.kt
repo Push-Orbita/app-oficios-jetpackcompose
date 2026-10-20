@@ -180,6 +180,12 @@ data class SolicitudServicioSearchPageDto(
 }
 
 @Serializable
+data class ResendCompletionCodeResponseDto(
+    val resent: Boolean = false,
+    val retryAfterSeconds: Double? = null,
+)
+
+@Serializable
 data class FinalizeBookingRequestDto(
     val code: String? = null,
 )
@@ -193,4 +199,6 @@ data class BookingDto(
     val tipo: String? = null,
     val estado: String,
     val puedeCancelar: Boolean = false,
+    /** Solo viene para el cliente mientras el booking está EN_CURSO. */
+    val codigoFinalizacion: String? = null,
 )
