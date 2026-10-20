@@ -54,7 +54,7 @@ fun ForgotPasswordScreen(
         modifier = modifier,
         isLoading = uiState.isLoading,
         contentTopPadding = OficiosSpacing.xxl + OficiosSpacing.xs,
-        brandToContentSpacing = OficiosComponentSize.authLoginBrandToSubtitle,
+        brandToContentSpacing = OficiosComponentSize.authForgotBrandToSubtitle,
     ) {
         Text(
             text = stringResource(R.string.auth_forgot_title),

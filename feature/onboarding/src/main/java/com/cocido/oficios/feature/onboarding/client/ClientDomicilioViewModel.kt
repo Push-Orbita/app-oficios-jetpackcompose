@@ -92,7 +92,7 @@ class ClientDomicilioViewModel @Inject constructor(
         it.copy(latitud = latitude, longitud = longitude, error = null)
     }
     fun onLocationPermissionDenied() = _uiState.update {
-        it.copy(error = "Permití la ubicación o marcá manualmente el punto en el mapa.")
+        it.copy(error = "Permita la ubicación o marque manualmente el punto en el mapa.")
     }
     fun useCurrentLocation() {
         viewModelScope.launch {
@@ -126,7 +126,7 @@ class ClientDomicilioViewModel @Inject constructor(
                 is AppResult.Error -> null
             }
             if (personaId == null) {
-                _uiState.update { it.copy(isLoading = false, error = "No se pudo obtener tu perfil") }
+                _uiState.update { it.copy(isLoading = false, error = "No se pudo obtener su perfil") }
                 return@launch
             }
             when (

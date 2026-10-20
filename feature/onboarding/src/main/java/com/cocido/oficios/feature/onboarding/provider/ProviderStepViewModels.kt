@@ -612,7 +612,7 @@ class ProviderLocalViewModel @Inject constructor(
         it.copy(latitud = latitude, longitud = longitude, error = null)
     }
     fun onLocationPermissionDenied() = _uiState.update {
-        it.copy(error = "Permití la ubicación o marcá manualmente la entrada de tu local en el mapa.")
+        it.copy(error = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
     }
     fun useCurrentLocation() {
         viewModelScope.launch {
@@ -748,7 +748,7 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
                                 _uiState.update {
                                     it.copy(
                                         isLoading = false,
-                                        error = "No pudimos confirmar que tus métodos de pago se hayan guardado. " +
+                                        error = "No pudimos confirmar que sus métodos de pago se hayan guardado. " +
                                             "Su selección sigue disponible; intente nuevamente en unos minutos.",
                                     )
                                 }

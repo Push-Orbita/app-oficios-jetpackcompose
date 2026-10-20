@@ -105,7 +105,7 @@ class ForgotPasswordViewModel @Inject constructor(
                     // cualquier otro rechazo del backend relacionado a la cuenta.
                     val message = when (result.error) {
                         is AppError.Unauthorized, is AppError.NotFound ->
-                            "Si el correo está registrado, vas a recibir instrucciones para recuperar tu contraseña."
+                            "Si el correo está registrado, recibirá instrucciones para recuperar su contraseña."
                         else -> result.error.userMessage()
                     }
                     _uiState.update {

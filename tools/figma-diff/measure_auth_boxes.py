@@ -170,6 +170,7 @@ def measure_login(arr: np.ndarray, density: float, width_dp: float, error: bool 
     outline = is_outline(arr)
     content = not_navy(arr)
     right = width_dp
+    # Bandas absolutas (status 48/52 + y_rel). QA r7: subtítulo 377, campos 409/474.
     return {
         "logo": box_dp(band_mask(yellow | white, 90, 320, 140, min(300, right), density), density),
         "wordmark": box_dp(
@@ -178,8 +179,27 @@ def measure_login(arr: np.ndarray, density: float, width_dp: float, error: bool 
             capital=True,
             min_width_dp=12,
         ),
-        "first_field": box_dp(band_mask(content, 430, 520, 28, min(412, right), density), density),
-        "divider": box_dp(band_mask(outline | content, 620, 670, 30, min(410, right), density), density),
+        "subtitle": box_dp(
+            band_mask(white, 410, 460, 20, min(412, right), density),
+            density,
+            capital=True,
+            min_width_dp=8,
+        ),
+        "first_field": long_h_span(outline | content, density, 28, min(412, right), 450, 520, 200),
+        "second_field": long_h_span(outline | content, density, 28, min(412, right), 520, 590, 200),
+        "remember": box_dp(
+            band_mask(white, 575, 640, 28, min(220, right), density),
+            density,
+            capital=True,
+            min_width_dp=8,
+        ),
+        "divider": long_h_span(outline, density, 28, min(412, right), 620, 690, 200),
+        "register_row": box_dp(
+            band_mask(white, 640, 720, 28, min(250, right), density),
+            density,
+            capital=True,
+            min_width_dp=6,
+        ),
         "support_card": long_h_span(outline, density, 28, min(410, right), 730, 900, 200),
         "badge": long_h_span(outline, density, min(360, right - 50), right, 700, 760, 18),
         "support_text": box_dp(
@@ -277,6 +297,12 @@ def measure_register(arr: np.ndarray, density: float, width_dp: float) -> dict:
 # Targets relativos al bottom del status bar (y_figma − 48). QA r6.
 TARGETS_REL = {
     "login": {
+        "subtitle": 377,
+        "first_field": 409,
+        "second_field": 474,
+        "remember": 540,
+        "divider": 593,
+        "register_row": 609,
         "support_card": 694,
         "badge": 676,
         "support_card_h": 112,
@@ -284,6 +310,10 @@ TARGETS_REL = {
         "badge_h": 36,
     },
     "login_error": {
+        "first_field": 413,
+        "second_field": 477,
+        "remember": 544,
+        "register_row": 613,
         "support_card": 698,
         "badge": 680,
         "support_card_h": 112,
@@ -332,6 +362,11 @@ def pair_report(name: str, figma: dict, app: dict, label: str, status_bar: float
                 extras.append(f"badge h={h:.1f} w={ab[2] - ab[0] + 1:.1f}")
             if extras:
                 print(f"{'':16}   {', '.join(extras)}")
+        if key == "support_text" and ab and app.get("support_card"):
+            card = app["support_card"]
+            pad_top = ab[1] - card[1]
+            pad_bot = card[3] - ab[3]
+            print(f"{'':16}   pad top={pad_top:.1f} bot={pad_bot:.1f} (tgt 20/20)")
 
 
 def find_capture(cap: Path, class_prefix: str, method: str) -> Path | None:

@@ -60,7 +60,7 @@ class VerifyEmailViewModelTest {
 
         assertEquals("user@test.com", viewModel.uiState.value.email)
         assertEquals(1, sendCount)
-        assertEquals("Código de verificación reenviado a tu correo", viewModel.uiState.value.infoMessage)
+        assertEquals("Código de verificación reenviado a su correo", viewModel.uiState.value.infoMessage)
     }
 
     @Test
@@ -158,7 +158,7 @@ class VerifyEmailViewModelTest {
             AppResult.Error(AppError.Unknown())
         override suspend fun sendVerificationEmail(): AppResult<String> {
             onSendVerificationEmail()
-            return AppResult.Success("Código de verificación reenviado a tu correo")
+            return AppResult.Success("Código de verificación reenviado a su correo")
         }
         override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
         override suspend fun getUserRoles() = AppResult.Success(

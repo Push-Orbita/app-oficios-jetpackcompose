@@ -58,13 +58,16 @@ object OficiosComponentSize {
     val authLoginLogoWordmarkGap = 13.dp
     /** Login 356:49: status 48 + 64 = logo y=112. */
     val authLoginContentTopPadding = 63.dp
-    val authLoginBrandToSubtitle = 58.dp
+    /** Login: wordmark → subtítulo. +6 vs r6 para bajar el bloque a y_rel 377. */
+    val authLoginBrandToSubtitle = 64.dp
+    /** Forgot password reutilizaba el gap de login; se queda en el valor previo. */
+    val authForgotBrandToSubtitle = 58.dp
     val authLoginSubtitleToField = 18.dp
     val authLoginPasswordToActions = 16.dp
     val authLoginActionsToDivider = 16.dp
     val authLoginDividerToPrompt = 16.dp
-    /** Login: prompt → soporte. Top relativo al status 694 (error 698); crece hacia arriba. */
-    val authLoginPromptToSupport = 55.dp
+    /** Login: prompt → soporte. −6 vs r6 para dejar la card en 694 / 698. */
+    val authLoginPromptToSupport = 49.dp
     val authLoginSupportToForgot = 16.dp
     val authLoginSupportCardMinHeight = 112.dp
     val authRegisterHeaderWidth = 345.dp
@@ -92,19 +95,21 @@ object OficiosComponentSize {
     val authSupportBadgeSize = authSupportBadgeWidth
     val authSupportBadgeOffsetY = 18.dp
     val authSupportBadgeOffsetX = 15.dp
-    /** Login/rol soporte: texto 16 bajo el top de la card. */
-    val authSupportCardPaddingTop = 16.dp
-    /** Login/rol soporte: texto 14 sobre el bottom. Sin altura fija. */
-    val authSupportCardPaddingBottom = 14.dp
+    /** Login/rol soporte: Figma 20dp arriba y 20dp abajo; el texto se centra. */
+    val authSupportCardPaddingTop = 20.dp
+    val authSupportCardPaddingBottom = 20.dp
     val authRoleHeaderToSubtitle = 21.dp
     val authRoleSubtitleToCards = 18.dp
     val authRoleCardsToDivider = 16.dp
     val authRoleDividerToPrompt = 16.dp
     val authRolePromptToSupport = 52.dp
     val authRoleSupportCardMinHeight = 92.dp
-    /** Rol: título ~15dp bajo el top de la card. */
-    val authRoleCardTitleTopInset = 15.dp
-    val authRoleCardIconTopInset = 12.dp
+    /** Rol: título ~20dp bajo el top de la card (caja 18 + glifo). */
+    val authRoleCardTitleTopInset = 18.dp
+    /** Casco: top visual ~61dp bajo el top de la card. */
+    val authRoleCardIconTopInsetWorker = 16.dp
+    /** Lupa: top visual ~52dp bajo el top de la card. */
+    val authRoleCardIconTopInsetClient = 18.dp
 
     // Selección de rol — Figma 356:482 / QA r6 (alto mid-edge 172)
     val registerRoleCardWidth = 179.dp

@@ -96,6 +96,7 @@ fun RegisterRoleSelectionScreen(
                 onClick = onSelectProvider,
                 iconHeight = OficiosComponentSize.registerRoleCardIconWorkerHeight,
                 iconRotationDegrees = 10f,
+                iconTopInset = OficiosComponentSize.authRoleCardIconTopInsetWorker,
                 modifier = Modifier.weight(1f),
             )
             RegisterRoleCard(
@@ -103,6 +104,7 @@ fun RegisterRoleSelectionScreen(
                 iconRes = DesignSystemR.drawable.ic_lupa,
                 onClick = onSelectClient,
                 iconHeight = OficiosComponentSize.registerRoleCardIconClientHeight,
+                iconTopInset = OficiosComponentSize.authRoleCardIconTopInsetClient,
                 modifier = Modifier.weight(1f),
             )
         }

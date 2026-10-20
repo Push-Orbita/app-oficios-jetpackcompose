@@ -70,7 +70,7 @@ fun AuthSupportCard(
                             OficiosComponentSize.authSupportCardPaddingTop -
                             OficiosComponentSize.authSupportCardPaddingBottom,
                     ),
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             ) {
                 Text(

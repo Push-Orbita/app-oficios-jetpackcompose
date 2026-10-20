@@ -36,6 +36,7 @@ fun RegisterRoleCard(
     modifier: Modifier = Modifier,
     iconHeight: Dp,
     iconRotationDegrees: Float = 0f,
+    iconTopInset: Dp = OficiosComponentSize.authRoleCardIconTopInsetClient,
 ) {
     OficiosCard(
         onClick = onClick,
@@ -61,7 +62,7 @@ fun RegisterRoleCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = OficiosComponentSize.authRoleCardIconTopInset),
+                    .padding(top = iconTopInset),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(

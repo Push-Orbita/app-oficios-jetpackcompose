@@ -10,8 +10,8 @@ internal suspend fun providerIdentityGateMessage(
         if (status.data.isIdentityVerified) {
             null
         } else {
-            "Tu DNI debe estar aprobado antes de configurar rubros y servicios. " +
-                "Si ya lo cargaste en el registro, quedó guardado en el dispositivo."
+            "Su DNI debe estar aprobado antes de configurar rubros y servicios. " +
+                "Si ya lo cargó en el registro, quedó guardado en el dispositivo."
         }
     }
     is AppResult.Error -> null
