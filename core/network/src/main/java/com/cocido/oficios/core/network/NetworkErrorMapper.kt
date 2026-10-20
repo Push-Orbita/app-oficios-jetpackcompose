@@ -149,8 +149,8 @@ private val uselessErrorMessages = setOf(
 
 private val knownBackendMessages = mapOf(
     "COMPLETION_CODE_REQUIRED" to "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
-    "COMPLETION_CODE_INVALID" to "Ese código no es correcto. Pedile al cliente que lo confirme.",
-    "COMPLETION_CODE_EXPIRED" to "El código venció. Pedile al cliente que lo reenvíe.",
+    "COMPLETION_CODE_INVALID" to "Ese código no es correcto o ya cambió. Pedile al cliente el que ve ahora en su app.",
+    "COMPLETION_CODE_EXPIRED" to "Ese código venció. La app del cliente ya muestra uno nuevo: pedile el actual.",
     "COMPLETION_CODE_LOCKED" to "Hay demasiados intentos. Esperá un momento e intentá de nuevo.",
     "BOOKING_INVALID_STATE" to "Todavía no se puede terminar este pedido.",
     "REPORT_ALREADY_OPEN" to "Ya denunciaste este perfil. Vamos a revisarlo.",
