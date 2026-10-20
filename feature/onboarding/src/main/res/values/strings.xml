@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="onboarding_client_title">Completá tu perfil</string>
-    <string name="onboarding_client_subtitle">Necesitás estos datos para contratar servicios</string>
-    <string name="onboarding_provider_title">Configurá tu perfil profesional</string>
-    <string name="onboarding_provider_subtitle">Completá los pasos obligatorios para operar en la plataforma</string>
-    <string name="onboarding_pending_title">Tu perfil está en revisión</string>
-    <string name="onboarding_pending_subtitle">Cuando lo aprobemos vas a poder recibir solicitudes de trabajo.</string>
-    <string name="onboarding_rejected_title">Tu perfil fue rechazado</string>
-    <string name="onboarding_rejected_subtitle">Revisá los datos y corregí lo indicado para volver a enviar.</string>
+    <string name="onboarding_client_title">Complete su perfil</string>
+    <string name="onboarding_client_subtitle">Necesita estos datos para contratar servicios</string>
+    <string name="onboarding_provider_title">Configure su perfil profesional</string>
+    <string name="onboarding_provider_subtitle">Complete los pasos obligatorios para operar en la plataforma</string>
+    <string name="onboarding_pending_title">Su perfil está en revisión</string>
+    <string name="onboarding_pending_subtitle">Cuando lo aprobemos podrá recibir solicitudes de trabajo.</string>
+    <string name="onboarding_rejected_title">Su perfil fue rechazado</string>
+    <string name="onboarding_rejected_subtitle">Revise los datos y corrija lo indicado para volver a enviar.</string>
     <string name="onboarding_rejected_reason">Motivo: %1$s</string>
     <string name="onboarding_fix_profile">Corregir perfil</string>
     <string name="onboarding_go_home_client">Ir al inicio</string>
