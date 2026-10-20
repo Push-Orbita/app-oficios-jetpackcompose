@@ -1,20 +1,26 @@
 package com.cocido.oficios.feature.auth.login
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.runtime.remember
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -25,6 +31,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthScreenLayout
@@ -39,6 +46,7 @@ fun LoginScreen(
     AuthScreenLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
+        contentTopPadding = OficiosSpacing.xxl + OficiosSpacing.xs,
         support = {
             AuthSupportCard(
                 onContactClick = { onEvent(LoginEvent.ContactSupportClicked) },
@@ -68,6 +76,8 @@ fun LoginScreen(
                 value = uiState.email,
                 onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
                 label = stringResource(R.string.auth_email_label),
+                placeholder = stringResource(R.string.auth_email_label),
+                floatingLabel = false,
                 isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
                 keyboardOptions = KeyboardOptions(
@@ -80,6 +90,8 @@ fun LoginScreen(
                 value = uiState.password,
                 onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
                 label = stringResource(R.string.auth_password_label),
+                placeholder = stringResource(R.string.auth_password_label),
+                floatingLabel = false,
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
                 modifier = Modifier.focusRequester(passwordFocus),
@@ -87,29 +99,41 @@ fun LoginScreen(
                 keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
             )
 
-            OficiosButton(
+            Text(
                 text = stringResource(R.string.auth_forgot_password),
-                onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
-                enabled = !uiState.isLoading,
-                variant = OficiosButtonVariant.Ghost,
-                modifier = Modifier.align(Alignment.End),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .semantics { role = Role.Button }
+                    .clickable(
+                        enabled = !uiState.isLoading,
+                        onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
+                    ),
             )
 
-            OficiosCheckbox(
-                checked = uiState.rememberMe,
-                onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
-                label = stringResource(R.string.auth_remember_me),
-                enabled = !uiState.isLoading,
-            )
-            OficiosButton(
-                text = stringResource(R.string.auth_login_button),
-                onClick = { onEvent(LoginEvent.Submit) },
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-            )
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OficiosCheckbox(
+                    checked = uiState.rememberMe,
+                    onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
+                    label = stringResource(R.string.auth_remember_me),
+                    enabled = !uiState.isLoading,
+                    expandWidth = false,
+                    compactRow = true,
+                )
+                OficiosButton(
+                    text = stringResource(R.string.auth_login_button),
+                    onClick = { onEvent(LoginEvent.Submit) },
+                    enabled = !uiState.isLoading,
+                    loading = uiState.isLoading,
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Small,
+                )
+            }
         }
 
         OficiosPromptActionRow(

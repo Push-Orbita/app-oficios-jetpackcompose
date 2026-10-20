@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
+import com.cocido.oficios.core.designsystem.theme.OficiosColorErrorBorder
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -97,10 +98,15 @@ fun OficiosTextField(
     singleLine: Boolean = true,
     minLines: Int = 1,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    floatingLabel: Boolean = true,
 ) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
-    val fieldLabel = label.ifBlank { placeholder.orEmpty() }
-    val fieldPlaceholder = placeholder?.takeIf { label.isNotBlank() && it != label }
+    val fieldLabel = if (floatingLabel) label.ifBlank { placeholder.orEmpty() } else ""
+    val fieldPlaceholder = if (floatingLabel) {
+        placeholder?.takeIf { label.isNotBlank() && it != label }
+    } else {
+        placeholder ?: label.takeIf { it.isNotBlank() }
+    }
     val parentBringIntoView = LocalFieldAndCtaBringIntoView.current
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val scope = rememberCoroutineScope()
@@ -142,7 +148,7 @@ fun OficiosTextField(
 
     val borderColor = when {
         !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled)
-        isError -> MaterialTheme.colorScheme.error
+        isError -> OficiosColorErrorBorder
         isFocused -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.outline
     }
@@ -191,8 +197,9 @@ fun OficiosTextField(
             },
         )
         .semantics {
-            if (fieldLabel.isNotBlank()) {
-                contentDescription = fieldLabel
+            val a11yLabel = fieldLabel.ifBlank { label.ifBlank { placeholder.orEmpty() } }
+            if (a11yLabel.isNotBlank()) {
+                contentDescription = a11yLabel
             }
             if (supportingText != null) {
                 stateDescription = supportingText

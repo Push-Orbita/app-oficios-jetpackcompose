@@ -12,8 +12,8 @@
     <string name="auth_no_account_yet">¿Todavía no tiene cuenta?</string>
     <string name="auth_register_button">Registrarse</string>
     <string name="auth_create_account">Crear cuenta</string>
-    <string name="auth_support_message">Si tiene una consulta, escríbanos a la línea de atención:</string>
-    <string name="auth_support_message_compact">Para cualquier consulta o duda de asistencia, contáctenos a nuestra línea de atención</string>
+    <string name="auth_support_message">Para cualquier consulta o duda de asistencia, por favor, no dude en contactar a nuestra línea de atención:</string>
+    <string name="auth_support_message_compact">Para cualquier consulta o duda de asistencia, por favor, no dude en contactar a nuestra línea de atención:</string>
     <string name="auth_support_contact">Contactar</string>
     <string name="auth_support_unavailable">La línea de soporte no está configurada.</string>
     <string name="auth_register_role_subtitle">Elija cómo registrarse</string>
