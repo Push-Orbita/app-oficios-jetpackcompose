@@ -53,6 +53,7 @@ object NotificationMapper {
                 totalPages != null -> pageNumber < totalPages
                 else -> items.size >= (metadata?.pageSize ?: items.size)
             },
+            totalCount = metadata?.count,
         )
     }
 

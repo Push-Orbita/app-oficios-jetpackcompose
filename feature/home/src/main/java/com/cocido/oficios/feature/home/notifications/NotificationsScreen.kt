@@ -12,7 +12,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DoneAll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -38,6 +42,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.feedback.oficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.domain.model.NotificationItem
@@ -57,6 +62,22 @@ fun NotificationsScreen(
             OficiosBackTopBar(
                 title = stringResource(R.string.notifications_title),
                 onBack = onNavigateBack,
+                actions = {
+                    IconButton(
+                        onClick = { onEvent(NotificationsEvent.MarkAllReadClicked) },
+                        enabled = uiState.canMarkAllRead,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.DoneAll,
+                            contentDescription = stringResource(R.string.notifications_mark_all_read),
+                            tint = if (uiState.canMarkAllRead) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.disabled)
+                            },
+                        )
+                    }
+                },
             )
         },
     ) { paddingValues ->

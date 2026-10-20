@@ -19,4 +19,12 @@ data class NotificationPage(
     val pageNumber: Int,
     val totalPages: Int?,
     val hasMore: Boolean,
+    /** Total de elementos que matchean el filtro según `metadata.count` del backend. */
+    val totalCount: Int? = null,
+)
+
+/** Resultado de marcar todas como leídas (el backend no tiene mark-all: se hace 1 PATCH por notificación). */
+data class MarkAllNotificationsReadResult(
+    val markedIds: List<Long>,
+    val failedIds: List<Long>,
 )
