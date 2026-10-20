@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.core.content.ContextCompat
 import com.cocido.oficios.domain.model.BookingStatus
@@ -67,6 +68,14 @@ fun OrderDetailRoute(
     // Reagendar/Puntuar navegan a otra pantalla y vuelven con popBackStack — el ViewModel de
     // esta ruta no se recrea, así que hay que refrescar manualmente al resumir.
     ReloadOnResume { viewModel.onEvent(OrderDetailEvent.Retry) }
+
+    // Cliente EN_CURSO: el código de finalización se renueva solo mientras la pantalla está visible.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(viewModel, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.keepCompletionCodeFresh()
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->

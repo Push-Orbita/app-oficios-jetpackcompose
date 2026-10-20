@@ -461,6 +461,7 @@ private fun OrderDetailContent(
                     if (!isWorker) {
                         CompletionCodeCard(
                             code = order.completionCode,
+                            unavailable = state.completionCodeUnavailable,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
@@ -862,15 +863,17 @@ private fun ContactButton(
 private fun CompletionCodeCard(
     code: String?,
     modifier: Modifier = Modifier,
+    unavailable: Boolean = false,
 ) {
     val clipboard = LocalClipboardManager.current
-    var copied by remember { mutableStateOf(false) }
+    // Si el código rota, el "copiado" ya no aplica al nuevo.
+    var copied by remember(code) { mutableStateOf(false) }
     OficiosCard(modifier = modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
             SectionTitle(stringResource(R.string.orders_code_title))
             if (code.isNullOrBlank()) {
                 Text(
-                    text = stringResource(R.string.orders_code_missing),
+                    text = stringResource(if (unavailable) R.string.orders_code_unavailable else R.string.orders_code_missing),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -884,6 +887,11 @@ private fun CompletionCodeCard(
                     text = stringResource(if (copied) R.string.orders_code_copied else R.string.orders_code_share),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.orders_code_auto_refresh),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 OficiosButton(
                     text = stringResource(if (copied) R.string.orders_code_copied else R.string.orders_code_copy),

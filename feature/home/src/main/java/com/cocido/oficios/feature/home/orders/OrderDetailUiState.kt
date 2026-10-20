@@ -14,6 +14,8 @@ sealed interface OrderDetailUiState {
         val isActionInProgress: Boolean = false,
         val isRefreshing: Boolean = false,
         val completionCodeError: String? = null,
+        /** El cliente está EN_CURSO pero no pudimos traer ningún código (ni el del detalle ni el fresco). */
+        val completionCodeUnavailable: Boolean = false,
     ) : OrderDetailUiState
 }
 

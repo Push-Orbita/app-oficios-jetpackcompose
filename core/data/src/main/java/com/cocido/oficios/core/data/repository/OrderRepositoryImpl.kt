@@ -144,6 +144,18 @@ class OrderRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getCompletionCode(bookingId: Long): AppResult<String?> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.getBooking(bookingId).map { booking ->
+                booking.codigoFinalizacion?.trim()?.takeIf { it.isNotEmpty() }
+            }
+        }
+
+    override suspend fun resendCompletionCode(bookingId: Long): AppResult<Unit> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.resendCompletionCode(bookingId).map { }
+        }
+
     override suspend fun finalizeBooking(bookingId: Long, completionCode: String): AppResult<Unit> {
         val code = completionCode.trim()
         if (code.isEmpty()) {

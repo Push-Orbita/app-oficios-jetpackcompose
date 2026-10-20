@@ -71,6 +71,10 @@ class OrderRemoteDataSource @Inject constructor(
         ordersApi.getBooking(id)
     }
 
+    suspend fun resendCompletionCode(id: Long) = safeApiCall {
+        ordersApi.resendCompletionCode(id)
+    }
+
     suspend fun finalizarBooking(id: Long, code: String) = safeApiCall {
         ordersApi.finalizarBooking(id, FinalizeBookingRequestDto(code = code))
     }

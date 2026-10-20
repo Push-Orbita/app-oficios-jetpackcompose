@@ -30,6 +30,10 @@ interface OrderRepository {
     suspend fun findOrderIdForBooking(bookingId: Long): AppResult<Long?>
     suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit>
     suspend fun markArrived(bookingId: Long, location: GeoPoint): AppResult<Unit>
+    /** Código vigente que ve el cliente (GET /booking/{id}); null si el booking ya no está EN_CURSO. */
+    suspend fun getCompletionCode(bookingId: Long): AppResult<String?>
+    /** Regenera el código del cliente. Puede fallar con 429 COMPLETION_CODE_RATE_LIMITED. */
+    suspend fun resendCompletionCode(bookingId: Long): AppResult<Unit>
     suspend fun finalizeBooking(bookingId: Long, completionCode: String): AppResult<Unit>
     suspend fun submitRating(bookingId: Long, quality: Int, punctuality: Int, comment: String?): AppResult<Unit>
 }

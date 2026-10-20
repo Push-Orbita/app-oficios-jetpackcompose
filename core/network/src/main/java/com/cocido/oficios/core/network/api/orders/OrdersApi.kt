@@ -9,6 +9,7 @@ import com.cocido.oficios.core.network.api.orders.dto.CreateSolicitudServicioReq
 import com.cocido.oficios.core.network.api.orders.dto.FinalizeBookingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.MarcarTrackingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.RechazarSolicitudRequestDto
+import com.cocido.oficios.core.network.api.orders.dto.ResendCompletionCodeResponseDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSearchPageDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
@@ -74,6 +75,10 @@ interface OrdersApi {
 
     @GET("booking/{id}")
     suspend fun getBooking(@Path("id") id: Long): BookingDto
+
+    /** Solo el cliente. Regenera el código de finalización (rate limit 60 s → 429 COMPLETION_CODE_RATE_LIMITED). */
+    @POST("booking/{id}/completion-code/resend")
+    suspend fun resendCompletionCode(@Path("id") id: Long): ResendCompletionCodeResponseDto
 
     @PATCH("booking/{id}/finalizar")
     suspend fun finalizarBooking(
