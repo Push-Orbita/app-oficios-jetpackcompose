@@ -24,6 +24,7 @@ fun NotificationsRoute(
             when (effect) {
                 is NotificationsEffect.NavigateToDeepLink -> onNavigateToDeepLink(effect.route)
                 is NotificationsEffect.ShowMessage -> snackbar.showError(effect.message)
+                is NotificationsEffect.ShowSuccess -> snackbar.showSuccess(effect.message)
             }
         }
     }

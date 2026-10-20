@@ -22,8 +22,13 @@ class NotificationsRepositoryImpl @Inject constructor(
     override suspend fun registerDeviceToken(fcmToken: String, deviceId: String?) =
         remoteDataSource.registerDeviceToken(fcmToken, deviceId).map { }
 
-    override suspend fun markAsRead(notificationId: Long) =
-        remoteDataSource.markAsRead(notificationId).map { }
+    override suspend fun markAsRead(notificationId: Long): AppResult<Unit> {
+        val result = remoteDataSource.markAsRead(notificationId).map { }
+        if (result is AppResult.Success) {
+            cachedUnread = cachedUnread?.let { (it - 1).coerceAtLeast(0) }
+        }
+        return result
+    }
 
     override suspend fun getNotifications(
         pageNumber: Int,
@@ -32,7 +37,8 @@ class NotificationsRepositoryImpl @Inject constructor(
     ): AppResult<NotificationPage> {
         val result = remoteDataSource.getNotifications(pageNumber, pageSize, soloNoLeidas).map { it.toDomain() }
         if (soloNoLeidas && result is AppResult.Success) {
-            cachedUnread = result.data.items.count { !it.isRead }
+            // metadata.count es el total real de no leídas; la página solo trae pageSize items.
+            cachedUnread = result.data.totalCount ?: result.data.items.count { !it.isRead }
         }
         return result
     }
