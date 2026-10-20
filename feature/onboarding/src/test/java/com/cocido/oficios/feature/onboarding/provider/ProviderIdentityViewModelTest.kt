@@ -123,7 +123,7 @@ class ProviderIdentityViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("Completá el número de DNI y todas las fotos obligatorias", state.uploadError)
+        assertEquals("Complete el número de DNI y todas las fotos obligatorias", state.uploadError)
         assertFalse(state.canSubmit)
     }
 

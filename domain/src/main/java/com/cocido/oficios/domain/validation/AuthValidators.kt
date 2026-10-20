@@ -7,7 +7,7 @@ object AuthValidators {
 
     fun validateEmail(email: String): String? = when {
         email.isBlank() -> "El email es obligatorio"
-        !EMAIL_REGEX.matches(email) -> "Ingresá un email válido"
+        !EMAIL_REGEX.matches(email) -> "Ingrese un email válido"
         else -> null
     }
 
@@ -19,7 +19,7 @@ object AuthValidators {
     }
 
     fun validatePasswordConfirmation(password: String, confirmation: String): String? = when {
-        confirmation.isBlank() -> "Confirmá tu contraseña"
+        confirmation.isBlank() -> "Confirme su contraseña"
         password != confirmation -> "Las contraseñas no coinciden"
         else -> null
     }
@@ -31,7 +31,7 @@ object AuthValidators {
 
     fun validateFullName(fullName: String): String? = when {
         fullName.isBlank() -> "El nombre completo es obligatorio"
-        fullName.trim().split(Regex("\\s+")).size < 2 -> "Ingresá nombre y apellido"
+        fullName.trim().split(Regex("\\s+")).size < 2 -> "Ingrese nombre y apellido"
         else -> null
     }
 
@@ -42,12 +42,12 @@ object AuthValidators {
 
     fun validateDocument(document: String): String? = when {
         document.isBlank() -> "El DNI es obligatorio"
-        !DNI_REGEX.matches(document) -> "Ingresá un DNI válido"
+        !DNI_REGEX.matches(document) -> "Ingrese un DNI válido"
         else -> null
     }
 
     fun validateVerificationCode(code: String): String? = when {
-        code.isBlank() -> "Ingresá el código"
+        code.isBlank() -> "Ingrese el código"
         code.length != 6 || code.any { !it.isDigit() } -> "El código tiene que tener 6 dígitos"
         else -> null
     }

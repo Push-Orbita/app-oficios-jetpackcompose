@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.auth.screenshot
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,7 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
@@ -30,16 +35,15 @@ import org.junit.Assume
  * el frame pinta status+nav. No uses un spacer que solo cierre a 440: el set P9
  * reproduce ancho 427 / xxhdpi (wrapping + métricas de fuente).
  *
- * Pixel 9 Pro (tokay): 1280×2856 @ xxhdpi → ~427×952 dp. StatusBars real ≈52dp
- * y gesture nav 24dp, pero Robolectric deja safeDrawing en 0: ambos sets pintan
- * el chrome 48+24 del frame de Figma para que los Y sean comparables. El set P9
- * reproduce wrapping a 427 e includeFontPadding a 3x; no un spacer de +4 que
- * solo existiría con status 52 y fallaría el ±2 contra Figma.
+ * Pixel 9 Pro (tokay): 1280×2856 @ xxhdpi → ~427×952 dp. StatusBars real 52dp,
+ * gesture nav 24dp. El +4 vs el frame Figma (48) es adaptación de dispositivo:
+ * no se compensa con spacers. Los targets se miden relativos al bottom del
+ * status bar (y − statusBar).
  */
 internal object AuthScreenshotChrome {
     val FigmaStatusBar = 48.dp
     val FigmaNavBar = 24.dp
-    val Pixel9ProStatusBar = 48.dp
+    val Pixel9ProStatusBar = 52.dp
     val Pixel9ProNavBar = 24.dp
 }
 
@@ -114,6 +118,22 @@ internal fun AuthScreenshotRegister(
             onEvent = {},
         )
     }
+}
+
+@Composable
+internal fun AuthFontScaleOverride(
+    fontScale: Float,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    val configuration = Configuration(LocalConfiguration.current).apply {
+        this.fontScale = fontScale
+    }
+    CompositionLocalProvider(
+        LocalConfiguration provides configuration,
+        LocalDensity provides Density(density = density.density, fontScale = fontScale),
+        content = content,
+    )
 }
 
 @Composable

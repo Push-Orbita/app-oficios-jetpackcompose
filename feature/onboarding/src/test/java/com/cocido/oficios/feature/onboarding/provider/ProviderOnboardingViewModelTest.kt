@@ -239,7 +239,7 @@ class ProviderOnboardingViewModelTest {
                             OnboardingStep(
                                 id = "finalizar_perfil",
                                 title = "Finalizar perfil",
-                                description = "Confirmá",
+                                description = "Confirme",
                                 status = OnboardingStepStatus.PENDING,
                             ),
                         )

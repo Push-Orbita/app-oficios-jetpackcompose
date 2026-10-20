@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +39,7 @@ fun RegisterRoleCard(
 ) {
     OficiosCard(
         onClick = onClick,
-        modifier = modifier.requiredHeight(OficiosComponentSize.registerRoleCardHeight),
+        modifier = modifier.heightIn(min = OficiosComponentSize.authRoleCardMinHeight),
         contentPadding = PaddingValues(
             start = OficiosSpacing.md,
             top = OficiosComponentSize.authRoleCardTitleTopInset,

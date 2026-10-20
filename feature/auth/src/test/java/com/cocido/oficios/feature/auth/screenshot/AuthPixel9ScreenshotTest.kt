@@ -12,8 +12,8 @@ import org.robolectric.annotation.GraphicsMode
 
 /**
  * Capturas JVM Pixel 9 Pro: 427×952 dp, xxhdpi (density 3), status 52 + nav 24.
- * Mide en dp (px/3), no estirar a 440. El layout tiene que cerrar ±2dp también
- * aquí: wrapping a 427 e includeFontPadding a 3x son los desfaces del dispositivo.
+ * Mide en dp (px/3) relativos al bottom del status bar. El +4 vs Figma 48 no
+ * se compensa con spacers.
  *
  * Record opt-in: `./gradlew :feature:auth:testDebugUnitTest -Proborazzi.test.record=true`.
  * Sin golden ni record, se omite. No se commitean PNGs.

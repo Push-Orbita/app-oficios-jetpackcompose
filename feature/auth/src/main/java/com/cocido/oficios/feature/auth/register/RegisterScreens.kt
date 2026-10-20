@@ -248,8 +248,8 @@ fun RegisterFormScreen(
                 termsLabel = stringResource(R.string.auth_terms_link),
                 compactRow = false,
                 labelGap = OficiosComponentSize.authRegisterTermsCheckboxToText,
-                singleLine = true,
-                modifier = Modifier.weight(1f, fill = false),
+                singleLine = false,
+                modifier = Modifier.weight(1f, fill = true),
             )
             OficiosButton(
                 text = stringResource(R.string.auth_next_button),

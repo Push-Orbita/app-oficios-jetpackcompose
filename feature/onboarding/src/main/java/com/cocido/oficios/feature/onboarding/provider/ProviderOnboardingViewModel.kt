@@ -80,7 +80,7 @@ class ProviderOnboardingViewModel @Inject constructor(
                     val status = syncTradeDraftIfNeeded(result.data)
                     if (lastIdentityVerified == false && status.isIdentityVerified) {
                         _kycBannerMessage.update {
-                            "Tu documentación fue actualizada. Revisá el estado en el checklist."
+                            "Su documentación fue actualizada. Revise el estado en el checklist."
                         }
                     }
                     lastIdentityVerified = status.isIdentityVerified
@@ -144,7 +144,7 @@ class ProviderOnboardingViewModel @Inject constructor(
                     _completionPhase.update { OnboardingCompletionPhase.Idle }
                     _completionError.update {
                         finalizeResult.error.userMessage().ifBlank {
-                            "No se pudo finalizar el perfil. Revisá los pasos pendientes."
+                            "No se pudo finalizar el perfil. Revise los pasos pendientes."
                         }
                     }
                     reloadChecklist()

@@ -28,7 +28,7 @@ class OnboardingStepCardTest {
                     step = OnboardingStep(
                         id = "domicilio",
                         title = "Domicilio",
-                        description = "Agregá tu domicilio",
+                        description = "Agregue su domicilio",
                         status = OnboardingStepStatus.PENDING,
                     ),
                     statusLabel = "Pendiente",

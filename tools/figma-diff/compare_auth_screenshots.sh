@@ -53,3 +53,5 @@ compare login_p9 "AuthPixel9ScreenshotTest.login.png" "02-ingrese-sus-datos-para
 compare login_error_p9 "AuthPixel9ScreenshotTest.loginError.png" "04-los-datos-de-sesion-no-coinciden.png"
 compare role_p9 "AuthPixel9ScreenshotTest.role.png" "13-elegi-como-registrarte.png"
 compare register_p9 "AuthPixel9ScreenshotTest.register.png" "07-registro-de-usuario.png"
+compare register_fs13 "AuthFontScaleScreenshotTest.registerFontScale13.png" "07-registro-de-usuario.png"
+compare role_fs13 "AuthFontScaleScreenshotTest.roleFontScale13.png" "13-elegi-como-registrarte.png"

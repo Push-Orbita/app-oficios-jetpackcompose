@@ -150,7 +150,7 @@ class ProviderIdentityViewModel @Inject constructor(
             (!hasRemoteDniImages && (front == null || back == null)) ||
             (!hasRemoteSelfie && selfie == null)) {
             _uiState.update { 
-                it.copy(uploadError = "Completá el número de DNI y todas las fotos obligatorias") 
+                it.copy(uploadError = "Complete el número de DNI y todas las fotos obligatorias") 
             }
             return
         }

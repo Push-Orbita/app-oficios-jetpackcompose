@@ -274,76 +274,62 @@ def measure_register(arr: np.ndarray, density: float, width_dp: float) -> dict:
     }
 
 
-TARGETS = {
+# Targets relativos al bottom del status bar (y_figma − 48). QA r6.
+TARGETS_REL = {
     "login": {
-        "logo": 112,
-        "wordmark": 328,
-        "support_card": 746,
-        "badge": 724,
-        "support_card_h": 101,
+        "support_card": 694,
+        "badge": 676,
+        "support_card_h": 112,
         "badge_w": 31,
-        "badge_h": 33,
+        "badge_h": 36,
     },
     "login_error": {
-        "support_card": 750,
-        "badge": 728,
-        "support_card_h": 101,
+        "support_card": 698,
+        "badge": 680,
+        "support_card_h": 112,
     },
     "role": {
-        "header_logo": 67,
-        "header_wordmark": 67,
-        "cards": 228,
-        "card_titles": 243,
-        "card_icons": 275,
-        "support_card": 522,
-        "badge": 499,
-        "cards_h": 160,
-        "support_card_h": 80,
+        "cards": 175,
+        "cards_h": 172,
+        "divider": 362,
+        "prompt": 379,
+        "support_card": 469,
+        "support_card_h": 92,
+        "badge": 451,
         "badge_w": 31,
-        "badge_h": 33,
-        "divider": 410,
-        "prompt": 427,
+        "badge_h": 36,
     },
     "register": {
-        "title": 75,
-        "subtitle": 118,
-        "first_field": 162,
-        "hint": 357,
-        "password_1": 410,
-        "password_2": 474,
-        "terms": 539,
-        "divider": 592,
-        "prompt": 609,
+        "title": 27,
+        "first_field": 114,
+        "divider": 544,
     },
 }
 
 
-def pair_report(name: str, figma: dict, app: dict, label: str) -> None:
-    print(f"\n=== {name} [{label}] ===")
-    print(f"{'item':<16} {'figma':<32} {'app':<32} {'Δtop':>6} {'target'}")
-    tmap = TARGETS.get(name, {})
+def pair_report(name: str, figma: dict, app: dict, label: str, status_bar: float) -> None:
+    print(f"\n=== {name} [{label}] (relativo a status {status_bar:.0f}) ===")
+    print(f"{'item':<16} {'figma_rel':<12} {'app_rel':<12} {'Δrel':>6} {'target'}")
+    tmap = TARGETS_REL.get(name, {})
     for key in figma:
         fb, ab = figma[key], app.get(key)
-        ftop = fb[1] if fb else None
-        atop = ab[1] if ab else None
+        ftop = (fb[1] - 48.0) if fb else None
+        atop = (ab[1] - status_bar) if ab else None
         delta = (atop - ftop) if ftop is not None and atop is not None else None
         target = tmap.get(key, "")
         dstr = f"{delta:+.1f}" if delta is not None else "—"
+        fstr = f"{ftop:.1f}" if ftop is not None else "—"
+        astr = f"{atop:.1f}" if atop is not None else "—"
         tgt = f"{target}" if target != "" else ""
-        print(f"{key:<16} {fmt(fb):<32} {fmt(ab):<32} {dstr:>6} {tgt}")
-        if key in ("support_card", "header_wordmark", "cards", "badge") and ab:
-            h = ab[3] - ab[1] + (1 / 1)
-            w = ab[2] - ab[0] + 1
-            print(f"{'':16}   app extra: right={ab[2]:.0f} h={h:.1f} w={w:.1f}")
-            hkey = f"{key}_h"
-            wkey = f"{key}_w"
+        print(f"{key:<16} {fstr:<12} {astr:<12} {dstr:>6} {tgt}")
+        if key in ("support_card", "cards", "badge") and ab:
+            h = ab[3] - ab[1] + 1
             extras = []
+            hkey = f"{key}_h"
             if hkey in tmap:
-                extras.append(f"hΔ={h - tmap[hkey]:+.1f} (tgt {tmap[hkey]})")
-            if wkey in tmap:
-                extras.append(f"wΔ={w - tmap[wkey]:+.1f} (tgt {tmap[wkey]})")
+                extras.append(f"h={h:.1f} tgt {tmap[hkey]} Δ={h - tmap[hkey]:+.1f}")
             if key == "badge" and "badge_h" in tmap:
-                extras.append(f"hΔ={h - tmap['badge_h']:+.1f} (tgt {tmap['badge_h']})")
+                extras.append(f"badge h={h:.1f} w={ab[2] - ab[0] + 1:.1f}")
             if extras:
                 print(f"{'':16}   {', '.join(extras)}")
 
@@ -380,6 +366,7 @@ def main() -> None:
             (
                 "440 mdpi",
                 "com.cocido.oficios.feature.auth.screenshot.AuthScreenshotTest",
+                48.0,
             )
         )
     if args.set in ("p9", "both"):
@@ -387,6 +374,7 @@ def main() -> None:
             (
                 "P9 xxhdpi 427",
                 "com.cocido.oficios.feature.auth.screenshot.AuthPixel9ScreenshotTest",
+                52.0,
             )
         )
 
@@ -399,7 +387,7 @@ def main() -> None:
         ("register", refs / "07-registro-de-usuario.png", "register", measure_register),
     ]
 
-    for set_label, class_prefix in sets:
+    for set_label, class_prefix, status_bar in sets:
         print(f"\n######## {set_label} ########")
         for name, figma_path, method, measurer in pairs:
             app_path = find_capture(cap, class_prefix, method)
@@ -412,7 +400,13 @@ def main() -> None:
             f_arr, f_den, f_w = load_capture(figma_path, figma=True)
             a_arr, a_den, a_w = load_capture(app_path, figma=False)
             print(f"  capture {app_path.name} {a_arr.shape[1]}x{a_arr.shape[0]}px density={a_den} width_dp={a_w:.1f}")
-            pair_report(name, measurer(f_arr, f_den, f_w), measurer(a_arr, a_den, a_w), set_label)
+            pair_report(
+                name,
+                measurer(f_arr, f_den, f_w),
+                measurer(a_arr, a_den, a_w),
+                set_label,
+                status_bar,
+            )
 
 
 if __name__ == "__main__":

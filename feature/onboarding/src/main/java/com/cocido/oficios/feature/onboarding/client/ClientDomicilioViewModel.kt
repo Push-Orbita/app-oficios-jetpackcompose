@@ -116,7 +116,7 @@ class ClientDomicilioViewModel @Inject constructor(
         val state = _uiState.value
         val barrioId = state.selectedBarrioId
         if (barrioId == null || state.calle.isBlank()) {
-            _uiState.update { it.copy(error = "Completá barrio y calle") }
+            _uiState.update { it.copy(error = "Complete barrio y calle") }
             return
         }
         viewModelScope.launch {

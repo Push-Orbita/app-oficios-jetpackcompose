@@ -89,8 +89,8 @@ class RegisterViewModelTest {
         assertTrue(state.hasAttemptedSubmit)
         assertNotNull(state.fullNameError)
         assertNotNull(state.documentError)
-        assertEquals("Ingresá nombre y apellido", state.fullNameError)
-        assertEquals("Ingresá un DNI válido", state.documentError)
+        assertEquals("Ingrese nombre y apellido", state.fullNameError)
+        assertEquals("Ingrese un DNI válido", state.documentError)
         assertFalse(state.isLoading)
     }
 

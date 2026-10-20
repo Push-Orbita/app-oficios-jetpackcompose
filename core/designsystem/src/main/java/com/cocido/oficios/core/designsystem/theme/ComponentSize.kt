@@ -63,10 +63,10 @@ object OficiosComponentSize {
     val authLoginPasswordToActions = 16.dp
     val authLoginActionsToDivider = 16.dp
     val authLoginDividerToPrompt = 16.dp
-    /** Login: prompt → soporte para card top 746 (error 750). */
-    val authLoginPromptToSupport = 59.dp
+    /** Login: prompt → soporte. Top relativo al status 694 (error 698); crece hacia arriba. */
+    val authLoginPromptToSupport = 55.dp
     val authLoginSupportToForgot = 16.dp
-    val authLoginSupportCardMinHeight = 101.dp
+    val authLoginSupportCardMinHeight = 112.dp
     val authRegisterHeaderWidth = 345.dp
     val authRegisterBrandIconWidth = 62.dp
     val authRegisterBrandIconHeight = 102.dp
@@ -88,27 +88,29 @@ object OficiosComponentSize {
     val authRegisterDividerToPrompt = 16.dp
     val authRegisterTermsCheckboxToText = 8.dp
     val authSupportBadgeWidth = 31.dp
-    val authSupportBadgeHeight = 33.dp
+    val authSupportBadgeHeight = 36.dp
     val authSupportBadgeSize = authSupportBadgeWidth
-    val authSupportBadgeOffsetY = 22.dp
+    val authSupportBadgeOffsetY = 18.dp
     val authSupportBadgeOffsetX = 15.dp
     /** Login/rol soporte: texto 16 bajo el top de la card. */
     val authSupportCardPaddingTop = 16.dp
     /** Login/rol soporte: texto 14 sobre el bottom. Sin altura fija. */
     val authSupportCardPaddingBottom = 14.dp
-    val authRoleHeaderToSubtitle = 16.dp
-    val authRoleSubtitleToCards = 28.dp
-    val authRoleCardsToDivider = 22.dp
+    val authRoleHeaderToSubtitle = 21.dp
+    val authRoleSubtitleToCards = 18.dp
+    val authRoleCardsToDivider = 16.dp
     val authRoleDividerToPrompt = 16.dp
-    val authRolePromptToSupport = 60.dp
-    val authRoleSupportCardMinHeight = 80.dp
-    /** Rol 356:482: título 15dp bajo el top de la card (y=243). */
+    val authRolePromptToSupport = 52.dp
+    val authRoleSupportCardMinHeight = 92.dp
+    /** Rol: título ~15dp bajo el top de la card. */
     val authRoleCardTitleTopInset = 15.dp
     val authRoleCardIconTopInset = 12.dp
 
-    // Selección de rol — Figma 356:482 / QA r3
+    // Selección de rol — Figma 356:482 / QA r6 (alto mid-edge 172)
     val registerRoleCardWidth = 179.dp
+    /** Home/grids: no subir. El alto de las cards de Rol es [authRoleCardMinHeight]. */
     val registerRoleCardHeight = 160.dp
+    val authRoleCardMinHeight = 172.dp
     val registerRoleCardGap = 16.dp
     val registerRoleCardIconAreaHeight = 100.dp
     val registerRoleCardIconWorkerHeight = 84.dp
