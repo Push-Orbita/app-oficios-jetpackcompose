@@ -19,7 +19,7 @@ fun NavGraphBuilder.sharedHomeScreens(
     composable(SharedHomeDestination.help) {
         HelpRoute(
             onNavigateBack = { navController.popBackStack() },
-            showBackNavigation = false,
+            showBackNavigation = true,
             onTabSelected = { navController.openClientTab(it, settingsRoute) },
         )
     }
@@ -47,7 +47,9 @@ fun NavGraphBuilder.sharedHomeScreens(
 }
 
 fun NavHostController.navigateToHelp() {
-    openClientTab(ClientHomeTab.AYUDA, settingsRoute = "settings")
+    navigate(SharedHomeDestination.help) {
+        launchSingleTop = true
+    }
 }
 
 fun NavHostController.navigateToFavorites() {
@@ -67,7 +69,6 @@ fun clientTabRoute(tab: ClientHomeTab, anchor: String, settingsRoute: String): S
     ClientHomeTab.INICIO -> anchor
     ClientHomeTab.PEDIDOS -> OrdersDestination.ordersList
     ClientHomeTab.FAVORITOS -> SharedHomeDestination.favorites
-    ClientHomeTab.AYUDA -> SharedHomeDestination.help
     ClientHomeTab.AJUSTES -> settingsRoute
 }
 
@@ -83,7 +84,6 @@ private val clientTabRootRoutes = setOf(
     ProviderHomeDestination.inicio,
     OrdersDestination.ordersList,
     SharedHomeDestination.favorites,
-    SharedHomeDestination.help,
 )
 
 private fun NavHostController.clientTabAnchor(): String =
