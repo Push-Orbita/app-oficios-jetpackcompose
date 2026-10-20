@@ -38,11 +38,15 @@ fun OficiosBrandBlock(
         OficiosBrandScale.Compact -> OficiosComponentSize.authWordmarkHeight
         OficiosBrandScale.Splash -> OficiosComponentSize.authWordmarkHeightSplash
     }
+    val logoWordmarkGap = when (scale) {
+        OficiosBrandScale.Compact -> OficiosSpacing.md
+        OficiosBrandScale.Splash -> OficiosComponentSize.authSplashLogoWordmarkGap
+    }
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(logoWordmarkGap),
     ) {
         OficiosLogo(
             variant = OficiosLogoVariant.Icon,

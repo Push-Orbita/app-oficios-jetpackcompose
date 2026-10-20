@@ -37,19 +37,27 @@ object OficiosComponentSize {
     val skeletonBlockLg = 240.dp
     val contentMaxWidth = 640.dp
 
-    // Marca auth — baseline Figma 440dp (nodos 356:22, 356:49)
+    // Marca auth — baseline Figma 440dp (nodos 16:2, 356:49, 356:482)
     val authBrandMaxWidth = 351.dp
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    /** Splash 16:2: ~40% más grande que el ícono de 163dp del combined drawable. */
-    val authLogoIconWidthSplash = 228.dp
+    /** Splash 16:2: casco+pin ~164×268dp. */
+    val authLogoIconWidthSplash = 164.dp
+    val authSplashLogoWordmarkGap = 31.dp
+    val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
     val authWordmarkHeightSplash = 48.dp
-    val authRegisterBrandIconWidth = 61.dp
+    val authLoginBrandToSubtitle = 64.dp
+    val authRegisterHeaderWidth = 345.dp
+    val authRegisterBrandIconWidth = 52.dp
+    val authRegisterBrandIconHeight = 85.dp
+    val authSupportBadgeSize = 32.dp
 
     // Selección de rol — Figma 356:482
-    val registerRoleCardHeight = 172.dp
+    val registerRoleCardWidth = 179.dp
+    val registerRoleCardHeight = 170.dp
+    val registerRoleCardGap = 18.dp
     val registerRoleCardIconAreaHeight = 100.dp
     val registerRoleCardIconWorkerHeight = 64.dp
     val registerRoleCardIconClientHeight = 87.dp
