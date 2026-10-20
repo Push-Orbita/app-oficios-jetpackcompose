@@ -46,7 +46,6 @@ fun ProviderHomeRoute(
     ClientHomeTabRouteHost(
         onNavigateToOrders = onNavigateToOrdersList,
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
         onVisible = viewModel::refreshUnreadCount,
     ) { selectedTab, onTabSelected ->

@@ -21,6 +21,7 @@ fun NavGraphBuilder.settingsScreen(
     onShowMessage: (String) -> Unit,
     onNavigateToVerifyPhone: (Long, String) -> Unit,
     onNavigateToTerms: () -> Unit = {},
+    onNavigateToHelp: () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
 ) {
     composable(route = SettingsDestination.route) {
@@ -35,6 +36,7 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToChangePassword = { navController.navigate(SettingsDestination.changePassword) },
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
             onNavigateToTerms = onNavigateToTerms,
+            onNavigateToHelp = onNavigateToHelp,
             showBackNavigation = false,
             bottomBar = bottomBar,
         )

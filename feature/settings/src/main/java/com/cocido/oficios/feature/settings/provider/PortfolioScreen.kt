@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,8 +25,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.vectorResource
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -222,7 +224,10 @@ private fun CertificateItem(item: WorkCertificateItem, disabled: Boolean, onEven
                 Text(stringResource(R.string.portfolio_document_note), style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.EditCertificate(item)) }) {
-                Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.portfolio_edit_named, item.name))
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Pencil),
+                    contentDescription = stringResource(R.string.portfolio_edit_named, item.name)
+                )
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Certificate(item.id, item.name))) }) {
                 Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.portfolio_delete_named, item.name))

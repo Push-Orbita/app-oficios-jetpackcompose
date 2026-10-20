@@ -18,11 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Work
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,13 +34,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
+import com.cocido.oficios.core.designsystem.theme.OficiosBottomNavLabelStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -60,15 +58,23 @@ import com.cocido.oficios.core.designsystem.theme.oficiosTween
 data class OficiosNavItem(
     val route: String,
     val label: String,
-    val icon: ImageVector,
+    val iconRes: Int, // DrawableRes del ícono Lucide
     val badgeCount: Int = 0,
 )
 
 // ---------------------------------------------------------------------------
 // OficiosBottomNavigationBar
 //
-// Figma: border-top #413764 (1dp), selected container #413764 radius 8dp
-//        label Satoshi Medium → FontFamily.SansSerif
+// Figma: border-top 1px #004DA8, p16 gap16, icon-box 40 r8 (fondo #004DA8
+//        si seleccionado), label Satoshi Medium 16sp blanco, sin escala animada.
+//
+// Items según Figma:
+//   - Inicio (house)
+//   - Mis pedidos (scroll-text o receipt-text) 
+//   - Favoritos (heart) — oculto para trabajadores
+//   - Perfil (user)
+//
+// Ayuda se QUITÓ de la barra inferior: ahora es item dentro de Ajustes.
 // ---------------------------------------------------------------------------
 
 // Insets de gesture bar: OficiosScaffold → OficiosBottomBarSlot (no duplicar aquí).
@@ -168,15 +174,10 @@ private fun OficiosBottomNavItem(
             )
             OficiosNotificationBadge(count = item.badgeCount) {
                 Icon(
-                    imageVector = item.icon,
+                    imageVector = ImageVector.vectorResource(item.iconRes),
                     contentDescription = null,
                     tint = contentColor,
-                    modifier = Modifier
-                        .size(OficiosComponentSize.iconMd)
-                        .graphicsLayer {
-                            scaleX = iconScale
-                            scaleY = iconScale
-                        },
+                    modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }
         }
@@ -184,7 +185,7 @@ private fun OficiosBottomNavItem(
         BottomNavLabel(
             text = item.label,
             color = contentColor,
-            baseStyle = MaterialTheme.typography.labelMedium,
+            baseStyle = OficiosBottomNavLabelStyle, // Satoshi Medium 16sp
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = OficiosSpacing.xxxs),
@@ -232,18 +233,35 @@ private fun BottomNavLabel(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Bottom Navigation", showBackground = true, backgroundColor = 0xFF00358B)
+@Preview(name = "Bottom Navigation Cliente", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
-private fun BottomNavPreview() {
+private fun BottomNavClientePreview() {
     OficiosTheme {
         val items = listOf(
-            OficiosNavItem("home", "Inicio", Icons.Outlined.Home),
-            OficiosNavItem("orders", "Pedidos", Icons.Outlined.Work, badgeCount = 3),
-            OficiosNavItem("chat", "Mensajes", Icons.AutoMirrored.Outlined.Chat, badgeCount = 12),
-            OficiosNavItem("profile", "Perfil", Icons.Outlined.Person),
+            OficiosNavItem("home", "Inicio", OficiosIcons.House),
+            OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
+            OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
+            OficiosNavItem("profile", "Perfil", OficiosIcons.User),
         )
         OficiosBottomNavigationBar(
             currentRoute = "orders",
+            items = items,
+            onItemSelected = {},
+        )
+    }
+}
+
+@Preview(name = "Bottom Navigation Trabajador", showBackground = true, backgroundColor = 0xFF00358B)
+@Composable
+private fun BottomNavTrabajadorPreview() {
+    OficiosTheme {
+        val items = listOf(
+            OficiosNavItem("home", "Inicio", OficiosIcons.House),
+            OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText),
+            OficiosNavItem("profile", "Perfil", OficiosIcons.User),
+        )
+        OficiosBottomNavigationBar(
+            currentRoute = "home",
             items = items,
             onItemSelected = {},
         )

@@ -6,7 +6,6 @@ sealed interface ClientHomeTabNavigation {
     data object Stay : ClientHomeTabNavigation
     data object Orders : ClientHomeTabNavigation
     data object Settings : ClientHomeTabNavigation
-    data object Help : ClientHomeTabNavigation
     data object Favorites : ClientHomeTabNavigation
 }
 
@@ -16,7 +15,6 @@ object ClientHomeTabNavigator {
         ClientHomeTab.INICIO -> ClientHomeTabNavigation.Stay
         ClientHomeTab.PEDIDOS -> ClientHomeTabNavigation.Orders
         ClientHomeTab.FAVORITOS -> ClientHomeTabNavigation.Favorites
-        ClientHomeTab.AYUDA -> ClientHomeTabNavigation.Help
         ClientHomeTab.AJUSTES -> ClientHomeTabNavigation.Settings
     }
 
@@ -28,7 +26,6 @@ object ClientHomeTabNavigator {
         route == null -> ClientHomeTab.INICIO
         route == "orders/mine" -> ClientHomeTab.PEDIDOS
         route == "favorites" -> ClientHomeTab.FAVORITOS
-        route == "help" -> ClientHomeTab.AYUDA
         route == "settings" -> ClientHomeTab.AJUSTES
         else -> ClientHomeTab.INICIO
     }
@@ -38,14 +35,12 @@ object ClientHomeTabNavigator {
         onStay: () -> Unit = {},
         onNavigateToOrders: () -> Unit = {},
         onNavigateToSettings: () -> Unit,
-        onNavigateToHelp: () -> Unit,
         onNavigateToFavorites: () -> Unit,
     ) {
         when (navigationFor(tab)) {
             ClientHomeTabNavigation.Stay -> onStay()
             ClientHomeTabNavigation.Orders -> onNavigateToOrders()
             ClientHomeTabNavigation.Settings -> onNavigateToSettings()
-            ClientHomeTabNavigation.Help -> onNavigateToHelp()
             ClientHomeTabNavigation.Favorites -> onNavigateToFavorites()
         }
     }
