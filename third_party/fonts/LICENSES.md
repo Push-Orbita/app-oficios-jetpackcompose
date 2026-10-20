@@ -14,9 +14,8 @@ This document records the licenses and sources for all fonts bundled in this pro
 
 | File | Weight | Location | SHA256 |
 |------|--------|----------|--------|
-| `D-DIN.otf` | Regular | `core/designsystem/src/main/res/font/d_din_regular.otf` | `6d67834e2a76646c456c087ce42a6bd6b6b0c85c88dd9918618a8b4c563c2bdf` |
-| `D-DIN-Bold.otf` | Bold | `core/designsystem/src/main/res/font/d_din_bold.otf` | `b0f96a3730041605b139ca2d15e29a36c55e49058ba2b72ee4d09b5e4ca210c1` |
-| `D-DINCondensed.otf` | Condensed (used as Medium substitute) | `core/designsystem/src/main/res/font/d_din_condensed.otf` | `59315bf81fa3a280d3b65783353cd7e1770846cd5c47d6041ffa52924bfb9ea5` |
+| `D-DIN.otf` | Regular (W400) | `core/designsystem/src/main/res/font/d_din_regular.otf` | `6d67834e2a76646c456c087ce42a6bd6b6b0c85c88dd9918618a8b4c563c2bdf` |
+| `D-DIN-Bold.otf` | Bold (W700, also mapped to W500) | `core/designsystem/src/main/res/font/d_din_bold.otf` | `b0f96a3730041605b139ca2d15e29a36c55e49058ba2b72ee4d09b5e4ca210c1` |
 
 ### License Text (SIL OFL 1.1)
 
@@ -187,12 +186,19 @@ Full license text available at: https://www.fontshare.com/licenses/ffl
 ### D-DIN
 Used as the primary typeface throughout the application as a free alternative to 
 DIN Pro (which requires commercial licensing). D-DIN provides Regular and Bold 
-weights. D-DIN Condensed is used as a medium-weight substitute where needed.
+weights only.
 
-**Mapping:**
-- DIN Pro Regular → D-DIN Regular
-- DIN Pro Bold → D-DIN Bold  
-- DIN Pro Medium → D-DIN Condensed (closest available weight)
+**Weight Mapping:**
+- DIN Pro Regular (W400) → D-DIN Regular (W400)
+- DIN Pro Bold (W700) → D-DIN Bold (W700)
+- DIN Pro Medium (W500) → **D-DIN Bold (W700)**
+
+**Rationale for Medium → Bold mapping:**
+Figma uses DIN Pro Medium primarily for buttons and CTAs ("Contactar", "Ingresar", 
+etc.). Bold is appropriate for these action elements as it provides the necessary 
+visual weight for clickable elements. Using Regular would make CTAs too light and 
+less discoverable. Condensed was rejected as it alters glyph width and breaks 1:1 
+layout fidelity.
 
 ### Satoshi
 Used exclusively for bottom navigation labels (16sp Medium) as specified in the 

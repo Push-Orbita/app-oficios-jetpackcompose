@@ -7,6 +7,9 @@ import androidx.compose.ui.graphics.Color
 // ---------------------------------------------------------------------------
 // Primitivos — fuente de verdad: handoff de diseño "Oficios Formosa" v2
 // (design-tokens.css, "Mode 1" — único tema activo del Figma).
+//
+// NOTA (Decisión Matías, 20/10/2026): Copy tone será "usted" según Figma.
+// Los strings no se modifican en este PR; se aplicará en PRs de pantallas individuales.
 // ---------------------------------------------------------------------------
 
 /** Fondo principal — Figma rgb(0,53,139) */

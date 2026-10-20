@@ -19,7 +19,8 @@ import com.cocido.oficios.core.designsystem.R
 // Mapeo de pesos:
 //   DIN Pro Regular → D-DIN Regular
 //   DIN Pro Bold → D-DIN Bold
-//   DIN Pro Medium → D-DIN Condensed (peso más cercano disponible)
+//   DIN Pro Medium → D-DIN Bold (Medium usado para botones/CTAs que necesitan peso visual;
+//                                 Bold es apropiado ya que D-DIN no tiene peso intermedio)
 //
 // Licencias: Ver third_party/fonts/LICENSES.md
 // Fuentes: D-DIN (SIL OFL 1.1), Satoshi (ITF FFL 2.0)
@@ -33,10 +34,15 @@ import com.cocido.oficios.core.designsystem.R
  * D-DIN Font Family - alternativa libre a DIN Pro.
  * SIL Open Font License 1.1 por Datto Inc.
  * Fuente: Font Squirrel / www.datto.com/fonts/d-din
+ * 
+ * Nota: D-DIN solo tiene Regular y Bold. Medium (W500) se mapea a Bold porque:
+ * - Figma Medium se usa principalmente en botones/CTAs que necesitan destacarse
+ * - Bold es apropiado para CTAs y mantiene layout 1:1 sin alterar glyph width
+ * - Preferible a Regular que haría botones demasiado ligeros
  */
 private val DDinFontFamily = FontFamily(
     Font(R.font.d_din_regular, FontWeight.Normal),
-    Font(R.font.d_din_condensed, FontWeight.Medium),  // D-DIN Condensed como sustituto de Medium
+    Font(R.font.d_din_bold, FontWeight.Medium),   // Medium → Bold (apropiado para botones/CTAs)
     Font(R.font.d_din_bold, FontWeight.Bold)
 )
 
