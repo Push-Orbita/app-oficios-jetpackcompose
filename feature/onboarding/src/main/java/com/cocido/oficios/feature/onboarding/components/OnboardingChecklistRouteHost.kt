@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistEffect
@@ -29,19 +30,21 @@ fun OnboardingChecklistRouteHost(
         }
     }
 
-    when (completionPhase) {
-        OnboardingCompletionPhase.Submitting -> {
-            OficiosLoadingState(
-                message = submittingMessage ?: stringResource(R.string.onboarding_finalize_submitting),
-                modifier = modifier.fillMaxSize(),
-            )
+    OficiosStateContent(targetState = completionPhase, modifier = modifier) { phase ->
+        when (phase) {
+            OnboardingCompletionPhase.Submitting -> {
+                OficiosLoadingState(
+                    message = submittingMessage ?: stringResource(R.string.onboarding_finalize_submitting),
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            is OnboardingCompletionPhase.Confirmed -> {
+                OnboardingConfirmedOverlay(
+                    destination = phase.destination,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            OnboardingCompletionPhase.Idle -> checklist()
         }
-        is OnboardingCompletionPhase.Confirmed -> {
-            OnboardingConfirmedOverlay(
-                destination = completionPhase.destination,
-                modifier = modifier.fillMaxSize(),
-            )
-        }
-        OnboardingCompletionPhase.Idle -> checklist()
     }
 }

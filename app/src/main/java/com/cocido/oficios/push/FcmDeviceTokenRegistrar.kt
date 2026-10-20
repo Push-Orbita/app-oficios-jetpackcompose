@@ -1,0 +1,55 @@
+package com.cocido.oficios.push
+
+import android.content.Context
+import android.util.Log
+import com.cocido.oficios.BuildConfig
+import com.cocido.oficios.core.common.contract.DeviceTokenRegistrar
+import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.domain.usecase.notifications.RegisterDeviceTokenUseCase
+import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlinx.coroutines.suspendCancellableCoroutine
+
+@Singleton
+class FcmDeviceTokenRegistrar @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val registerDeviceTokenUseCase: RegisterDeviceTokenUseCase,
+) : DeviceTokenRegistrar {
+
+    override suspend fun syncCurrentToken() {
+        if (!BuildConfig.FIREBASE_ENABLED) {
+            Log.d(TAG, "Firebase deshabilitado (google-services.json stub). Saltando registro de token.")
+            return
+        }
+        val token = try {
+            fetchFcmToken()
+        } catch (error: Exception) {
+            Log.w(TAG, "No se pudo obtener el token de Firebase.", error)
+            null
+        } ?: return
+        val deviceId = android.provider.Settings.Secure.getString(
+            context.contentResolver,
+            android.provider.Settings.Secure.ANDROID_ID,
+        )
+        when (registerDeviceTokenUseCase(token, deviceId)) {
+            is AppResult.Success -> Unit
+            is AppResult.Error -> Unit
+        }
+    }
+
+    private suspend fun fetchFcmToken(): String? = suspendCancellableCoroutine { continuation ->
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token -> continuation.resume(token) }
+            .addOnFailureListener { error ->
+                Log.w(TAG, "Firebase no devolvió token.", error)
+                continuation.resume(null)
+            }
+    }
+
+    companion object {
+        private const val TAG = "FcmDeviceTokenRegistrar"
+    }
+}

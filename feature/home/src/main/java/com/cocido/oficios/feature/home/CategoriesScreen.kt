@@ -10,8 +10,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,8 +24,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -30,6 +36,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
     uiState: CategoriesUiState,
@@ -37,6 +44,7 @@ fun CategoriesScreen(
     onEvent: (CategoriesEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    unreadNotificationCount: Int = 0,
 ) {
     OficiosScaffold(
         modifier = modifier,
@@ -47,65 +55,87 @@ fun CategoriesScreen(
             )
         },
     ) { paddingValues ->
-        when (uiState) {
-            CategoriesUiState.Loading -> {
-                OficiosLoadingState(
-                    modifier = Modifier.padding(paddingValues),
-                    message = stringResource(R.string.home_loading),
-                )
-            }
-            is CategoriesUiState.Error -> {
-                OficiosErrorState(
-                    title = stringResource(R.string.home_error_title),
-                    description = uiState.message,
-                    onRetry = { onEvent(CategoriesEvent.Retry) },
-                    modifier = Modifier.padding(paddingValues),
-                )
-            }
-            is CategoriesUiState.Success -> {
-                var searchQuery by rememberSaveable { mutableStateOf("") }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
-                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+        OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
+            when (state) {
+                CategoriesUiState.Loading -> {
+                    OficiosLoadingState(message = stringResource(R.string.home_loading))
+                }
+                is CategoriesUiState.Error -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(CategoriesEvent.Refresh) },
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        IconButton(onClick = { onEvent(CategoriesEvent.Back) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = stringResource(R.string.home_back),
-                            )
-                        }
-                        IconButton(onClick = {}) {
-                            Icon(
-                                imageVector = Icons.Outlined.Notifications,
-                                contentDescription = stringResource(R.string.home_notifications),
-                                modifier = Modifier.size(OficiosComponentSize.iconMd),
-                            )
-                        }
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            description = state.message,
+                            onRetry = { onEvent(CategoriesEvent.Retry) },
+                            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        )
                     }
-                    HomeSearchEntryField(
-                        query = searchQuery,
-                        onQueryChange = { searchQuery = it },
-                        onSearch = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
-                        placeholder = stringResource(R.string.home_search_categories_hint),
-                        onMicClick = { onEvent(CategoriesEvent.VoiceSearch) },
-                    )
-                    HomeCategoriesGrid(
-                        categories = uiState.categories,
-                        onCategoryClick = { onEvent(CategoriesEvent.CategorySelected(it)) },
-                        showSeeAll = false,
-                        modifier = Modifier.weight(1f),
+                }
+                is CategoriesUiState.Success -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(CategoriesEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    CategoriesContent(
+                        state = state,
+                        unreadNotificationCount = unreadNotificationCount,
+                        onEvent = onEvent,
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CategoriesContent(
+    state: CategoriesUiState.Success,
+    unreadNotificationCount: Int,
+    onEvent: (CategoriesEvent) -> Unit,
+) {
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = { onEvent(CategoriesEvent.Back) }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(R.string.home_back),
+                )
+            }
+            OficiosNotificationBadge(count = unreadNotificationCount) {
+                IconButton(onClick = { onEvent(CategoriesEvent.OpenNotifications) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = stringResource(R.string.home_notifications),
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
+                }
+            }
+        }
+        HomeSearchEntryField(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearch = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
+            placeholder = stringResource(R.string.home_search_categories_hint),
+        )
+        HomeCategoriesGrid(
+            categories = state.categories,
+            onCategoryClick = { onEvent(CategoriesEvent.CategorySelected(it)) },
+            showSeeAll = false,
+            modifier = Modifier.weight(1f),
+        )
     }
 }

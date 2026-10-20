@@ -9,8 +9,8 @@ import androidx.navigation.navigation
 import com.cocido.oficios.feature.home.CategoriesRoute
 import com.cocido.oficios.feature.home.HomeRoute
 import com.cocido.oficios.feature.home.rubros.RubrosRoute
+import com.cocido.oficios.feature.home.worker.WorkerProfileRoute
 import com.cocido.oficios.feature.home.search.SearchResultsRoute
-import com.cocido.oficios.feature.home.search.WorkerStubRoute
 
 fun NavGraphBuilder.homeScreen(
     navController: NavHostController,
@@ -53,9 +53,16 @@ fun NavGraphBuilder.homeScreen(
                     )
                 },
                 onNavigateToWorker = { workerId ->
-                    navController.navigate(HomeDestination.workerStub(workerId))
+                    navController.navigate(HomeDestination.workerProfile(workerId))
+                },
+                onNavigateToHire = { workerId ->
+                    navController.navigate(OrdersDestination.createOrder(workerId))
                 },
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToHelp = { navController.navigateToHelp() },
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
+                onNavigateToMyOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
                 onShowMessage = onShowMessage,
             )
         }
@@ -69,6 +76,10 @@ fun NavGraphBuilder.homeScreen(
                     navController.navigate(HomeDestination.searchResults(query = query))
                 },
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToHelp = { navController.navigateToHelp() },
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
+                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
                 onShowMessage = onShowMessage,
             )
         }
@@ -112,18 +123,45 @@ fun NavGraphBuilder.homeScreen(
             SearchResultsRoute(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToWorker = { workerId ->
-                    navController.navigate(HomeDestination.workerStub(workerId))
+                    navController.navigate(HomeDestination.workerProfile(workerId))
+                },
+                onNavigateToHire = { workerId ->
+                    navController.navigate(OrdersDestination.createOrder(workerId))
                 },
                 onShowMessage = onShowMessage,
             )
         }
         composable(
-            route = HomeDestination.workerStub,
+            route = HomeDestination.workerProfile,
             arguments = listOf(
                 navArgument("workerId") { type = NavType.LongType },
             ),
         ) {
-            WorkerStubRoute(onNavigateBack = { navController.popBackStack() })
+            WorkerProfileRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHire = { workerId ->
+                    navController.navigate(OrdersDestination.createOrder(workerId))
+                },
+                onNavigateToRate = { bookingId, workerName ->
+                    navController.navigate(OrdersDestination.rateWorker(bookingId, workerName))
+                },
+                onNavigateToReport = { workerId, workerName ->
+                    navController.navigate(HomeDestination.workerReport(workerId, workerName))
+                },
+                onShowMessage = onShowMessage,
+            )
+        }
+        composable(
+            route = HomeDestination.workerReport,
+            arguments = listOf(
+                navArgument("workerId") { type = NavType.LongType },
+                navArgument("workerName") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) {
+            com.cocido.oficios.feature.home.worker.report.WorkerReportRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onShowMessage = onShowMessage,
+            )
         }
     }
 }

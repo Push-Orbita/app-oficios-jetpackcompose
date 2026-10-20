@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -31,6 +32,7 @@ class RegisterTradeViewModel @Inject constructor(
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val submitRegisterTradeDraftUseCase: SubmitRegisterTradeDraftUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterTradeUiState())
@@ -105,7 +107,7 @@ class RegisterTradeViewModel @Inject constructor(
                 if (event.checked) updated.add(event.method) else updated.remove(event.method)
                 it.copy(selectedPaymentMethods = updated)
             }
-            RegisterTradeEvent.Continue -> continueToProviderRegister()
+            RegisterTradeEvent.Continue -> continueToOnboarding()
             RegisterTradeEvent.RetryLoadCatalog -> loadCategories()
         }
     }
@@ -215,14 +217,16 @@ class RegisterTradeViewModel @Inject constructor(
         }
     }
 
-    private fun continueToProviderRegister() {
+    private fun continueToOnboarding() {
         val state = _uiState.value
+        if (!state.canContinue) {
+            _uiState.update { it.copy(catalogError = "Completá los datos del oficio antes de continuar") }
+            return
+        }
         val categoryId = state.selectedCategoryId ?: return
         val rubroId = state.selectedTradeId ?: return
 
-        val subRubroIds = state.selectedSpecializations
-            .filter { it != OTHER_SPECIALIZATION_ID }
-            .mapNotNull { it.toLongOrNull() }
+        val subRubroIds = state.selectedSpecializations.mapNotNull { it.toLongOrNull() }
 
         viewModelScope.launch {
             registerTradeDraftRepository.save(
@@ -232,9 +236,7 @@ class RegisterTradeViewModel @Inject constructor(
                     rubroId = rubroId,
                     rubroName = state.selectedTrade,
                     subRubroIds = subRubroIds,
-                    otherSpecialization = state.otherSpecialization.takeIf {
-                        OTHER_SPECIALIZATION_ID in state.selectedSpecializations && it.isNotBlank()
-                    },
+                    otherSpecialization = state.otherSpecialization.trim().ifBlank { null },
                     experienceRange = state.selectedExperienceRange,
                     neighborhoodQuery = state.neighborhoodQuery,
                     barrioId = state.selectedBarrioId,
@@ -247,7 +249,13 @@ class RegisterTradeViewModel @Inject constructor(
                         .map { RegisterTradeTimeSlotDraft(from = it.from, to = it.to) },
                 ),
             )
-            _effects.emit(RegisterTradeEffect.NavigateToProviderRegister)
+            // Intento inmediato: casi siempre falla porque el DNI todavía no está aprobado
+            // en este punto (recién se sube en onboarding); el checklist reintenta esto
+            // mismo una vez que la identidad quede verificada (ProviderOnboardingViewModel).
+            _uiState.update { it.copy(isLoading = true) }
+            submitRegisterTradeDraftUseCase(requireDraft = true)
+            _uiState.update { it.copy(isLoading = false) }
+            _effects.emit(RegisterTradeEffect.NavigateToOnboarding)
         }
     }
 
@@ -277,8 +285,7 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     private fun RegisterTradeUiState.validated(): RegisterTradeUiState {
-        val hasSpecialization = selectedSpecializations.isNotEmpty() &&
-            (OTHER_SPECIALIZATION_ID !in selectedSpecializations || otherSpecialization.isNotBlank())
+        val hasSpecialization = selectedSpecializations.isNotEmpty()
         val canContinue = selectedCategoryId != null &&
             selectedTradeId != null &&
             hasSpecialization &&
@@ -296,8 +303,4 @@ class RegisterTradeViewModel @Inject constructor(
         mapIndexed { currentIndex, item ->
             if (currentIndex == index) transform(item) else item
         }
-
-    private companion object {
-        const val OTHER_SPECIALIZATION_ID = RegisterTradeUiState.OTHER_SPECIALIZATION_ID
-    }
 }

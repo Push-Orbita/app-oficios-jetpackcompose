@@ -22,6 +22,7 @@ data class ClientProfileStatus(
     val hasContact: Boolean,
     val hasAddress: Boolean,
     val emailVerified: Boolean,
+    val phoneVerified: Boolean = false,
     val accountStatus: AccountStatus,
 )
 

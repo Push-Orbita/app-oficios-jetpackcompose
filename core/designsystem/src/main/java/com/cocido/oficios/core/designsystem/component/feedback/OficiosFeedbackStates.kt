@@ -16,11 +16,11 @@ import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.WifiOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
@@ -64,7 +65,7 @@ fun OficiosLoadingState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            OficiosProgress()
             if (message != null) {
                 Text(
                     text = message,
@@ -130,7 +131,12 @@ fun OficiosEmptyState(
         )
         if (ctaLabel != null && onCta != null) {
             Spacer(Modifier.height(OficiosSpacing.lg))
-            OficiosButton(text = ctaLabel, onClick = onCta)
+            OficiosButton(
+                text = ctaLabel,
+                onClick = onCta,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
+            )
         }
     }
 }
@@ -149,6 +155,10 @@ fun OficiosErrorState(
     onRetry: (() -> Unit)? = null,
 ) {
     val resolvedIcon = if (isNetworkError) Icons.Outlined.WifiOff else icon
+    val snackbar = LocalOficiosSnackbarController.current
+    LaunchedEffect(description) {
+        if (description.isNotBlank()) snackbar.showError(description)
+    }
 
     Column(
         modifier = modifier
@@ -174,7 +184,7 @@ fun OficiosErrorState(
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = OficiosColorMutedText,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
         if (onRetry != null) {
@@ -183,7 +193,8 @@ fun OficiosErrorState(
                 text = "Reintentar",
                 onClick = onRetry,
                 leadingIcon = Icons.Outlined.Refresh,
-                variant = OficiosButtonVariant.Ghost,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
             )
         }
     }
@@ -230,7 +241,12 @@ fun OficiosSuccessState(
         )
         if (ctaLabel != null && onCta != null) {
             Spacer(Modifier.height(OficiosSpacing.lg))
-            OficiosButton(text = ctaLabel, onClick = onCta)
+            OficiosButton(
+                text = ctaLabel,
+                onClick = onCta,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
+            )
         }
     }
 }
@@ -239,13 +255,13 @@ fun OficiosSuccessState(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Loading State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Loading State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun LoadingPreview() {
     OficiosTheme { OficiosLoadingState(message = "Cargando pedidos…") }
 }
 
-@Preview(name = "Empty State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Empty State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun EmptyPreview() {
     OficiosTheme {
@@ -259,7 +275,7 @@ private fun EmptyPreview() {
     }
 }
 
-@Preview(name = "Error State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Error State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ErrorPreview() {
     OficiosTheme {
@@ -272,7 +288,7 @@ private fun ErrorPreview() {
     }
 }
 
-@Preview(name = "Success State", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Success State", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun SuccessPreview() {
     OficiosTheme {

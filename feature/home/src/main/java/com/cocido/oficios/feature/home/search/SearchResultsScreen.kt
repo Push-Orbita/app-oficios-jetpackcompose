@@ -7,15 +7,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,13 +34,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
+import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
@@ -46,6 +59,7 @@ fun SearchResultsScreen(
     onEvent: (SearchResultsEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val searchFocusRequester = remember { FocusRequester() }
     OficiosScaffold(modifier = modifier) { paddingValues ->
         Column(
             modifier = Modifier
@@ -54,50 +68,89 @@ fun SearchResultsScreen(
         ) {
             SearchResultsHeader(
                 searchQuery = searchQuery,
+                searchFocusRequester = searchFocusRequester,
+                activeFilterCount = when (uiState) {
+                    is SearchResultsUiState.Empty -> uiState.filterChips.size
+                    is SearchResultsUiState.Success -> uiState.filterChips.size
+                    else -> 0
+                },
                 onEvent = onEvent,
             )
-            when (uiState) {
+            val isRefreshing = when (uiState) {
+                is SearchResultsUiState.Success -> uiState.isRefreshing
+                is SearchResultsUiState.Empty -> uiState.isRefreshing
+                is SearchResultsUiState.Error -> uiState.isRefreshing
+                SearchResultsUiState.Loading -> false
+            }
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { onEvent(SearchResultsEvent.Refresh) },
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) {
+            OficiosStateContent(targetState = uiState) { state ->
+            when (state) {
                 SearchResultsUiState.Loading -> {
-                    OficiosLoadingState(
-                        message = stringResource(R.string.home_search_results_loading),
+                    OficiosSkeletonList(
+                        contentDescription = stringResource(R.string.home_search_results_loading),
+                        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
                     )
                 }
                 is SearchResultsUiState.Error -> {
                     OficiosErrorState(
                         title = stringResource(R.string.home_error_title),
-                        description = uiState.message,
+                        description = state.message,
                         onRetry = { onEvent(SearchResultsEvent.Retry) },
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                     )
                 }
                 is SearchResultsUiState.Empty -> {
-                    ActiveFilterChips(
-                        chips = uiState.filterChips,
-                        onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
-                    )
-                    val query = uiState.activeFilters.query?.takeIf { it.isNotBlank() }
-                    OficiosEmptyState(
-                        title = stringResource(R.string.home_search_results_empty_title),
-                        description = if (query != null) {
-                            stringResource(R.string.home_search_results_empty_query_description, query)
-                        } else {
-                            stringResource(R.string.home_search_results_empty_description)
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        ActiveFilterChips(
+                            chips = state.filterChips,
+                            onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
+                        )
+                        val query = state.activeFilters.query?.takeIf { it.isNotBlank() }
+                        val hasRemovableFilters = hasRemovableFilterChips(state.filterChips)
+                        val hasQueryOnly = query != null && !hasRemovableFilters
+                        OficiosEmptyState(
+                            title = stringResource(R.string.home_search_results_empty_title),
+                            description = if (query != null) {
+                                stringResource(R.string.home_search_results_empty_query_description, query)
+                            } else {
+                                stringResource(R.string.home_search_results_empty_description)
+                            },
+                            variant = OficiosEmptyVariant.NoResults,
+                            ctaLabel = when {
+                                hasRemovableFilters -> stringResource(R.string.home_search_clear_filters)
+                                hasQueryOnly -> stringResource(R.string.home_search_change_query)
+                                else -> null
+                            },
+                            onCta = when {
+                                hasRemovableFilters -> ({ onEvent(SearchResultsEvent.ClearFilters) })
+                                hasQueryOnly -> ({ searchFocusRequester.requestFocus() })
+                                else -> null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
                 is SearchResultsUiState.Success -> {
-                    ActiveFilterChips(
-                        chips = uiState.filterChips,
-                        onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
-                    )
-                    WorkersList(
-                        workers = uiState.workers,
-                        isLoadingPage = uiState.isLoadingPage,
-                        endReached = uiState.endReached,
-                        onEvent = onEvent,
-                        modifier = Modifier.weight(1f),
-                    )
+                    Column(Modifier.fillMaxSize()) {
+                        ActiveFilterChips(
+                            chips = state.filterChips,
+                            onRemove = { onEvent(SearchResultsEvent.RemoveFilterChip(it)) },
+                        )
+                        WorkersList(
+                            workers = state.workers,
+                            isLoadingPage = state.isLoadingPage,
+                            endReached = state.endReached,
+                            onEvent = onEvent,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
+            }
+            }
             }
         }
     }
@@ -113,12 +166,14 @@ fun SearchResultsScreen(
 @Composable
 private fun SearchResultsHeader(
     searchQuery: String,
+    searchFocusRequester: FocusRequester,
+    activeFilterCount: Int,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.lg, vertical = OficiosSpacing.md),
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
@@ -133,43 +188,56 @@ private fun SearchResultsHeader(
             onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
             onSearch = { onEvent(SearchResultsEvent.QuerySubmitted) },
             placeholder = stringResource(R.string.home_search_hint),
-            onMicClick = { onEvent(SearchResultsEvent.VoiceSearch) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(searchFocusRequester),
         )
         IconButton(onClick = { onEvent(SearchResultsEvent.OpenFilters) }) {
-            Icon(
-                imageVector = Icons.Outlined.FilterList,
-                contentDescription = stringResource(R.string.home_search_filters),
-            )
+            BadgedBox(
+                badge = {
+                    if (activeFilterCount > 0) {
+                        Badge { Text(activeFilterCount.toString()) }
+                    }
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.FilterList,
+                    contentDescription = if (activeFilterCount > 0) {
+                        stringResource(R.string.home_search_filters_with_count, activeFilterCount)
+                    } else {
+                        stringResource(R.string.home_search_filters)
+                    },
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ActiveFilterChips(
     chips: List<FilterChip>,
     onRemove: (FilterChip) -> Unit,
 ) {
     if (chips.isEmpty()) return
-    LazyColumn(
+    val haptics = rememberOficiosHaptics()
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.lg),
-        userScrollEnabled = false,
+            .padding(horizontal = OficiosSpacing.md)
+            .padding(bottom = OficiosSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
-        item {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                modifier = Modifier.padding(bottom = OficiosSpacing.sm),
-            ) {
-                chips.forEach { chip ->
-                    FilterChip(
-                        selected = true,
-                        onClick = { onRemove(chip) },
-                        label = { Text(chip.label) },
-                    )
-                }
-            }
+        chips.forEach { chip ->
+            FilterChip(
+                selected = true,
+                onClick = {
+                    haptics.tick()
+                    onRemove(chip)
+                },
+                label = { Text(chip.label) },
+            )
         }
     }
 }
@@ -200,7 +268,7 @@ private fun WorkersList(
         state = listState,
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(
-            horizontal = OficiosSpacing.lg,
+            horizontal = OficiosSpacing.md,
             vertical = OficiosSpacing.sm,
         ),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -214,8 +282,9 @@ private fun WorkersList(
                 isVerified = worker.isVerified,
                 contactLabel = stringResource(R.string.home_worker_contact),
                 viewProfileLabel = stringResource(R.string.home_worker_view_profile),
-                onContact = { onEvent(SearchResultsEvent.WorkerContact) },
+                onContact = { onEvent(SearchResultsEvent.WorkerContact(worker)) },
                 onViewProfile = { onEvent(SearchResultsEvent.WorkerViewProfile(worker)) },
+                modifier = oficiosAnimateItem(),
             )
         }
         if (isLoadingPage) {
@@ -226,7 +295,7 @@ private fun WorkersList(
                         .padding(OficiosSpacing.md),
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    CircularProgressIndicator()
+                    OficiosProgress()
                 }
             }
         }

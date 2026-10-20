@@ -11,7 +11,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun SettingsRoute(
     onNavigateBack: () -> Unit,
     onLoggedOut: () -> Unit,
+    onNavigateToPersonalData: () -> Unit,
+    onNavigateToClientData: () -> Unit,
+    onNavigateToProfessionalData: () -> Unit,
+    onNavigateToServices: () -> Unit,
+    onNavigateToPortfolio: () -> Unit,
+    onNavigateToChangePassword: () -> Unit,
+    onNavigateToDeleteAccount: () -> Unit,
+    onNavigateToTerms: () -> Unit = {},
     modifier: Modifier = Modifier,
+    showBackNavigation: Boolean = true,
+    bottomBar: @Composable () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -19,6 +29,21 @@ fun SettingsRoute(
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLoggedOut()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                SettingsEffect.NavigateToPersonalData -> onNavigateToPersonalData()
+                SettingsEffect.NavigateToClientData -> onNavigateToClientData()
+                SettingsEffect.NavigateToProfessionalData -> onNavigateToProfessionalData()
+                SettingsEffect.NavigateToServices -> onNavigateToServices()
+                SettingsEffect.NavigateToPortfolio -> onNavigateToPortfolio()
+                SettingsEffect.NavigateToChangePassword -> onNavigateToChangePassword()
+                SettingsEffect.NavigateToDeleteAccount -> onNavigateToDeleteAccount()
+                SettingsEffect.NavigateToTerms -> onNavigateToTerms()
+            }
+        }
     }
 
     SettingsScreen(
@@ -30,5 +55,7 @@ fun SettingsRoute(
             }
         },
         modifier = modifier,
+        showBackNavigation = showBackNavigation,
+        bottomBar = bottomBar,
     )
 }

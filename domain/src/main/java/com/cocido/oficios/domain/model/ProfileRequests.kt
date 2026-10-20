@@ -25,14 +25,22 @@ data class ClientDomicilio(
     val departamento: String?,
     val piso: String?,
     val favorito: Boolean,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
 )
 
 data class ClientContacto(
     val id: Long,
     val nombre: String,
     val telefonoWhatsapp: String,
+    val telefonoVerificado: Boolean = false,
     val email: String?,
     val favorito: Boolean,
+)
+
+data class PhoneVerificationSendResult(
+    val message: String,
+    val resendCooldownSeconds: Int?,
 )
 
 data class ClientContactoRequest(

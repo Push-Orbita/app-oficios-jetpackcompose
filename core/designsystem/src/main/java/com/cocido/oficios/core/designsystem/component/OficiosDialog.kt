@@ -2,7 +2,6 @@ package com.cocido.oficios.core.designsystem.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -44,6 +44,9 @@ fun OficiosDialog(
     modifier: Modifier = Modifier,
     dismissLabel: String = "Cancelar",
     isDangerous: Boolean = false,
+    actionSize: OficiosButtonSize = OficiosButtonSize.Large,
+    confirmEnabled: Boolean = true,
+    content: (@Composable () -> Unit)? = null,
 ) {
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -70,26 +73,58 @@ fun OficiosDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(OficiosSpacing.lg))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                ) {
-                    OficiosButton(
-                        text = dismissLabel,
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        variant = OficiosButtonVariant.Ghost,
-                    )
-                    OficiosButton(
-                        text = confirmLabel,
-                        onClick = onConfirm,
-                        modifier = Modifier.weight(1f),
-                        variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Primary,
-                    )
+                if (content != null) {
+                    Spacer(Modifier.height(OficiosSpacing.sm))
+                    content()
                 }
+                Spacer(Modifier.height(OficiosSpacing.lg))
+                OficiosDialogActions(
+                    dismissLabel = dismissLabel,
+                    onDismiss = onDismiss,
+                    confirmLabel = confirmLabel,
+                    onConfirm = onConfirm,
+                    confirmEnabled = confirmEnabled,
+                    isDangerous = isDangerous,
+                    actionSize = actionSize,
+                )
             }
         }
+    }
+}
+
+/**
+ * Acciones de diálogo apiladas a ancho completo para que el texto no se parta con font scale alto.
+ */
+@Composable
+fun OficiosDialogActions(
+    dismissLabel: String,
+    onDismiss: () -> Unit,
+    confirmLabel: String,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
+    confirmEnabled: Boolean = true,
+    isDangerous: Boolean = false,
+    actionSize: OficiosButtonSize = OficiosButtonSize.Large,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+    ) {
+        OficiosButton(
+            text = dismissLabel,
+            onClick = onDismiss,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Ghost,
+            size = actionSize,
+        )
+        OficiosButton(
+            text = confirmLabel,
+            onClick = onConfirm,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = confirmEnabled,
+            size = actionSize,
+            variant = if (isDangerous) OficiosButtonVariant.Danger else OficiosButtonVariant.Secondary,
+        )
     }
 }
 
@@ -97,7 +132,7 @@ fun OficiosDialog(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Dialog Normal", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Dialog Normal", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun DialogPreview() {
     OficiosTheme {
@@ -111,7 +146,7 @@ private fun DialogPreview() {
     }
 }
 
-@Preview(name = "Dialog Dangerous", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Dialog Dangerous", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun DialogDangerousPreview() {
     OficiosTheme {

@@ -114,4 +114,94 @@ class OnboardingMapperTest {
         assertTrue(steps.any { it.id == "metodos_pago" })
     }
 
+    @Test
+    fun `maps provider selfie steps`() {
+        val steps = ProviderProfileStatus(
+            accountStatus = AccountStatus.PENDING_APPROVAL,
+            isConfigurationComplete = false,
+            isProfileComplete = false,
+            isOperational = false,
+            isIdentityVerified = false,
+            missingSteps = listOf("selfie_imagen", "selfie_pendiente_revision"),
+        ).toOnboardingSteps()
+
+        assertTrue(steps.any { it.id == "selfie_imagen" })
+        assertEquals(
+            OnboardingStepStatus.IN_REVIEW,
+            steps.first { it.id == "selfie_pendiente_revision" }.status,
+        )
+    }
+
+    @Test
+    fun `maps client phone verification step only when listed in faltantes`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = false,
+            faltantes = listOf("telefono_verificado"),
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = true,
+                tieneContacto = true,
+                telefonoVerificado = false,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        val steps = status.toOnboardingSteps()
+
+        assertTrue(steps.any { it.id == "telefono_verificado" })
+    }
+
+    @Test
+    fun `does not invent phone step when api omits telefonoVerificado`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = false,
+            faltantes = emptyList(),
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = true,
+                tieneContacto = true,
+                emailVerificado = true,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        val steps = status.toOnboardingSteps()
+
+        assertFalse(status.phoneVerified)
+        assertFalse(steps.any { it.id == "telefono_verificado" })
+        assertTrue(steps.isEmpty())
+    }
+
+    @Test
+    fun `complete client profile returns no steps`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = true,
+            faltantes = listOf("telefono_verificado", "domicilio"),
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = false,
+                tieneContacto = true,
+                telefonoVerificado = false,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        assertTrue(status.toOnboardingSteps().isEmpty())
+    }
+
+    @Test
+    fun `merges phone verification into the domicilio card instead of a separate one`() {
+        val status = ClientePerfilEstadoDto(
+            perfilCompleto = false,
+            faltantes = listOf("telefono_verificado"),
+            requisitos = ClientePerfilEstadoRequisitosDto(
+                tieneDomicilio = false,
+                tieneContacto = true,
+                telefonoVerificado = false,
+                emailVerificado = true,
+            ),
+        ).toDomain(AccountStatus.ACTIVE)
+
+        val steps = status.toOnboardingSteps()
+
+        assertEquals(1, steps.size)
+        assertEquals("domicilio", steps[0].id)
+        assertFalse(steps.any { it.id == "telefono_verificado" })
+        assertTrue(steps[0].description.contains("WhatsApp"))
+    }
+
 }

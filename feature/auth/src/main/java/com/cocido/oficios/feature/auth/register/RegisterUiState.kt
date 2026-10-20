@@ -38,6 +38,7 @@ data class RegisterFormUiState(
 
 sealed interface RegisterEffect {
     data object NavigateToOnboarding : RegisterEffect
+    data object NavigateToTradeSetup : RegisterEffect
     data object NavigateToLogin : RegisterEffect
     data object NavigateToTerms : RegisterEffect
 }

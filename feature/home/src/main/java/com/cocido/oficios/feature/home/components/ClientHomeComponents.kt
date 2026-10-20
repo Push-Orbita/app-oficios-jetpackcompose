@@ -11,27 +11,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Assignment
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.cocido.oficios.feature.home.common.HomeChromeViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
+import com.cocido.oficios.core.designsystem.component.layout.HomeUserIdentityColumn
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBottomNavigationBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosNavItem
@@ -44,6 +49,7 @@ fun ClientHomeHeader(
     userName: String,
     emailVerified: Boolean,
     profilePhotoUrl: String? = null,
+    unreadNotificationCount: Int = 0,
     onNotificationsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -63,43 +69,30 @@ fun ClientHomeHeader(
                 size = OficiosComponentSize.avatarSm,
                 showBorder = true,
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-            ) {
-                Text(
-                    text = userName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (emailVerified) {
-                    Icon(
-                        imageVector = Icons.Outlined.Verified,
-                        contentDescription = stringResource(R.string.home_verified_user),
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(OficiosComponentSize.iconMd),
-                    )
-                }
-            }
-        }
-        IconButton(
-            onClick = onNotificationsClick,
-            modifier = Modifier
-                .size(OficiosComponentSize.avatarSm)
-                .clip(RoundedCornerShape(OficiosSpacing.sm))
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(OficiosSpacing.sm),
-                ),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = stringResource(R.string.home_notifications),
-                tint = MaterialTheme.colorScheme.onBackground,
+            HomeUserIdentityColumn(
+                userName = userName,
+                isVerified = emailVerified,
+                verifiedContentDescription = stringResource(R.string.home_verified_user),
             )
+        }
+        OficiosNotificationBadge(count = unreadNotificationCount) {
+            IconButton(
+                onClick = onNotificationsClick,
+                modifier = Modifier
+                    .size(OficiosComponentSize.avatarSm)
+                    .clip(RoundedCornerShape(OficiosSpacing.sm))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(OficiosSpacing.sm),
+                    ),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = stringResource(R.string.home_notifications),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
         }
     }
 }
@@ -119,6 +112,7 @@ fun HomeSearchBar(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(OficiosSpacing.sm),
             )
+            .semantics(mergeDescendants = true) { contentDescription = hint }
             .clickable(onClick = onClick)
             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,14 +146,18 @@ fun ClientHomeBottomBar(
     selectedTab: ClientHomeTab,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    showFavorites: Boolean? = null,
 ) {
-    val items = listOf(
-        OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), Icons.Outlined.Home),
-        OficiosNavItem(ClientHomeTab.PERFIL.route, stringResource(R.string.home_nav_perfil), Icons.Outlined.Person),
-        OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), Icons.Outlined.FavoriteBorder),
-        OficiosNavItem(ClientHomeTab.AYUDA.route, stringResource(R.string.home_nav_ayuda), Icons.AutoMirrored.Outlined.HelpOutline),
-        OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), Icons.Outlined.Menu),
-    )
+    val roleShowsFavorites = hiltViewModel<HomeChromeViewModel>().showFavorites.collectAsState().value
+    val items = buildList {
+        add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), Icons.Outlined.Home))
+        add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), Icons.Outlined.Assignment))
+        if (showFavorites ?: roleShowsFavorites) {
+            add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), Icons.Outlined.FavoriteBorder))
+        }
+        add(OficiosNavItem(ClientHomeTab.AYUDA.route, stringResource(R.string.home_nav_ayuda), Icons.AutoMirrored.Outlined.HelpOutline))
+        add(OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), Icons.Outlined.Settings))
+    }
     OficiosBottomNavigationBar(
         currentRoute = selectedTab.route,
         items = items,
@@ -172,7 +170,7 @@ fun ClientHomeBottomBar(
 
 enum class ClientHomeTab(val route: String) {
     INICIO("home_tab_inicio"),
-    PERFIL("home_tab_perfil"),
+    PEDIDOS("home_tab_pedidos"),
     FAVORITOS("home_tab_favoritos"),
     AYUDA("home_tab_ayuda"),
     AJUSTES("home_tab_ajustes"),

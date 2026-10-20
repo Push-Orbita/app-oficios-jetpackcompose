@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -32,6 +34,8 @@ fun ProfileCompletionCard(
     modifier: Modifier = Modifier,
     missingItems: List<String> = emptyList(),
 ) {
+    if (completionPercent >= 100) return
+
     OficiosCard(modifier = modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Row(
@@ -74,12 +78,14 @@ fun ProfileCompletionCard(
                 text = "Completar perfil",
                 onClick = onCompleteProfile,
                 modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Medium,
             )
         }
     }
 }
 
-@Preview(name = "Profile Completion Card", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Profile Completion Card", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ProfileCompletionCardPreview() {
     OficiosTheme {

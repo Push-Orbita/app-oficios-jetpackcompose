@@ -1,9 +1,10 @@
 package com.cocido.oficios.feature.onboarding.gate
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -14,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.InitialDestination
 import androidx.compose.foundation.layout.Arrangement
@@ -37,37 +39,40 @@ fun OnboardingGateRoute(
         }
     }
 
-    when (uiState) {
-        OnboardingGateUiState.Loading -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+    OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
+        when (state) {
+            OnboardingGateUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    OficiosProgress()
+                }
             }
-        }
-        is OnboardingGateUiState.Error -> {
-            val message = (uiState as OnboardingGateUiState.Error).message
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(OficiosSpacing.md),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                OficiosErrorState(
-                    title = "No pudimos continuar",
-                    description = message,
-                    onRetry = viewModel::resolve,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OficiosButton(
-                    text = "Ir a iniciar sesión",
-                    onClick = onNavigateToLogin,
-                    variant = OficiosButtonVariant.Ghost,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            is OnboardingGateUiState.Error -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(OficiosSpacing.md),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    OficiosErrorState(
+                        title = "No pudimos continuar",
+                        description = state.message,
+                        onRetry = viewModel::resolve,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OficiosButton(
+                        text = "Ir a iniciar sesión",
+                        onClick = onNavigateToLogin,
+                        variant = OficiosButtonVariant.Ghost,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
+            is OnboardingGateUiState.Ready -> Unit
         }
-        is OnboardingGateUiState.Ready -> Unit
     }
 }

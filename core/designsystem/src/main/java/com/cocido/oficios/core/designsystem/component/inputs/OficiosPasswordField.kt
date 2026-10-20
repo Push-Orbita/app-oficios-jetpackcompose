@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -31,6 +32,8 @@ fun OficiosPasswordField(
     enabled: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -44,7 +47,8 @@ fun OficiosPasswordField(
         isError = isError,
         supportingText = supportingText,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Password),
+        keyboardActions = keyboardActions,
         trailingContent = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(
@@ -57,7 +61,7 @@ fun OficiosPasswordField(
     )
 }
 
-@Preview(name = "Password Field", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Password Field", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun PasswordFieldPreview() {
     OficiosTheme {

@@ -98,4 +98,20 @@ class OnboardingStepNavigatorTest {
         )
         assertTrue(OnboardingStepNavigator.isActionable(step))
     }
+
+    @Test
+    fun `maps provider selfie route`() {
+        assertEquals(
+            OnboardingDestination.PROVIDER_SELFIE,
+            OnboardingStepNavigator.routeForStep("selfie_imagen"),
+        )
+    }
+
+    @Test
+    fun `maps verify phone route`() {
+        assertTrue(
+            OnboardingStepNavigator.routeForStep("telefono_verificado")
+                ?.startsWith("onboarding/verify-phone/") == true,
+        )
+    }
 }

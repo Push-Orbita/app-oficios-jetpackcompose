@@ -6,6 +6,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 fun CatalogOption.toHomeCategoryItem(): HomeCategoryItem = HomeCategoryItem(
     id = id,
     name = label,
+    iconUrl = iconUrl,
 )
 
 fun List<CatalogOption>.toHomeCategoryItems(): List<HomeCategoryItem> = map { it.toHomeCategoryItem() }

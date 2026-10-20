@@ -5,48 +5,91 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 // ---------------------------------------------------------------------------
-// Primitivos — fuente de verdad extraída de Figma
+// Primitivos — fuente de verdad: handoff de diseño "Oficios Formosa" v2
+// (design-tokens.css, "Mode 1" — único tema activo del Figma).
 // ---------------------------------------------------------------------------
 
-val OficiosColorBackground = Color(0xFF231D38)
-val OficiosColorSurface = Color(0xFF2A2340)
-val OficiosColorSurfaceVariant = Color(0xFF322A4E)
-val OficiosColorContainer = Color(0xFF413764)
-val OficiosColorOutline = Color(0xFF413764)
-val OficiosColorOutlineVariant = Color(0x66413764)     // 40 % opacity
+/** Fondo principal — Figma rgb(0,53,139) */
+val OficiosColorBackground = Color(0xFF00358B)
 
-/** Fondo botón primario / acento — Figma #A32F56 */
-val OficiosColorPrimary = Color(0xFFA32F56)
-val OficiosColorPrimaryBorder = Color(0x80D197AB)      // rgba(209,151,171,0.5)
-val OficiosColorPrimaryContainer = Color(0xFF6B1E38)
-val OficiosColorOnPrimaryContainer = Color(0xFFFFD9E4)
+/** Outline / fill de tarjetas — borde 1px inset en casi todos los contenedores. Figma rgb(0,77,168) */
+val OficiosColorOutlineFill = Color(0xFF004DA8)
+val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
+
+/** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
+val OficiosColorSecondaryText = Color(0xFF8EABD4)
+
+/** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
+val OficiosColorAction = Color(0xFF006DEF)
+
+/** Casco de marca. Figma Thumbnail `666:2`, rgb(0, 106, 240). No es el acento dorado. */
+val OficiosColorBrandMark = Color(0xFF006AF0)
+val OficiosColorActionContainer = Color(0xFF003C9A) // ver "unavailable" abajo, reutilizado como contenedor oscuro
+
+/** Estado "no disponible" (turnos, disponibilidad). Figma rgb(0,60,154) */
+val OficiosColorUnavailable = Color(0xFF003C9A)
+
+/** Acento dorado — CTA "AHORA", validaciones. Figma rgb(248,174,26), stroke rgb(228,158,27) */
+val OficiosColorAccent = Color(0xFFF8AE1A)
+val OficiosColorAccentBorder = Color(0xFFE49E1B)
+
+/** Alertas / dar de baja — stroke rgb(186,99,128), texto rgb(209,151,171) */
+val OficiosColorAlert = Color(0xFFBA6380)
+val OficiosColorAlertText = Color(0xFFD197AB)
 
 val OficiosColorWhite = Color(0xFFFFFFFF)
-val OficiosColorMutedText = Color(0xFF918E9B)
+/** Placeholders sobre fondo — rgba(255,255,255,0.5) */
+val OficiosColorPlaceholder = Color(0x80FFFFFF)
 
-// Tertiary: casco del logo — amarillo/ámbar
-val OficiosColorTertiary = Color(0xFFF4A426)
-val OficiosColorTertiaryContainer = Color(0xFF7A5210)
-
-// Semánticos extra (fuera del sistema M3 estándar, para uso en componentes)
+// Semánticos extra (fuera del sistema M3 estándar, para uso en componentes de estado
+// que el handoff no define explícitamente, p. ej. "aceptado" en OrderCard).
 val OficiosColorSuccess = Color(0xFF4CAF7D)
+/** Verde claro sobre navy o tarjeta: AA para texto chico. */
+val OficiosColorSuccessText = Color(0xFFB7E4C7)
 val OficiosColorSuccessContainer = Color(0xFF1A3D2B)
 val OficiosColorOnSuccess = Color(0xFFFFFFFF)
 
-val OficiosColorWarning = Color(0xFFF4A426)
-val OficiosColorWarningContainer = Color(0xFF7A5210)
-val OficiosColorOnWarning = Color(0xFF231D38)
+val OficiosColorWarning = OficiosColorAccent
+val OficiosColorWarningContainer = OficiosColorAccentBorder
+val OficiosColorOnWarning = OficiosColorBackground
 
-val OficiosColorError = Color(0xFFCF6679)
-val OficiosColorErrorContainer = Color(0xFF5C1B28)
+val OficiosColorError = OficiosColorAlert
+val OficiosColorErrorContainer = Color(0xFF4A2430)
 
-// Light scheme primitivos (sobrios, preparados para futuro)
-private val OficiosColorBackgroundLight = Color(0xFFF5F3FF)
+// Deprecated aliases — nombres antiguos del tema violeta, mantenidos temporalmente
+// para no romper referencias no migradas. Ver docs/DESIGN_ALIGNMENT.md.
+@Deprecated("Usar OficiosColorOutlineFill", ReplaceWith("OficiosColorOutlineFill"))
+val OficiosColorContainer = OficiosColorOutlineFill
+@Deprecated("Usar OficiosColorOutlineFill", ReplaceWith("OficiosColorOutlineFill"))
+val OficiosColorOutline = OficiosColorOutlineFill
+@Deprecated("Usar OficiosColorOutlineFillVariant", ReplaceWith("OficiosColorOutlineFillVariant"))
+val OficiosColorOutlineVariant = OficiosColorOutlineFillVariant
+@Deprecated("Usar OficiosColorAction", ReplaceWith("OficiosColorAction"))
+val OficiosColorPrimary = OficiosColorAction
+@Deprecated("Usar OficiosColorActionContainer", ReplaceWith("OficiosColorActionContainer"))
+val OficiosColorPrimaryContainer = OficiosColorActionContainer
+@Deprecated("Usar OficiosColorWhite", ReplaceWith("OficiosColorWhite"))
+val OficiosColorOnPrimaryContainer = OficiosColorWhite
+@Deprecated("Usar OficiosColorAlertText", ReplaceWith("OficiosColorAlertText"))
+val OficiosColorPrimaryBorder = OficiosColorAlertText.copy(alpha = 0.5f)
+@Deprecated("Usar OficiosColorSecondaryText", ReplaceWith("OficiosColorSecondaryText"))
+val OficiosColorMutedText = OficiosColorSecondaryText
+@Deprecated("Usar OficiosColorAccent", ReplaceWith("OficiosColorAccent"))
+val OficiosColorTertiary = OficiosColorAccent
+@Deprecated("Usar OficiosColorAccentBorder", ReplaceWith("OficiosColorAccentBorder"))
+val OficiosColorTertiaryContainer = OficiosColorAccentBorder
+@Deprecated("Usar OficiosColorBackground", ReplaceWith("OficiosColorBackground"))
+val OficiosColorSurface = OficiosColorBackground
+@Deprecated("Usar OficiosColorOutlineFill", ReplaceWith("OficiosColorOutlineFill"))
+val OficiosColorSurfaceVariant = OficiosColorOutlineFill
+
+// Light scheme primitivos — el handoff no define un modo claro (single "Mode 1"),
+// pero feature:settings ya expone un toggle System/Light/Dark; se arma una variante
+// clara coherente con la misma familia de color para no romper esa función existente.
+private val OficiosColorBackgroundLight = Color(0xFFF3F6FC)
 private val OficiosColorSurfaceLight = Color(0xFFFFFFFF)
-private val OficiosColorSurfaceVariantLight = Color(0xFFEBE7F5)
-private val OficiosColorOutlineLight = Color(0xFF8C82A8)
-private val OficiosColorPrimaryLight = Color(0xFFA32F56)
-private val OficiosColorSecondaryLight = Color(0xFF413764)
+private val OficiosColorOutlineLight = Color(0xFFB9C9E4)
+private val OficiosColorOnSurfaceLight = OficiosColorBackground
 
 // ---------------------------------------------------------------------------
 // Color schemes
@@ -55,52 +98,52 @@ private val OficiosColorSecondaryLight = Color(0xFF413764)
 internal val DarkColorScheme = darkColorScheme(
     background = OficiosColorBackground,
     onBackground = OficiosColorWhite,
-    surface = OficiosColorSurface,
+    surface = OficiosColorBackground,
     onSurface = OficiosColorWhite,
-    surfaceVariant = OficiosColorSurfaceVariant,
-    onSurfaceVariant = Color(0xB3FFFFFF),               // rgba(255,255,255,0.70)
-    surfaceContainer = OficiosColorContainer,
-    surfaceContainerHigh = OficiosColorContainer,
-    outline = OficiosColorOutline,
-    outlineVariant = OficiosColorOutlineVariant,
-    primary = OficiosColorPrimary,
+    surfaceVariant = OficiosColorOutlineFill,
+    onSurfaceVariant = OficiosColorSecondaryText,
+    surfaceContainer = OficiosColorOutlineFill,
+    surfaceContainerHigh = OficiosColorOutlineFill,
+    outline = OficiosColorOutlineFill,
+    outlineVariant = OficiosColorOutlineFillVariant,
+    primary = OficiosColorAction,
     onPrimary = OficiosColorWhite,
-    primaryContainer = OficiosColorPrimaryContainer,
-    onPrimaryContainer = OficiosColorOnPrimaryContainer,
+    primaryContainer = OficiosColorActionContainer,
+    onPrimaryContainer = OficiosColorWhite,
     secondary = OficiosColorWhite,
     onSecondary = OficiosColorBackground,
-    secondaryContainer = OficiosColorContainer,
+    secondaryContainer = OficiosColorOutlineFill,
     onSecondaryContainer = OficiosColorWhite,
-    tertiary = OficiosColorTertiary,
+    tertiary = OficiosColorAccent,
     onTertiary = OficiosColorBackground,
-    tertiaryContainer = OficiosColorTertiaryContainer,
-    onTertiaryContainer = OficiosColorTertiary,
+    tertiaryContainer = OficiosColorAccentBorder,
+    onTertiaryContainer = OficiosColorAccent,
     error = OficiosColorError,
     onError = OficiosColorWhite,
     errorContainer = OficiosColorErrorContainer,
-    onErrorContainer = OficiosColorError,
+    onErrorContainer = OficiosColorAlertText,
     scrim = Color(0xFF000000),
     inverseSurface = OficiosColorWhite,
     inverseOnSurface = OficiosColorBackground,
-    inversePrimary = OficiosColorPrimary,
+    inversePrimary = OficiosColorAction,
 )
 
 internal val LightColorScheme = lightColorScheme(
     background = OficiosColorBackgroundLight,
-    onBackground = OficiosColorBackground,
+    onBackground = OficiosColorOnSurfaceLight,
     surface = OficiosColorSurfaceLight,
-    onSurface = OficiosColorBackground,
-    surfaceVariant = OficiosColorSurfaceVariantLight,
-    onSurfaceVariant = OficiosColorBackground,
+    onSurface = OficiosColorOnSurfaceLight,
+    surfaceVariant = OficiosColorSurfaceLight,
+    onSurfaceVariant = OficiosColorOnSurfaceLight,
     outline = OficiosColorOutlineLight,
     outlineVariant = OficiosColorOutlineLight.copy(alpha = 0.5f),
-    primary = OficiosColorPrimaryLight,
+    primary = OficiosColorAction,
     onPrimary = OficiosColorWhite,
-    primaryContainer = OficiosColorOnPrimaryContainer,
-    onPrimaryContainer = OficiosColorPrimaryContainer,
-    secondary = OficiosColorSecondaryLight,
+    primaryContainer = OficiosColorOutlineLight,
+    onPrimaryContainer = OficiosColorBackground,
+    secondary = OficiosColorBackground,
     onSecondary = OficiosColorWhite,
-    tertiary = OficiosColorTertiary,
+    tertiary = OficiosColorAccent,
     onTertiary = OficiosColorWhite,
     error = OficiosColorError,
     onError = OficiosColorWhite,

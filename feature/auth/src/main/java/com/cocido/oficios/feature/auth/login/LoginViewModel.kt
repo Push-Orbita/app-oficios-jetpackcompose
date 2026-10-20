@@ -2,11 +2,13 @@ package com.cocido.oficios.feature.auth.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.domain.usecase.auth.ApplyLoginSessionPreferenceUseCase
 import com.cocido.oficios.domain.usecase.auth.LoginUseCase
+import com.cocido.oficios.core.common.contract.DeviceTokenRegistrar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,6 +31,7 @@ sealed interface LoginEffect {
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val applyLoginSessionPreferenceUseCase: ApplyLoginSessionPreferenceUseCase,
+    private val deviceTokenRegistrar: DeviceTokenRegistrar,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -82,14 +85,22 @@ class LoginViewModel @Inject constructor(
             ) {
                 is AppResult.Success -> {
                     applyLoginSessionPreferenceUseCase(_uiState.value.rememberMe)
+                    deviceTokenRegistrar.syncCurrentToken()
                     _uiState.update { it.copy(isLoading = false) }
                     emitEffect(LoginEffect.NavigateToOnboarding)
                 }
                 is AppResult.Error -> {
+                    // Nunca mostramos el mensaje crudo del backend para 401/404: revelaría si
+                    // el email existe o no (user enumeration) y además suena a error interno.
+                    val message = when (result.error) {
+                        is AppError.Unauthorized, is AppError.NotFound ->
+                            "Correo o contraseña incorrectos."
+                        else -> result.error.userMessage()
+                    }
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            bannerError = result.error.userMessage(),
+                            bannerError = message,
                             hasAttemptedSubmit = true,
                         )
                     }
