@@ -35,6 +35,8 @@ class OrderUseCases @Inject constructor(
         orderRepository.markEnRoute(bookingId, location)
     suspend fun markArrived(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) =
         orderRepository.markArrived(bookingId, location)
+    suspend fun getCompletionCode(bookingId: Long) = orderRepository.getCompletionCode(bookingId)
+    suspend fun resendCompletionCode(bookingId: Long) = orderRepository.resendCompletionCode(bookingId)
     suspend fun finalizeBooking(bookingId: Long, completionCode: String) =
         orderRepository.finalizeBooking(bookingId, completionCode)
     suspend fun submitRating(bookingId: Long, quality: Int, punctuality: Int, comment: String?) =

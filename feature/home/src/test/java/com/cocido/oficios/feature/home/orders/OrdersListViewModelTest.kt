@@ -173,6 +173,8 @@ private class FakeOrderRepository(
     override suspend fun findOrderIdForBooking(bookingId: Long): AppResult<Long?> = unused()
     override suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit> = unused()
     override suspend fun markArrived(bookingId: Long, location: GeoPoint): AppResult<Unit> = unused()
+    override suspend fun getCompletionCode(bookingId: Long): AppResult<String?> = unused()
+    override suspend fun resendCompletionCode(bookingId: Long): AppResult<Unit> = unused()
     override suspend fun finalizeBooking(bookingId: Long, completionCode: String): AppResult<Unit> = unused()
     override suspend fun submitRating(
         bookingId: Long,
