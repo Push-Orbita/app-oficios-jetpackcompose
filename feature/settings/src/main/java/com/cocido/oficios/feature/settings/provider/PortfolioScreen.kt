@@ -222,7 +222,10 @@ private fun CertificateItem(item: WorkCertificateItem, disabled: Boolean, onEven
                 Text(stringResource(R.string.portfolio_document_note), style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.EditCertificate(item)) }) {
-                Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.portfolio_edit_named, item.name))
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Pencil),
+                    contentDescription = stringResource(R.string.portfolio_edit_named, item.name)
+                )
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Certificate(item.id, item.name))) }) {
                 Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.portfolio_delete_named, item.name))
