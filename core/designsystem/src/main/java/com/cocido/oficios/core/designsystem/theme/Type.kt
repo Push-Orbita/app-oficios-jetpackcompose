@@ -1,10 +1,12 @@
 package com.cocido.oficios.core.designsystem.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.R
 
@@ -181,6 +183,37 @@ val OficiosTypography = Typography(
         letterSpacing = 0.5.sp,
     ),
 )
+
+private val AuthGlyphPlatformStyle = PlatformTextStyle(includeFontPadding = false)
+
+private val AuthGlyphLineHeightStyle = LineHeightStyle(
+    alignment = LineHeightStyle.Alignment.Center,
+    trim = LineHeightStyle.Trim.Both,
+)
+
+/** Quita el padding extra de D-DIN que en xxhdpi suma ~2–3dp por Text. */
+fun TextStyle.asAuthGlyph(): TextStyle = copy(
+    platformStyle = AuthGlyphPlatformStyle,
+    lineHeightStyle = AuthGlyphLineHeightStyle,
+)
+
+/**
+ * Título de registro: 36sp D-DIN Bold, lineHeight = fontSize para no dejar
+ * 7dp extra bajo el baseline (Figma 21dp título→subtítulo, no 31).
+ * Sin padding de fuente: mayúsculas en el top del layout en mdpi y xxhdpi.
+ */
+val OficiosAuthGlyphTitleStyle = OficiosTypography.headlineLarge.copy(
+    lineHeight = 36.sp,
+    platformStyle = AuthGlyphPlatformStyle,
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Top,
+        trim = LineHeightStyle.Trim.Both,
+    ),
+)
+
+val OficiosAuthGlyphSubtitleStyle = OficiosTypography.titleMedium.asAuthGlyph()
+
+val OficiosAuthGlyphBodyStyle = OficiosTypography.bodyLarge.asAuthGlyph()
 
 /** Título "Registro de oficio" — Figma 356:610 */
 val OficiosRegisterTradeTitleStyle = TextStyle(

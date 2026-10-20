@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+internal const val LOGIN_INVALID_CREDENTIALS_MESSAGE = "Los datos de sesión no coinciden"
+
 sealed interface LoginEffect {
     data object NavigateToOnboarding : LoginEffect
     data object NavigateToRegister : LoginEffect
@@ -94,7 +96,7 @@ class LoginViewModel @Inject constructor(
                     // el email existe o no (user enumeration) y además suena a error interno.
                     val message = when (result.error) {
                         is AppError.Unauthorized, is AppError.NotFound ->
-                            "Correo o contraseña incorrectos."
+                            LOGIN_INVALID_CREDENTIALS_MESSAGE
                         else -> result.error.userMessage()
                     }
                     _uiState.update {

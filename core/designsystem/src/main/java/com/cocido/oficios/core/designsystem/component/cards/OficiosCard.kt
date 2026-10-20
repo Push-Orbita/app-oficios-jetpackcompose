@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,6 +38,12 @@ fun OficiosCard(
     enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(OficiosSpacing.md),
     containerColor: Color = MaterialTheme.colorScheme.background,
+    /**
+     * El contenido llena el alto de la card. Hace falta cuando hay
+     * `height` / `heightIn(min)`: sin esto la card se encoge al wrap-content
+     * en xxhdpi y el borde medido queda corto (160→148, 101→93).
+     */
+    expandContent: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val borderColor = when {
@@ -49,6 +56,15 @@ fun OficiosCard(
         disabledContainerColor = containerColor.copy(alpha = 0.6f),
     )
 
+    val body: @Composable () -> Unit = {
+        Column(
+            modifier = Modifier
+                .then(if (expandContent) Modifier.fillMaxSize() else Modifier)
+                .padding(contentPadding),
+            content = content,
+        )
+    }
+
     if (onClick != null) {
         Card(
             onClick = onClick,
@@ -59,7 +75,7 @@ fun OficiosCard(
             border = BorderStroke(1.dp, borderColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
-            Column(modifier = Modifier.padding(contentPadding), content = content)
+            body()
         }
     } else {
         Card(
@@ -69,7 +85,7 @@ fun OficiosCard(
             border = BorderStroke(1.dp, borderColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
-            Column(modifier = Modifier.padding(contentPadding), content = content)
+            body()
         }
     }
 }

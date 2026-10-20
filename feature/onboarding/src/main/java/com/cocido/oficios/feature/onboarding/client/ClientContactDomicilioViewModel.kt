@@ -134,7 +134,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
     }
 
     fun onLocationPermissionDenied() = _uiState.update {
-        it.copy(error = "Permití la ubicación o marcá manualmente el punto de entrada en el mapa.")
+        it.copy(error = "Permita la ubicación o marque manualmente el punto de entrada en el mapa.")
     }
 
     fun useCurrentLocation() {
@@ -184,7 +184,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Completá nombre, WhatsApp, barrio y calle") }
+            _uiState.update { it.copy(error = "Complete nombre, WhatsApp, barrio y calle") }
             return
         }
         val barrioId = state.selectedBarrioId ?: return
@@ -196,7 +196,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
                 is AppResult.Error -> null
             }
             if (personaId == null) {
-                _uiState.update { it.copy(isLoading = false, error = "No se pudo obtener tu perfil") }
+                _uiState.update { it.copy(isLoading = false, error = "No se pudo obtener su perfil") }
                 return@launch
             }
 

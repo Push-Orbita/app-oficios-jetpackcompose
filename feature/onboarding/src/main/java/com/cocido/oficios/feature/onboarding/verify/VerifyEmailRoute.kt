@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 
 @Composable
 fun VerifyEmailRoute(
@@ -14,9 +15,13 @@ fun VerifyEmailRoute(
 ) {
     val viewModel: VerifyEmailViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val toastController = LocalOficiosToastController.current
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
-            if (effect is VerifyEmailEffect.Verified) onVerified()
+            if (effect is VerifyEmailEffect.Verified) {
+                toastController.showSuccess("Código validado exitosamente")
+                onVerified()
+            }
         }
     }
     VerifyEmailStepScreen(

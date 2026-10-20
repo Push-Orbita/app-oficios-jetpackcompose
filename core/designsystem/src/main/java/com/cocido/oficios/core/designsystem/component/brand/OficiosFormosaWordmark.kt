@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.R
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -20,15 +21,22 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 @Composable
 fun OficiosFormosaWordmark(
     modifier: Modifier = Modifier,
+    height: Dp = OficiosComponentSize.authWordmarkHeight,
+    fillWidth: Boolean = true,
     contentDescription: String? = "Oficios Formosa",
 ) {
+    val sizeModifier = if (fillWidth) {
+        modifier
+            .widthIn(max = OficiosComponentSize.authBrandMaxWidth)
+            .fillMaxWidth()
+            .height(height)
+    } else {
+        modifier.height(height)
+    }
     Image(
         painter = painterResource(R.drawable.oficios_formosa),
         contentDescription = contentDescription,
-        modifier = modifier
-            .widthIn(max = OficiosComponentSize.authBrandMaxWidth)
-            .fillMaxWidth()
-            .height(OficiosComponentSize.authWordmarkHeight),
+        modifier = sizeModifier,
         contentScale = ContentScale.Fit,
     )
 }

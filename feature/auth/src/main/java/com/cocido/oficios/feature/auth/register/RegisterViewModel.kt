@@ -146,7 +146,7 @@ class RegisterViewModel @Inject constructor(
             state.confirmPassword,
         )
         val documentError = AuthValidators.validateDocument(state.document)
-        val termsError = if (!state.acceptedTerms) "Debés aceptar los términos" else null
+        val termsError = if (!state.acceptedTerms) "Debe aceptar los términos" else null
 
         return if (
             listOf(fullNameError, emailError, passwordError, confirmPasswordError, documentError, termsError)
@@ -178,6 +178,6 @@ class RegisterViewModel @Inject constructor(
 
 private fun AppError.toRegisterMessage(): String = when (this) {
     is AppError.Conflict -> message.ifBlank { "Este correo ya está registrado" }
-    is AppError.Validation -> message.ifBlank { "Revisá los datos ingresados" }
+    is AppError.Validation -> message.ifBlank { "Revise los datos ingresados" }
     else -> userMessage()
 }

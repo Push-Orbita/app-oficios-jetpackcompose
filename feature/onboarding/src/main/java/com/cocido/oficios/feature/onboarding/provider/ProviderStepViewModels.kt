@@ -129,7 +129,7 @@ class ProviderDniViewModel @Inject constructor(
         val back = state.backImagePath
         val hasRemoteImages = state.frontRemoteLoaded && state.backRemoteLoaded
         if (documento.isBlank() || (!hasRemoteImages && (front == null || back == null))) {
-            _uiState.update { it.copy(error = "Completá el número y las fotos del DNI") }
+            _uiState.update { it.copy(error = "Complete el número y las fotos del DNI") }
             return
         }
 
@@ -214,7 +214,7 @@ class ProviderProfessionalInfoViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         if (state.descripcion.isBlank() || state.experiencia.isBlank()) {
-            _uiState.update { it.copy(error = "Completá la descripción y la experiencia") }
+            _uiState.update { it.copy(error = "Complete la descripción y la experiencia") }
             return
         }
         viewModelScope.launch {
@@ -329,7 +329,7 @@ class ProviderRubrosViewModel @Inject constructor(
         val rubroId = state.selectedTradeId
         val categoryId = state.selectedCategoryId
         if (rubroId == null || categoryId == null || !state.canSubmit) {
-            _uiState.update { it.copy(error = "Seleccioná categoría, rubro y especialidades") }
+            _uiState.update { it.copy(error = "Seleccione categoría, rubro y especialidades") }
             return
         }
         viewModelScope.launch {
@@ -339,7 +339,7 @@ class ProviderRubrosViewModel @Inject constructor(
                 return@launch
             }
             val draft = buildDraft(state, rubroId, categoryId) ?: run {
-                _uiState.update { it.copy(isLoading = false, error = "Seleccioná categoría, rubro y especialidades") }
+                _uiState.update { it.copy(isLoading = false, error = "Seleccione categoría, rubro y especialidades") }
                 return@launch
             }
             registerTradeDraftRepository.save(draft)
@@ -457,7 +457,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 }
             } else {
                 _uiState.update {
-                    it.copy(error = "Completá primero tu rubro y especialidades")
+                    it.copy(error = "Complete primero su rubro y especialidades")
                 }
             }
         }
@@ -496,7 +496,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Completá días, horarios y dónde atendés") }
+            _uiState.update { it.copy(error = "Complete días, horarios y dónde atiende") }
             return
         }
         viewModelScope.launch {
@@ -511,7 +511,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         hasRubroContext = false,
-                        error = "Completá primero tu rubro y especialidades",
+                        error = "Complete primero su rubro y especialidades",
                     )
                 }
                 return@launch
@@ -612,7 +612,7 @@ class ProviderLocalViewModel @Inject constructor(
         it.copy(latitud = latitude, longitud = longitude, error = null)
     }
     fun onLocationPermissionDenied() = _uiState.update {
-        it.copy(error = "Permití la ubicación o marcá manualmente la entrada de tu local en el mapa.")
+        it.copy(error = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
     }
     fun useCurrentLocation() {
         viewModelScope.launch {
@@ -636,7 +636,7 @@ class ProviderLocalViewModel @Inject constructor(
         val state = _uiState.value
         val barrioId = state.selectedBarrioId
         if (barrioId == null || !state.canSubmit) {
-            _uiState.update { it.copy(error = "Completá barrio, calle y la ubicación en el mapa") }
+            _uiState.update { it.copy(error = "Complete barrio, calle y la ubicación en el mapa") }
             return
         }
         viewModelScope.launch {
@@ -647,7 +647,7 @@ class ProviderLocalViewModel @Inject constructor(
             }
             val draft = registerTradeDraftRepository.get()
             if (draft == null || draft.subRubroIds.isEmpty()) {
-                _uiState.update { it.copy(isLoading = false, error = "Completá primero rubro y subrubros") }
+                _uiState.update { it.copy(isLoading = false, error = "Complete primero rubro y subrubros") }
                 return@launch
             }
             val streetLine = listOf(state.calle.trim(), state.numero.trim())
@@ -718,7 +718,7 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
     fun submit() {
         val methods = _uiState.value.selectedMethods.toList()
         if (methods.isEmpty()) {
-            _uiState.update { it.copy(error = "Elegí al menos un medio de pago") }
+            _uiState.update { it.copy(error = "Elija al menos un medio de pago") }
             return
         }
         viewModelScope.launch {
@@ -748,8 +748,8 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
                                 _uiState.update {
                                     it.copy(
                                         isLoading = false,
-                                        error = "No pudimos confirmar que tus métodos de pago se hayan guardado. " +
-                                            "Tu selección sigue disponible; intentá nuevamente en unos minutos.",
+                                        error = "No pudimos confirmar que sus métodos de pago se hayan guardado. " +
+                                            "Su selección sigue disponible; intente nuevamente en unos minutos.",
                                     )
                                 }
                             } else {
@@ -762,7 +762,7 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
                                 it.copy(
                                     isLoading = false,
                                     error = "Guardamos la solicitud, pero no pudimos verificar el resultado. " +
-                                        "Revisá tu conexión e intentá nuevamente.",
+                                        "Revise su conexión e intente nuevamente.",
                                 )
                             }
                         }

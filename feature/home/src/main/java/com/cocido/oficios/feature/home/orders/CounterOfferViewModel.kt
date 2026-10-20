@@ -53,7 +53,10 @@ class CounterOfferViewModel @Inject constructor(
             val price = form.price.toDoubleOrNull()
 
             when (val result = orderUseCases.sendCounterOffer(orderId, startIso, endIso, price)) {
-                is AppResult.Success -> _effects.send(CounterOfferEffect.NavigateBack)
+                is AppResult.Success -> {
+                    _effects.send(CounterOfferEffect.CounterOfferSentSuccess)
+                    _effects.send(CounterOfferEffect.NavigateBack)
+                }
                 is AppResult.Error -> {
                     _uiState.update { form.copy(isSubmitting = false) }
                     _effects.send(CounterOfferEffect.ShowMessage(result.error.userMessage()))

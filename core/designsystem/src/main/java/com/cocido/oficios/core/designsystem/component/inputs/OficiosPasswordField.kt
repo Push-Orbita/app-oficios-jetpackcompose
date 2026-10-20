@@ -1,9 +1,10 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 @Composable
@@ -34,6 +36,9 @@ fun OficiosPasswordField(
     supportingText: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    floatingLabel: Boolean = true,
+    hiddenVisibilityIconRes: Int = OficiosIcons.Eye,
+    visibleVisibilityIconRes: Int = OficiosIcons.EyeClosed,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -49,16 +54,18 @@ fun OficiosPasswordField(
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Password),
         keyboardActions = keyboardActions,
+        floatingLabel = floatingLabel,
         trailingContent = {
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(
-                        if (passwordVisible) OficiosIcons.Eye else OficiosIcons.EyeClosed
-                    ),
-                    contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            Icon(
+                imageVector = ImageVector.vectorResource(
+                    if (passwordVisible) visibleVisibilityIconRes else hiddenVisibilityIconRes,
+                ),
+                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .size(OficiosComponentSize.iconMd)
+                    .clickable(enabled = enabled) { passwordVisible = !passwordVisible },
+            )
         },
     )
 }

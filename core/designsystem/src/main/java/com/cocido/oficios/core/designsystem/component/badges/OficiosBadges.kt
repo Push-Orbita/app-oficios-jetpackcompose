@@ -19,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -38,13 +40,26 @@ fun OficiosBadge(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    size: Dp? = null,
+    shape: Shape = MaterialTheme.shapes.extraSmall,
 ) {
+    val sizeModifier = if (size != null) {
+        Modifier.size(size)
+    } else {
+        Modifier.defaultMinSize(minWidth = 20.dp, minHeight = 20.dp)
+    }
     Box(
         modifier = modifier
-            .defaultMinSize(minWidth = 20.dp, minHeight = 20.dp)
-            .clip(MaterialTheme.shapes.extraSmall)
+            .then(sizeModifier)
+            .clip(shape)
             .background(containerColor)
-            .padding(horizontal = OficiosSpacing.xxs, vertical = 2.dp),
+            .then(
+                if (size == null) {
+                    Modifier.padding(horizontal = OficiosSpacing.xxs, vertical = 2.dp)
+                } else {
+                    Modifier
+                },
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Text(

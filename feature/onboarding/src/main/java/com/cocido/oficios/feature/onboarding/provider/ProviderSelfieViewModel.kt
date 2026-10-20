@@ -76,7 +76,7 @@ class ProviderSelfieViewModel @Inject constructor(
         val state = _uiState.value
         val imagePath = state.imagePath
         if (imagePath.isNullOrBlank()) {
-            _uiState.update { it.copy(error = "Subí una selfie para continuar") }
+            _uiState.update { it.copy(error = "Suba una selfie para continuar") }
             return
         }
 

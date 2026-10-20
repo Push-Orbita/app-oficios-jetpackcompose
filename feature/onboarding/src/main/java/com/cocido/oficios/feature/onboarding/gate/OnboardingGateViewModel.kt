@@ -40,7 +40,7 @@ class OnboardingGateViewModel @Inject constructor(
                 is AppResult.Error -> {
                     _uiState.update {
                         OnboardingGateUiState.Error(
-                            result.error.userMessage().ifBlank { "No se pudo determinar tu destino" },
+                            result.error.userMessage().ifBlank { "No se pudo determinar su destino" },
                         )
                     }
                 }

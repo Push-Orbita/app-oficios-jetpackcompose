@@ -1,7 +1,7 @@
 package com.cocido.oficios.feature.home.search
 
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,7 +23,7 @@ fun SearchResultsRoute(
     val filterSheetState by viewModel.filterSheetState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val comingSoon = stringResource(R.string.home_coming_soon)
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -32,7 +32,7 @@ fun SearchResultsRoute(
                 is SearchResultsEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is SearchResultsEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 SearchResultsEffect.ShowComingSoon -> onShowMessage(comingSoon)
-                is SearchResultsEffect.ShowMessage -> snackbar.showError(effect.message)
+                is SearchResultsEffect.ShowMessage -> toastController.showError(effect.message)
             }
         }
     }

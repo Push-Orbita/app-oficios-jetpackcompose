@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -32,6 +33,7 @@ fun OficiosPromptActionRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     actionVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
+    figmaAuthStroke: Boolean = false,
 ) {
     val fontScale = LocalConfiguration.current.fontScale
     val stackVertically = fontScale >= 1.3f
@@ -43,7 +45,7 @@ fun OficiosPromptActionRow(
         ) {
             Text(
                 text = prompt,
-                style = MaterialTheme.typography.bodyLarge,
+                style = OficiosAuthGlyphBodyStyle,
                 color = MaterialTheme.colorScheme.onBackground,
             )
             OficiosButton(
@@ -52,6 +54,7 @@ fun OficiosPromptActionRow(
                 enabled = enabled,
                 variant = actionVariant,
                 modifier = Modifier.fillMaxWidth(),
+                figmaAuthStroke = figmaAuthStroke,
             )
         }
     } else {
@@ -62,7 +65,7 @@ fun OficiosPromptActionRow(
         ) {
             Text(
                 text = prompt,
-                style = MaterialTheme.typography.bodyLarge,
+                style = OficiosAuthGlyphBodyStyle,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
             )
@@ -71,6 +74,7 @@ fun OficiosPromptActionRow(
                 onClick = onAction,
                 enabled = enabled,
                 variant = actionVariant,
+                figmaAuthStroke = figmaAuthStroke,
             )
         }
     }

@@ -16,8 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -33,6 +35,8 @@ fun OficiosTermsCheckbox(
     prefix: String,
     termsLabel: String,
     compactRow: Boolean = true,
+    labelGap: Dp = OficiosComponentSize.checkboxLabelGap,
+    singleLine: Boolean = false,
 ) {
     val labelColor = if (enabled) {
         MaterialTheme.colorScheme.onSurface
@@ -50,12 +54,12 @@ fun OficiosTermsCheckbox(
                 Modifier
                     .padding(start = OficiosSpacing.xxs)
                     .padding(
-                        end = OficiosComponentSize.checkboxLabelGap,
+                        end = labelGap,
                         top = OficiosComponentSize.checkboxRowPaddingVertical,
                         bottom = OficiosComponentSize.checkboxRowPaddingVertical,
                     )
             } else {
-                Modifier
+                Modifier.padding(end = labelGap)
             },
             contentAlignment = Alignment.Center,
         ) {
@@ -93,9 +97,11 @@ fun OficiosTermsCheckbox(
         ClickableText(
             text = annotatedLabel,
             modifier = Modifier
-                .weight(1f, fill = true)
+                .then(if (singleLine) Modifier else Modifier.weight(1f, fill = true))
                 .padding(end = OficiosSpacing.xs),
             style = MaterialTheme.typography.bodyLarge.copy(color = labelColor),
+            overflow = if (singleLine) TextOverflow.Ellipsis else TextOverflow.Clip,
+            maxLines = if (singleLine) 1 else Int.MAX_VALUE,
             onClick = { offset ->
                 annotatedLabel.getStringAnnotations(tag = "terms", start = offset, end = offset)
                     .firstOrNull()

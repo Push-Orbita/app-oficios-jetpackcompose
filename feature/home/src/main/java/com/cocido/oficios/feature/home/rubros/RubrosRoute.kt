@@ -1,7 +1,7 @@
 package com.cocido.oficios.feature.home.rubros
 
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,7 +19,7 @@ fun RubrosRoute(
     viewModel: RubrosViewModel = hiltViewModel(),
 ) {
     val comingSoon = stringResource(R.string.home_coming_soon)
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -33,7 +33,7 @@ fun RubrosRoute(
                     effect.query,
                 )
                 RubrosEffect.ShowComingSoon -> onShowMessage(comingSoon)
-                is RubrosEffect.ShowMessage -> snackbar.showError(effect.message)
+                is RubrosEffect.ShowMessage -> toastController.showError(effect.message)
             }
         }
     }

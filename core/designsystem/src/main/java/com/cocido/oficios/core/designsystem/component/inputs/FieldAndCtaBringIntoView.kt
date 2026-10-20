@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import kotlinx.coroutines.CoroutineScope
@@ -118,6 +119,7 @@ private fun rememberFieldAndCtaBringIntoView(): FieldAndCtaBringIntoView {
 @Composable
 fun FieldAndCtaBlock(
     modifier: Modifier = Modifier,
+    spacing: Dp = OficiosSpacing.lg,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val state = rememberFieldAndCtaBringIntoView()
@@ -127,7 +129,7 @@ fun FieldAndCtaBlock(
                 .fillMaxWidth()
                 .bringIntoViewRequester(state.requester)
                 .onGloballyPositioned { state.onBlockPositioned(it) },
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(spacing),
             content = content,
         )
     }

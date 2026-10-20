@@ -31,13 +31,13 @@ class ProviderOnboardingChecklistScreenTest {
             OnboardingStep(
                 id = "rubro_principal",
                 title = "Rubro principal",
-                description = "Seleccioná tu rubro",
+                description = "Seleccione su rubro",
                 status = OnboardingStepStatus.PENDING,
             ),
             OnboardingStep(
                 id = "finalizar_perfil",
                 title = "Finalizar perfil",
-                description = "Confirmá tu perfil",
+                description = "Confirme su perfil",
                 status = OnboardingStepStatus.PENDING,
             ),
         )

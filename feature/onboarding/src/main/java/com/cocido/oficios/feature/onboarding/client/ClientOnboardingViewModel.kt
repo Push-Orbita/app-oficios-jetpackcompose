@@ -72,7 +72,7 @@ class ClientOnboardingViewModel @Inject constructor(
             onStuck = {
                 _uiState.update {
                     OnboardingChecklistUiState.Error(
-                        "No encontramos pasos pendientes, pero tu perfil aún no está listo para operar.",
+                        "No encontramos pasos pendientes, pero su perfil aún no está listo para operar.",
                     )
                 }
             },
