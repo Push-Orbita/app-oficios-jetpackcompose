@@ -30,8 +30,8 @@ val OficiosColorSecondaryTextFigma = Color(0xFF7F9AC5)
 /** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)
 
-/** Casco de marca. Figma Thumbnail `666:2`, rgb(0, 106, 240). No es el acento dorado. */
-val OficiosColorBrandMark = Color(0xFF006AF0)
+/** Casco de marca — Figma splash 16:2 y login 356:49: acento dorado rgb(248,174,26). */
+val OficiosColorBrandMark = Color(0xFFF8AE1A)
 val OficiosColorActionContainer = Color(0xFF003C9A) // ver "unavailable" abajo, reutilizado como contenedor oscuro
 
 /** Estado "no disponible" (turnos, disponibilidad). Figma rgb(0,60,154) */

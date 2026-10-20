@@ -42,8 +42,10 @@ object OficiosComponentSize {
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    val authLogoIconWidthSplash = 163.dp
+    /** Splash 16:2: ~40% más grande que el ícono de 163dp del combined drawable. */
+    val authLogoIconWidthSplash = 228.dp
     val authWordmarkHeight = 36.dp
+    val authWordmarkHeightSplash = 48.dp
     val authRegisterBrandIconWidth = 61.dp
 
     // Selección de rol — Figma 356:482
