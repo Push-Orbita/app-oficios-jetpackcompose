@@ -3,6 +3,7 @@ package com.cocido.oficios.core.designsystem.component.feedback
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +16,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -48,7 +48,7 @@ fun OficiosInlineAlert(
         OficiosInlineAlertTone.OnBrand -> {
             iconTint = OficiosColorWhite
             textColor = OficiosColorWhite
-            iconSize = 20.dp
+            iconSize = OficiosComponentSize.authLoginErrorIconSize
             arrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterHorizontally)
         }
     }
@@ -61,7 +61,15 @@ fun OficiosInlineAlert(
         Icon(
             imageVector = ImageVector.vectorResource(iconRes),
             contentDescription = null,
-            modifier = Modifier.size(iconSize),
+            modifier = Modifier
+                .size(iconSize)
+                .then(
+                    if (tone == OficiosInlineAlertTone.OnBrand) {
+                        Modifier.offset(y = OficiosComponentSize.authLoginErrorIconOffsetY)
+                    } else {
+                        Modifier
+                    },
+                ),
             tint = iconTint,
         )
         Text(

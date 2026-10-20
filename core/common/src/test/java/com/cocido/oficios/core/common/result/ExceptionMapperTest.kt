@@ -20,7 +20,7 @@ class ExceptionMapperTest {
 
         assertTrue(error is AppError.Network)
         assertEquals(
-            "No pudimos establecer una conexión segura. Intentá nuevamente más tarde.",
+            "No pudimos establecer una conexión segura. Intente nuevamente más tarde.",
             error.userMessage(),
         )
     }
@@ -39,7 +39,7 @@ class ExceptionMapperTest {
 
         assertTrue(error is AppError.Unknown)
         assertEquals(
-            "Algo salió mal. Intentá de nuevo.",
+            "Algo salió mal. Intente de nuevo.",
             error.userMessage(),
         )
     }
@@ -51,7 +51,7 @@ class ExceptionMapperTest {
         )
 
         assertEquals(
-            "No pudimos guardar los cambios. Revisá los datos e intentá nuevamente.",
+            "No pudimos guardar los cambios. Revise los datos e intente nuevamente.",
             error.userMessage(),
         )
     }
@@ -59,19 +59,19 @@ class ExceptionMapperTest {
     @Test
     fun `offline and timeouts map to a connection error`() {
         assertEquals(
-            "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+            "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
             UnknownHostException("offline").toAppError().userMessage(),
         )
         assertEquals(
-            "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+            "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
             IOException("reset").toAppError().userMessage(),
         )
         assertEquals(
-            "La conexión tardó demasiado. Intentá nuevamente.",
+            "La conexión tardó demasiado. Intente nuevamente.",
             SocketTimeoutException("read").toAppError().userMessage(),
         )
         assertEquals(
-            "La conexión tardó demasiado. Intentá nuevamente.",
+            "La conexión tardó demasiado. Intente nuevamente.",
             TimeoutException("call").toAppError().userMessage(),
         )
     }
@@ -81,7 +81,7 @@ class ExceptionMapperTest {
         val error = AppError.Validation("La consulta a la base de datos falló.")
 
         assertEquals(
-            "El servicio no está disponible en este momento. Intentá más tarde.",
+            "El servicio no está disponible en este momento. Intente más tarde.",
             error.userMessage(),
         )
     }

@@ -58,6 +58,9 @@ object OficiosComponentSize {
     val authLoginLogoWordmarkGap = 13.dp
     /** Login 356:49: status 48 + 64 = logo y=112. */
     val authLoginContentTopPadding = 63.dp
+    /** Login error: «!» 22dp; offset +5 vs el tamaño ~18 medido. */
+    val authLoginErrorIconSize = 22.dp
+    val authLoginErrorIconOffsetY = 5.dp
     /** Login: wordmark → subtítulo. +6 vs r6 para bajar el bloque a y_rel 377. */
     val authLoginBrandToSubtitle = 64.dp
     /** Forgot password reutilizaba el gap de login; se queda en el valor previo. */
@@ -118,7 +121,11 @@ object OficiosComponentSize {
     val authRoleCardMinHeight = 172.dp
     val registerRoleCardGap = 16.dp
     val registerRoleCardIconAreaHeight = 100.dp
+    /** Home/grids: no subir. El casco de Rol auth es [authRoleCardIconWorkerHeight]. */
     val registerRoleCardIconWorkerHeight = 84.dp
+    /** Rol auth: casco Figma 104×72; el top 61 se mantiene. */
+    val authRoleCardIconWorkerWidth = 104.dp
+    val authRoleCardIconWorkerHeight = 72.dp
     val registerRoleCardIconClientHeight = 84.dp
 }
 
