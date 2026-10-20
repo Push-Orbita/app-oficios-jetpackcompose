@@ -106,7 +106,17 @@ fun LoginScreen(
             }
         }
 
-        Spacer(Modifier.height(OficiosComponentSize.authLoginSubtitleToField))
+        val showingErrorAlert = uiState.bannerError != null ||
+            (uiState.hasAttemptedSubmit && !uiState.canSubmit)
+        Spacer(
+            Modifier.height(
+                if (showingErrorAlert) {
+                    OficiosComponentSize.authLoginErrorToField
+                } else {
+                    OficiosComponentSize.authLoginSubtitleToField
+                },
+            ),
+        )
 
         FieldAndCtaBlock(spacing = OficiosSpacing.md) {
             OficiosTextField(

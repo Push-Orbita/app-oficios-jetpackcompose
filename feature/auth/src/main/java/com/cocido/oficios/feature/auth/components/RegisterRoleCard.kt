@@ -98,8 +98,8 @@ private fun RegisterRoleCardPreview() {
             title = "Trabajador de oficio",
             iconRes = R.drawable.ic_casco,
             onClick = {},
-            iconHeight = OficiosComponentSize.registerRoleCardIconWorkerHeight,
-            iconRotationDegrees = 10f,
+            iconWidth = OficiosComponentSize.authRoleCardIconWorkerWidth,
+            iconHeight = OficiosComponentSize.authRoleCardIconWorkerHeight,
             modifier = Modifier.fillMaxWidth(),
         )
     }

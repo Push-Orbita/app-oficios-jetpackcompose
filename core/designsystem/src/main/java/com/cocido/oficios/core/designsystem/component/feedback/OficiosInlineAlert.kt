@@ -3,7 +3,6 @@ package com.cocido.oficios.core.designsystem.component.feedback
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,15 +60,7 @@ fun OficiosInlineAlert(
         Icon(
             imageVector = ImageVector.vectorResource(iconRes),
             contentDescription = null,
-            modifier = Modifier
-                .size(iconSize)
-                .then(
-                    if (tone == OficiosInlineAlertTone.OnBrand) {
-                        Modifier.offset(y = OficiosComponentSize.authLoginErrorIconOffsetY)
-                    } else {
-                        Modifier
-                    },
-                ),
+            modifier = Modifier.size(iconSize),
             tint = iconTint,
         )
         Text(

@@ -96,7 +96,6 @@ fun RegisterRoleSelectionScreen(
                 onClick = onSelectProvider,
                 iconWidth = OficiosComponentSize.authRoleCardIconWorkerWidth,
                 iconHeight = OficiosComponentSize.authRoleCardIconWorkerHeight,
-                iconRotationDegrees = 10f,
                 iconTopInset = OficiosComponentSize.authRoleCardIconTopInsetWorker,
                 modifier = Modifier.weight(1f),
             )
