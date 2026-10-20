@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -184,9 +185,16 @@ fun OficiosTextField(
         verticalPadding
     }
 
+    val lockAuthFieldHeight = fieldLabel.isBlank() && singleLine && fontScale <= 1.15f
     val fieldModifier = Modifier
         .fillMaxWidth()
-        .heightIn(min = minFieldHeight)
+        .then(
+            if (lockAuthFieldHeight) {
+                Modifier.height(OficiosComponentSize.textFieldHeight)
+            } else {
+                Modifier.heightIn(min = minFieldHeight)
+            },
+        )
         .onSizeChanged { fieldSize = it }
         .onGloballyPositioned { fieldCoordinates = it }
         .then(

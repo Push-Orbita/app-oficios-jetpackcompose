@@ -48,4 +48,21 @@
   <path
       android:pathData="M68.36,67L95.36,67A1.5,1.5 0,0 1,96.86 68.5L96.86,68.5A1.5,1.5 0,0 1,95.36 70L68.36,70A1.5,1.5 0,0 1,66.86 68.5L66.86,68.5A1.5,1.5 0,0 1,68.36 67z"
       android:fillColor="#F8AE1A"/>
+  <!-- Nervaduras del casco (Figma 16:2): 4 líneas en oro más oscuro. -->
+  <group>
+    <clip-path
+        android:pathData="M81.86,14.5C116.93,14.5 145.36,42.93 145.36,78V84.5H18.36V78C18.36,42.93 46.79,14.5 81.86,14.5Z"/>
+    <path
+        android:pathData="M39.4,30h1.7v46h-1.7z"
+        android:fillColor="#E49E1B"/>
+    <path
+        android:pathData="M56.2,22h1.7v54h-1.7z"
+        android:fillColor="#E49E1B"/>
+    <path
+        android:pathData="M107.0,22h1.7v54h-1.7z"
+        android:fillColor="#E49E1B"/>
+    <path
+        android:pathData="M123.8,30h1.7v46h-1.7z"
+        android:fillColor="#E49E1B"/>
+  </group>
 </vector>

@@ -36,8 +36,11 @@ android {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
             all {
-                it.systemProperties["roborazzi.test.record"] = "true"
                 it.systemProperties["robolectric.pixelCopyRenderMode"] = "hardware"
+                if (project.hasProperty("roborazzi.test.record")) {
+                    it.systemProperties["roborazzi.test.record"] =
+                        project.property("roborazzi.test.record").toString()
+                }
             }
         }
     }

@@ -44,20 +44,44 @@ object OficiosComponentSize {
     val authLogoIconWidthCompact = 122.dp
     /** Splash 16:2: casco+pin ~164×268dp. */
     val authLogoIconWidthSplash = 164.dp
-    val authSplashLogoWordmarkGap = 31.dp
+    /**
+     * Gap layout logo→wordmark. El drawable aporta ~6dp de aire; 23dp deja
+     * el wordmark visual en y≈628 (gap óptico 29) con logo top 330.
+     */
+    val authSplashLogoWordmarkGap = 23.dp
     val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
     val authWordmarkHeightSplash = 48.dp
-    val authLoginBrandToSubtitle = 64.dp
+    /** Login 356:49: status 48 + 64 = logo y=112, wordmark y≈327. */
+    val authLoginContentTopPadding = 64.dp
+    val authLoginBrandToSubtitle = 58.dp
+    val authLoginSubtitleToField = 18.dp
+    val authLoginPasswordToActions = 16.dp
+    val authLoginActionsToPrompt = 34.dp
+    val authLoginPromptToSupport = 43.dp
+    val authLoginSupportToForgot = 16.dp
     val authRegisterHeaderWidth = 345.dp
-    val authRegisterBrandIconWidth = 52.dp
-    val authRegisterBrandIconHeight = 85.dp
+    val authRegisterBrandIconWidth = 62.dp
+    val authRegisterBrandIconHeight = 102.dp
+    /** Rol 356:482: status 48 + 19 = logo y=67. */
+    val authRegisterHeaderTop = 19.dp
+    /** Registro 356:422: título 6dp más arriba (y=75). */
+    val authRegisterTitleTop = 18.dp
+    val authRegisterEmailToHint = 16.dp
+    val authRegisterHintToPassword = 16.dp
+    val authRegisterTermsToPrompt = 34.dp
+    val authRegisterTermsCheckboxToText = 8.dp
     val authSupportBadgeSize = 32.dp
+    val authRoleHeaderToSubtitle = 16.dp
+    val authRoleSubtitleToCards = 16.dp
+    val authRoleCardsToPrompt = 16.dp
+    val authRolePromptToSupport = 49.dp
+    val authRoleCardIconTopInset = 16.dp
 
     // Selección de rol — Figma 356:482
     val registerRoleCardWidth = 179.dp
     val registerRoleCardHeight = 170.dp
-    val registerRoleCardGap = 18.dp
+    val registerRoleCardGap = 16.dp
     val registerRoleCardIconAreaHeight = 100.dp
     val registerRoleCardIconWorkerHeight = 64.dp
     val registerRoleCardIconClientHeight = 87.dp

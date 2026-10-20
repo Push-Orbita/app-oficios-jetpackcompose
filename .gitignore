@@ -46,6 +46,8 @@ Thumbs.db
 
 # Captures
 /captures
+# Roborazzi goldens: record opt-in, no commitear PNGs pesados
+**/src/test/screenshots/
 
 # Log
 *.log

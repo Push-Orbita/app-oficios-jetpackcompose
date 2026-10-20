@@ -4,10 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -53,12 +53,28 @@ fun LoginScreen(
     AuthScreenLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
-        contentTopPadding = OficiosSpacing.xxl + OficiosSpacing.xs,
+        contentTopPadding = OficiosComponentSize.authLoginContentTopPadding,
         brandToContentSpacing = OficiosComponentSize.authLoginBrandToSubtitle,
+        sectionSpacing = OficiosSpacing.none,
+        supportTopSpacing = OficiosComponentSize.authLoginPromptToSupport,
         support = {
             AuthSupportCard(
                 onContactClick = { onEvent(LoginEvent.ContactSupportClicked) },
                 enabled = !uiState.isLoading,
+            )
+            Spacer(Modifier.height(OficiosComponentSize.authLoginSupportToForgot))
+            Text(
+                text = stringResource(R.string.auth_forgot_password),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { role = Role.Button }
+                    .clickable(
+                        enabled = !uiState.isLoading,
+                        onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
+                    ),
             )
         },
     ) {
@@ -87,86 +103,68 @@ fun LoginScreen(
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        ) {
-            FieldAndCtaBlock(spacing = OficiosSpacing.md) {
-                OficiosTextField(
-                    value = uiState.email,
-                    onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
-                    label = stringResource(R.string.auth_email_label),
-                    placeholder = stringResource(R.string.auth_email_label),
-                    floatingLabel = false,
-                    isError = fieldsInError && (credentialsInvalid || uiState.emailError != null),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next,
-                    ),
-                    keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
-                )
-                OficiosPasswordField(
-                    value = uiState.password,
-                    onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
-                    label = stringResource(R.string.auth_password_label),
-                    placeholder = stringResource(R.string.auth_password_label),
-                    floatingLabel = false,
-                    isError = fieldsInError && (credentialsInvalid || uiState.passwordError != null),
-                    modifier = Modifier.focusRequester(passwordFocus),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
-                )
+        Spacer(Modifier.height(OficiosComponentSize.authLoginSubtitleToField))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    OficiosCheckbox(
-                        checked = uiState.rememberMe,
-                        onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
-                        label = stringResource(R.string.auth_remember_me),
-                        enabled = !uiState.isLoading,
-                        expandWidth = false,
-                        compactRow = true,
-                    )
-                    OficiosButton(
-                        text = stringResource(R.string.auth_login_button),
-                        onClick = { onEvent(LoginEvent.Submit) },
-                        enabled = !uiState.isLoading,
-                        loading = uiState.isLoading,
-                        variant = OficiosButtonVariant.Primary,
-                        size = OficiosButtonSize.Small,
-                    )
-                }
-            }
-
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+        FieldAndCtaBlock(spacing = OficiosSpacing.md) {
+            OficiosTextField(
+                value = uiState.email,
+                onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
+                label = stringResource(R.string.auth_email_label),
+                placeholder = stringResource(R.string.auth_email_label),
+                floatingLabel = false,
+                isError = fieldsInError && (credentialsInvalid || uiState.emailError != null),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
             )
-
-            OficiosPromptActionRow(
-                prompt = stringResource(R.string.auth_no_account_yet),
-                actionLabel = stringResource(R.string.auth_register_button),
-                onAction = { onEvent(LoginEvent.RegisterClicked) },
-                enabled = !uiState.isLoading,
-            )
-
-            Text(
-                text = stringResource(R.string.auth_forgot_password),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .semantics { role = Role.Button }
-                    .clickable(
-                        enabled = !uiState.isLoading,
-                        onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
-                    ),
+            OficiosPasswordField(
+                value = uiState.password,
+                onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
+                label = stringResource(R.string.auth_password_label),
+                placeholder = stringResource(R.string.auth_password_label),
+                floatingLabel = false,
+                isError = fieldsInError && (credentialsInvalid || uiState.passwordError != null),
+                modifier = Modifier.focusRequester(passwordFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
             )
         }
+
+        Spacer(Modifier.height(OficiosComponentSize.authLoginPasswordToActions))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OficiosCheckbox(
+                checked = uiState.rememberMe,
+                onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
+                label = stringResource(R.string.auth_remember_me),
+                enabled = !uiState.isLoading,
+                expandWidth = false,
+                compactRow = false,
+            )
+            OficiosButton(
+                text = stringResource(R.string.auth_login_button),
+                onClick = { onEvent(LoginEvent.Submit) },
+                enabled = !uiState.isLoading,
+                loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Small,
+            )
+        }
+
+        Spacer(Modifier.height(OficiosComponentSize.authLoginActionsToPrompt))
+
+        OficiosPromptActionRow(
+            prompt = stringResource(R.string.auth_no_account_yet),
+            actionLabel = stringResource(R.string.auth_register_button),
+            onAction = { onEvent(LoginEvent.RegisterClicked) },
+            enabled = !uiState.isLoading,
+        )
     }
 }
 

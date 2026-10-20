@@ -43,6 +43,7 @@ fun AuthScreenLayout(
     contentTopPadding: Dp = OficiosSpacing.md,
     sectionSpacing: Dp = OficiosSpacing.lg,
     brandToContentSpacing: Dp = sectionSpacing,
+    supportTopSpacing: Dp = sectionSpacing,
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     support: @Composable (ColumnScope.() -> Unit)? = null,
     footer: @Composable (ColumnScope.() -> Unit)? = null,
@@ -94,7 +95,7 @@ fun AuthScreenLayout(
                 }
 
                 if (support != null) {
-                    Spacer(Modifier.height(sectionSpacing))
+                    Spacer(Modifier.height(supportTopSpacing))
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         content = support,

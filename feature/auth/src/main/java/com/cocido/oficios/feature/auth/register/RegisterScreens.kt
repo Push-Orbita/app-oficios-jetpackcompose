@@ -1,9 +1,10 @@
 package com.cocido.oficios.feature.auth.register
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,6 +35,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -54,7 +56,9 @@ fun RegisterRoleSelectionScreen(
     AuthScreenLayout(
         modifier = modifier,
         showBrand = false,
-        contentTopPadding = OficiosSpacing.lg,
+        contentTopPadding = OficiosComponentSize.authRegisterHeaderTop,
+        sectionSpacing = OficiosSpacing.none,
+        supportTopSpacing = OficiosComponentSize.authRolePromptToSupport,
         support = {
             AuthSupportCard(
                 onContactClick = onContactSupport,
@@ -62,61 +66,54 @@ fun RegisterRoleSelectionScreen(
             )
         },
     ) {
-        Column(
+        OficiosBrandRow(
+            modifier = Modifier.width(OficiosComponentSize.authRegisterHeaderWidth),
+            iconWidth = OficiosComponentSize.authRegisterBrandIconWidth,
+            iconHeight = OficiosComponentSize.authRegisterBrandIconHeight,
+            wordmarkHeight = OficiosComponentSize.authWordmarkHeight,
+            spacing = OficiosSpacing.lg,
+        )
+        Spacer(Modifier.height(OficiosComponentSize.authRoleHeaderToSubtitle))
+        Text(
+            text = stringResource(R.string.auth_register_role_subtitle),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
-        ) {
-            OficiosBrandRow(
-                modifier = Modifier.width(OficiosComponentSize.authRegisterHeaderWidth),
-                iconWidth = OficiosComponentSize.authRegisterBrandIconWidth,
-                iconHeight = OficiosComponentSize.authRegisterBrandIconHeight,
-                wordmarkHeight = OficiosComponentSize.authWordmarkHeight,
-                spacing = OficiosSpacing.lg,
-            )
-            Text(
-                text = stringResource(R.string.auth_register_role_subtitle),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(OficiosComponentSize.registerRoleCardGap),
-            ) {
-                RegisterRoleCard(
-                    title = stringResource(R.string.auth_register_provider_card_title),
-                    iconRes = DesignSystemR.drawable.ic_casco,
-                    onClick = onSelectProvider,
-                    iconHeight = OficiosComponentSize.registerRoleCardIconWorkerHeight,
-                    iconRotationDegrees = 10f,
-                    modifier = Modifier.weight(1f),
-                )
-                RegisterRoleCard(
-                    title = stringResource(R.string.auth_register_client_card_title),
-                    iconRes = DesignSystemR.drawable.ic_lupa,
-                    onClick = onSelectClient,
-                    iconHeight = OficiosComponentSize.registerRoleCardIconClientHeight,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        Column(
+        )
+        Spacer(Modifier.height(OficiosComponentSize.authRoleSubtitleToCards))
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            horizontalArrangement = Arrangement.spacedBy(OficiosComponentSize.registerRoleCardGap),
         ) {
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+            RegisterRoleCard(
+                title = stringResource(R.string.auth_register_provider_card_title),
+                iconRes = DesignSystemR.drawable.ic_casco,
+                onClick = onSelectProvider,
+                iconHeight = OficiosComponentSize.registerRoleCardIconWorkerHeight,
+                iconRotationDegrees = 10f,
+                modifier = Modifier.weight(1f),
             )
-            OficiosPromptActionRow(
-                prompt = stringResource(R.string.auth_already_have_account),
-                actionLabel = stringResource(R.string.auth_start_session_button),
-                onAction = onNavigateToLogin,
+            RegisterRoleCard(
+                title = stringResource(R.string.auth_register_client_card_title),
+                iconRes = DesignSystemR.drawable.ic_lupa,
+                onClick = onSelectClient,
+                iconHeight = OficiosComponentSize.registerRoleCardIconClientHeight,
+                modifier = Modifier.weight(1f),
             )
         }
+        Spacer(Modifier.height(OficiosComponentSize.authRoleCardsToPrompt))
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outline,
+        )
+        Spacer(Modifier.height(OficiosComponentSize.authRoleCardsToPrompt))
+        OficiosPromptActionRow(
+            prompt = stringResource(R.string.auth_already_have_account),
+            actionLabel = stringResource(R.string.auth_start_session_button),
+            onAction = onNavigateToLogin,
+        )
     }
 }
 
@@ -135,17 +132,20 @@ fun RegisterFormScreen(
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
+        sectionSpacing = OficiosSpacing.none,
     ) {
         Text(
             text = screenTitle,
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        Spacer(Modifier.height(OficiosSpacing.md))
         Text(
             text = stringResource(R.string.auth_register_subtitle),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        Spacer(Modifier.height(OficiosSpacing.md))
 
         val documentFocus = remember { FocusRequester() }
         val emailFocus = remember { FocusRequester() }
@@ -189,17 +189,18 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_email_electronic_label),
                 floatingLabel = false,
                 isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
-                supportingText = if (uiState.hasAttemptedSubmit && uiState.emailError != null) {
-                    uiState.emailError
-                } else {
-                    stringResource(R.string.auth_register_email_hint)
-                },
+                supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
                 modifier = Modifier.focusRequester(emailFocus),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
                 ),
                 keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
+            )
+            Text(
+                text = stringResource(R.string.auth_register_email_hint),
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorSecondaryText,
             )
             OficiosPasswordField(
                 value = uiState.password,
@@ -239,7 +240,10 @@ fun RegisterFormScreen(
                     enabled = !uiState.isLoading,
                     prefix = stringResource(R.string.auth_terms_prefix),
                     termsLabel = stringResource(R.string.auth_terms_link),
-                    modifier = Modifier.weight(1f),
+                    compactRow = false,
+                    labelGap = OficiosComponentSize.authRegisterTermsCheckboxToText,
+                    singleLine = true,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
                 OficiosButton(
                     text = stringResource(R.string.auth_next_button),
@@ -260,22 +264,13 @@ fun RegisterFormScreen(
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        ) {
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-            )
-            OficiosPromptActionRow(
-                prompt = stringResource(R.string.auth_already_have_account),
-                actionLabel = stringResource(R.string.auth_login_button),
-                onAction = { onEvent(RegisterFormEvent.LoginClicked) },
-                enabled = !uiState.isLoading,
-            )
-        }
+        Spacer(Modifier.height(OficiosComponentSize.authRegisterTermsToPrompt))
+        OficiosPromptActionRow(
+            prompt = stringResource(R.string.auth_already_have_account),
+            actionLabel = stringResource(R.string.auth_login_button),
+            onAction = { onEvent(RegisterFormEvent.LoginClicked) },
+            enabled = !uiState.isLoading,
+        )
     }
 }
 

@@ -24,6 +24,8 @@ import com.cocido.oficios.feature.auth.register.RegisterRoleSelectionScreen
 import com.cocido.oficios.feature.auth.splash.SplashScreen
 import com.cocido.oficios.feature.auth.splash.SplashUiState
 import com.github.takahirom.roborazzi.captureRoboImage
+import java.io.File
+import org.junit.Assume
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,7 +37,10 @@ import org.robolectric.annotation.GraphicsMode
  * Capturas JVM 440×980 mdpi (frame de Figma) para `tools/figma-diff`.
  * Splash se posiciona desde el tope del frame (y≈330). El resto simula
  * status bar 48dp + nav 24dp porque Robolectric no aplica safeDrawing.
- * Siempre graban (roborazzi.test.record=true); no se commitean PNGs.
+ *
+ * Record opt-in: `./gradlew :feature:auth:testDebugUnitTest -Proborazzi.test.record=true`.
+ * Sin esa property el run verifica goldens si existen; si no hay PNG, el test se omite
+ * para no romper `testDebugUnitTest`. No se commitean goldens pesados.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -47,6 +52,7 @@ class AuthScreenshotTest {
 
     @Test
     fun splash() {
+        assumeGoldenOrRecording("splash")
         composeRule.setContent {
             OficiosTheme {
                 Box(
@@ -63,6 +69,7 @@ class AuthScreenshotTest {
 
     @Test
     fun login() {
+        assumeGoldenOrRecording("login")
         composeRule.setContent {
             FigmaAuthFrame {
                 LoginScreen(uiState = LoginUiState(canSubmit = true), onEvent = {})
@@ -73,6 +80,7 @@ class AuthScreenshotTest {
 
     @Test
     fun loginError() {
+        assumeGoldenOrRecording("loginError")
         composeRule.setContent {
             FigmaAuthFrame {
                 LoginScreen(
@@ -92,6 +100,7 @@ class AuthScreenshotTest {
 
     @Test
     fun role() {
+        assumeGoldenOrRecording("role")
         composeRule.setContent {
             FigmaAuthFrame {
                 RegisterRoleSelectionScreen(
@@ -106,6 +115,7 @@ class AuthScreenshotTest {
 
     @Test
     fun register() {
+        assumeGoldenOrRecording("register")
         composeRule.setContent {
             FigmaAuthFrame {
                 RegisterFormScreen(
@@ -116,6 +126,21 @@ class AuthScreenshotTest {
             }
         }
         composeRule.onRoot().captureRoboImage()
+    }
+
+    private fun assumeGoldenOrRecording(methodName: String) {
+        val record = System.getProperty("roborazzi.test.record") == "true"
+        val className = AuthScreenshotTest::class.java.name
+        val candidates = listOf(
+            File("src/test/screenshots/$className.$methodName.png"),
+            File("src/test/screenshots/com/cocido/oficios/feature/auth/screenshot/AuthScreenshotTest.$methodName.png"),
+            File("src/test/screenshots/com/cocido/oficios/feature/auth/screenshot/AuthScreenshotTest/$methodName.png"),
+            File("src/screenshots/$className.$methodName.png"),
+        )
+        Assume.assumeTrue(
+            "Sin golden ni -Proborazzi.test.record=true; se omite para no romper testDebugUnitTest",
+            record || candidates.any(File::exists),
+        )
     }
 }
 
