@@ -69,7 +69,6 @@ fun HomeRoute(
     ClientHomeTabRouteHost(
         onNavigateToOrders = onNavigateToMyOrders,
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
         onVisible = viewModel::refreshUnreadCount,
     ) { selectedTab, onTabSelected ->
@@ -118,7 +117,6 @@ fun CategoriesRoute(
         onStay = onNavigateBack,
         onNavigateToOrders = onNavigateToOrders,
         onNavigateToSettings = onNavigateToSettings,
-        onNavigateToHelp = onNavigateToHelp,
         onNavigateToFavorites = onNavigateToFavorites,
         onVisible = viewModel::refreshUnreadCount,
     ) { selectedTab, onTabSelected ->
