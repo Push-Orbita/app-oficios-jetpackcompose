@@ -6,7 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -23,7 +23,7 @@ fun OrdersListRoute(
     viewModel: OrdersListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -38,7 +38,7 @@ fun OrdersListRoute(
             when (effect) {
                 is OrdersListEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 OrdersListEffect.NavigateToSearch -> onNavigateToSearch()
-                is OrdersListEffect.ShowRefreshError -> snackbar.showError(effect.message)
+                is OrdersListEffect.ShowRefreshError -> toastController.showError(effect.message)
             }
         }
     }

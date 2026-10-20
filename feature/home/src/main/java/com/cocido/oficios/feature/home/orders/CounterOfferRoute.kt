@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 
 @Composable
 fun CounterOfferRoute(
@@ -16,13 +16,13 @@ fun CounterOfferRoute(
     viewModel: CounterOfferViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 CounterOfferEffect.NavigateBack -> onNavigateBack()
-                is CounterOfferEffect.ShowMessage -> snackbar.showError(effect.message)
+                is CounterOfferEffect.ShowMessage -> toastController.showError(effect.message)
             }
         }
     }

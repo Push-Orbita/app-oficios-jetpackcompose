@@ -476,7 +476,9 @@ private fun DniImageUploadCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = if (isLoaded) Icons.Outlined.CheckCircle else Icons.Outlined.PhotoCamera,
+                imageVector = ImageVector.vectorResource(
+                    if (isLoaded) OficiosIcons.CircleCheck else OficiosIcons.Camera
+                ),
                 contentDescription = null,
                 modifier = Modifier.size(OficiosSpacing.lg),
                 tint = if (isLoaded) OficiosColorSuccess else MaterialTheme.colorScheme.primary,

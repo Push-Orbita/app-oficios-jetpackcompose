@@ -44,6 +44,8 @@ object OficiosIcons {
     @DrawableRes val Users = R.drawable.ic_lucide_users
     @DrawableRes val BadgeCheck = R.drawable.ic_lucide_badge_check
     @DrawableRes val ShieldCheck = R.drawable.ic_lucide_shield_check
+    @DrawableRes val Camera = R.drawable.ic_lucide_camera
+    @DrawableRes val BookUser = R.drawable.ic_lucide_book_user
     
     // Ubicación y navegación
     @DrawableRes val House = R.drawable.ic_lucide_house
@@ -71,7 +73,6 @@ object OficiosIcons {
     // Documentos y pedidos
     @DrawableRes val ReceiptText = R.drawable.ic_lucide_receipt_text
     @DrawableRes val ScrollText = R.drawable.ic_lucide_scroll_text
-    @DrawableRes val BookUser = R.drawable.ic_lucide_book_user
     
     // Dinero y pagos
     @DrawableRes val DollarSign = R.drawable.ic_lucide_dollar_sign

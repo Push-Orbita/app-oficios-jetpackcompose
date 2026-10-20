@@ -1,7 +1,7 @@
 package com.cocido.oficios.feature.home.providerhome
 
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -25,7 +25,7 @@ fun ProviderHomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -35,7 +35,7 @@ fun ProviderHomeRoute(
                 ProviderHomeEffect.NavigateToOrdersList -> onNavigateToOrdersList()
                 ProviderHomeEffect.NavigateToAgenda -> onNavigateToAgenda()
                 is ProviderHomeEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
-                is ProviderHomeEffect.ShowMessage -> snackbar.showError(effect.message)
+                is ProviderHomeEffect.ShowMessage -> toastController.showError(effect.message)
                 ProviderHomeEffect.NavigateToFavorites -> onNavigateToFavorites()
                 ProviderHomeEffect.NavigateToHelp -> onNavigateToHelp()
                 ProviderHomeEffect.NavigateToNotifications -> onNavigateToNotifications()

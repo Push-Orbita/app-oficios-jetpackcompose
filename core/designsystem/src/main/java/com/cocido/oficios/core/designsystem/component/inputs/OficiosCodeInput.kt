@@ -34,21 +34,23 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Componente de entrada de código de 6 dígitos según Figma 382:110
+ * Componente de entrada de código de dígitos según Figma 382:110
  * 
- * Muestra 6 casillas individuales para cada dígito del código de verificación.
+ * Muestra casillas individuales para cada dígito del código de verificación.
  * El código completo se maneja como un String único.
+ * 
+ * @param digitCount Cantidad de dígitos (6 para email, variable para teléfono según API)
  */
 @Composable
 fun OficiosCodeInput(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    digitCount: Int = 6,
     isError: Boolean = false,
     enabled: Boolean = true,
     onDone: () -> Unit = {},
 ) {
-    val digitCount = 6
     val focusRequester = remember { FocusRequester() }
     
     // Auto-focus cuando se monta el componente
@@ -86,7 +88,7 @@ fun OficiosCodeInput(
             cursorBrush = SolidColor(Color.Transparent),
         )
         
-        // Mostrar las 6 casillas visuales
+        // Mostrar las casillas visuales
         repeat(digitCount) { index ->
             CodeDigitBox(
                 digit = value.getOrNull(index)?.toString() ?: "",
