@@ -58,7 +58,10 @@ class RateWorkerViewModel @Inject constructor(
                 comment = form.comment.ifBlank { null },
             )
             when (result) {
-                is AppResult.Success -> _uiState.update { RateWorkerUiState.Submitted(workerName = form.workerName) }
+                is AppResult.Success -> {
+                    _uiState.update { RateWorkerUiState.Submitted(workerName = form.workerName) }
+                    _effects.send(RateWorkerEffect.RatingSubmittedSuccess)
+                }
                 is AppResult.Error -> {
                     _uiState.update { form.copy(isSubmitting = false) }
                     _effects.send(RateWorkerEffect.ShowMessage(result.error.userMessage()))

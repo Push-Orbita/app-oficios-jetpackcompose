@@ -21,4 +21,5 @@ sealed interface RateWorkerEvent {
 
 sealed interface RateWorkerEffect {
     data class ShowMessage(val message: String) : RateWorkerEffect
+    data object RatingSubmittedSuccess : RateWorkerEffect
 }

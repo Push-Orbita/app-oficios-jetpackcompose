@@ -22,6 +22,7 @@ fun RateWorkerRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 is RateWorkerEffect.ShowMessage -> toastController.showError(effect.message)
+                RateWorkerEffect.RatingSubmittedSuccess -> toastController.showSuccess("Calificación enviada exitosamente")
             }
         }
     }
