@@ -111,12 +111,26 @@ fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
     return copy(bookingStatus = BookingStatus.IN_PROGRESS)
 }
 
+/** Solicitud esperando respuesta (PENDIENTE o CONTRAPROPUESTA): va arriba en Activos. */
+fun ServiceOrderListItem.isAwaitingResponse(): Boolean =
+    status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER
+
+/**
+ * Activos: primero las solicitudes que esperan respuesta (PENDIENTE / CONTRAPROPUESTA) y después
+ * el resto; dentro de cada grupo, la fecha más nueva primero (`scheduledSortKey` descendente, sin
+ * fecha al final) y desempate estable por id descendente.
+ * Historial: `scheduledSortKey` descendente (sin cambios).
+ */
 fun List<ServiceOrderListItem>.arrangedFor(filter: OrdersListFilter): List<ServiceOrderListItem> {
     val matching = filter { item ->
         if (filter == OrdersListFilter.HISTORY) item.isHistoryOrder() else !item.isHistoryOrder()
     }
     return if (filter == OrdersListFilter.ACTIVE) {
-        matching.sortedWith(compareBy(nullsLast()) { it.scheduledSortKey })
+        matching.sortedWith(
+            compareBy<ServiceOrderListItem> { if (it.isAwaitingResponse()) 0 else 1 }
+                .thenBy(nullsLast(reverseOrder())) { it.scheduledSortKey }
+                .thenByDescending { it.id },
+        )
     } else {
         matching.sortedWith(compareByDescending(nullsLast()) { it.scheduledSortKey })
     }
