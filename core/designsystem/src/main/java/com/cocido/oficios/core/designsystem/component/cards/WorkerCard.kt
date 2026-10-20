@@ -9,22 +9,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTertiary
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -32,13 +32,14 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 // ---------------------------------------------------------------------------
 // WorkerCard — Figma nodo 40:309
 //
-// Estructura:
-//  ┌──────────────────────────────┐
-//  │ Avatar 64dp  Nombre + shield │
-//  │              ★★★★★ 4.8       │
-//  │              descripción muted│
-//  │  [Contactar]  [Ver perfil]   │
-//  └──────────────────────────────┘
+// Estructura actualizada según Figma:
+//  ┌──────────────────────────────────────────┐
+//  │ Avatar 64 r8  Nombre + shield-check 24   │
+//  │               Número + ★★★★★ (5 estrellas│
+//  │               o "Sin Calificación")      │
+//  │               especialidad #7F9AC5       │
+//  │  [Contactar Primary]  [Ver ficha White] │
+//  └──────────────────────────────────────────┘
 // ---------------------------------------------------------------------------
 
 @Composable
@@ -65,7 +66,7 @@ fun WorkerCard(
             Spacer(Modifier.width(OficiosSpacing.md))
 
             Column(modifier = Modifier.weight(1f)) {
-                // Nombre + verificado
+                // Nombre + verificado (shield-check)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = name,
@@ -75,39 +76,55 @@ fun WorkerCard(
                     if (isVerified) {
                         Spacer(Modifier.width(OficiosSpacing.xxs))
                         Icon(
-                            imageVector = Icons.Default.Verified,
+                            imageVector = ImageVector.vectorResource(OficiosIcons.ShieldCheck),
                             contentDescription = "Verificado",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(OficiosComponentSize.iconSm),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 }
 
-                // Rating
+                // Rating - Número + 5 estrellas (Figma 40:309)
+                Spacer(Modifier.height(OficiosSpacing.xxxs))
                 if (rating != null) {
-                    Spacer(Modifier.height(OficiosSpacing.xxxs))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = OficiosColorTertiary,
-                            modifier = Modifier.size(OficiosComponentSize.iconSm),
-                        )
-                        Spacer(Modifier.width(OficiosSpacing.xxxs))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxxs)
+                    ) {
                         Text(
                             text = String.format("%.1f", rating),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = OficiosColorTertiary,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
+                        repeat(5) { index ->
+                            val icon = if (index < rating.toInt()) {
+                                if (rating - index >= 1f) OficiosIcons.Star
+                                else OficiosIcons.StarHalf
+                            } else {
+                                OficiosIcons.Star
+                            }
+                            Icon(
+                                imageVector = ImageVector.vectorResource(icon),
+                                contentDescription = null,
+                                tint = if (index < rating) OficiosColorAccent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                modifier = Modifier.size(24.dp),
+                            )
+                        }
                     }
+                } else {
+                    Text(
+                        text = "Sin Calificación",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OficiosColorSecondaryText,
+                    )
                 }
 
-                // Especialidad
+                // Especialidad en #7F9AC5 (OficiosColorSecondaryText)
                 Spacer(Modifier.height(OficiosSpacing.xxxs))
                 Text(
                     text = specialty,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorMutedText,
+                    color = OficiosColorSecondaryText,
                 )
             }
         }
@@ -116,8 +133,24 @@ fun WorkerCard(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
+            OficiosButton(
+                text = contactLabel,
+                onClick = onContact,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Small,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(OficiosSpacing.xs))
+            OficiosButton(
+                text = viewProfileLabel,
+                onClick = onViewProfile,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Small,
+                modifier = Modifier.weight(1f),
+            )
+        }
             OficiosButton(
                 text = contactLabel,
                 onClick = onContact,
