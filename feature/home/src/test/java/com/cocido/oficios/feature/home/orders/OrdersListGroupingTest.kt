@@ -16,7 +16,7 @@ import org.junit.Test
 class OrdersListGroupingTest {
 
     @Test
-    fun `activos quedan primero por fecha y el historial al reves`() {
+    fun `activos pendientes primero y el historial al reves`() {
         val items = listOf(
             item(1, ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED, "2026-09-28T10:00:00Z"),
             item(2, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
@@ -37,8 +37,23 @@ class OrdersListGroupingTest {
             item(17, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
             item(18, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
         )
-        assertEquals(listOf(5L, 6L, 11L, 15L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
+        assertEquals(listOf(6L, 15L, 11L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
         assertEquals(listOf(17L, 18L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
+    }
+
+    @Test
+    fun `activos ponen pendientes y contrapropuestas primero y lo mas nuevo arriba`() {
+        val items = listOf(
+            item(1, ServiceRequestStatus.ACCEPTED, BookingStatus.IN_PROGRESS, "2026-10-01T10:00:00Z"),
+            item(2, ServiceRequestStatus.PENDING, null, "2026-09-20T10:00:00Z"),
+            item(3, ServiceRequestStatus.COUNTER_OFFER, null, "2026-09-25T10:00:00Z"),
+            item(4, ServiceRequestStatus.PENDING, null, null),
+            item(5, ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED, "2026-10-01T10:00:00Z"),
+            item(6, ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED, null),
+            item(7, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-10-10T10:00:00Z"),
+        )
+        // Pendientes/contrapropuesta por fecha desc (sin fecha al final), luego el resto; empate por id desc.
+        assertEquals(listOf(3L, 2L, 4L, 5L, 1L, 6L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
     }
 
     @Test
@@ -83,7 +98,7 @@ class OrdersListGroupingTest {
         id: Long,
         status: ServiceRequestStatus,
         booking: BookingStatus?,
-        sortKey: String,
+        sortKey: String?,
     ) = ServiceOrderListItem(
         id = id,
         counterpartName = "Ana",
