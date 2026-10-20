@@ -28,9 +28,15 @@ class OrderUseCases @Inject constructor(
     suspend fun acceptCounterOffer(counterOfferId: Long) = orderRepository.acceptCounterOffer(counterOfferId)
     suspend fun rejectCounterOffer(counterOfferId: Long) = orderRepository.rejectCounterOffer(counterOfferId)
     suspend fun cancelOrderBeforeAcceptance(orderId: Long) = orderRepository.cancelOrderBeforeAcceptance(orderId)
-    suspend fun markEnRoute(bookingId: Long) = orderRepository.markEnRoute(bookingId)
-    suspend fun markArrived(bookingId: Long) = orderRepository.markArrived(bookingId)
-    suspend fun finalizeBooking(bookingId: Long) = orderRepository.finalizeBooking(bookingId)
+    suspend fun cancelConfirmedOrder(orderId: Long, reason: String?) = orderRepository.cancelConfirmedOrder(orderId, reason)
+    suspend fun getBookingTracking(bookingId: Long) = orderRepository.getBookingTracking(bookingId)
+    suspend fun findOrderIdForBooking(bookingId: Long) = orderRepository.findOrderIdForBooking(bookingId)
+    suspend fun markEnRoute(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) =
+        orderRepository.markEnRoute(bookingId, location)
+    suspend fun markArrived(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) =
+        orderRepository.markArrived(bookingId, location)
+    suspend fun finalizeBooking(bookingId: Long, completionCode: String) =
+        orderRepository.finalizeBooking(bookingId, completionCode)
     suspend fun submitRating(bookingId: Long, quality: Int, punctuality: Int, comment: String?) =
         orderRepository.submitRating(bookingId, quality, punctuality, comment)
 }

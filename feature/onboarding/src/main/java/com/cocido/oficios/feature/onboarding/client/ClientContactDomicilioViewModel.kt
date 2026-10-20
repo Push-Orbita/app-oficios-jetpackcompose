@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.GetClientContactosUseCase
@@ -15,6 +17,7 @@ import com.cocido.oficios.domain.usecase.profile.SaveClientContactoUseCase
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
+import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -41,6 +44,9 @@ data class ClientContactDomicilioUiState(
     val numero: String = "",
     val piso: String = "",
     val departamento: String = "",
+    val latitud: Double? = null,
+    val longitud: Double? = null,
+    val isLocating: Boolean = false,
     val isLoading: Boolean = false,
     val isPreloading: Boolean = true,
     val error: String? = null,
@@ -69,6 +75,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
     private val pendingClientOnboardingStore: PendingClientOnboardingStore,
+    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientContactDomicilioUiState())
@@ -94,17 +101,20 @@ class ClientContactDomicilioViewModel @Inject constructor(
                 is AppResult.Success -> result.data.firstOrNull { it.favorito } ?: result.data.firstOrNull()
                 is AppResult.Error -> null
             }
+            val account = (getCurrentUserUseCase() as? AppResult.Success)?.data
             _uiState.update {
                 it.copy(
-                    nombre = contacto?.nombre.orEmpty(),
+                    nombre = contacto?.nombre?.takeIf { name -> name.isNotBlank() } ?: account.displayName(),
                     telefono = contacto?.telefonoWhatsapp?.let(AuthValidators::normalizeArgentinePhone).orEmpty(),
-                    email = contacto?.email.orEmpty(),
+                    email = contacto?.email?.takeIf { mail -> mail.isNotBlank() } ?: account?.email.orEmpty(),
                     barrioQuery = domicilio?.barrioName.orEmpty(),
                     selectedBarrioId = domicilio?.barrioId?.takeIf { id -> id > 0L },
                     calle = domicilio?.calle.orEmpty(),
                     numero = domicilio?.numero.orEmpty(),
                     piso = domicilio?.piso.orEmpty(),
                     departamento = domicilio?.departamento.orEmpty(),
+                    latitud = domicilio?.latitud,
+                    longitud = domicilio?.longitud,
                     isPreloading = false,
                 )
             }
@@ -119,6 +129,31 @@ class ClientContactDomicilioViewModel @Inject constructor(
     fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
     fun onPisoChanged(value: String) = _uiState.update { it.copy(piso = value, error = null) }
     fun onDepartamentoChanged(value: String) = _uiState.update { it.copy(departamento = value, error = null) }
+    fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
+        it.copy(latitud = latitude, longitud = longitude, error = null)
+    }
+
+    fun onLocationPermissionDenied() = _uiState.update {
+        it.copy(error = "Permití la ubicación o marcá manualmente el punto de entrada en el mapa.")
+    }
+
+    fun useCurrentLocation() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocating = true, error = null) }
+            when (val result = getCurrentLocationUseCase()) {
+                is AppResult.Success -> _uiState.update {
+                    it.copy(
+                        isLocating = false,
+                        latitud = result.data.latitude,
+                        longitud = result.data.longitude,
+                    )
+                }
+                is AppResult.Error -> _uiState.update {
+                    it.copy(isLocating = false, error = result.error.userMessage())
+                }
+            }
+        }
+    }
 
     fun onBarrioQueryChanged(query: String) {
         _uiState.update { it.copy(barrioQuery = query, selectedBarrioId = null) }
@@ -148,7 +183,10 @@ class ClientContactDomicilioViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
-        if (!state.canSubmit) return
+        if (!state.canSubmit) {
+            _uiState.update { it.copy(error = "Completá nombre, WhatsApp, barrio y calle") }
+            return
+        }
         val barrioId = state.selectedBarrioId ?: return
 
         viewModelScope.launch {
@@ -186,6 +224,8 @@ class ClientContactDomicilioViewModel @Inject constructor(
                         numero = state.numero.trim().ifBlank { null },
                         piso = state.piso.trim().ifBlank { null },
                         departamento = state.departamento.trim().ifBlank { null },
+                        latitud = GeoCoordinates.roundForApi(state.latitud),
+                        longitud = GeoCoordinates.roundForApi(state.longitud),
                         favorito = true,
                     )
                     val existingContact = when (val contacts = getClientContactosUseCase()) {
@@ -224,3 +264,9 @@ class ClientContactDomicilioViewModel @Inject constructor(
         }
     }
 }
+
+private fun User?.displayName(): String =
+    listOfNotNull(this?.firstName, this?.lastName)
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .joinToString(" ")

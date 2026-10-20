@@ -7,8 +7,10 @@ import com.cocido.oficios.core.data.logging.AndroidAppLogger
 import com.cocido.oficios.core.data.local.RecentSearchDataStore
 import com.cocido.oficios.core.data.register.RegisterTradeDraftDataStore
 import com.cocido.oficios.core.data.repository.AgendaRepositoryImpl
+import com.cocido.oficios.core.data.repository.AccountRepositoryImpl
 import com.cocido.oficios.core.data.repository.AuthRepositoryImpl
 import com.cocido.oficios.core.data.repository.CatalogRepositoryImpl
+import com.cocido.oficios.core.data.repository.FavoritesRepositoryImpl
 import com.cocido.oficios.core.data.repository.HomeRepositoryImpl
 import com.cocido.oficios.core.data.repository.ClientProfileRepositoryImpl
 import com.cocido.oficios.core.data.repository.IdentityDocumentRepositoryImpl
@@ -16,14 +18,17 @@ import com.cocido.oficios.core.data.repository.NotificationsRepositoryImpl
 import com.cocido.oficios.core.data.repository.OnboardingRepositoryImpl
 import com.cocido.oficios.core.data.repository.OrderRepositoryImpl
 import com.cocido.oficios.core.data.repository.ProviderProfileRepositoryImpl
+import com.cocido.oficios.core.data.repository.ReportsRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkCertificateRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkerSearchRepositoryImpl
 import com.cocido.oficios.core.data.repository.WorkerProfileRepositoryImpl
 import com.cocido.oficios.core.data.session.SessionManager
 import com.cocido.oficios.core.data.session.SessionPreferencesRepositoryImpl
 import com.cocido.oficios.domain.repository.AgendaRepository
+import com.cocido.oficios.domain.repository.AccountRepository
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
+import com.cocido.oficios.domain.repository.FavoritesRepository
 import com.cocido.oficios.domain.repository.HomeRepository
 import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.IdentityDocumentRepository
@@ -33,6 +38,7 @@ import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.repository.ReportsRepository
 import com.cocido.oficios.domain.repository.SessionPreferencesRepository
 import com.cocido.oficios.domain.repository.SessionRepository
 import com.cocido.oficios.domain.repository.WorkCertificateRepository
@@ -48,6 +54,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindAccountRepository(
+        impl: AccountRepositoryImpl,
+    ): AccountRepository
 
     @Binds
     @Singleton
@@ -150,6 +162,18 @@ abstract class DataModule {
     abstract fun bindAgendaRepository(
         impl: AgendaRepositoryImpl,
     ): AgendaRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFavoritesRepository(
+        impl: FavoritesRepositoryImpl,
+    ): FavoritesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReportsRepository(
+        impl: ReportsRepositoryImpl,
+    ): ReportsRepository
 }
 
 @Module

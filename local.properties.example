@@ -1,0 +1,3 @@
+## Copiar a local.properties. No commitear local.properties ni claves reales.
+sdk.dir=/path/to/Android/Sdk
+MAPS_API_KEY=

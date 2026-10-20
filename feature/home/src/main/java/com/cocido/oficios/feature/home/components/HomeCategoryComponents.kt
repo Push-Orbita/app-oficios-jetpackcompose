@@ -4,11 +4,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,15 +26,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.CatalogOption
@@ -40,9 +47,8 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.feature.home.R
-import com.cocido.oficios.feature.home.common.CategoryIconResolver
-
-private val CategoryCardSize = 112.dp
+import coil.compose.SubcomposeAsyncImage
+import com.cocido.oficios.core.designsystem.component.categories.CategoryIconResolver
 
 @Composable
 fun HomeFeaturedWorkersSection(
@@ -65,8 +71,11 @@ fun HomeFeaturedWorkersSection(
         ) {
             Text(
                 text = stringResource(R.string.home_featured_workers_title),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             OficiosButton(
                 text = stringResource(R.string.home_featured_workers_see_all),
@@ -74,23 +83,26 @@ fun HomeFeaturedWorkersSection(
                 variant = OficiosButtonVariant.Ghost,
             )
         }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            contentPadding = PaddingValues(end = OficiosSpacing.xs),
-        ) {
-            items(workers, key = { it.id }) { worker ->
-                WorkerCard(
-                    name = worker.displayName,
-                    specialty = worker.specialtyLabel,
-                    rating = worker.rating,
-                    avatarUrl = worker.avatarUrl,
-                    isVerified = worker.isVerified,
-                    contactLabel = stringResource(R.string.home_worker_contact),
-                    viewProfileLabel = stringResource(R.string.home_worker_view_profile),
-                    onContact = { onContact(worker) },
-                    onViewProfile = { onViewProfile(worker) },
-                    modifier = Modifier.width(320.dp),
-                )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val cardWidth = maxWidth * OficiosComponentSize.carouselWidthFraction
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                contentPadding = PaddingValues(end = OficiosSpacing.xs),
+            ) {
+                items(workers, key = { it.id }) { worker ->
+                    WorkerCard(
+                        name = worker.displayName,
+                        specialty = worker.specialtyLabel,
+                        rating = worker.rating,
+                        avatarUrl = worker.avatarUrl,
+                        isVerified = worker.isVerified,
+                        contactLabel = stringResource(R.string.home_worker_contact),
+                        viewProfileLabel = stringResource(R.string.home_worker_view_profile),
+                        onContact = { onContact(worker) },
+                        onViewProfile = { onViewProfile(worker) },
+                        modifier = Modifier.width(cardWidth),
+                    )
+                }
             }
         }
     }
@@ -108,7 +120,7 @@ fun HomeRecentSearchesSection(
     ) {
         Text(
             text = stringResource(R.string.home_recent_title),
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
         LazyRow(
@@ -116,35 +128,13 @@ fun HomeRecentSearchesSection(
             contentPadding = PaddingValues(end = OficiosSpacing.xs),
         ) {
             items(searches, key = { "${it.type}-${it.id}" }) { entry ->
-                HomeRecentSearchCard(
-                    entry = entry,
+                OficiosChip(
+                    label = entry.label,
                     onClick = { onSearchClick(entry) },
-                    modifier = Modifier
-                        .width(CategoryCardSize)
-                        .height(CategoryCardSize),
                 )
             }
         }
     }
-}
-
-@Composable
-private fun HomeRecentSearchCard(
-    entry: RecentSearchEntry,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val icon = CategoryIconResolver.iconFor(
-        categoryId = entry.categoryId ?: entry.id,
-        categoryName = entry.label,
-    )
-    HomeCategoryCard(
-        title = entry.label,
-        icon = icon,
-        onClick = onClick,
-        compact = true,
-        modifier = modifier,
-    )
 }
 
 @Composable
@@ -177,6 +167,14 @@ fun HomeCategoriesGrid(
     showSeeAll: Boolean = true,
     onSeeAllClick: () -> Unit = {},
 ) {
+    if (categories.isEmpty()) {
+        OficiosEmptyState(
+            title = stringResource(R.string.home_categories_empty_title),
+            description = stringResource(R.string.home_categories_empty_description),
+            modifier = modifier.fillMaxWidth(),
+        )
+        return
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxWidth(),
@@ -188,10 +186,11 @@ fun HomeCategoriesGrid(
             HomeCategoryCard(
                 title = category.name,
                 icon = CategoryIconResolver.iconFor(category.id, category.name),
+                iconUrl = category.iconUrl,
                 onClick = { onCategoryClick(category) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(172.dp),
+                    .heightIn(min = OficiosComponentSize.registerRoleCardHeight),
             )
         }
         if (showSeeAll) {
@@ -202,7 +201,7 @@ fun HomeCategoriesGrid(
                     onClick = onSeeAllClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(172.dp),
+                        .heightIn(min = OficiosComponentSize.registerRoleCardHeight),
                 )
             }
         }
@@ -215,6 +214,14 @@ fun HomeRubrosGrid(
     onRubroClick: (CatalogOption) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (rubros.isEmpty()) {
+        OficiosEmptyState(
+            title = stringResource(R.string.home_rubros_empty_title),
+            description = stringResource(R.string.home_rubros_empty_description),
+            modifier = modifier.fillMaxWidth(),
+        )
+        return
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxWidth(),
@@ -229,7 +236,7 @@ fun HomeRubrosGrid(
                 onClick = { onRubroClick(rubro) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(172.dp),
+                    .heightIn(min = OficiosComponentSize.registerRoleCardHeight),
             )
         }
     }
@@ -244,6 +251,7 @@ fun HomeCategoryCard(
     HomeCategoryCard(
         title = category.name,
         icon = CategoryIconResolver.iconFor(category.id, category.name),
+        iconUrl = category.iconUrl,
         onClick = onClick,
         modifier = modifier,
     )
@@ -252,17 +260,18 @@ fun HomeCategoryCard(
 @Composable
 fun HomeCategoryCard(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    iconUrl: String? = null,
 ) {
     val titleStyle = if (compact) {
         MaterialTheme.typography.labelMedium
     } else {
         MaterialTheme.typography.bodyLarge
     }
-    val titleAreaHeight = if (compact) 36.dp else 48.dp
+    val titleAreaHeight = if (compact) OficiosComponentSize.ratingIcon else OficiosComponentSize.minTouchTarget
 
     Column(
         modifier = modifier
@@ -272,6 +281,7 @@ fun HomeCategoryCard(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(OficiosSpacing.md),
             )
+            .semantics(mergeDescendants = true) { contentDescription = title }
             .clickable(onClick = onClick)
             .padding(OficiosSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -280,7 +290,7 @@ fun HomeCategoryCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(titleAreaHeight),
+                .heightIn(min = titleAreaHeight),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -299,41 +309,46 @@ fun HomeCategoryCard(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(OficiosComponentSize.iconLg),
+            CategoryCardIcon(
+                icon = icon,
+                iconUrl = iconUrl,
+                contentDescription = title,
             )
         }
     }
 }
 
 @Composable
-fun HomeSupportSection(
-    onContactClick: () -> Unit,
+private fun CategoryCardIcon(
+    icon: ImageVector,
+    iconUrl: String?,
+    contentDescription: String,
+) {
+    val remoteUrl = iconUrl?.takeIf { it.isNotBlank() }
+    val iconModifier = Modifier.size(OficiosComponentSize.iconLg)
+    if (remoteUrl == null) {
+        LocalCategoryIcon(icon = icon, modifier = iconModifier)
+        return
+    }
+    SubcomposeAsyncImage(
+        model = remoteUrl,
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Fit,
+        modifier = iconModifier,
+        loading = { LocalCategoryIcon(icon = icon, modifier = iconModifier) },
+        error = { LocalCategoryIcon(icon = icon, modifier = iconModifier) },
+    )
+}
+
+@Composable
+private fun LocalCategoryIcon(
+    icon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
-    OficiosCard(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(OficiosSpacing.md),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.home_support_message),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
-            )
-            OficiosButton(
-                text = stringResource(R.string.home_support_contact),
-                onClick = onContactClick,
-                variant = OficiosButtonVariant.Secondary,
-            )
-        }
-    }
+    Icon(
+        imageVector = icon,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = modifier,
+    )
 }

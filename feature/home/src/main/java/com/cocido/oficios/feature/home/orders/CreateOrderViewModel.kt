@@ -7,11 +7,14 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.repository.ClientProfileRepository
+import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.CreateServiceRequestUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.ZoneId
 import javax.inject.Inject
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @HiltViewModel
 class CreateOrderViewModel @Inject constructor(
@@ -26,6 +30,7 @@ class CreateOrderViewModel @Inject constructor(
     private val getWorkerProfileUseCase: GetWorkerProfileUseCase,
     private val clientProfileRepository: ClientProfileRepository,
     private val createServiceRequestUseCase: CreateServiceRequestUseCase,
+    private val agendaUseCases: AgendaUseCases,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -43,12 +48,56 @@ class CreateOrderViewModel @Inject constructor(
     fun onEvent(event: CreateOrderEvent) {
         when (event) {
             CreateOrderEvent.Retry -> load()
-            is CreateOrderEvent.SubRubroSelected -> updateSuccess { copy(selectedSubRubroId = event.id) }
-            is CreateOrderEvent.DomicilioSelected -> updateSuccess { copy(selectedDomicilioId = event.id) }
-            is CreateOrderEvent.ContactoSelected -> updateSuccess { copy(selectedContactoId = event.id) }
-            is CreateOrderEvent.DateTimeSelected -> updateSuccess { copy(proposedDateTime = event.dateTime) }
-            is CreateOrderEvent.DescriptionChanged -> updateSuccess { copy(description = event.value) }
+            is CreateOrderEvent.SubRubroSelected -> {
+                updateSuccess {
+                    copy(
+                        selectedSubRubroId = event.id,
+                        selectedSlotId = null,
+                        proposedDateTime = null,
+                        availableSlots = emptyList(),
+                        slotsErrorMessage = null,
+                        submitIdempotencyKey = null,
+                    )
+                }
+                loadAvailableSlots(event.id)
+            }
+            is CreateOrderEvent.DomicilioSelected -> updateSuccess {
+                copy(selectedDomicilioId = event.id, submitIdempotencyKey = null)
+            }
+            is CreateOrderEvent.ContactoSelected -> updateSuccess {
+                copy(selectedContactoId = event.id, submitIdempotencyKey = null)
+            }
+            is CreateOrderEvent.SlotSelected -> updateSuccess {
+                copy(selectedSlotId = event.id, proposedDateTime = null, submitIdempotencyKey = null)
+            }
+            is CreateOrderEvent.DateTimeSelected -> updateSuccess {
+                copy(proposedDateTime = event.dateTime, selectedSlotId = null, submitIdempotencyKey = null)
+            }
+            is CreateOrderEvent.DescriptionChanged -> updateSuccess {
+                copy(description = event.value, submitIdempotencyKey = null)
+            }
             CreateOrderEvent.Submit -> submit()
+        }
+    }
+
+    private fun loadAvailableSlots(subRubroId: Long) {
+        viewModelScope.launch {
+            updateSuccess { copy(isLoadingSlots = true, slotsErrorMessage = null) }
+            val zone = ZoneId.systemDefault()
+            val from = LocalDate.now().atStartOfDay(zone).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val to = LocalDate.now().plusWeeks(4).atStartOfDay(zone).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            when (val result = agendaUseCases.getAvailableSlots(subRubroId, from, to)) {
+                is AppResult.Success -> updateSuccess {
+                    copy(isLoadingSlots = false, availableSlots = result.data, selectedSlotId = null, slotsErrorMessage = null)
+                }
+                is AppResult.Error -> updateSuccess {
+                    copy(
+                        isLoadingSlots = false,
+                        availableSlots = emptyList(),
+                        slotsErrorMessage = result.error.userMessage(),
+                    )
+                }
+            }
         }
     }
 
@@ -67,6 +116,7 @@ class CreateOrderViewModel @Inject constructor(
             val contactosResult = clientProfileRepository.getMyContactos()
             val domicilios = (domiciliosResult as? AppResult.Success)?.data.orEmpty()
             val contactos = (contactosResult as? AppResult.Success)?.data.orEmpty()
+            val selectedSubRubroId = subRubroOptions.singleOrNull()?.id
 
             _uiState.update {
                 CreateOrderUiState.Success(
@@ -74,11 +124,12 @@ class CreateOrderViewModel @Inject constructor(
                     subRubroOptions = subRubroOptions,
                     domicilios = domicilios,
                     contactos = contactos,
-                    selectedSubRubroId = subRubroOptions.singleOrNull()?.id,
+                    selectedSubRubroId = selectedSubRubroId,
                     selectedDomicilioId = domicilios.singleOrNull()?.id,
                     selectedContactoId = contactos.singleOrNull()?.id,
                 )
             }
+            selectedSubRubroId?.let { loadAvailableSlots(it) }
         }
     }
 
@@ -91,34 +142,54 @@ class CreateOrderViewModel @Inject constructor(
         val subRubroId = state.selectedSubRubroId
         val domicilioId = state.selectedDomicilioId
         val contactoId = state.selectedContactoId
+        val slotId = state.selectedSlotId
         val dateTime = state.proposedDateTime
-        if (subRubroId == null || domicilioId == null || contactoId == null || dateTime == null) {
+        val hasSlotOrDate = slotId != null || dateTime != null
+        if (subRubroId == null || domicilioId == null || contactoId == null || !hasSlotOrDate) {
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { state.copy(isSubmitting = true) }
-            val zoned = dateTime.atZone(ZoneId.systemDefault())
-            val startIso = zoned.toInstant().toString()
-            val endIso = zoned.plusHours(DEFAULT_DURATION_HOURS).toInstant().toString()
+            val key = state.submitIdempotencyKey ?: UUID.randomUUID().toString()
+            _uiState.update {
+                if (it is CreateOrderUiState.Success) it.copy(isSubmitting = true, submitIdempotencyKey = key) else it
+            }
 
-            val result = createServiceRequestUseCase(
-                CreateServiceRequestParams(
-                    trabajadorOficioSubRubroId = subRubroId,
-                    domicilioId = domicilioId,
-                    contactoId = contactoId,
-                    proposedStartIso = startIso,
-                    proposedEndIso = endIso,
-                    description = state.description.ifBlank { null },
-                ),
-            )
+            val result = if (slotId != null) {
+                createServiceRequestUseCase(
+                    CreateServiceRequestParams(
+                        trabajadorOficioSubRubroId = subRubroId,
+                        domicilioId = domicilioId,
+                        contactoId = contactoId,
+                        slotTurnoId = slotId,
+                        description = state.description.ifBlank { null },
+                        idempotencyKey = key,
+                    ),
+                )
+            } else {
+                val zoned = dateTime!!.atZone(ZoneId.systemDefault())
+                createServiceRequestUseCase(
+                    CreateServiceRequestParams(
+                        trabajadorOficioSubRubroId = subRubroId,
+                        domicilioId = domicilioId,
+                        contactoId = contactoId,
+                        proposedStartIso = zoned.toInstant().toString(),
+                        proposedEndIso = zoned.plusHours(DEFAULT_DURATION_HOURS).toInstant().toString(),
+                        description = state.description.ifBlank { null },
+                        idempotencyKey = key,
+                    ),
+                )
+            }
             when (result) {
                 is AppResult.Success -> {
                     _effects.send(CreateOrderEffect.NavigateToOrderDetail(result.data))
                 }
                 is AppResult.Error -> {
-                    _uiState.update { state.copy(isSubmitting = false) }
+                    _uiState.update {
+                        if (it is CreateOrderUiState.Success) it.copy(isSubmitting = false) else it
+                    }
                     _effects.send(CreateOrderEffect.ShowMessage(result.error.userMessage()))
+                    subRubroId.let { loadAvailableSlots(it) }
                 }
             }
         }

@@ -16,11 +16,14 @@ val OficiosColorBackground = Color(0xFF00358B)
 val OficiosColorOutlineFill = Color(0xFF004DA8)
 val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 
-/** Texto secundario / ítems inactivos — Figma rgb(127,154,197) */
-val OficiosColorSecondaryText = Color(0xFF7F9AC5)
+/** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
+val OficiosColorSecondaryText = Color(0xFF8EABD4)
 
-/** Azul de acción — botones primarios. Figma rgb(0,109,239) */
+/** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)
+
+/** Casco de marca. Figma Thumbnail `666:2`, rgb(0, 106, 240). No es el acento dorado. */
+val OficiosColorBrandMark = Color(0xFF006AF0)
 val OficiosColorActionContainer = Color(0xFF003C9A) // ver "unavailable" abajo, reutilizado como contenedor oscuro
 
 /** Estado "no disponible" (turnos, disponibilidad). Figma rgb(0,60,154) */
@@ -41,6 +44,8 @@ val OficiosColorPlaceholder = Color(0x80FFFFFF)
 // Semánticos extra (fuera del sistema M3 estándar, para uso en componentes de estado
 // que el handoff no define explícitamente, p. ej. "aceptado" en OrderCard).
 val OficiosColorSuccess = Color(0xFF4CAF7D)
+/** Verde claro sobre navy o tarjeta: AA para texto chico. */
+val OficiosColorSuccessText = Color(0xFFB7E4C7)
 val OficiosColorSuccessContainer = Color(0xFF1A3D2B)
 val OficiosColorOnSuccess = Color(0xFFFFFFFF)
 

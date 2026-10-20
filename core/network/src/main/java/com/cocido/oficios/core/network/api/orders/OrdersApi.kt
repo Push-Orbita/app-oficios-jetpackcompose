@@ -6,15 +6,18 @@ import com.cocido.oficios.core.network.api.orders.dto.CancelarSolicitudRequestDt
 import com.cocido.oficios.core.network.api.orders.dto.CreateCalificacionRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.CreateContrapropuestaRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.CreateSolicitudServicioRequestDto
+import com.cocido.oficios.core.network.api.orders.dto.FinalizeBookingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.MarcarTrackingRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.RechazarSolicitudRequestDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioDto
-import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSearchResponseDto
+import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSearchPageDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
 import com.cocido.oficios.core.network.api.orders.dto.UpdateSolicitudEstadoRequestDto
+import com.cocido.oficios.core.network.api.orders.dto.TrackingBookingDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -23,6 +26,7 @@ interface OrdersApi {
 
     @POST("solicitud-servicio")
     suspend fun createSolicitud(
+        @Header("Idempotency-Key") idempotencyKey: String,
         @Body request: CreateSolicitudServicioRequestDto,
     ): SolicitudServicioDto
 
@@ -30,7 +34,7 @@ interface OrdersApi {
     suspend fun getMisSolicitudesCliente(): PaginatedResponseDto<SolicitudServicioSimpleDto>
 
     @GET("solicitud-servicio/search")
-    suspend fun getSolicitudesTrabajador(): SolicitudServicioSearchResponseDto
+    suspend fun getSolicitudesTrabajador(): SolicitudServicioSearchPageDto
 
     @GET("solicitud-servicio/{id}")
     suspend fun getSolicitud(@Path("id") id: Long): SolicitudServicioDto
@@ -72,12 +76,20 @@ interface OrdersApi {
     suspend fun getBooking(@Path("id") id: Long): BookingDto
 
     @PATCH("booking/{id}/finalizar")
-    suspend fun finalizarBooking(@Path("id") id: Long): BookingDto
+    suspend fun finalizarBooking(
+        @Path("id") id: Long,
+        @Body request: FinalizeBookingRequestDto = FinalizeBookingRequestDto(),
+    ): BookingDto
 
     @POST("tracking-booking/booking/{bookingId}/marcar")
     suspend fun marcarTracking(
         @Path("bookingId") bookingId: Long,
         @Body request: MarcarTrackingRequestDto,
+    ): TrackingBookingDto
+
+    @GET("tracking-booking/booking/{bookingId}")
+    suspend fun getTracking(
+        @Path("bookingId") bookingId: Long,
     ): JsonElement
 
     @POST("calificaciones")

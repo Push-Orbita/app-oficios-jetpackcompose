@@ -86,6 +86,7 @@ class ProviderDniViewModelTest {
                 override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) =
                     AppResult.Success(Unit)
                 override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                 override suspend fun loadProviderProfileForSync() = AppResult.Success(ProviderProfileSync(tradeDraft = null))
             },
         ),
@@ -102,6 +103,7 @@ class ProviderDniViewModelTest {
                 override suspend fun submitSecondaryRubroFull(request: ProviderRubroFullRequest) =
                     AppResult.Success(Unit)
                 override suspend fun finalizeProfile() = AppResult.Success(Unit)
+                override suspend fun getMySubRubros() = AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
                 override suspend fun loadProviderProfileForSync() =
                     AppResult.Success(ProviderProfileSync(tradeDraft = null, documento = "12345678"))
             },

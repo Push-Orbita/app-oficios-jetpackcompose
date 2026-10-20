@@ -1,25 +1,14 @@
 package com.cocido.oficios.feature.home.orders
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAlert
+import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 
-fun statusDisplayLabel(status: ServiceRequestStatus, bookingStatus: BookingStatus?): String = when (status) {
-    ServiceRequestStatus.PENDING -> "Pendiente"
-    ServiceRequestStatus.COUNTER_OFFER -> "Contrapropuesta"
-    ServiceRequestStatus.ACCEPTED -> when (bookingStatus) {
-        BookingStatus.FINISHED -> "Finalizado"
-        BookingStatus.EN_ROUTE -> "En camino"
-        BookingStatus.IN_PROGRESS -> "En curso"
-        else -> "Confirmado"
-    }
-    ServiceRequestStatus.CANCELLED -> "Cancelado"
-    ServiceRequestStatus.EXPIRED -> "Expirado"
-}
+fun statusDisplayLabel(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int =
+    orderStatusVisual(status, bookingStatus).labelRes
 
 @Composable
 fun ServiceOrderStatusLabel(
@@ -27,18 +16,13 @@ fun ServiceOrderStatusLabel(
     bookingStatus: BookingStatus?,
     modifier: Modifier = Modifier,
 ) {
-    val color = when (status) {
-        ServiceRequestStatus.PENDING, ServiceRequestStatus.COUNTER_OFFER -> MaterialTheme.colorScheme.tertiary
-        ServiceRequestStatus.ACCEPTED -> when (bookingStatus) {
-            BookingStatus.FINISHED -> MaterialTheme.colorScheme.onSurfaceVariant
-            else -> MaterialTheme.colorScheme.primary
-        }
-        ServiceRequestStatus.CANCELLED, ServiceRequestStatus.EXPIRED -> OficiosColorAlert
-    }
-    Text(
-        text = statusDisplayLabel(status, bookingStatus),
-        style = MaterialTheme.typography.labelLarge,
-        color = color,
+    val visual = orderStatusVisual(status, bookingStatus)
+    OficiosChip(
+        label = stringResource(visual.labelRes),
         modifier = modifier,
+        containerColor = visual.container,
+        contentColor = visual.content,
+        borderColor = visual.container,
+        leadingIcon = visual.icon,
     )
 }

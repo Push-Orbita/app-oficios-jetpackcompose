@@ -16,6 +16,19 @@ val localProperties = Properties().apply {
     }
 }
 
+val firebaseEnabled: Boolean = run {
+    val googleServicesFile = file("google-services.json")
+    if (!googleServicesFile.exists()) return@run false
+    try {
+        val parsed = groovy.json.JsonSlurper().parseText(googleServicesFile.readText())
+        val projectInfo = (parsed as? Map<*, *>)?.get("project_info") as? Map<*, *>
+        val projectId = projectInfo?.get("project_id")?.toString() ?: ""
+        !projectId.contains("stub", ignoreCase = true) && projectId.isNotBlank()
+    } catch (_: Exception) {
+        false
+    }
+}
+
 android {
     namespace = "com.cocido.oficios"
     compileSdk {
@@ -33,11 +46,15 @@ android {
 
         // Read from local.properties (never committed) — see MAPS_API_KEY below.
         manifestPlaceholders["mapsApiKey"] = localProperties.getProperty("MAPS_API_KEY", "")
+
+        // Firebase es opcional: false cuando google-services.json es stub o falta.
+        buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,6 +73,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -64,6 +82,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
+    implementation(project(":core:location"))
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))
     implementation(project(":core:database"))
@@ -87,6 +106,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.kotlinx.coroutines.android)
     ksp(libs.hilt.compiler)
 
     implementation(platform(libs.firebase.bom))

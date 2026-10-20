@@ -18,6 +18,7 @@ data class SlotTurnoAgendaDto(
     val fin: String,
     val estado: String,
     val autoAceptacion: Boolean = false,
+    val bookingId: Long? = null,
 )
 
 @Serializable
@@ -27,6 +28,14 @@ data class SlotsAgrupadoPorTrabajadorDto(
 
 @Serializable
 data class CreateSlotTurnoRequestDto(
+    val trabajadorOficioSubRubroId: Long,
+    val inicio: String,
+    val fin: String,
+    val autoAceptacion: Boolean,
+)
+
+@Serializable
+data class UpdateSlotTurnoRequestDto(
     val trabajadorOficioSubRubroId: Long,
     val inicio: String,
     val fin: String,

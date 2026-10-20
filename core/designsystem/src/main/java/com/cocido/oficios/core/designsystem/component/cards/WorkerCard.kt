@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorTertiary
@@ -121,12 +122,15 @@ fun WorkerCard(
                 text = contactLabel,
                 onClick = onContact,
                 modifier = Modifier.weight(1f),
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Medium,
             )
             OficiosButton(
                 text = viewProfileLabel,
                 onClick = onViewProfile,
                 modifier = Modifier.weight(1f),
                 variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Medium,
             )
         }
     }

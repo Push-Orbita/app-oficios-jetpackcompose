@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.search
 
 import androidx.compose.runtime.Composable
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ import com.cocido.oficios.feature.home.R
 fun SearchResultsRoute(
     onNavigateBack: () -> Unit,
     onNavigateToWorker: (Long) -> Unit,
+    onNavigateToHire: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchResultsViewModel = hiltViewModel(),
@@ -21,14 +23,16 @@ fun SearchResultsRoute(
     val filterSheetState by viewModel.filterSheetState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val comingSoon = stringResource(R.string.home_coming_soon)
+    val snackbar = LocalOficiosSnackbarController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 SearchResultsEffect.NavigateBack -> onNavigateBack()
                 is SearchResultsEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
+                is SearchResultsEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 SearchResultsEffect.ShowComingSoon -> onShowMessage(comingSoon)
-                is SearchResultsEffect.ShowMessage -> onShowMessage(effect.message)
+                is SearchResultsEffect.ShowMessage -> snackbar.showError(effect.message)
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.cocido.oficios.core.network.api.notifications
 
+import com.cocido.oficios.core.network.api.notifications.dto.MarkNotificationReadResponseDto
+import com.cocido.oficios.core.network.api.notifications.dto.NotificationsPageDto
 import com.cocido.oficios.core.network.api.notifications.dto.RegisterDeviceTokenRequestDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
@@ -19,11 +21,12 @@ interface NotificationsApi {
     @PATCH("notifications/{id}/read")
     suspend fun markAsRead(
         @Path("id") notificationId: Long,
-    ): JsonElement
+    ): MarkNotificationReadResponseDto
 
     @GET("notifications")
     suspend fun getNotifications(
         @Query("pageSize") pageSize: Int = 20,
         @Query("pageNumber") pageNumber: Int = 1,
-    ): JsonElement
+        @Query("soloNoLeidas") soloNoLeidas: Boolean? = null,
+    ): NotificationsPageDto
 }

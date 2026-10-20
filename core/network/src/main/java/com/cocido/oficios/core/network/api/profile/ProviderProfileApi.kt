@@ -6,8 +6,10 @@ import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubru
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ProviderProfileApi {
 
@@ -28,4 +30,7 @@ interface ProviderProfileApi {
 
     @POST("trabajador-oficio/me/finalizar-perfil")
     suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto
+
+    @DELETE("trabajador-oficio-rubro/{id}")
+    suspend fun deleteRubro(@Path("id") id: Long): JsonElement
 }

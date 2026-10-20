@@ -36,6 +36,7 @@ fun WorkGalleryCard(
     caption: String?,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    contentDescription: String? = caption,
 ) {
     val clickableModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
 
@@ -52,7 +53,7 @@ fun WorkGalleryCard(
             if (!imageUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = imageUrl,
-                    contentDescription = caption,
+                    contentDescription = contentDescription,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
