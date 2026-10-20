@@ -23,6 +23,7 @@ fun CounterOfferRoute(
             when (effect) {
                 CounterOfferEffect.NavigateBack -> onNavigateBack()
                 is CounterOfferEffect.ShowMessage -> toastController.showError(effect.message)
+                CounterOfferEffect.CounterOfferSentSuccess -> toastController.showSuccess("Contraoferta enviada exitosamente")
             }
         }
     }
