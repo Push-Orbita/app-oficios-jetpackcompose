@@ -10,15 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Assignment
-import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,9 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.component.layout.HomeUserIdentityColumn
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
@@ -88,7 +82,7 @@ fun ClientHomeHeader(
                     ),
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Notifications,
+                    imageVector = ImageVector.vectorResource(OficiosIcons.BellDot),
                     contentDescription = stringResource(R.string.home_notifications),
                     tint = MaterialTheme.colorScheme.onBackground,
                 )
@@ -126,13 +120,13 @@ fun HomeSearchBar(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
             Icon(
-                imageVector = Icons.Outlined.Mic,
+                imageVector = ImageVector.vectorResource(OficiosIcons.Mic),
                 contentDescription = stringResource(R.string.home_voice_search),
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
             )
             Icon(
-                imageVector = Icons.Outlined.Search,
+                imageVector = ImageVector.vectorResource(OficiosIcons.Search),
                 contentDescription = stringResource(R.string.home_search),
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
@@ -150,13 +144,12 @@ fun ClientHomeBottomBar(
 ) {
     val roleShowsFavorites = hiltViewModel<HomeChromeViewModel>().showFavorites.collectAsState().value
     val items = buildList {
-        add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), Icons.Outlined.Home))
-        add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), Icons.Outlined.Assignment))
+        add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), OficiosIcons.House))
+        add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), OficiosIcons.ReceiptText))
         if (showFavorites ?: roleShowsFavorites) {
-            add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), Icons.Outlined.FavoriteBorder))
+            add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), OficiosIcons.Heart))
         }
-        add(OficiosNavItem(ClientHomeTab.AYUDA.route, stringResource(R.string.home_nav_ayuda), Icons.AutoMirrored.Outlined.HelpOutline))
-        add(OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), Icons.Outlined.Settings))
+        add(OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), OficiosIcons.User))
     }
     OficiosBottomNavigationBar(
         currentRoute = selectedTab.route,
@@ -172,6 +165,5 @@ enum class ClientHomeTab(val route: String) {
     INICIO("home_tab_inicio"),
     PEDIDOS("home_tab_pedidos"),
     FAVORITOS("home_tab_favoritos"),
-    AYUDA("home_tab_ayuda"),
     AJUSTES("home_tab_ajustes"),
 }

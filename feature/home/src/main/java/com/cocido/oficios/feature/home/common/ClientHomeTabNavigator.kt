@@ -16,7 +16,6 @@ object ClientHomeTabNavigator {
         ClientHomeTab.INICIO -> ClientHomeTabNavigation.Stay
         ClientHomeTab.PEDIDOS -> ClientHomeTabNavigation.Orders
         ClientHomeTab.FAVORITOS -> ClientHomeTabNavigation.Favorites
-        ClientHomeTab.AYUDA -> ClientHomeTabNavigation.Help
         ClientHomeTab.AJUSTES -> ClientHomeTabNavigation.Settings
     }
 
@@ -28,7 +27,6 @@ object ClientHomeTabNavigator {
         route == null -> ClientHomeTab.INICIO
         route == "orders/mine" -> ClientHomeTab.PEDIDOS
         route == "favorites" -> ClientHomeTab.FAVORITOS
-        route == "help" -> ClientHomeTab.AYUDA
         route == "settings" -> ClientHomeTab.AJUSTES
         else -> ClientHomeTab.INICIO
     }

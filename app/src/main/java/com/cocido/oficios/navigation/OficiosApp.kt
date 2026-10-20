@@ -203,6 +203,9 @@ fun AppNavHost(
             onNavigateToTerms = {
                 openTermsAndConditions(context) { navController.navigate(AppRoutes.TERMS) }
             },
+            onNavigateToHelp = {
+                navController.navigate(SharedHomeDestination.help)
+            },
             onNavigateToVerifyPhone = { contactId, telefono ->
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))
             },

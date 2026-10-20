@@ -13,6 +13,9 @@
     <string name="settings_session_section">Sesión</string>
     <string name="settings_profile_section">Mi perfil</string>
     <string name="settings_security_section">Seguridad y privacidad</string>
+    <string name="settings_support_section">Soporte</string>
+    <string name="settings_help">Ayuda</string>
+    <string name="settings_help_description">Preguntas frecuentes y contacto</string>
     <string name="settings_personal_data">Datos personales</string>
     <string name="settings_personal_data_description">Nombre, correo y foto de perfil</string>
     <string name="settings_client_data">Contactos y domicilios</string>

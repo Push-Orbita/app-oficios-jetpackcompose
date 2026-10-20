@@ -15,16 +15,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Badge
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.Article
+import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MiscellaneousServices
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,9 +37,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -176,7 +175,9 @@ private fun SettingsContent(
                             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
                         ) {
                             Icon(
-                                imageVector = if (user.emailVerified) Icons.Outlined.Verified else Icons.Outlined.Badge,
+                                imageVector = ImageVector.vectorResource(
+                                    if (user.emailVerified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert
+                                ),
                                 contentDescription = null,
                                 tint = if (user.emailVerified) MaterialTheme.colorScheme.tertiary else OficiosColorSecondaryText,
                                 modifier = Modifier.size(OficiosComponentSize.iconSm),
@@ -273,6 +274,16 @@ private fun SettingsContent(
             )
         }
 
+        item { SettingsSectionTitle(stringResource(R.string.settings_support_section)) }
+        item {
+            SettingsActionRow(
+                iconRes = OficiosIcons.CircleQuestionMark,
+                title = stringResource(R.string.settings_help),
+                description = stringResource(R.string.settings_help_description),
+                onClick = { onEvent(SettingsEvent.OpenHelp) },
+            )
+        }
+
         item { SettingsSectionTitle(stringResource(R.string.settings_session_section)) }
         item {
             OficiosButton(
@@ -302,14 +313,16 @@ private fun SettingsSectionTitle(title: String) {
 
 @Composable
 private fun SettingsActionRow(
-    icon: ImageVector,
     title: String,
     description: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    iconRes: Int? = null,
     enabled: Boolean = true,
 ) {
     OficiosCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .widthIn(max = OficiosComponentSize.contentMaxWidth)
             .heightIn(min = OficiosComponentSize.listRowMinHeight)
@@ -317,12 +330,20 @@ private fun SettingsActionRow(
             .clickable(enabled = enabled, onClick = onClick),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
-                modifier = Modifier.size(OficiosComponentSize.iconLg),
-            )
+            when {
+                iconRes != null -> Icon(
+                    imageVector = ImageVector.vectorResource(iconRes),
+                    contentDescription = null,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
+                    modifier = Modifier.size(OficiosComponentSize.iconLg),
+                )
+                icon != null -> Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
+                    modifier = Modifier.size(OficiosComponentSize.iconLg),
+                )
+            }
             Spacer(Modifier.width(OficiosSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -333,7 +354,11 @@ private fun SettingsActionRow(
                 Text(text = description, style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
             }
             if (enabled) {
-                Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = OficiosColorSecondaryText)
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.ChevronRight),
+                    contentDescription = null,
+                    tint = OficiosColorSecondaryText
+                )
             }
         }
     }
