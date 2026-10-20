@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -22,7 +22,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 fun OficiosInlineAlert(
     message: String,
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Outlined.ErrorOutline,
+    iconRes: Int = OficiosIcons.CircleAlert,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -30,7 +30,7 @@ fun OficiosInlineAlert(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            imageVector = icon,
+            imageVector = ImageVector.vectorResource(iconRes),
             contentDescription = null,
             modifier = Modifier.size(OficiosComponentSize.iconMd),
             tint = MaterialTheme.colorScheme.error,

@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -18,8 +15,11 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 // ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ fun OficiosBackTopBar(
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                    imageVector = ImageVector.vectorResource(OficiosIcons.ChevronLeft),
                     contentDescription = "Volver",
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
@@ -114,7 +114,10 @@ private fun TopAppBarPreview() {
                 title = "Oficios Formosa",
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.Notifications, contentDescription = null)
+                        Icon(
+                            imageVector = ImageVector.vectorResource(OficiosIcons.BellDot),
+                            contentDescription = "Notificaciones"
+                        )
                     }
                 },
             )

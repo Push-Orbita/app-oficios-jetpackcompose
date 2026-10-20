@@ -25,6 +25,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.HomeDestination
 import com.cocido.oficios.feature.home.navigation.OrdersDestination
+import com.cocido.oficios.feature.home.navigation.SharedHomeDestination
 import com.cocido.oficios.feature.home.navigation.agendaScreen
 import com.cocido.oficios.feature.home.navigation.homeScreen
 import com.cocido.oficios.feature.home.navigation.openClientTab
@@ -202,6 +203,9 @@ fun AppNavHost(
             onShowMessage = showMessage,
             onNavigateToTerms = {
                 openTermsAndConditions(context) { navController.navigate(AppRoutes.TERMS) }
+            },
+            onNavigateToHelp = {
+                navController.navigate(SharedHomeDestination.help)
             },
             onNavigateToVerifyPhone = { contactId, telefono ->
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))

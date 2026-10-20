@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,8 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -78,7 +78,7 @@ fun OficiosSearchField(
             ) {
                 if (onMicClick != null) {
                     Icon(
-                        imageVector = Icons.Default.Mic,
+                        imageVector = ImageVector.vectorResource(OficiosIcons.Mic),
                         contentDescription = "Buscar por voz",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(OficiosComponentSize.iconMd),
@@ -95,7 +95,7 @@ fun OficiosSearchField(
                 if (onSearchClick != null) {
                     IconButton(onClick = onSearchClick, modifier = Modifier.size(OficiosComponentSize.iconMd)) {
                         Icon(
-                            imageVector = Icons.Default.Search,
+                            imageVector = ImageVector.vectorResource(OficiosIcons.Search),
                             contentDescription = "Buscar",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

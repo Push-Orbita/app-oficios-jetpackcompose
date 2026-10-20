@@ -8,7 +8,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 /**
- * Host del bottom nav en Inicio. Pedidos, Favoritos, Ayuda y Ajustes son destinos
+ * Host del bottom nav en Inicio. Pedidos, Favoritos y Ajustes son destinos
  * propios: este host solo muestra Inicio, así que al volver el highlight es Inicio.
  */
 @Composable
@@ -16,7 +16,6 @@ fun ClientHomeTabRouteHost(
     onStay: () -> Unit = {},
     onNavigateToOrders: () -> Unit = {},
     onNavigateToSettings: () -> Unit,
-    onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onVisible: () -> Unit = {},
     content: @Composable (selectedTab: ClientHomeTab, onTabSelected: (ClientHomeTab) -> Unit) -> Unit,
@@ -37,7 +36,6 @@ fun ClientHomeTabRouteHost(
             onStay = onStay,
             onNavigateToOrders = onNavigateToOrders,
             onNavigateToSettings = onNavigateToSettings,
-            onNavigateToHelp = onNavigateToHelp,
             onNavigateToFavorites = onNavigateToFavorites,
         )
     }
