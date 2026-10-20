@@ -798,10 +798,39 @@ fun ProviderIdentityStepScreen(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val frontImagePicker = rememberImageSourcePicker { uri -> onFrontImageSelected(uri?.toString()) }
-    val backImagePicker = rememberImageSourcePicker { uri -> onBackImageSelected(uri?.toString()) }
-    val selfieImagePicker = rememberImageSourcePicker { uri -> onSelfieImageSelected(uri?.toString()) }
-    val certificatePicker = rememberImageSourcePicker { uri -> onCertificateSelected(uri?.toString()) }
+    val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
+    val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
+    val galleryLabel = stringResource(R.string.onboarding_image_picker_gallery)
+    val cancelLabel = stringResource(R.string.onboarding_image_picker_cancel)
+
+    val frontImagePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onFrontImageSelected,
+    )
+    val backImagePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onBackImageSelected,
+    )
+    val selfieImagePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onSelfieImageSelected,
+    )
+    val certificatePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onCertificateSelected,
+    )
 
     OnboardingStepScaffold(
         title = stringResource(R.string.onboarding_step_dni_title),
@@ -862,14 +891,14 @@ fun ProviderIdentityStepScreen(
                     title = stringResource(R.string.onboarding_step_dni_front_title),
                     subtitle = stringResource(R.string.onboarding_step_dni_front_subtitle),
                     isLoaded = uiState.frontImagePath != null || uiState.frontRemoteLoaded,
-                    onClick = { frontImagePicker.launch() },
+                    onClick = { frontImagePicker.requestImage() },
                 )
 
                 DniImageUploadCard(
                     title = stringResource(R.string.onboarding_step_dni_back_title),
                     subtitle = stringResource(R.string.onboarding_step_dni_back_subtitle),
                     isLoaded = uiState.backImagePath != null || uiState.backRemoteLoaded,
-                    onClick = { backImagePicker.launch() },
+                    onClick = { backImagePicker.requestImage() },
                 )
             }
 
@@ -891,7 +920,7 @@ fun ProviderIdentityStepScreen(
                     title = stringResource(R.string.onboarding_step_selfie_card_title),
                     subtitle = stringResource(R.string.onboarding_step_selfie_card_subtitle),
                     isLoaded = uiState.selfieImagePath != null || uiState.selfieRemoteLoaded,
-                    onClick = { selfieImagePicker.launch() },
+                    onClick = { selfieImagePicker.requestImage() },
                 )
             }
 
@@ -927,7 +956,7 @@ fun ProviderIdentityStepScreen(
 
                 OficiosButton(
                     text = stringResource(R.string.onboarding_step_certificate_upload),
-                    onClick = { certificatePicker.launch() },
+                    onClick = { certificatePicker.requestImage() },
                     variant = OficiosButtonVariant.Secondary,
                     size = OficiosButtonSize.Medium,
                     enabled = !uiState.isLoading && uiState.certificateName.isNotBlank(),
