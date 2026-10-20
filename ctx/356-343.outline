@@ -1,0 +1,57 @@
+356:343 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+356:345  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+356:347  gap-[10px] items-center
+356:355  flex-col gap-[32px] items-center pb-[32px] pt-[64px] px-[32px]
+356:356  flex-col items-center
+356:357 Logotipo h-[201.75px] w-[122.038px]
+356:368  DIN_Pro:Bold text-[48px] c[white]
+      TEXT: oficios formosa
+356:369  flex-col gap-[16px] items-center justify-center py-[16px] rounded-[16px]
+356:406  gap-[10px] items-center justify-center
+356:407 lucide/circle-alert size-[24px]
+356:370  DIN_Pro:Bold text-[16px]
+      TEXT: Los datos de sesión no coinciden
+356:371  border border-[#a32f56] border-solid h-[48px] items-center px-[16px] py-[12px] rounded-[8px]
+356:372  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: correoyaescritoconelinputselected@mail.com
+356:373  border border-[#a32f56] border-solid h-[48px] items-center justify-between px-[16px] py-[12px] rounded-[8px]
+356:374  DIN_Pro:Regular items-center text-[16px]
+356:375  
+356:376  
+356:377  
+356:378  
+356:379  
+356:380  
+356:381  
+356:382  
+356:413 lucide/eye size-[24px]
+356:383  items-center justify-between
+356:384  items-center justify-center
+356:385 state-layer items-center justify-center p-[11px] rounded-[100px]
+356:386 container bg-[#006def] rounded-[2px] size-[18px]
+356:387 check_small size-[24px]
+356:389  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Recordarme
+356:390  bg-[#006def] border border-[rgba(209,151,171,0.5)] border-solid drop-shadow-[0px_4px_5px_rgba(163,47,86,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+356:391  DIN_Pro:Medium text-[16px] c[white]
+      TEXT: ingresar
+356:392  
+356:393  items-center justify-between
+356:394  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: ¿Todavía no tenés cuenta?
+356:395  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+356:396  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Registrarse
+356:397  border border-[#004da8] border-solid flex-col items-center p-[16px] rounded-[16px]
+356:398  gap-[16px] items-center justify-center
+356:399  bg-[#00358b] border border-[#004da8] border-solid drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+356:400  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: ?
+356:401  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Para cualquier consulta o duda de asistencia, por favor, no dude en contactar a nuestra línea de atención:
+356:402  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+356:403  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Contactar
+356:404 .Building Blocks/navigation h-[24px]
+356:405 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

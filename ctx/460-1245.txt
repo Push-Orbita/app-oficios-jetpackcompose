@@ -1,0 +1,141 @@
+<cursor_untrusted_data_1337 source="CallDynamicTool">
+
+const assetPathPrefix = "https://www.figma.com/api/mcp/asset/5840e9fb-b816-47e0-b322-b24351c62345";
+const imgCameraCutout = `${assetPathPrefix}/eb708.svg`;
+const imgLucideSignal = `${assetPathPrefix}/fc19a.svg`;
+const imgLucideWifi = `${assetPathPrefix}/5b7d7.svg`;
+const imgLucideBatteryLow = `${assetPathPrefix}/3b84e.svg`;
+const imgLucideChevronLeft = `${assetPathPrefix}/b534a.svg`;
+const imgLucideCirclePlus = `${assetPathPrefix}/57742.svg`;
+const imgLucideHouse = `${assetPathPrefix}/e06f5.svg`;
+const imgLucideUser = `${assetPathPrefix}/f169e.svg`;
+const imgLucideHeart = `${assetPathPrefix}/72d2e.svg`;
+const imgLucideCircleQuestionMark = `${assetPathPrefix}/8e8dc.svg`;
+const imgLucideMenu = `${assetPathPrefix}/1d4b7.svg`;
+
+export default function Screen() {
+  return (
+    <div className="bg-[var(--background,#00358b)] content-stretch flex flex-col items-center justify-between overflow-clip relative rounded-[16px] size-full" data-node-id="460:1245" data-name="screen">
+      <div className="content-stretch flex h-[48px] items-center justify-between px-[20px] py-[10px] relative shrink-0 w-full" data-node-id="460:1246" data-name=".Building Blocks/status-bar">
+        <div className="[word-break:break-word] flex flex-col font-['Roboto:Medium'] font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-[color:var(--buttons-\&-texts,white)] tracking-[0.14px] w-[76px]" data-node-id="460:1247" style={{ fontVariationSettings: '"wdth" 100', fontFeatureSettings: '"ss02" 1, "dlig" 1, "lnum" 1, "pnum" 1' }}>
+          <p className="leading-[20px]">15:32</p>
+        </div>
+        <div className="relative shrink-0 size-[24px]" data-node-id="460:1248" data-name="Camera Cutout">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCameraCutout} />
+        </div>
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0" data-node-id="460:1249">
+          <div className="relative shrink-0 size-[16px]" data-node-id="460:1250" data-name="lucide/signal">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideSignal} />
+          </div>
+          <div className="relative shrink-0 size-[16px]" data-node-id="460:1252" data-name="lucide/wifi">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideWifi} />
+          </div>
+          <div className="h-[16px] relative shrink-0 w-[24px]" data-node-id="460:1254" data-name="lucide/battery-low">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideBatteryLow} />
+          </div>
+        </div>
+      </div>
+      <div className="content-stretch flex flex-[1_0_0] flex-col gap-[16px] items-start min-h-px overflow-x-clip overflow-y-auto pb-[32px] pt-[16px] px-[32px] relative w-full" data-node-id="460:1257">
+        <div className="content-stretch flex items-center relative shrink-0 w-full" data-node-id="460:1472">
+          <div className="content-stretch flex gap-[10px] items-center relative shrink-0" data-node-id="460:1473">
+            <div className="relative shrink-0 size-[24px]" data-node-id="460:1474" data-name="lucide/chevron-left">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideChevronLeft} />
+            </div>
+            <p className="[word-break:break-word] capitalize font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[36px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="460:1476">
+              Mis Ubicaciones
+            </p>
+          </div>
+        </div>
+        <div className="border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col items-start overflow-clip p-[10px] relative rounded-[16px] shrink-0 w-full" data-node-id="460:1273">
+          <div className="content-stretch flex flex-col items-start justify-center overflow-clip relative shrink-0 w-full" data-node-id="460:1274">
+            <div className="content-stretch flex items-center justify-between p-[8px] relative rounded-[8px] shrink-0 w-full" data-node-id="460:1281">
+              <a className="[word-break:break-word] block cursor-pointer font-['DIN_Pro:Regular'] leading-[0] not-italic relative shrink-0 text-[16px] text-[color:var(--secondary-text-color,#7f9ac5)] whitespace-nowrap" data-node-id="460:1282">
+                <p className="leading-[normal]">Agrega la nueva ubicación</p>
+              </a>
+              <div className="relative shrink-0 size-[24px]" data-node-id="460:1283" data-name="lucide/circle-plus">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideCirclePlus} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] min-w-full not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] w-[min-content]" data-node-id="460:1481">
+          Podes guardar la ubicación para un acceso más rápido en una próxima solicitud
+        </p>
+        <div className="content-stretch flex items-center justify-end relative shrink-0 w-[376px]" data-node-id="460:1440">
+          <div className="bg-[var(--buttons-\&-texts,white)] content-stretch drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] flex items-center justify-center px-[12px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="460:1441">
+            <p className="[word-break:break-word] capitalize font-['DIN_Pro:Medium'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--background,#00358b)] whitespace-nowrap" data-node-id="460:1442">
+              Guardar
+            </p>
+          </div>
+        </div>
+        <div className="h-[20px] relative shrink-0 w-full" data-node-id="460:1443" />
+      </div>
+      <div className="border-[var(--outlines-\&-fill,#004da8)] border-solid border-t content-stretch flex gap-[16px] items-start p-[16px] relative shrink-0 w-full" data-node-id="460:1444">
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="460:1445">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="460:1446">
+            <div className="relative shrink-0 size-[24px]" data-node-id="460:1447" data-name="lucide/house">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideHouse} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="460:1449">
+            Inicio
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="460:1450">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="460:1451">
+            <div className="relative shrink-0 size-[24px]" data-node-id="460:1452" data-name="lucide/user">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideUser} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="460:1454">
+            Perfil
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="460:1455">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="460:1456">
+            <div className="relative shrink-0 size-[24px]" data-node-id="460:1457" data-name="lucide/heart">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideHeart} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="460:1459">
+            Favoritos
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="460:1460">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="460:1461">
+            <div className="relative shrink-0 size-[24px]" data-node-id="460:1462" data-name="lucide/circle-question-mark">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideCircleQuestionMark} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="460:1464">
+            Ayuda
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="460:1465">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="460:1466">
+            <div className="relative shrink-0 size-[24px]" data-node-id="460:1467" data-name="lucide/menu">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideMenu} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="460:1469">
+            Ajustes
+          </p>
+        </div>
+      </div>
+      <div className="h-[24px] relative shrink-0 w-full" data-node-id="460:1470" data-name=".Building Blocks/navigation">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[var(--buttons-\&-texts,white)] h-[4px] left-1/2 rounded-[12px] top-1/2 w-[140px]" data-node-id="460:1471" data-name="handle" />
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+The generated code contains image and SVG URL constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These URLs are temporary download sources and expire after 7 days. Download each asset into the project with curl -L, then replace its URL in the generated code with a reference to the downloaded asset. Never use the temporary URLs as runtime image sources.
+
+</cursor_untrusted_data_1337>

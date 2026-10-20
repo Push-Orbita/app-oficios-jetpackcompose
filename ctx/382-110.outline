@@ -1,0 +1,37 @@
+382:110 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+382:112  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+382:114  gap-[10px] items-center
+382:122  flex-col gap-[16px] items-start px-[32px] py-[16px]
+382:123  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Validación
+382:124  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Validación de correo electrónico
+382:125  flex-col gap-[16px] items-center justify-center rounded-[16px]
+382:126  flex-col items-start text-[16px]
+382:127  DIN_Pro:Regular text-[#918e9b] w-[min-content]
+      TEXT: Te enviamos un código para validar el correo
+382:128  DIN_Pro:Bold c[white]
+      TEXT: nicoayala.design@gmail.com
+382:129  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+382:130  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Abrir correo
+382:131  gap-[10px] items-start
+382:132  border border-[#413764] border-solid h-[48px] rounded-[8px]
+382:133  border border-[#413764] border-solid h-[48px] rounded-[8px]
+382:134  border border-[#413764] border-solid h-[48px] rounded-[8px]
+382:135  border border-[#004da8] border-solid h-[48px] rounded-[8px]
+382:136  items-center justify-end
+382:137  bg-[#006def] border border-[rgba(209,151,171,0.5)] border-solid drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+382:138  DIN_Pro:Medium text-[16px] c[white]
+      TEXT: Omitir
+382:183  DIN_Pro:Regular gap-[4px] items-start text-[#918e9b] text-[16px]
+382:181  
+      TEXT: ¿No recibiste el código?
+382:182  
+      TEXT: Reenviar código en 00:56
+382:184  bg-[#004da8] drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+382:185  DIN_Pro:Medium text-[#918e9b] text-[16px]
+      TEXT: Reenviar código
+382:139 .Building Blocks/navigation h-[24px]
+382:140 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

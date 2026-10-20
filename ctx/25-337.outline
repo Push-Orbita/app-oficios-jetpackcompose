@@ -1,0 +1,86 @@
+25:337 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+25:339  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+25:341  gap-[10px] items-center
+25:349  flex-col gap-[16px] items-center px-[32px] py-[16px]
+25:655  items-center
+25:653  DIN_Pro:Bold text-[32px] c[white]
+      TEXT: Registro de oficio
+25:363  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+25:364  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Seleccione una categoría
+25:656 lucide/chevron-down size-[24px]
+25:661  bg-[#004da8] border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+25:662  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Seleccione un rubro
+25:663 lucide/chevron-down size-[24px]
+25:666  flex-col items-start justify-center
+25:665  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Especializado en:
+25:667  items-center justify-center pl-[4px]
+25:668 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+25:669 container bg-[#006def] rounded-[2px] size-[18px]
+25:670 check_small size-[24px]
+25:672  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Especialización 1
+25:676  items-center justify-center pl-[4px]
+25:677 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+25:678 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+25:679 check_small size-[24px]
+25:681  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Especialización 2
+25:682  items-center justify-center pl-[4px]
+25:683 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+25:684 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+25:685 check_small size-[24px]
+25:687  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Especialización 3
+25:688  items-center justify-center pl-[4px]
+25:689 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+25:690 container bg-[#006def] rounded-[2px] size-[18px]
+25:691 check_small size-[24px]
+25:693  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Especialización n
+25:748  flex-col gap-[10px] items-start justify-center
+25:749  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Rango de Experiencia:
+25:750  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+25:751  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Seleccione un barrio
+25:752 lucide/chevron-down size-[24px]
+25:694  flex-col gap-[10px] items-start justify-center
+25:695  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Barrio:
+25:718  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+25:719  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Busque su barrio
+25:754 lucide/search size-[24px]
+25:722  flex-col gap-[10px] items-start justify-center
+25:723  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Horario de atención:
+25:732  gap-[16px] items-start
+25:724  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px]
+25:725  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Desde
+25:726 lucide/chevron-down size-[24px]
+25:728  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px]
+25:729  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Hasta
+25:730 lucide/chevron-down size-[24px]
+25:733  items-center justify-center
+25:735  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] h-[48px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+25:736  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Añadir otro horario
+25:739  flex-col gap-[10px] items-start justify-center
+25:740  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Método de Pago:
+25:741  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+25:742  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Seleccione una opción
+25:743 lucide/chevron-down size-[24px]
+25:745  items-center justify-center
+25:746  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] h-[48px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+25:747  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Añadir otro método
+25:421 .Building Blocks/navigation h-[24px]
+25:422 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

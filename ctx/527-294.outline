@@ -1,0 +1,114 @@
+527:294 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+527:296  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+527:298  gap-[10px] items-center
+527:306  flex-col gap-[16px] items-start px-[32px] py-[16px]
+527:307  items-center
+527:308  DIN_Pro:Bold text-[32px] c[white]
+      TEXT: Elegí tu categoría
+527:309  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Recordá que podés seleccionar más de una
+527:310  flex-col gap-[32px] items-start
+527:311  gap-[32px] items-center justify-center
+527:312  items-center
+527:313  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Construcción
+527:314 construccion-icon 1 h-[78px] w-[100px]
+527:315  bg-[#004da8] border border-[#004da8] border-solid flex-col gap-[16px] h-[172px] items-center p-[16px] rounded-[16px]
+527:316  DIN_Pro:Regular text-[16px] c[white]
+527:317 mantenimiento-icon 1 size-[76px]
+527:318  gap-[32px] items-center justify-center
+527:319  items-center
+527:320  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Seguridad en Casa
+527:321 Vector (Stroke) h-[100px] w-[81px]
+527:322  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] h-[172px] items-center p-[16px] rounded-[16px]
+527:323  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Serv. Personales
+527:324 lucide/users size-[90px]
+527:399  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Construcción
+527:326  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+527:327  DIN_Pro:Regular text-[16px]
+      TEXT: Albañilería
+527:328 lucide/chevron-down size-[24px]
+527:330  flex-col gap-[10px] items-start justify-center
+527:331  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Especializado en:
+527:332  gap-[8px] items-center justify-center
+527:333 lucide/circle size-[24px]
+527:335  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Colocación de pisos
+527:336  gap-[8px] items-center justify-center
+527:337 lucide/circle-dot size-[24px]
+527:339  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Instalación de cielo raso
+527:340  gap-[8px] items-center justify-center
+527:341 lucide/circle size-[24px]
+527:343  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Losa
+527:344  gap-[8px] items-center justify-center
+527:345 lucide/circle size-[24px]
+527:347  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Otro:
+527:348  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+527:349  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+527:350  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Ingresar otro
+527:351 lucide/chevron-down size-[24px]
+527:353  flex-col gap-[10px] items-start justify-center
+527:354  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Rango de Experiencia:
+527:355  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+527:356  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Seleccione experiencia
+527:357 lucide/chevron-down size-[24px]
+527:359  flex-col gap-[10px] items-start justify-center
+527:360  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Barrio:
+527:361  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+527:362  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Busque su barrio
+527:363 lucide/search size-[24px]
+527:400  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Construcción
+527:365  flex-col gap-[10px] items-start justify-center
+527:366  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Horario de atención:
+527:367  gap-[16px] items-start
+527:368  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px]
+527:369  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Desde
+527:370 lucide/chevron-down size-[24px]
+527:372  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px]
+527:373  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Hasta
+527:374 lucide/chevron-down size-[24px]
+527:376  items-center justify-center
+527:377  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] h-[48px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+527:378  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Añadir otro horario
+527:379  items-center justify-between
+527:380  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: ¿Tenés más de un rubro?
+527:381  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] gap-[10px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+527:382 lucide/circle-plus size-[24px]
+527:384  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Añadir rubro
+527:385  flex-col gap-[10px] items-start justify-center
+527:386  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Método de Pago:
+527:387  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+527:388  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Seleccione una opción
+527:389 lucide/chevron-down size-[24px]
+527:391  items-center justify-center
+527:392  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] h-[48px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+527:393  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Añadir otro método
+527:394  h-[48px] items-center justify-end
+527:395  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] h-[48px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+527:396  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Continuar
+527:397 .Building Blocks/navigation h-[24px]
+527:398 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

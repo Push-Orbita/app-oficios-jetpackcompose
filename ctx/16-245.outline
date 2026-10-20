@@ -1,0 +1,47 @@
+16:245 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+16:247  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+16:249  gap-[10px] items-center
+16:257  flex-col gap-[32px] items-center pb-[32px] pt-[64px] px-[32px]
+16:308  flex-col items-center
+16:258 Logotipo h-[201.75px] w-[122.038px]
+16:269  DIN_Pro:Bold text-[48px] c[white]
+      TEXT: oficios formosa
+16:277  flex-col gap-[16px] items-center justify-center py-[16px] rounded-[16px]
+16:272  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ingrese sus datos para iniciar sesión
+16:276  border border-[#006def] border-solid h-[48px] items-center px-[16px] py-[12px] rounded-[8px]
+16:273  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: correoyaescritoconelinputselected@mail.com
+16:275  border border-[#004da8] border-solid h-[48px] items-center px-[16px] py-[12px] rounded-[8px]
+16:274  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: Contraseña
+16:281  items-center justify-between
+16:505  items-center justify-center
+16:507 state-layer items-center justify-center p-[11px] rounded-[100px]
+16:508 container bg-[#006def] rounded-[2px] size-[18px]
+16:511 check_small size-[24px]
+16:320  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Recordarme
+16:279  bg-[#006def] drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+16:280  DIN_Pro:Medium text-[16px] c[white]
+      TEXT: ingresar
+16:516  
+16:513  items-center justify-between
+16:321  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: ¿Todavía no tenés cuenta?
+16:514  bg-[white] drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+16:515  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Registrarse
+16:307  border border-[#004da8] border-solid flex-col items-center p-[16px] rounded-[16px]
+16:288  gap-[16px] items-center justify-center
+16:309  bg-[#00358b] border border-[#004da8] border-solid drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+16:310  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: ?
+16:282  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Para cualquier consulta o duda de asistencia, por favor, no dude en contactar a nuestra línea de atención:
+16:289  bg-[white] drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+16:290  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Contactar
+16:270 .Building Blocks/navigation h-[24px]
+16:271 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

@@ -1,0 +1,266 @@
+210:106 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+210:108  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+210:110  gap-[10px] items-center
+210:118  flex-col gap-[16px] items-center pb-[32px] pt-[16px] px-[32px]
+210:142  flex-col gap-[10px] items-start
+210:143  items-center
+210:144  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Agenda completa
+210:145  border border-[#004da8] border-solid flex-col gap-[10px] items-start p-[10px] rounded-[16px]
+210:146  h-[48px] items-center justify-between py-[10px]
+210:147  bg-[#004da8] border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+210:148 lucide/chevron-left size-[24px]
+210:150  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: marzo 2026
+210:151  bg-[#004da8] border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+210:152 lucide/chevron-right size-[24px]
+210:154  h-[32px] items-center justify-between p-[10px]
+210:155  flex-col items-center justify-center size-[32px]
+210:156  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Do
+210:157  flex-col items-center justify-center size-[32px]
+210:158  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Lu
+210:159  items-center justify-center size-[32px]
+210:160  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ma
+210:161  flex-col items-center justify-center size-[32px]
+210:162  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Mi
+210:163  flex-col items-center justify-center size-[32px]
+210:164  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ju
+210:165  flex-col items-center justify-center size-[32px]
+210:166  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Vi
+210:167  flex-col items-center justify-center size-[32px]
+210:168  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Sá
+210:169  h-[32px] items-center justify-between p-[10px]
+210:170  flex-col items-center justify-center size-[32px]
+210:171  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 1
+210:172  flex-col items-center justify-center size-[32px]
+210:173  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 2
+210:174  items-center justify-center size-[32px]
+210:175  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 3
+210:176  bg-[white] flex-col items-center justify-center rounded-[16px] size-[32px]
+210:177  DIN_Pro:Bold text-[16px] c[#00358b]
+      TEXT: 4
+210:178  flex-col items-center justify-center size-[32px]
+210:179  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 5
+210:180  bg-[#006def] flex-col items-center justify-center rounded-[32px] size-[32px]
+210:181  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 6
+210:182  flex-col items-center justify-center size-[32px]
+210:183  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 7
+210:184  h-[32px] items-center justify-between p-[10px]
+210:185  flex-col items-center justify-center size-[32px]
+210:186  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 8
+210:187  flex-col items-center justify-center size-[32px]
+210:188  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 9
+210:189  items-center justify-center size-[32px]
+210:190  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 10
+210:191  flex-col items-center justify-center size-[32px]
+210:192  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 11
+210:193  flex-col items-center justify-center size-[32px]
+210:194  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 12
+210:195  flex-col items-center justify-center size-[32px]
+210:196  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 13
+210:197  flex-col items-center justify-center size-[32px]
+210:198  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 14
+210:199  h-[32px] items-center justify-between p-[10px]
+210:200  flex-col items-center justify-center size-[32px]
+210:201  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 15
+210:202  flex-col items-center justify-center size-[32px]
+210:203  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 16
+210:204  bg-[#006def] flex-col items-center justify-center rounded-[32px] size-[32px]
+210:205  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 17
+210:206  flex-col items-center justify-center size-[32px]
+210:207  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 18
+210:208  flex-col items-center justify-center size-[32px]
+210:209  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 19
+210:210  flex-col items-center justify-center size-[32px]
+210:211  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 20
+210:212  flex-col items-center justify-center size-[32px]
+210:213  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 21
+210:214  h-[32px] items-center justify-between p-[10px]
+210:215  flex-col items-center justify-center size-[32px]
+210:216  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 22
+210:217  flex-col items-center justify-center size-[32px]
+210:218  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 23
+210:219  items-center justify-center size-[32px]
+210:220  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 24
+210:221  flex-col items-center justify-center size-[32px]
+210:222  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 25
+210:223  flex-col items-center justify-center size-[32px]
+210:224  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 26
+210:225  flex-col items-center justify-center size-[32px]
+210:226  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 27
+210:227  flex-col items-center justify-center size-[32px]
+210:228  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 28
+210:229  h-[32px] items-center justify-between p-[10px]
+210:230  flex-col items-center justify-center size-[32px]
+210:231  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 29
+210:232  flex-col items-center justify-center size-[32px]
+210:233  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 30
+210:234  items-center justify-center size-[32px]
+210:235  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 31
+210:236  flex-col items-center justify-center size-[32px]
+210:237  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 1
+210:238  flex-col items-center justify-center size-[32px]
+210:239  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 2
+210:240  flex-col items-center justify-center size-[32px]
+210:241  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 3
+210:242  flex-col items-center justify-center size-[32px]
+210:243  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 4
+239:472  items-center justify-end
+239:473  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: ajustar calendario
+210:244  flex-col items-end
+210:245  flex-col gap-[8px] items-start justify-center
+210:246  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 4 de marzo
+210:247  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:248  items-center justify-center pl-[4px]
+210:249 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:250 container bg-[#006def] rounded-[2px] size-[18px]
+210:251 check_small size-[24px]
+210:253  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Servicio de Albañilería
+210:254 lucide/chevron-right size-[24px]
+210:256  bg-[#00358b] border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:257  items-center justify-center pl-[4px]
+210:258 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:259 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:260 check_small size-[24px]
+210:517 check_indeterminate_small 
+      TEXT: Icon( Icons.Default.Remove, contentDescription = "" // Add a valid content description )
+210:261  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Presupuesto de Albañilería
+210:262 lucide/chevron-right size-[24px]
+210:264  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 6 de marzo
+210:265  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:266  items-center justify-center pl-[4px]
+210:267 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:268 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:269 check_small size-[24px]
+210:270  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Servicio de Albañilería
+210:271 lucide/chevron-right size-[24px]
+210:273  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 17 de marzo
+210:274  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:275  items-center justify-center pl-[4px]
+210:276 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:277 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:278 check_small size-[24px]
+210:279  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Servicio de Albañilería
+210:280 lucide/chevron-right size-[24px]
+210:311  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 19 de marzo
+210:312  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:313  items-center justify-center pl-[4px]
+210:519 state-layer h-[40px] items-center justify-center pr-[11px] py-[11px] rounded-[100px] w-[29px]
+210:520 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:521 check_small size-[24px]
+210:318  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Servicio de Albañilería
+210:319 lucide/chevron-right size-[24px]
+210:321  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:322  items-center justify-center pl-[4px]
+210:323 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:324 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:325 check_small size-[24px]
+210:326  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Presupuesto de Albañilería
+210:327 lucide/chevron-right size-[24px]
+210:329  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 22 de marzo
+210:330  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:331  items-center justify-center pl-[4px]
+210:332 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:333 container bg-[#006def] rounded-[2px] size-[18px]
+210:334 check_small size-[24px]
+210:336  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Servicio de Albañilería
+210:337 lucide/chevron-right size-[24px]
+210:339  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:340  items-center justify-center pl-[4px]
+210:341 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+210:342 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:343 check_small size-[24px]
+210:344  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Presupuesto de Albañilería
+210:345 lucide/chevron-right size-[24px]
+210:522  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+210:523  items-center justify-center pl-[4px]
+210:524 state-layer h-[40px] items-center justify-center pr-[11px] py-[11px] rounded-[100px] w-[29px]
+210:525 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+210:526 check_small size-[24px]
+210:527  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Servicio de Albañilería
+210:528 lucide/chevron-right size-[24px]
+210:283  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+210:284  flex-col gap-[8px] items-center justify-center
+210:285  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+210:286 lucide/house size-[24px]
+210:288  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+210:289  flex-col gap-[8px] items-center justify-center
+210:290  flex-col items-center justify-center p-[8px] rounded-[8px]
+210:291 lucide/user size-[24px]
+210:293  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+210:294  flex-col gap-[8px] items-center justify-center
+210:295  flex-col items-center justify-center p-[8px] rounded-[8px]
+210:296 lucide/heart size-[24px]
+210:298  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+210:299  flex-col gap-[8px] items-center justify-center
+210:300  flex-col items-center justify-center p-[8px] rounded-[8px]
+210:301 lucide/circle-question-mark size-[24px]
+210:303  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+210:304  flex-col gap-[8px] items-center justify-center
+210:305  flex-col items-center justify-center p-[8px] rounded-[8px]
+210:306 lucide/menu size-[24px]
+210:308  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+210:309 .Building Blocks/navigation h-[24px]
+210:310 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

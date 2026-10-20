@@ -1,0 +1,172 @@
+<cursor_untrusted_data_1337 source="CallDynamicTool">
+
+const assetPathPrefix = "https://www.figma.com/api/mcp/asset/4a5776f1-d256-45bb-9386-273493ead893";
+const imgFrame928 = `${assetPathPrefix}/30cd7.png`;
+const imgCameraCutout = `${assetPathPrefix}/eb708.svg`;
+const imgLucideSignal = `${assetPathPrefix}/fc19a.svg`;
+const imgLucideWifi = `${assetPathPrefix}/5b7d7.svg`;
+const imgLucideBatteryLow = `${assetPathPrefix}/3b84e.svg`;
+const imgLucideChevronLeft = `${assetPathPrefix}/b534a.svg`;
+const imgVector = `${assetPathPrefix}/01815.svg`;
+const imgLucideReceiptText = `${assetPathPrefix}/59d13.svg`;
+const imgLucideMapPinHouse = `${assetPathPrefix}/647d1.svg`;
+const imgLucideUser = `${assetPathPrefix}/ef61d.svg`;
+const imgLucideClock = `${assetPathPrefix}/0c8ca.svg`;
+const imgLucideDollarSign = `${assetPathPrefix}/1091c.svg`;
+const imgLucideBanknote = `${assetPathPrefix}/2c1c3.svg`;
+
+export default function Screen() {
+  return (
+    <div className="bg-[var(--background,#00358b)] content-stretch flex flex-col items-center justify-between overflow-clip relative rounded-[16px] size-full" data-node-id="198:697" data-name="screen">
+      <div className="content-stretch flex h-[48px] items-center justify-between px-[20px] py-[10px] relative shrink-0 w-full" data-node-id="198:698" data-name=".Building Blocks/status-bar">
+        <div className="[word-break:break-word] flex flex-col font-['Roboto:Medium'] font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-[color:var(--buttons-\&-texts,white)] tracking-[0.14px] w-[76px]" data-node-id="198:699" style={{ fontVariationSettings: '"wdth" 100', fontFeatureSettings: '"ss02" 1, "dlig" 1, "lnum" 1, "pnum" 1' }}>
+          <p className="leading-[20px]">15:32</p>
+        </div>
+        <div className="relative shrink-0 size-[24px]" data-node-id="198:700" data-name="Camera Cutout">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCameraCutout} />
+        </div>
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0" data-node-id="198:701">
+          <div className="relative shrink-0 size-[16px]" data-node-id="198:702" data-name="lucide/signal">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideSignal} />
+          </div>
+          <div className="relative shrink-0 size-[16px]" data-node-id="198:704" data-name="lucide/wifi">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideWifi} />
+          </div>
+          <div className="h-[16px] relative shrink-0 w-[24px]" data-node-id="198:706" data-name="lucide/battery-low">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideBatteryLow} />
+          </div>
+        </div>
+      </div>
+      <div className="content-stretch drop-shadow-[0px_4px_2px_rgba(0,0,0,0.25)] flex flex-[1_0_0] flex-col gap-[16px] items-center min-h-px overflow-x-clip overflow-y-auto pb-[32px] pt-[16px] px-[32px] relative w-full" data-node-id="198:709">
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full" data-node-id="198:710">
+          <div className="relative shrink-0 size-[24px]" data-node-id="207:26" data-name="lucide/chevron-left">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideChevronLeft} />
+          </div>
+          <p className="[word-break:break-word] capitalize font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[36px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="198:711">
+            Pedido Confirmado
+          </p>
+        </div>
+        <div className="border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col h-[248px] items-center justify-center overflow-clip p-[16px] relative rounded-[16px] shrink-0 w-full" data-node-id="198:712">
+          <div aria-hidden className="absolute inset-0 pointer-events-none rounded-[16px]">
+            <div className="absolute bg-[var(--background,#00358b)] inset-0 rounded-[16px]" />
+            <img alt="" className="absolute max-w-none object-cover rounded-[16px] size-full" src={imgFrame928} />
+          </div>
+          <div className="absolute h-[20px] left-[120px] top-[108px] w-[16px]" data-node-id="198:822" data-name="Vector">
+            <div className="absolute inset-[-5%_-6.25%]">
+              <img alt="" className="block max-w-none size-full" src={imgVector} />
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full" data-node-id="202:897">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="202:888">
+            <div className="relative shrink-0 size-[24px]" data-node-id="202:898" data-name="lucide/receipt-text">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideReceiptText} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col items-start justify-center leading-[normal] min-w-px not-italic relative text-[16px]" data-node-id="198:823">
+            <p className="font-['DIN_Pro:Bold'] relative shrink-0 text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="198:824">
+              Detalle:
+            </p>
+            <p className="font-['DIN_Pro:Regular'] min-w-full relative shrink-0 text-[color:var(--secondary-text-color,#7f9ac5)] w-[min-content]" data-node-id="198:825">
+              Serv. de Albañilería, revoque de pared.
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full" data-node-id="202:962">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="202:906">
+            <div className="relative shrink-0 size-[24px]" data-node-id="202:929" data-name="lucide/map-pin-house">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideMapPinHouse} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col items-start justify-center leading-[normal] min-w-px not-italic relative text-[16px]" data-node-id="201:838">
+            <p className="font-['DIN_Pro:Bold'] relative shrink-0 text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="201:839">
+              Dirección:
+            </p>
+            <p className="font-['DIN_Pro:Regular'] min-w-full relative shrink-0 text-[color:var(--secondary-text-color,#7f9ac5)] w-[min-content]" data-node-id="201:840">
+              Juan José Silva 3800, Mz 52, Casa 4
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-center justify-center relative shrink-0 w-full" data-node-id="202:963">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="202:937">
+            <div className="relative shrink-0 size-[24px]" data-node-id="202:940" data-name="lucide/user">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideUser} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col items-start justify-center leading-[normal] min-w-px not-italic relative text-[16px]" data-node-id="202:846">
+            <p className="font-['DIN_Pro:Bold'] relative shrink-0 text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="202:847">
+              Cliente:
+            </p>
+            <p className="font-['DIN_Pro:Regular'] min-w-full relative shrink-0 text-[color:var(--secondary-text-color,#7f9ac5)] w-[min-content]" data-node-id="202:848">
+              Mariano Montellano
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full" data-node-id="202:964">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="202:946">
+            <div className="relative shrink-0 size-[24px]" data-node-id="202:956" data-name="lucide/clock">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideClock} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col items-start justify-center leading-[normal] min-w-px not-italic relative text-[16px]" data-node-id="201:842">
+            <p className="font-['DIN_Pro:Bold'] relative shrink-0 text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="201:843">
+              Tiempo de visita:
+            </p>
+            <p className="font-['DIN_Pro:Regular'] min-w-full relative shrink-0 text-[color:var(--secondary-text-color,#7f9ac5)] w-[min-content]" data-node-id="201:845">
+              4 de marzo, 15:30hs
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[8px] items-start justify-center relative shrink-0 w-full" data-node-id="202:864">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="202:868">
+            <div className="relative shrink-0 size-[24px]" data-node-id="202:882" data-name="lucide/dollar-sign">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideDollarSign} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col items-start justify-center leading-[normal] min-w-px not-italic relative text-[16px]" data-node-id="202:865">
+            <p className="font-['DIN_Pro:Bold'] relative shrink-0 text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="202:866">
+              Monto:
+            </p>
+            <p className="font-['DIN_Pro:Regular'] min-w-full relative shrink-0 text-[color:var(--secondary-text-color,#7f9ac5)] w-[min-content]" data-node-id="202:867">
+              $50.000,00
+            </p>
+          </div>
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex gap-[8px] items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="202:878">
+            <div className="relative shrink-0 size-[24px]" data-node-id="202:879" data-name="lucide/banknote">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideBanknote} />
+            </div>
+            <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="202:881">
+              Efectivo
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[16px] items-center justify-end relative shrink-0 w-full" data-node-id="198:834">
+          <div className="bg-[var(--secondary,#006def)] content-stretch drop-shadow-[0px_4px_5px_rgba(163,47,86,0.15)] flex items-center justify-center px-[12px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="198:775">
+            <p className="[word-break:break-word] font-['DIN_Pro:Medium'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="198:778">
+              Contacto
+            </p>
+          </div>
+          <div className="bg-[var(--buttons-\&-texts,white)] content-stretch drop-shadow-[0px_4px_5px_rgba(163,47,86,0.15)] flex items-center justify-center px-[12px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="198:835">
+            <p className="[word-break:break-word] capitalize font-['DIN_Pro:Medium'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--background,#00358b)] whitespace-nowrap" data-node-id="198:836">
+              Estoy en camino
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="h-[24px] relative shrink-0 w-full" data-node-id="198:805" data-name=".Building Blocks/navigation">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[var(--buttons-\&-texts,white)] h-[4px] left-1/2 rounded-[12px] top-1/2 w-[140px]" data-node-id="198:806" data-name="handle" />
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+The generated code contains image and SVG URL constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These URLs are temporary download sources and expire after 7 days. Download each asset into the project with curl -L, then replace its URL in the generated code with a reference to the downloaded asset. Never use the temporary URLs as runtime image sources.
+
+</cursor_untrusted_data_1337>

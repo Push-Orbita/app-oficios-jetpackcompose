@@ -1,0 +1,109 @@
+40:559 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+40:561  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+40:563  gap-[10px] items-center
+40:571  drop-shadow-[0px_4px_2px_rgba(0,0,0,0.25)] flex-col gap-[16px] items-center pb-[32px] pt-[16px] px-[32px]
+40:852  items-center
+40:697  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: ficha completa
+40:593  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] items-start p-[16px] rounded-[16px]
+40:729  items-start justify-between
+40:594  gap-[16px] items-start
+40:595  border border-[#004da8] border-solid rounded-[8px] size-[64px]
+40:596  flex-col gap-[8px] items-start justify-center
+40:597  gap-[6px] items-center
+40:598  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Emanuel Molina
+40:599 lucide/shield-check size-[24px]
+40:601  gap-[4px] items-center
+40:602  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 5
+40:603  items-center
+40:604 lucide/star size-[24px]
+40:606 lucide/star size-[24px]
+40:608 lucide/star size-[24px]
+40:610 lucide/star size-[24px]
+40:613 lucide/star size-[24px]
+40:730 lucide/heart size-[24px]
+40:698  flex-col items-start justify-center
+40:722  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+40:723  flex-col items-start justify-center text-[16px]
+40:724  DIN_Pro:Bold c[white]
+      TEXT: Oficios:
+40:725  DIN_Pro:Regular c[#7f9ac5] w-[min-content]
+      TEXT: Albañil, Electricista
+40:726  flex-col items-start justify-center text-[16px]
+40:727  DIN_Pro:Bold c[white]
+      TEXT: Especializado en:
+40:728  DIN_Pro:Regular c[#7f9ac5] w-[min-content]
+      TEXT: Albañilería general, Reparación de humedad, Revestimiento de Cerámicos y azulejos, Iluminación
+40:618  gap-[16px] items-center justify-end
+40:619  bg-[#006def] border border-[rgba(209,151,171,0.5)] border-solid drop-shadow-[0px_4px_5px_rgba(163,47,86,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+40:620  DIN_Pro:Medium text-[16px] c[white]
+      TEXT: Contactar
+40:621  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+40:622  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Calificar
+40:743  flex-col gap-[16px] items-start
+40:734  DIN_Pro:Bold text-[32px] c[white]
+      TEXT: Trabajos realizados
+40:801  gap-[32px] items-center size-[376px]
+I40:801;40:757  border border-[#004da8] border-solid items-center justify-between p-[16px] rounded-[16px] size-[376px]
+I40:801;40:762 lucide/chevron-left size-[24px]
+I40:801;40:766 lucide/chevron-right size-[24px]
+I40:801;40:758  border border-[#004da8] border-solid rounded-[16px] w-[376px]
+40:744  flex-col gap-[16px] items-start
+40:745  DIN_Pro:Bold text-[32px] c[white]
+      TEXT: Certificación
+40:751  flex-col items-center justify-center
+40:749  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Certificaión Pendiente
+40:808  flex-col gap-[16px] items-start
+40:809  DIN_Pro:Bold text-[32px] c[white]
+      TEXT: Calificaciones
+40:812  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] items-start p-[16px] rounded-[16px]
+40:820  gap-[4px] items-center
+40:821  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 4
+40:822  items-center
+40:823 lucide/star size-[24px]
+40:825 lucide/star size-[24px]
+40:827 lucide/star size-[24px]
+40:830 lucide/star size-[24px]
+40:817  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Excelente profesional 👌👌👌👌👌
+40:835  flex-col items-start
+40:836  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 25/02/2025, 08:27:46
+40:843  bg-[#006def] border border-[rgba(209,151,171,0.5)] border-solid drop-shadow-[0px_4px_5px_rgba(163,47,86,0.15)] gap-[10px] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+40:846 lucide/circle-alert size-[24px]
+40:844  DIN_Pro:Medium text-[16px] c[white]
+      TEXT: Denunciar Perfil
+40:668  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+40:669  flex-col gap-[8px] items-center justify-center
+40:670  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+40:671 lucide/house size-[24px]
+40:673  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+40:674  flex-col gap-[8px] items-center justify-center
+40:675  flex-col items-center justify-center p-[8px] rounded-[8px]
+40:676 lucide/user size-[24px]
+40:678  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+40:679  flex-col gap-[8px] items-center justify-center
+40:680  flex-col items-center justify-center p-[8px] rounded-[8px]
+40:681 lucide/heart size-[24px]
+40:683  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+40:684  flex-col gap-[8px] items-center justify-center
+40:685  flex-col items-center justify-center p-[8px] rounded-[8px]
+40:686 lucide/circle-question-mark size-[24px]
+40:688  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+40:689  flex-col gap-[8px] items-center justify-center
+40:690  flex-col items-center justify-center p-[8px] rounded-[8px]
+40:691 lucide/menu size-[24px]
+40:693  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+40:694 .Building Blocks/navigation h-[24px]
+40:695 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

@@ -1,0 +1,205 @@
+239:475 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+239:477  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+239:479  gap-[10px] items-center
+239:487  flex-col gap-[16px] items-center pb-[40px] pt-[16px] px-[32px]
+239:488  flex-col gap-[10px] items-start
+239:489  items-center
+239:490  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Calendario general
+239:594  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Días de Atención
+239:491  border border-[#004da8] border-solid flex-col items-start p-[10px] rounded-[16px]
+239:500  h-[32px] items-center justify-between p-[10px]
+239:501  flex-col items-center justify-center size-[32px]
+239:502  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Do
+239:503  bg-[#004da8] flex-col items-center justify-center rounded-[7px] size-[32px]
+239:504  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Lu
+239:505  bg-[#004da8] items-center justify-center rounded-[7px] size-[32px]
+239:506  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ma
+239:507  bg-[#004da8] flex-col items-center justify-center rounded-[7px] size-[32px]
+239:508  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Mi
+239:509  bg-[#004da8] flex-col items-center justify-center rounded-[7px] size-[32px]
+239:510  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ju
+239:511  bg-[#004da8] flex-col items-center justify-center rounded-[7px] size-[32px]
+239:512  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Vi
+239:513  bg-[#004da8] flex-col items-center justify-center rounded-[8px] size-[32px]
+239:514  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Sá
+239:704  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: División de Horarios
+239:703  border border-[#004da8] border-solid flex-col items-start p-[10px] rounded-[16px]
+239:705  gap-[10px] items-center
+239:706  flex-col h-[32px] items-center justify-center
+239:707  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 30 minutos
+242:872  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+242:873  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 1 hora
+239:716  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:717  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 2 horas
+250:23  bg-[#004da8] items-center justify-center p-[8px] rounded-[8px]
+250:24 lucide/clock size-[24px]
+239:721  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Horario de Atención
+239:720  border border-[#004da8] border-solid flex-col gap-[10px] items-start p-[10px] rounded-[16px]
+239:722  gap-[10px] h-[32px] items-center py-[10px]
+239:723  flex-col h-[32px] items-center justify-center
+239:724  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 00:00
+239:727  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:728  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 01:00
+239:729  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:730  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 02:00
+239:731  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:732  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 03:00
+239:733  gap-[10px] h-[32px] items-center py-[10px]
+239:734  flex-col h-[32px] items-center justify-center
+239:735  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 04:00
+239:736  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:737  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 05:00
+239:738  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:739  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 06:00
+239:740  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:741  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 07:00
+239:742  gap-[10px] h-[32px] items-center py-[10px]
+239:743  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+239:744  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 08:00
+239:745  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+239:746  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 09:00
+239:747  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+239:748  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 10:00
+239:749  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+239:750  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 11:00
+239:751  gap-[10px] h-[32px] items-center py-[10px]
+239:752  flex-col h-[32px] items-center justify-center rounded-[8px]
+239:753  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 12:00
+239:754  flex-col h-[32px] items-center justify-center rounded-[8px]
+239:755  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 13:00
+239:756  flex-col h-[32px] items-center justify-center rounded-[8px]
+239:757  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 14:00
+239:758  flex-col h-[32px] items-center justify-center rounded-[7px]
+239:759  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 15:00
+239:760  gap-[10px] h-[32px] items-center py-[10px]
+239:761  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+239:762  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 16:00
+239:763  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+239:764  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 17:00
+239:765  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+239:766  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 18:00
+239:767  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+239:768  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 19:00
+239:769  gap-[10px] h-[32px] items-center py-[10px]
+239:770  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+239:771  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 20:00
+239:772  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+239:773  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 21:00
+239:774  flex-col h-[32px] items-center justify-center rounded-[8px]
+239:775  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 22:00
+239:776  flex-col h-[32px] items-center justify-center rounded-[8px]
+239:777  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 23:00
+242:797  items-center justify-end
+242:798  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Podes marcar hasta 12 horas en un mismo día
+242:813  DIN_Pro:Regular text-[16px] c[#7f9ac5] w-[min-content]
+      TEXT: El calendario aplica para todos los oficios que agregas, para cambiar sobre un oficio en específico podés hacerlo acá abajo.
+239:592  flex-col gap-[10px] items-end
+242:814  items-center
+242:815  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Calendario por oficio
+239:593  flex-col gap-[8px] items-start justify-center
+242:848  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+242:849  flex-col items-start pb-[8px]
+239:596  items-center justify-center pl-[4px]
+239:597 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+239:598 container bg-[#006def] rounded-[2px] size-[18px]
+239:599 check_small size-[24px]
+239:601  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Albañilería
+242:856  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Calendario General
+242:857 lucide/chevron-right size-[24px]
+242:835  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+242:847  flex-col items-start pb-[8px]
+242:820  items-center justify-center pl-[4px]
+242:829 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+242:830 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+242:831 check_small size-[24px]
+242:832 check_indeterminate_small 
+      TEXT: Icon( Icons.Default.Remove, contentDescription = "" // Add a valid content description )
+242:825  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Electricista
+242:845  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Sá, Do - 07:00 a 17:00
+242:843 lucide/chevron-right size-[24px]
+242:860  border border-[#004da8] border-solid items-center justify-between px-[8px] rounded-[8px]
+242:861  flex-col items-start pb-[8px]
+242:862  items-center justify-center pl-[4px]
+242:863 state-layer items-center justify-center pr-[11px] py-[11px] rounded-[100px]
+242:864 container bg-[#004da8] border border-[#004da8] border-solid rounded-[2px] size-[18px]
+242:865 check_small size-[24px]
+242:866 check_indeterminate_small 
+      TEXT: Icon( Icons.Default.Remove, contentDescription = "" // Add a valid content description )
+242:867  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Plomería
+242:868  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: Lu a Vi - 08:00 a 12:00
+242:869 lucide/chevron-right size-[24px]
+239:674  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+239:675  flex-col gap-[8px] items-center justify-center
+239:676  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+239:677 lucide/house size-[24px]
+239:679  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+239:680  flex-col gap-[8px] items-center justify-center
+239:681  flex-col items-center justify-center p-[8px] rounded-[8px]
+239:682 lucide/user size-[24px]
+239:684  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+239:685  flex-col gap-[8px] items-center justify-center
+239:686  flex-col items-center justify-center p-[8px] rounded-[8px]
+239:687 lucide/heart size-[24px]
+239:689  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+239:690  flex-col gap-[8px] items-center justify-center
+239:691  flex-col items-center justify-center p-[8px] rounded-[8px]
+239:692 lucide/circle-question-mark size-[24px]
+239:694  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+239:695  flex-col gap-[8px] items-center justify-center
+239:696  flex-col items-center justify-center p-[8px] rounded-[8px]
+239:697 lucide/menu size-[24px]
+239:699  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+239:700 .Building Blocks/navigation h-[24px]
+239:701 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

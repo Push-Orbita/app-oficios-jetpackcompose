@@ -1,0 +1,284 @@
+613:1373 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+613:1375  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+613:1377  gap-[10px] items-center
+613:1385  drop-shadow-[0px_4px_2px_rgba(0,0,0,0.25)] flex-col gap-[16px] items-start pb-[32px] pt-[16px] px-[32px]
+613:1491  gap-[10px] items-center
+613:1492 lucide/chevron-left size-[24px]
+613:1494  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Agendar cita
+613:1388  bg-[#00358b] border border-[#004da8] border-solid flex-col items-start p-[16px] rounded-[16px]
+613:1389  items-start justify-between
+613:1390  gap-[16px] items-start
+613:1391  border border-[#004da8] border-solid rounded-[8px] size-[64px]
+613:1392  flex-col gap-[8px] items-start justify-center
+613:1393  gap-[6px] items-center
+613:1394  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Emanuel Molina
+613:1395 lucide/shield-check size-[24px]
+613:1397  gap-[4px] items-center
+613:1398  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 5
+613:1399  items-center
+613:1400 lucide/star size-[24px]
+613:1402 lucide/star size-[24px]
+613:1404 lucide/star size-[24px]
+613:1406 lucide/star size-[24px]
+613:1409 lucide/star size-[24px]
+613:1412 lucide/heart size-[24px]
+613:1554  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Fecha
+613:778  border border-[#004da8] border-solid flex-col gap-[10px] items-start p-[10px] rounded-[16px]
+613:779  h-[48px] items-center justify-between py-[10px]
+613:780  bg-[#004da8] border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+613:781 lucide/chevron-left size-[24px]
+613:783  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: marzo 2026
+613:784  bg-[#004da8] border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+613:785 lucide/chevron-right size-[24px]
+613:787  h-[32px] items-center justify-between p-[10px]
+613:788  flex-col items-center justify-center size-[32px]
+613:789  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Do
+613:790  flex-col items-center justify-center size-[32px]
+613:791  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Lu
+613:792  items-center justify-center size-[32px]
+613:793  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ma
+613:794  flex-col items-center justify-center size-[32px]
+613:795  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Mi
+613:796  flex-col items-center justify-center size-[32px]
+613:797  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Ju
+613:798  flex-col items-center justify-center size-[32px]
+613:799  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Vi
+613:800  flex-col items-center justify-center size-[32px]
+613:801  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Sá
+613:802  h-[32px] items-center justify-between p-[10px]
+613:803  flex-col items-center justify-center size-[32px]
+613:804  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 1
+613:805  flex-col items-center justify-center size-[32px]
+613:806  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 2
+613:807  items-center justify-center size-[32px]
+613:808  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 3
+613:809  bg-[white] flex-col items-center justify-center rounded-[16px] size-[32px]
+613:810  DIN_Pro:Bold text-[16px] c[#00358b]
+      TEXT: 4
+613:811  flex-col items-center justify-center size-[32px]
+613:812  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 5
+613:813  bg-[#006def] flex-col items-center justify-center rounded-[32px] size-[32px]
+613:814  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 6
+613:815  flex-col items-center justify-center size-[32px]
+613:816  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 7
+613:817  h-[32px] items-center justify-between p-[10px]
+613:818  flex-col items-center justify-center size-[32px]
+613:819  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 8
+613:820  flex-col items-center justify-center size-[32px]
+613:821  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 9
+613:822  items-center justify-center size-[32px]
+613:823  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 10
+613:824  flex-col items-center justify-center size-[32px]
+613:825  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 11
+613:826  flex-col items-center justify-center size-[32px]
+613:827  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 12
+613:828  flex-col items-center justify-center size-[32px]
+613:829  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 13
+613:830  flex-col items-center justify-center size-[32px]
+613:831  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 14
+613:832  h-[32px] items-center justify-between p-[10px]
+613:833  flex-col items-center justify-center size-[32px]
+613:834  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 15
+613:835  flex-col items-center justify-center size-[32px]
+613:836  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 16
+613:837  flex-col items-center justify-center rounded-[32px] size-[32px]
+613:838  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 17
+613:839  flex-col items-center justify-center size-[32px]
+613:840  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 18
+613:841  flex-col items-center justify-center size-[32px]
+613:842  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 19
+613:843  flex-col items-center justify-center size-[32px]
+613:844  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 20
+613:845  flex-col items-center justify-center size-[32px]
+613:846  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 21
+613:847  h-[32px] items-center justify-between p-[10px]
+613:848  flex-col items-center justify-center rounded-[16px] size-[32px]
+613:849  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 22
+613:850  flex-col items-center justify-center size-[32px]
+613:851  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 23
+613:852  items-center justify-center size-[32px]
+613:853  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 24
+613:854  flex-col items-center justify-center size-[32px]
+613:855  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 25
+613:856  flex-col items-center justify-center rounded-[16px] size-[32px]
+613:857  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 26
+613:858  flex-col items-center justify-center size-[32px]
+613:859  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 27
+613:860  flex-col items-center justify-center size-[32px]
+613:861  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 28
+613:862  h-[32px] items-center justify-between p-[10px]
+613:863  flex-col items-center justify-center size-[32px]
+613:864  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 29
+613:865  flex-col items-center justify-center size-[32px]
+613:866  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 30
+613:867  items-center justify-center size-[32px]
+613:868  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: 31
+613:869  flex-col items-center justify-center size-[32px]
+613:870  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 1
+613:871  flex-col items-center justify-center size-[32px]
+613:872  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 2
+613:873  flex-col items-center justify-center size-[32px]
+613:874  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 3
+613:875  flex-col items-center justify-center size-[32px]
+613:876  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+      TEXT: 4
+613:1555  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Horario
+613:1496  border border-[#004da8] border-solid flex-col gap-[10px] items-start p-[10px] rounded-[16px]
+613:1497  gap-[10px] h-[32px] items-center py-[10px]
+613:1498  flex-col h-[32px] items-center justify-center
+613:1499  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 00:00
+613:1500  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1501  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 01:00
+613:1502  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1503  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 02:00
+613:1504  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1505  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 03:00
+613:1506  gap-[10px] h-[32px] items-center py-[10px]
+613:1507  flex-col h-[32px] items-center justify-center
+613:1508  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 04:00
+613:1509  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1510  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 05:00
+613:1511  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1512  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 06:00
+613:1513  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1514  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 07:00
+613:1515  gap-[10px] h-[32px] items-center py-[10px]
+613:1516  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1517  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 08:00
+613:1518  bg-[white] flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1519  DIN_Pro:Bold text-[16px] c[#006def]
+      TEXT: 09:00
+613:1520  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1521  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 10:00
+613:1522  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1523  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 11:00
+613:1524  gap-[10px] h-[32px] items-center py-[10px]
+613:1525  flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1526  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 12:00
+613:1527  flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1528  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 13:00
+613:1529  flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1530  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 14:00
+613:1531  flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1532  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 15:00
+613:1533  gap-[10px] h-[32px] items-center py-[10px]
+613:1534  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1535  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 16:00
+613:1536  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1537  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 17:00
+613:1538  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1539  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 18:00
+613:1540  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[7px]
+613:1541  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 19:00
+613:1542  gap-[10px] h-[32px] items-center py-[10px]
+613:1543  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1544  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 20:00
+613:1545  bg-[#004da8] flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1546  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: 21:00
+613:1547  flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1548  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 22:00
+613:1549  flex-col h-[32px] items-center justify-center rounded-[8px]
+613:1550  DIN_Pro:Regular text-[16px] c[#004da8]
+      TEXT: 23:00
+613:1551  h-[20px]
+613:1422  items-center justify-end
+613:1425  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+613:1426  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Continuar
+613:1457  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+613:1458  flex-col gap-[8px] items-center justify-center
+613:1459  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+613:1460 lucide/house size-[24px]
+613:1462  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+613:1463  flex-col gap-[8px] items-center justify-center
+613:1464  flex-col items-center justify-center p-[8px] rounded-[8px]
+613:1465 lucide/user size-[24px]
+613:1467  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+613:1468  flex-col gap-[8px] items-center justify-center
+613:1469  flex-col items-center justify-center p-[8px] rounded-[8px]
+613:1470 lucide/heart size-[24px]
+613:1472  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+613:1473  flex-col gap-[8px] items-center justify-center
+613:1474  flex-col items-center justify-center p-[8px] rounded-[8px]
+613:1475 lucide/circle-question-mark size-[24px]
+613:1477  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+613:1478  flex-col gap-[8px] items-center justify-center
+613:1479  flex-col items-center justify-center p-[8px] rounded-[8px]
+613:1480 lucide/menu size-[24px]
+613:1482  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+613:1483 .Building Blocks/navigation h-[24px]
+613:1484 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

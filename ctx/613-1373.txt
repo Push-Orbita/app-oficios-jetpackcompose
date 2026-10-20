@@ -1,0 +1,551 @@
+const assetPathPrefix = "https://www.figma.com/api/mcp/asset/3dd63679-d103-49a9-932a-ae0b7cd3241a";
+const imgFrame954 = `${assetPathPrefix}/e543f.png`;
+const imgCameraCutout = `${assetPathPrefix}/eb708.svg`;
+const imgLucideSignal = `${assetPathPrefix}/fc19a.svg`;
+const imgLucideWifi = `${assetPathPrefix}/5b7d7.svg`;
+const imgLucideBatteryLow = `${assetPathPrefix}/3b84e.svg`;
+const imgLucideChevronLeft = `${assetPathPrefix}/b534a.svg`;
+const imgLucideShieldCheck = `${assetPathPrefix}/487f0.svg`;
+const imgLucideStar = `${assetPathPrefix}/b3c29.svg`;
+const imgLucideStar1 = `${assetPathPrefix}/2c56e.svg`;
+const imgLucideHeart = `${assetPathPrefix}/9a849.svg`;
+const imgLucideChevronRight = `${assetPathPrefix}/662e6.svg`;
+const imgLucideHouse = `${assetPathPrefix}/e06f5.svg`;
+const imgLucideUser = `${assetPathPrefix}/f169e.svg`;
+const imgLucideHeart1 = `${assetPathPrefix}/72d2e.svg`;
+const imgLucideCircleQuestionMark = `${assetPathPrefix}/8e8dc.svg`;
+const imgLucideMenu = `${assetPathPrefix}/1d4b7.svg`;
+
+export default function Screen() {
+  return (
+    <div className="bg-[var(--background,#00358b)] content-stretch flex flex-col items-center justify-between overflow-clip relative rounded-[16px] size-full" data-node-id="613:1373" data-name="screen">
+      <div className="content-stretch flex h-[48px] items-center justify-between px-[20px] py-[10px] relative shrink-0 w-full" data-node-id="613:1374" data-name=".Building Blocks/status-bar">
+        <div className="[word-break:break-word] flex flex-col font-['Roboto:Medium'] font-medium justify-center leading-[0] relative shrink-0 text-[14px] text-[color:var(--buttons-\&-texts,white)] tracking-[0.14px] w-[76px]" data-node-id="613:1375" style={{ fontVariationSettings: '"wdth" 100', fontFeatureSettings: '"ss02" 1, "dlig" 1, "lnum" 1, "pnum" 1' }}>
+          <p className="leading-[20px]">15:32</p>
+        </div>
+        <div className="relative shrink-0 size-[24px]" data-node-id="613:1376" data-name="Camera Cutout">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCameraCutout} />
+        </div>
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0" data-node-id="613:1377">
+          <div className="relative shrink-0 size-[16px]" data-node-id="613:1378" data-name="lucide/signal">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideSignal} />
+          </div>
+          <div className="relative shrink-0 size-[16px]" data-node-id="613:1380" data-name="lucide/wifi">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideWifi} />
+          </div>
+          <div className="h-[16px] relative shrink-0 w-[24px]" data-node-id="613:1382" data-name="lucide/battery-low">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideBatteryLow} />
+          </div>
+        </div>
+      </div>
+      <div className="content-stretch drop-shadow-[0px_4px_2px_rgba(0,0,0,0.25)] flex flex-[1_0_0] flex-col gap-[16px] items-start min-h-px overflow-x-clip overflow-y-auto pb-[32px] pt-[16px] px-[32px] relative w-full" data-node-id="613:1385">
+        <div className="content-stretch flex gap-[10px] items-center relative shrink-0 w-full" data-node-id="613:1491">
+          <div className="relative shrink-0 size-[24px]" data-node-id="613:1492" data-name="lucide/chevron-left">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideChevronLeft} />
+          </div>
+          <p className="[word-break:break-word] capitalize font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[36px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1494">
+            Agendar cita
+          </p>
+        </div>
+        <div className="bg-[var(--background,#00358b)] border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col items-start overflow-clip p-[16px] relative rounded-[16px] shrink-0 w-full" data-node-id="613:1388">
+          <div className="content-stretch flex items-start justify-between relative shrink-0 w-full" data-node-id="613:1389">
+            <div className="content-stretch flex gap-[16px] items-start relative shrink-0" data-node-id="613:1390">
+              <div className="border border-[var(--outlines-\&-fill,#004da8)] border-solid relative rounded-[8px] shrink-0 size-[64px]" data-node-id="613:1391">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[8px] size-full" src={imgFrame954} />
+              </div>
+              <div className="content-stretch flex flex-col gap-[8px] items-start justify-center relative self-stretch shrink-0" data-node-id="613:1392">
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-full" data-node-id="613:1393">
+                  <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1394">
+                    Emanuel Molina
+                  </p>
+                  <div className="relative shrink-0 size-[24px]" data-node-id="613:1395" data-name="lucide/shield-check">
+                    <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideShieldCheck} />
+                  </div>
+                </div>
+                <div className="content-stretch flex gap-[4px] items-center relative shrink-0" data-node-id="613:1397">
+                  <p className="[text-box-edge:cap_alphabetic] [text-box-trim:trim-both] [word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1398">
+                    5
+                  </p>
+                  <div className="content-stretch flex items-center relative shrink-0" data-node-id="613:1399">
+                    <div className="relative shrink-0 size-[24px]" data-node-id="613:1400" data-name="lucide/star">
+                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideStar} />
+                    </div>
+                    <div className="relative shrink-0 size-[24px]" data-node-id="613:1402" data-name="lucide/star">
+                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideStar} />
+                    </div>
+                    <div className="relative shrink-0 size-[24px]" data-node-id="613:1404" data-name="lucide/star">
+                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideStar} />
+                    </div>
+                    <div className="relative shrink-0 size-[24px]" data-node-id="613:1406" data-name="lucide/star">
+                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideStar1} />
+                    </div>
+                    <div className="relative shrink-0 size-[24px]" data-node-id="613:1409" data-name="lucide/star">
+                      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideStar1} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="relative shrink-0 size-[24px]" data-node-id="613:1412" data-name="lucide/heart">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideHeart} />
+            </div>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1554">
+          Fecha
+        </p>
+        <div className="border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col gap-[10px] items-start overflow-clip p-[10px] relative rounded-[16px] shrink-0 w-full" data-node-id="613:778">
+          <div className="content-stretch flex h-[48px] items-center justify-between overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:779">
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col items-center justify-center overflow-clip p-[16px] relative rounded-[8px] shrink-0 size-[48px]" data-node-id="613:780">
+              <div className="relative shrink-0 size-[24px]" data-node-id="613:781" data-name="lucide/chevron-left">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideChevronLeft} />
+              </div>
+            </div>
+            <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:783">
+              marzo 2026
+            </p>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col items-center justify-center overflow-clip p-[16px] relative rounded-[8px] shrink-0 size-[48px]" data-node-id="613:784">
+              <div className="relative shrink-0 size-[24px]" data-node-id="613:785" data-name="lucide/chevron-right">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideChevronRight} />
+              </div>
+            </div>
+          </div>
+          <div className="content-stretch flex h-[32px] items-center justify-between overflow-clip p-[10px] relative shrink-0 w-full" data-node-id="613:787">
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:788">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:789">
+                Do
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:790">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:791">
+                Lu
+              </p>
+            </div>
+            <div className="content-stretch flex items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:792">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:793">
+                Ma
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:794">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:795">
+                Mi
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:796">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:797">
+                Ju
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:798">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:799">
+                Vi
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:800">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:801">
+                Sá
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex h-[32px] items-center justify-between overflow-clip p-[10px] relative shrink-0 w-full" data-node-id="613:802">
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:803">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:804">
+                1
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:805">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:806">
+                2
+              </p>
+            </div>
+            <div className="content-stretch flex items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:807">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:808">
+                3
+              </p>
+            </div>
+            <div className="bg-[var(--buttons-\&-texts,white)] content-stretch flex flex-col items-center justify-center relative rounded-[16px] shrink-0 size-[32px]" data-node-id="613:809">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--background,#00358b)] whitespace-nowrap" data-node-id="613:810">
+                4
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:811">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:812">
+                5
+              </p>
+            </div>
+            <div className="bg-[var(--secondary,#006def)] content-stretch flex flex-col items-center justify-center relative rounded-[32px] shrink-0 size-[32px]" data-node-id="613:813">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:814">
+                6
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:815">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:816">
+                7
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex h-[32px] items-center justify-between overflow-clip p-[10px] relative shrink-0 w-full" data-node-id="613:817">
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:818">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:819">
+                8
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:820">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:821">
+                9
+              </p>
+            </div>
+            <div className="content-stretch flex items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:822">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:823">
+                10
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:824">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:825">
+                11
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:826">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:827">
+                12
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:828">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:829">
+                13
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:830">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:831">
+                14
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex h-[32px] items-center justify-between overflow-clip p-[10px] relative shrink-0 w-full" data-node-id="613:832">
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:833">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:834">
+                15
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:835">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:836">
+                16
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative rounded-[32px] shrink-0 size-[32px]" data-node-id="613:837">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:838">
+                17
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:839">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:840">
+                18
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:841">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:842">
+                19
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:843">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:844">
+                20
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:845">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:846">
+                21
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex h-[32px] items-center justify-between overflow-clip p-[10px] relative shrink-0 w-full" data-node-id="613:847">
+            <div className="content-stretch flex flex-col items-center justify-center relative rounded-[16px] shrink-0 size-[32px]" data-node-id="613:848">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:849">
+                22
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:850">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:851">
+                23
+              </p>
+            </div>
+            <div className="content-stretch flex items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:852">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:853">
+                24
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:854">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:855">
+                25
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative rounded-[16px] shrink-0 size-[32px]" data-node-id="613:856">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:857">
+                26
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:858">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:859">
+                27
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:860">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:861">
+                28
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex h-[32px] items-center justify-between overflow-clip p-[10px] relative shrink-0 w-full" data-node-id="613:862">
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:863">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:864">
+                29
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:865">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:866">
+                30
+              </p>
+            </div>
+            <div className="content-stretch flex items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:867">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:868">
+                31
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:869">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--secondary-text-color,#7f9ac5)] whitespace-nowrap" data-node-id="613:870">
+                1
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:871">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--secondary-text-color,#7f9ac5)] whitespace-nowrap" data-node-id="613:872">
+                2
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:873">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--secondary-text-color,#7f9ac5)] whitespace-nowrap" data-node-id="613:874">
+                3
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 size-[32px]" data-node-id="613:875">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--secondary-text-color,#7f9ac5)] whitespace-nowrap" data-node-id="613:876">
+                4
+              </p>
+            </div>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1555">
+          Horario
+        </p>
+        <div className="border border-[var(--outlines-\&-fill,#004da8)] border-solid content-stretch flex flex-col gap-[10px] items-start overflow-clip p-[10px] relative rounded-[16px] shrink-0 w-full" data-node-id="613:1496">
+          <div className="content-stretch flex gap-[10px] h-[32px] items-center overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:1497">
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative" data-node-id="613:1498">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1499">
+                00:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1500">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1501">
+                01:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1502">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1503">
+                02:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1504">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1505">
+                03:00
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[32px] items-center overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:1506">
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative" data-node-id="613:1507">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1508">
+                04:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1509">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1510">
+                05:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1511">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1512">
+                06:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1513">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1514">
+                07:00
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[32px] items-center overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:1515">
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1516">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1517">
+                08:00
+              </p>
+            </div>
+            <div className="bg-[var(--buttons-\&-texts,white)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1518">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--secondary,#006def)] whitespace-nowrap" data-node-id="613:1519">
+                09:00
+              </p>
+            </div>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1520">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1521">
+                10:00
+              </p>
+            </div>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1522">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1523">
+                11:00
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[32px] items-center overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:1524">
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1525">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1526">
+                12:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1527">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1528">
+                13:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1529">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1530">
+                14:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1531">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1532">
+                15:00
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[32px] items-center overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:1533">
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1534">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1535">
+                16:00
+              </p>
+            </div>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1536">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1537">
+                17:00
+              </p>
+            </div>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1538">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1539">
+                18:00
+              </p>
+            </div>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[7px]" data-node-id="613:1540">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1541">
+                19:00
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[32px] items-center overflow-clip py-[10px] relative shrink-0 w-full" data-node-id="613:1542">
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1543">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1544">
+                20:00
+              </p>
+            </div>
+            <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1545">
+              <p className="[word-break:break-word] font-['DIN_Pro:Bold'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1546">
+                21:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1547">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1548">
+                22:00
+              </p>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col h-[32px] items-center justify-center min-w-px relative rounded-[8px]" data-node-id="613:1549">
+              <p className="[word-break:break-word] font-['DIN_Pro:Regular'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--outlines-\&-fill,#004da8)] whitespace-nowrap" data-node-id="613:1550">
+                23:00
+              </p>
+            </div>
+          </div>
+          <div className="h-[20px] relative shrink-0 w-full" data-node-id="613:1551" />
+        </div>
+        <div className="content-stretch flex items-center justify-end relative shrink-0 w-full" data-node-id="613:1422">
+          <div className="bg-[var(--buttons-\&-texts,white)] border border-[#e2e2e2] border-solid content-stretch drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] flex items-center justify-center px-[12px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="613:1425">
+            <p className="[word-break:break-word] capitalize font-['DIN_Pro:Medium'] leading-[normal] not-italic relative shrink-0 text-[16px] text-[color:var(--background,#00358b)] whitespace-nowrap" data-node-id="613:1426">
+              Continuar
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="border-[var(--outlines-\&-fill,#004da8)] border-solid border-t content-stretch flex gap-[16px] items-start p-[16px] relative shrink-0 w-full" data-node-id="613:1457">
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="613:1458">
+          <div className="bg-[var(--outlines-\&-fill,#004da8)] content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="613:1459">
+            <div className="relative shrink-0 size-[24px]" data-node-id="613:1460" data-name="lucide/house">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideHouse} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1462">
+            Inicio
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="613:1463">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="613:1464">
+            <div className="relative shrink-0 size-[24px]" data-node-id="613:1465" data-name="lucide/user">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideUser} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1467">
+            Perfil
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="613:1468">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="613:1469">
+            <div className="relative shrink-0 size-[24px]" data-node-id="613:1470" data-name="lucide/heart">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideHeart1} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1472">
+            Favoritos
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="613:1473">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="613:1474">
+            <div className="relative shrink-0 size-[24px]" data-node-id="613:1475" data-name="lucide/circle-question-mark">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideCircleQuestionMark} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1477">
+            Ayuda
+          </p>
+        </div>
+        <div className="content-stretch flex flex-[1_0_0] flex-col gap-[8px] items-center justify-center min-w-px relative" data-node-id="613:1478">
+          <div className="content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[8px] shrink-0" data-node-id="613:1479">
+            <div className="relative shrink-0 size-[24px]" data-node-id="613:1480" data-name="lucide/menu">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLucideMenu} />
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Satoshi:Medium'] leading-none not-italic relative shrink-0 text-[16px] text-[color:var(--buttons-\&-texts,white)] whitespace-nowrap" data-node-id="613:1482">
+            Ajustes
+          </p>
+        </div>
+      </div>
+      <div className="h-[24px] relative shrink-0 w-full" data-node-id="613:1483" data-name=".Building Blocks/navigation">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[var(--buttons-\&-texts,white)] h-[4px] left-1/2 rounded-[12px] top-1/2 w-[140px]" data-node-id="613:1484" data-name="handle" />
+      </div>
+    </div>
+  );
+}
+
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+
+The generated code contains image and SVG URL constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These URLs are temporary download sources and expire after 7 days. Download each asset into the project with curl -L, then replace its URL in the generated code with a reference to the downloaded asset. Never use the temporary URLs as runtime image sources.

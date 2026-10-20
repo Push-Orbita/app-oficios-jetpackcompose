@@ -1,0 +1,73 @@
+25:258 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+25:260  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+25:262  gap-[10px] items-center
+25:270  flex-col gap-[16px] items-center pb-[32px] pt-[16px] px-[32px]
+224:1022  items-center justify-between
+613:39  gap-[10px] items-center
+224:1068 lucide/chevron-left size-[24px]
+613:35  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Oficios
+224:1041  bg-[#004da8] border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+224:1042 lucide/bell-dot size-[24px]
+25:219  border border-[#004da8] border-solid items-center justify-between px-[16px] py-[12px] rounded-[8px] w-[376px]
+25:220  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: ¿Qué oficio estás buscando?
+25:237  gap-[16px] items-center
+25:224 lucide/mic size-[24px]
+25:231 lucide/search size-[24px]
+25:652  flex-col gap-[32px] items-start
+25:578  gap-[32px] items-center justify-center
+25:588  items-center
+25:589  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Construcción
+40:257 construccion-icon 1 h-[78px] w-[100px]
+25:579  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] h-[172px] items-center p-[16px] rounded-[16px]
+25:580  DIN_Pro:Regular text-[16px] c[white]
+40:258 mantenimiento-icon 1 size-[76px]
+25:540  gap-[32px] items-center justify-center
+25:550  items-center
+25:551  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Seguridad en Casa
+40:286 Vector (Stroke) h-[100px] w-[81px]
+25:541  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] h-[172px] items-center p-[16px] rounded-[16px]
+25:542  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Serv. Personales
+35:241 lucide/users size-[90px]
+25:614  gap-[32px] items-center justify-center
+25:615  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] h-[172px] items-center p-[16px] rounded-[16px]
+25:616  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Bienestar
+35:249 bienestar-icon 1 1 h-[88.6px] w-[86.7px]
+25:624  items-center
+25:625  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Ver todos
+35:123 lucide/book-user size-[72px]
+25:309  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+25:310  flex-col gap-[8px] items-center justify-center
+25:505  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+25:506 lucide/house size-[24px]
+25:314  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+25:315  flex-col gap-[8px] items-center justify-center
+25:316  flex-col items-center justify-center p-[8px] rounded-[8px]
+25:317 lucide/user size-[24px]
+25:319  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+25:320  flex-col gap-[8px] items-center justify-center
+25:321  flex-col items-center justify-center p-[8px] rounded-[8px]
+25:322 lucide/heart size-[24px]
+25:324  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+25:325  flex-col gap-[8px] items-center justify-center
+25:326  flex-col items-center justify-center p-[8px] rounded-[8px]
+25:327 lucide/circle-question-mark size-[24px]
+25:329  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+25:330  flex-col gap-[8px] items-center justify-center
+25:331  flex-col items-center justify-center p-[8px] rounded-[8px]
+25:332 lucide/menu size-[24px]
+25:334  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+25:335 .Building Blocks/navigation h-[24px]
+25:336 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

@@ -1,0 +1,86 @@
+475:65 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+475:67  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+475:69  gap-[10px] items-center
+475:77  flex-col gap-[16px] items-center pb-[32px] pt-[16px] px-[32px]
+475:78  items-center justify-between
+475:79  items-center
+475:80  border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+475:81 Logotipo h-[32px] w-[19.357px]
+475:92  flex-col items-start justify-center
+475:93  gap-[6px] items-center
+475:94  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: Nicolas Ayala
+475:95 lucide/badge-check size-[24px]
+475:97  bg-[#004da8] border border-[#004da8] border-solid flex-col items-center justify-center p-[16px] rounded-[8px] size-[48px]
+475:98 lucide/bell-dot size-[24px]
+475:100  border border-[#004da8] border-solid items-center justify-between pl-[16px] pr-[24px] py-[12px] rounded-[8px] w-[376px]
+475:101  items-center
+475:102  DIN_Pro:Regular text-[16px] text-[rgba(255,255,255,0.5)]
+      TEXT: ¿Qué oficio estás buscando?
+475:103  gap-[16px] items-center
+475:104 lucide/mic size-[24px]
+475:106 lucide/search size-[24px]
+475:108  flex-col gap-[10px] h-[175px] items-start
+475:109  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Recientes
+475:110  gap-[10px] items-start
+475:111  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] items-center p-[16px] rounded-[16px]
+475:112  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Albañil
+475:113 1 3 h-[44px] w-[50px]
+475:114  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] items-center p-[16px] rounded-[16px]
+475:115  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Cerrajero
+475:116  h-[45.125px] items-center justify-center w-[61.865px]
+475:120  bg-[#00358b] border border-[#004da8] border-solid flex-col gap-[16px] items-center p-[16px] rounded-[16px]
+475:121  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Instalador
+475:122 4 2 1 h-[43.38px] w-[49.02px]
+475:123  flex-col h-[130px] items-center justify-end
+475:124  border border-[#004da8] border-solid flex-col items-center p-[16px] rounded-[16px]
+475:125  gap-[16px] items-center justify-center
+475:126  bg-[#00358b] border border-[#004da8] border-solid drop-shadow-[0px_4px_5px_rgba(0,0,0,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+475:127  DIN_Pro:Bold text-[16px] c[white]
+      TEXT: ?
+475:128  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Para cualquier consulta o duda de asistencia, contactanos a nuestra línea de atención
+475:129  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+475:130  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Contactar
+475:131  border-[#004da8] border-solid border-t items-start p-[16px]
+455:692  gap-[8px] items-center justify-center
+455:693  bg-[#004da8] items-center justify-center p-[8px] rounded-[8px]
+475:59 lucide/circle-check size-[24px]
+455:696  flex-col items-start justify-center
+475:210  DIN_Pro:Regular text-[16px] c[white]
+      TEXT: Solicitud enviada:
+475:211 lucide/x size-[24px]
+475:159  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+475:160  flex-col gap-[8px] items-center justify-center
+475:161  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+475:162 lucide/house size-[24px]
+475:164  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+475:165  flex-col gap-[8px] items-center justify-center
+475:166  flex-col items-center justify-center p-[8px] rounded-[8px]
+475:167 lucide/user size-[24px]
+475:169  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+475:170  flex-col gap-[8px] items-center justify-center
+475:171  flex-col items-center justify-center p-[8px] rounded-[8px]
+475:172 lucide/heart size-[24px]
+475:174  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+475:175  flex-col gap-[8px] items-center justify-center
+475:176  flex-col items-center justify-center p-[8px] rounded-[8px]
+475:177 lucide/circle-question-mark size-[24px]
+475:179  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+475:180  flex-col gap-[8px] items-center justify-center
+475:181  flex-col items-center justify-center p-[8px] rounded-[8px]
+475:182 lucide/menu size-[24px]
+475:184  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+475:157 .Building Blocks/navigation h-[24px]
+475:158 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

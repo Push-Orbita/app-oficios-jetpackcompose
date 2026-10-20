@@ -1,0 +1,44 @@
+455:423 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+455:425  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+455:427  gap-[10px] items-center
+455:435  drop-shadow-[0px_4px_2px_rgba(0,0,0,0.25)] flex-col gap-[16px] items-center pb-[32px] pt-[31px] px-[32px]
+455:436  gap-[10px] items-center
+455:437 lucide/chevron-left size-[24px]
+455:439  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Solicitud
+455:440  border border-[#004da8] border-solid flex-col h-[248px] items-center justify-center p-[16px] rounded-[16px]
+455:441 Vector h-[20px] w-[16px]
+455:442  gap-[8px] items-start
+455:443  bg-[#004da8] items-center justify-center p-[8px] rounded-[8px]
+455:444 lucide/receipt-text size-[24px]
+455:446  flex-col items-start justify-center text-[16px]
+455:447  DIN_Pro:Bold c[white]
+      TEXT: Detalle:
+455:448  DIN_Pro:Regular c[#7f9ac5] w-[min-content]
+      TEXT: Serv. de Albañilería, “presupuesto para revoque de paredes y remodelación de pisos de madera.”
+455:449  gap-[8px] items-start
+455:450  bg-[#004da8] items-center justify-center p-[8px] rounded-[8px]
+455:451 lucide/map-pin-house size-[24px]
+455:453  flex-col items-start justify-center text-[16px]
+455:454  DIN_Pro:Bold c[white]
+      TEXT: Dirección:
+455:455  DIN_Pro:Regular c[#7f9ac5] w-[min-content]
+      TEXT: Corrientes 1245
+455:463  gap-[8px] items-start
+455:464  bg-[#004da8] items-center justify-center p-[8px] rounded-[8px]
+455:465 lucide/clock size-[24px]
+455:467  flex-col items-start justify-center text-[16px]
+455:468  DIN_Pro:Bold c[white]
+      TEXT: Tiempo de visita:
+455:469  DIN_Pro:Regular c[#7f9ac5] w-[min-content]
+      TEXT: 4 de marzo, 10:00hs
+455:481  gap-[16px] items-center justify-end
+455:482  bg-[#006def] border border-[rgba(209,151,171,0.5)] border-solid drop-shadow-[0px_4px_5px_rgba(163,47,86,0.15)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+455:483  DIN_Pro:Medium text-[16px] c[white]
+      TEXT: Realizar cambios
+455:484  bg-[white] border border-[#e2e2e2] border-solid drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+455:485  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Enviar Solicitud
+455:486 .Building Blocks/navigation h-[24px]
+455:487 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  

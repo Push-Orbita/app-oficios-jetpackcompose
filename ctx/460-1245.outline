@@ -1,0 +1,50 @@
+460:1245 screen bg-[#00358b] flex-col items-center justify-between rounded-[16px] size-full
+460:1247  flex-col Roboto:Medium font-medium justify-center text-[14px] c[white] w-[76px]
+460:1249  gap-[10px] items-center
+460:1257  flex-col gap-[16px] items-start pb-[32px] pt-[16px] px-[32px]
+460:1472  items-center
+460:1473  gap-[10px] items-center
+460:1474 lucide/chevron-left size-[24px]
+460:1476  DIN_Pro:Bold text-[36px] c[white]
+      TEXT: Mis Ubicaciones
+460:1273  border border-[#004da8] border-solid flex-col items-start p-[10px] rounded-[16px]
+460:1274  flex-col items-start justify-center
+460:1281  items-center justify-between p-[8px] rounded-[8px]
+460:1282  DIN_Pro:Regular text-[16px] c[#7f9ac5]
+460:1283 lucide/circle-plus size-[24px]
+460:1481  DIN_Pro:Regular text-[16px] c[white] w-[min-content]
+      TEXT: Podes guardar la ubicación para un acceso más rápido en una próxima solicitud
+460:1440  items-center justify-end w-[376px]
+460:1441  bg-[white] drop-shadow-[0px_4px_5px_rgba(255,255,255,0.1)] items-center justify-center px-[12px] py-[8px] rounded-[8px]
+460:1442  DIN_Pro:Medium text-[16px] c[#00358b]
+      TEXT: Guardar
+460:1443  h-[20px]
+460:1444  border-[#004da8] border-solid border-t gap-[16px] items-start p-[16px]
+460:1445  flex-col gap-[8px] items-center justify-center
+460:1446  bg-[#004da8] flex-col items-center justify-center p-[8px] rounded-[8px]
+460:1447 lucide/house size-[24px]
+460:1449  Satoshi:Medium text-[16px] c[white]
+      TEXT: Inicio
+460:1450  flex-col gap-[8px] items-center justify-center
+460:1451  flex-col items-center justify-center p-[8px] rounded-[8px]
+460:1452 lucide/user size-[24px]
+460:1454  Satoshi:Medium text-[16px] c[white]
+      TEXT: Perfil
+460:1455  flex-col gap-[8px] items-center justify-center
+460:1456  flex-col items-center justify-center p-[8px] rounded-[8px]
+460:1457 lucide/heart size-[24px]
+460:1459  Satoshi:Medium text-[16px] c[white]
+      TEXT: Favoritos
+460:1460  flex-col gap-[8px] items-center justify-center
+460:1461  flex-col items-center justify-center p-[8px] rounded-[8px]
+460:1462 lucide/circle-question-mark size-[24px]
+460:1464  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ayuda
+460:1465  flex-col gap-[8px] items-center justify-center
+460:1466  flex-col items-center justify-center p-[8px] rounded-[8px]
+460:1467 lucide/menu size-[24px]
+460:1469  Satoshi:Medium text-[16px] c[white]
+      TEXT: Ajustes
+460:1470 .Building Blocks/navigation h-[24px]
+460:1471 handle bg-[white] h-[4px] rounded-[12px] w-[140px]
+1:2  
