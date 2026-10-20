@@ -319,3 +319,31 @@ private fun SecondaryButtonPreview() {
         }
     }
 }
+
+@Preview(name = "Danger Button", showBackground = true, backgroundColor = 0xFF00358B)
+@Composable
+private fun DangerButtonPreview() {
+    OficiosTheme {
+        Box(Modifier.size(220.dp, 60.dp), contentAlignment = Alignment.Center) {
+            OficiosButton(
+                text = "Cancelar pedido",
+                onClick = {},
+                variant = OficiosButtonVariant.Danger,
+            )
+        }
+    }
+}
+
+@Preview(name = "Outlined Danger Button", showBackground = true, backgroundColor = 0xFF00358B)
+@Composable
+private fun OutlinedDangerButtonPreview() {
+    OficiosTheme {
+        Box(Modifier.size(180.dp, 60.dp), contentAlignment = Alignment.Center) {
+            OficiosButton(
+                text = "Rechazar",
+                onClick = {},
+                variant = OficiosButtonVariant.OutlinedDanger,
+            )
+        }
+    }
+}
