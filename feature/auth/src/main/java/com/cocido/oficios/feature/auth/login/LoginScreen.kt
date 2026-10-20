@@ -2,10 +2,12 @@ package com.cocido.oficios.feature.auth.login
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,15 +24,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlertTone
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.auth.R
@@ -43,10 +48,13 @@ fun LoginScreen(
     onEvent: (LoginEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val credentialsInvalid = uiState.bannerError != null
+    val fieldsInError = credentialsInvalid || uiState.hasAttemptedSubmit
     AuthScreenLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
         contentTopPadding = OficiosSpacing.xxl + OficiosSpacing.xs,
+        brandToContentSpacing = OficiosComponentSize.authLoginBrandToSubtitle,
         support = {
             AuthSupportCard(
                 onContactClick = { onEvent(LoginEvent.ContactSupportClicked) },
@@ -55,48 +63,95 @@ fun LoginScreen(
         },
     ) {
         val passwordFocus = remember { FocusRequester() }
-        if (uiState.bannerError != null) {
-            OficiosInlineAlert(message = uiState.bannerError)
-        } else if (uiState.hasAttemptedSubmit && !uiState.canSubmit) {
-            OficiosInlineAlert(
-                message = stringResource(R.string.auth_login_complete_data_error),
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.auth_login_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        when {
+            uiState.bannerError != null -> {
+                OficiosInlineAlert(
+                    message = uiState.bannerError,
+                    tone = OficiosInlineAlertTone.OnBrand,
+                )
+            }
+            uiState.hasAttemptedSubmit && !uiState.canSubmit -> {
+                OficiosInlineAlert(
+                    message = stringResource(R.string.auth_login_complete_data_error),
+                    tone = OficiosInlineAlertTone.OnBrand,
+                )
+            }
+            else -> {
+                Text(
+                    text = stringResource(R.string.auth_login_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
-        FieldAndCtaBlock {
-            OficiosTextField(
-                value = uiState.email,
-                onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
-                label = stringResource(R.string.auth_email_label),
-                placeholder = stringResource(R.string.auth_email_label),
-                floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        ) {
+            FieldAndCtaBlock(spacing = OficiosSpacing.md) {
+                OficiosTextField(
+                    value = uiState.email,
+                    onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
+                    label = stringResource(R.string.auth_email_label),
+                    placeholder = stringResource(R.string.auth_email_label),
+                    floatingLabel = false,
+                    isError = fieldsInError && (credentialsInvalid || uiState.emailError != null),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
+                    keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
+                )
+                OficiosPasswordField(
+                    value = uiState.password,
+                    onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
+                    label = stringResource(R.string.auth_password_label),
+                    placeholder = stringResource(R.string.auth_password_label),
+                    floatingLabel = false,
+                    isError = fieldsInError && (credentialsInvalid || uiState.passwordError != null),
+                    modifier = Modifier.focusRequester(passwordFocus),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OficiosCheckbox(
+                        checked = uiState.rememberMe,
+                        onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
+                        label = stringResource(R.string.auth_remember_me),
+                        enabled = !uiState.isLoading,
+                        expandWidth = false,
+                        compactRow = true,
+                    )
+                    OficiosButton(
+                        text = stringResource(R.string.auth_login_button),
+                        onClick = { onEvent(LoginEvent.Submit) },
+                        enabled = !uiState.isLoading,
+                        loading = uiState.isLoading,
+                        variant = OficiosButtonVariant.Primary,
+                        size = OficiosButtonSize.Small,
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
             )
-            OficiosPasswordField(
-                value = uiState.password,
-                onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
-                label = stringResource(R.string.auth_password_label),
-                placeholder = stringResource(R.string.auth_password_label),
-                floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
-                modifier = Modifier.focusRequester(passwordFocus),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
+
+            OficiosPromptActionRow(
+                prompt = stringResource(R.string.auth_no_account_yet),
+                actionLabel = stringResource(R.string.auth_register_button),
+                onAction = { onEvent(LoginEvent.RegisterClicked) },
+                enabled = !uiState.isLoading,
             )
 
             Text(
@@ -111,37 +166,7 @@ fun LoginScreen(
                         onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
                     ),
             )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OficiosCheckbox(
-                    checked = uiState.rememberMe,
-                    onCheckedChange = { onEvent(LoginEvent.RememberMeChanged(it)) },
-                    label = stringResource(R.string.auth_remember_me),
-                    enabled = !uiState.isLoading,
-                    expandWidth = false,
-                    compactRow = true,
-                )
-                OficiosButton(
-                    text = stringResource(R.string.auth_login_button),
-                    onClick = { onEvent(LoginEvent.Submit) },
-                    enabled = !uiState.isLoading,
-                    loading = uiState.isLoading,
-                    variant = OficiosButtonVariant.Primary,
-                    size = OficiosButtonSize.Small,
-                )
-            }
         }
-
-        OficiosPromptActionRow(
-            prompt = stringResource(R.string.auth_no_account_yet),
-            actionLabel = stringResource(R.string.auth_register_button),
-            onAction = { onEvent(LoginEvent.RegisterClicked) },
-            enabled = !uiState.isLoading,
-        )
     }
 }
 
