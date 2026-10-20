@@ -63,3 +63,13 @@ docs/backend/solo.md
 docs/backend/handoff/
 docs/reports/Oficios-Formosa-Informe-Avance-Android.pdf
 
+
+# Archivos de referencia de diseño (no commitear)
+ctx/
+screens/
+assets/
+PLAN_COMPLETO_*.md
+MAPA_FIGMA_APP.md
+tokens.md
+backlog-screens.md
+figma-*.tar.gz
