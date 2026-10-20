@@ -2,37 +2,54 @@ package com.cocido.oficios.core.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.cocido.oficios.core.designsystem.R
 
 // ---------------------------------------------------------------------------
 // Tipografía — Oficios Formosa
 //
 // Fuente de diseño: DIN Pro (Bold / Medium / Regular) + Satoshi Medium (nav)
-// Fallback: FontFamily.SansSerif hasta que las fuentes sean agregadas legalmente
-// al proyecto (ver docs/DESIGN_SYSTEM_SPEC.md → sección Tipografía).
 //
-// BLOQUEANTE: Licencia de DIN Pro (FontFont/Monotype) y Satoshi (Fontshare/ITF)
-// pendiente. Matías debe conseguir licencia de app móvil o aprobar fallback métrico
-// (p. ej. Barlow/D-DIN OFL). Ver PLAN_COMPLETO_1a1.md bloqueante #1.
+// Decisión (Matías, 20/10/2026): Usar D-DIN (SIL OFL) como alternativa libre
+// métrica a DIN Pro comercial, y Satoshi (ITF Free Font License) para nav labels.
 //
-// Para agregar las fuentes cuando estén disponibles:
-//   1. Colocar los .ttf/.otf en res/font/
-//   2. Crear FontFamily con FontWeight.Bold / Medium / Normal
-//   3. Reemplazar OficiosFontFamilyPlaceholder por ese FontFamily
+// Mapeo de pesos:
+//   DIN Pro Regular → D-DIN Regular
+//   DIN Pro Bold → D-DIN Bold
+//   DIN Pro Medium → D-DIN Condensed (peso más cercano disponible)
+//
+// Licencias: Ver third_party/fonts/LICENSES.md
+// Fuentes: D-DIN (SIL OFL 1.1), Satoshi (ITF FFL 2.0)
+// Archivos en: core/designsystem/src/main/res/font/
 //
 // Escala tipográfica de Figma: 48/36/32/16 (+14 en sistema, no usado).
 // Line-height: "normal" (≈1.2x), letter-spacing: 0.
 // ---------------------------------------------------------------------------
 
-/** TODO: Reemplazar con DIN Pro cuando la licencia esté disponible */
-private val OficiosFontFamilyPlaceholder = FontFamily.SansSerif
+/**
+ * D-DIN Font Family - alternativa libre a DIN Pro.
+ * SIL Open Font License 1.1 por Datto Inc.
+ * Fuente: Font Squirrel / www.datto.com/fonts/d-din
+ */
+private val DDinFontFamily = FontFamily(
+    Font(R.font.d_din_regular, FontWeight.Normal),
+    Font(R.font.d_din_condensed, FontWeight.Medium),  // D-DIN Condensed como sustituto de Medium
+    Font(R.font.d_din_bold, FontWeight.Bold)
+)
 
-/** TODO: Reemplazar con Satoshi Medium cuando la licencia esté disponible */
-private val OficiosFontFamilySatoshiPlaceholder = FontFamily.SansSerif
+/**
+ * Satoshi Font Family - usado solo para labels de bottom navigation.
+ * ITF Free Font License (FFL) 2.0 por Indian Type Foundry.
+ * Fuente: Fontshare (www.fontshare.com/fonts/satoshi)
+ */
+private val SatoshiFontFamily = FontFamily(
+    Font(R.font.satoshi_medium, FontWeight.Medium)
+)
 
-private val OficiosFontFamily = OficiosFontFamilyPlaceholder
+private val OficiosFontFamily = DDinFontFamily
 
 val OficiosTypography = Typography(
     // Título splash / logo — "Oficios Formosa" 48sp DIN Pro Bold
@@ -168,10 +185,9 @@ val OficiosRegisterTradeTitleStyle = TextStyle(
     letterSpacing = 0.sp,
 )
 
-/** Label de la bottom navigation — 16sp Satoshi Medium (única excepción a DIN Pro)
- * TODO: Reemplazar OficiosFontFamilySatoshiPlaceholder cuando Satoshi esté disponible */
+/** Label de la bottom navigation — 16sp Satoshi Medium (única excepción a D-DIN) */
 val OficiosBottomNavLabelStyle = TextStyle(
-    fontFamily = OficiosFontFamilySatoshiPlaceholder,
+    fontFamily = SatoshiFontFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 16.sp,
     lineHeight = 19.sp,
