@@ -73,7 +73,7 @@ class ClientContactoViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Completá nombre y WhatsApp") }
+            _uiState.update { it.copy(error = "Complete nombre y WhatsApp") }
             return
         }
         viewModelScope.launch {

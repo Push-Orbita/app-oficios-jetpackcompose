@@ -132,7 +132,7 @@ class ClientDomicilioViewModelTest {
         override suspend fun verifyPasswordResetCode(code: String) = AppResult.Success("token")
         override suspend fun resetPassword(resetToken: String, password: String, confirmPassword: String) =
             AppResult.Success(Unit)
-        override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a tu correo")
+        override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a su correo")
         override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
         override suspend fun getUserRoles() = AppResult.Success(
             listOf(UserRoleDefinition(1, "Cliente", UserRole.CLIENT)),

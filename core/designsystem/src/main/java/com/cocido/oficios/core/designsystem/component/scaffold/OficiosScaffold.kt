@@ -7,6 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -67,13 +70,18 @@ fun OficiosScaffold(
             content = content,
         )
 
-        // Toast bar encima del bottomBar
-        if (bottomBar != null) {
-            OficiosToastBar(
-                controller = resolvedToastController,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
+        // Toast bar siempre visible
+        // Si hay bottomBar, va arriba de ella; si no, va abajo respetando inset de navegación
+        OficiosToastBar(
+            controller = resolvedToastController,
+            modifier = if (bottomBar != null) {
+                Modifier.align(Alignment.BottomCenter)
+            } else {
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues())
+            }
+        )
 
         AnimatedVisibility(
             visible = isLoading,

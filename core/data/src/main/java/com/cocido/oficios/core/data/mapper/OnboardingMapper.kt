@@ -65,9 +65,9 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
                 id = "domicilio",
                 title = "Domicilio",
                 description = if (needsPhoneVerification) {
-                    "Agregá tu dirección y confirmá tu WhatsApp para poder contratar servicios."
+                    "Agregue su dirección y confirme su WhatsApp para poder contratar servicios."
                 } else {
-                    "Agregá al menos un domicilio para contratar servicios."
+                    "Agregue al menos un domicilio para contratar servicios."
                 },
                 status = OnboardingStepStatus.PENDING,
             ),
@@ -80,9 +80,9 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
                 id = "contacto",
                 title = "Contacto",
                 description = if (needsPhoneVerification && !phoneVerificationMerged) {
-                    "Agregá tu contacto y confirmá tu WhatsApp para recibir notificaciones."
+                    "Agregue su contacto y confirme su WhatsApp para recibir notificaciones."
                 } else {
-                    "Agregá al menos un contacto para recibir notificaciones."
+                    "Agregue al menos un contacto para recibir notificaciones."
                 },
                 status = OnboardingStepStatus.PENDING,
             ),
@@ -94,7 +94,7 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
             OnboardingStep(
                 id = "email_verificado",
                 title = "Verificar email",
-                description = "Confirmá tu correo electrónico.",
+                description = "Confirme su correo electrónico.",
                 status = OnboardingStepStatus.PENDING,
                 isRequired = false,
             ),
@@ -105,7 +105,7 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
             OnboardingStep(
                 id = "telefono_verificado",
                 title = "Verificar teléfono",
-                description = "Confirmá tu número de WhatsApp con el código que te enviamos.",
+                description = "Confirme su número de WhatsApp con el código que le enviamos.",
                 status = OnboardingStepStatus.PENDING,
             ),
         )
@@ -125,30 +125,30 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         "email_verificado",
     )
     val stepMap = mapOf(
-        "dni_numero" to ("DNI" to "Cargá tu número de documento."),
-        "dni_imagenes" to ("Fotos del DNI" to "Subí las imágenes de tu documento."),
-        "dni_pendiente_revision" to ("DNI en revisión" to "Tu documentación está siendo revisada."),
-        "dni_rechazado" to ("DNI rechazado" to "Volvé a cargar tu documentación."),
-        "selfie_imagen" to ("Foto de rostro" to "Subí una selfie para validar tu identidad."),
-        "selfie_pendiente_revision" to ("Selfie en revisión" to "Tu foto de rostro está siendo revisada."),
-        "selfie_rechazada" to ("Selfie rechazada" to "Volvé a cargar tu foto de rostro."),
-        "descripcion" to ("Descripción profesional" to "Contá qué servicios ofrecés."),
-        "experiencia" to ("Experiencia" to "Indicá tu experiencia en el rubro."),
-        "rubro_principal" to ("Rubro y especialidades" to "Seleccioná tu rubro y las especialidades que ofrecés."),
-        "subrubros" to ("Rubro y especialidades" to "Seleccioná tu rubro y las especialidades que ofrecés."),
-        "disponibilidad" to ("Días laborables" to "Configurá tus días y horarios."),
-        "agenda_turnos" to ("Agenda de turnos" to "Configurá turnos si aplica."),
-        "local_comercial" to ("Local comercial" to "Agregá tu local si atendés en sitio."),
-        "metodos_pago" to ("Métodos de pago" to "Seleccioná cómo querés cobrar."),
-        "informacion_personal" to ("Información personal" to "Completá tu información básica."),
-        "finalizar_perfil" to ("Finalizar perfil" to "Confirmá tu perfil para publicarlo."),
-        "email_verificado" to ("Verificar email" to "Confirmá tu correo electrónico."),
+        "dni_numero" to ("DNI" to "Cargue su número de documento."),
+        "dni_imagenes" to ("Fotos del DNI" to "Suba las imágenes de su documento."),
+        "dni_pendiente_revision" to ("DNI en revisión" to "Su documentación está siendo revisada."),
+        "dni_rechazado" to ("DNI rechazado" to "Vuelva a cargar su documentación."),
+        "selfie_imagen" to ("Foto de rostro" to "Suba una selfie para validar su identidad."),
+        "selfie_pendiente_revision" to ("Selfie en revisión" to "Su foto de rostro está siendo revisada."),
+        "selfie_rechazada" to ("Selfie rechazada" to "Vuelva a cargar su foto de rostro."),
+        "descripcion" to ("Descripción profesional" to "Cuente qué servicios ofrece."),
+        "experiencia" to ("Experiencia" to "Indique su experiencia en el rubro."),
+        "rubro_principal" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
+        "subrubros" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
+        "disponibilidad" to ("Días laborables" to "Configure sus días y horarios."),
+        "agenda_turnos" to ("Agenda de turnos" to "Configure turnos si aplica."),
+        "local_comercial" to ("Local comercial" to "Agregue su local si atiende en sitio."),
+        "metodos_pago" to ("Métodos de pago" to "Seleccione cómo quiere cobrar."),
+        "informacion_personal" to ("Información personal" to "Complete su información básica."),
+        "finalizar_perfil" to ("Finalizar perfil" to "Confirme su perfil para publicarlo."),
+        "email_verificado" to ("Verificar email" to "Confirme su correo electrónico."),
     )
 
     missingSteps.forEach { missing ->
         if (!isIdentityVerified && missing !in preIdentityStepIds) return@forEach
         if (missing == "subrubros" && missingSteps.contains("rubro_principal")) return@forEach
-        val (title, description) = stepMap[missing] ?: (missing to "Completá este paso.")
+        val (title, description) = stepMap[missing] ?: (missing to "Complete este paso.")
         val status = when (missing) {
             "dni_pendiente_revision", "selfie_pendiente_revision" -> OnboardingStepStatus.IN_REVIEW
             else -> OnboardingStepStatus.PENDING

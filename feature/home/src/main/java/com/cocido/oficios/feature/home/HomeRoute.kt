@@ -1,7 +1,7 @@
 package com.cocido.oficios.feature.home
 
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,7 +37,7 @@ fun HomeRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val comingSoon = stringResource(R.string.home_coming_soon)
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -60,7 +60,7 @@ fun HomeRoute(
                 HomeEffect.NavigateToFavorites -> onNavigateToFavorites()
                 HomeEffect.NavigateToHelp -> onNavigateToHelp()
                 HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
-                is HomeEffect.ShowMessage -> snackbar.showError(effect.message)
+                is HomeEffect.ShowMessage -> toastController.showError(effect.message)
                 HomeEffect.ShowComingSoon -> onShowMessage(comingSoon)
             }
         }
@@ -99,7 +99,7 @@ fun CategoriesRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -107,7 +107,7 @@ fun CategoriesRoute(
                 CategoriesEffect.NavigateBack -> onNavigateBack()
                 is CategoriesEffect.NavigateToRubros -> onNavigateToRubros(effect.categoryId, effect.categoryName)
                 is CategoriesEffect.NavigateToSearchResults -> onNavigateToSearchResults(effect.query)
-                is CategoriesEffect.ShowMessage -> snackbar.showError(effect.message)
+                is CategoriesEffect.ShowMessage -> toastController.showError(effect.message)
                 CategoriesEffect.NavigateToNotifications -> onNavigateToNotifications()
             }
         }

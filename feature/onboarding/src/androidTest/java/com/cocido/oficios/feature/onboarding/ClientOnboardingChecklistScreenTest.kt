@@ -27,7 +27,7 @@ class ClientOnboardingChecklistScreenTest {
         val domicilioStep = OnboardingStep(
             id = "domicilio",
             title = "Domicilio",
-            description = "Agregá al menos un domicilio",
+            description = "Agregue al menos un domicilio",
             status = OnboardingStepStatus.PENDING,
         )
 
@@ -44,7 +44,7 @@ class ClientOnboardingChecklistScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Completá tu perfil").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Complete su perfil").assertIsDisplayed()
         composeTestRule.onNodeWithText("Domicilio").assertIsDisplayed()
         composeTestRule.onNodeWithText("Domicilio").performClick()
         assertEquals("domicilio", clickedStepId)

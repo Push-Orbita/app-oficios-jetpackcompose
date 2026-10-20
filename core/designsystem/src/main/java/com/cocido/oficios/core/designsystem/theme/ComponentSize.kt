@@ -37,20 +37,97 @@ object OficiosComponentSize {
     val skeletonBlockLg = 240.dp
     val contentMaxWidth = 640.dp
 
-    // Marca auth — baseline Figma 440dp (nodos 356:22, 356:49)
+    // Marca auth — baseline Figma 440dp (nodos 16:2, 356:49, 356:482)
     val authBrandMaxWidth = 351.dp
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    val authLogoIconWidthSplash = 163.dp
+    /** Splash 16:2: casco+pin ~164×268dp. */
+    val authLogoIconWidthSplash = 164.dp
+    /**
+     * Gap layout logo→wordmark. El drawable aporta ~6dp de aire; 23dp deja
+     * el wordmark visual en y≈628 (gap óptico 29) con logo top 330.
+     */
+    val authSplashLogoWordmarkGap = 23.dp
+    val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
-    val authRegisterBrandIconWidth = 61.dp
+    val authWordmarkHeightSplash = 48.dp
+    /** Login 356:49: logo 122×201.75. */
+    val authLogoIconHeightCompact = 202.dp
+    /** Login 356:49: gap logo→wordmark 13dp (wordmark visual y=327). */
+    val authLoginLogoWordmarkGap = 13.dp
+    /** Login 356:49: status 48 + 64 = logo y=112. */
+    val authLoginContentTopPadding = 63.dp
+    /** Login error: «!» 22dp, centrado con la línea de texto. */
+    val authLoginErrorIconSize = 22.dp
+    /** Login error: gap mensaje→campo. 15dp deja el bloque de error en ±2.3 de Figma. */
+    val authLoginErrorToField = 15.dp
+    /** Login: wordmark → subtítulo. +6 vs r6 para bajar el bloque a y_rel 377. */
+    val authLoginBrandToSubtitle = 64.dp
+    /** Forgot password reutilizaba el gap de login; se queda en el valor previo. */
+    val authForgotBrandToSubtitle = 58.dp
+    val authLoginSubtitleToField = 18.dp
+    val authLoginPasswordToActions = 16.dp
+    val authLoginActionsToDivider = 16.dp
+    val authLoginDividerToPrompt = 16.dp
+    /** Login: prompt → soporte. −6 vs r6 para dejar la card en 694 / 698. */
+    val authLoginPromptToSupport = 49.dp
+    val authLoginSupportToForgot = 16.dp
+    val authLoginSupportCardMinHeight = 112.dp
+    val authRegisterHeaderWidth = 345.dp
+    val authRegisterBrandIconWidth = 62.dp
+    val authRegisterBrandIconHeight = 102.dp
+    val authRegisterBrandSpacing = 24.dp
+    /** Wordmark del header de rol: ~7% más chico, glifo x118–377. */
+    val authRegisterHeaderWordmarkHeight = 27.dp
+    val authRegisterHeaderWordmarkWidth = 259.dp
+    /** Rol 356:482: status 48 + 18 = logo glifo y=67. */
+    val authRegisterHeaderTop = 18.dp
+    /** Registro: status 48 + 22 = mayúsculas en y=75 (glifo hug, no caja D-DIN). */
+    val authRegisterTitleTop = 22.dp
+    /** Figma: subtítulo 21dp bajo el baseline del título. 22 + glifo hug ≈ 21. */
+    val authRegisterTitleToSubtitle = 22.dp
+    val authRegisterSubtitleToField = 19.dp
+    val authRegisterEmailToHint = 19.dp
+    val authRegisterHintToPassword = 18.dp
+    val authRegisterPasswordToTerms = 17.dp
+    val authRegisterTermsToDivider = 16.dp
+    val authRegisterDividerToPrompt = 16.dp
+    val authRegisterTermsCheckboxToText = 8.dp
+    val authSupportBadgeWidth = 31.dp
+    val authSupportBadgeHeight = 36.dp
+    val authSupportBadgeSize = authSupportBadgeWidth
+    val authSupportBadgeOffsetY = 18.dp
+    val authSupportBadgeOffsetX = 15.dp
+    /** Login/rol soporte: Figma 20dp arriba y 20dp abajo; el texto se centra. */
+    val authSupportCardPaddingTop = 20.dp
+    val authSupportCardPaddingBottom = 20.dp
+    val authRoleHeaderToSubtitle = 21.dp
+    val authRoleSubtitleToCards = 18.dp
+    val authRoleCardsToDivider = 16.dp
+    val authRoleDividerToPrompt = 16.dp
+    val authRolePromptToSupport = 52.dp
+    val authRoleSupportCardMinHeight = 92.dp
+    /** Rol: título ~20dp bajo el top de la card (caja 18 + glifo). */
+    val authRoleCardTitleTopInset = 18.dp
+    /** Casco: top visual ~61dp bajo el top de la card. */
+    val authRoleCardIconTopInsetWorker = 16.dp
+    /** Lupa: top visual ~52dp bajo el top de la card. */
+    val authRoleCardIconTopInsetClient = 18.dp
 
-    // Selección de rol — Figma 356:482
-    val registerRoleCardHeight = 172.dp
+    // Selección de rol — Figma 356:482 / QA r6 (alto mid-edge 172)
+    val registerRoleCardWidth = 179.dp
+    /** Home/grids: no subir. El alto de las cards de Rol es [authRoleCardMinHeight]. */
+    val registerRoleCardHeight = 160.dp
+    val authRoleCardMinHeight = 172.dp
+    val registerRoleCardGap = 16.dp
     val registerRoleCardIconAreaHeight = 100.dp
-    val registerRoleCardIconWorkerHeight = 64.dp
-    val registerRoleCardIconClientHeight = 87.dp
+    /** Home/grids: no subir. El casco de Rol auth es [authRoleCardIconWorkerHeight]. */
+    val registerRoleCardIconWorkerHeight = 84.dp
+    /** Rol auth: ic_casco nativo 116×82 (visible ~104.9×72.1). Sin rotación extra. */
+    val authRoleCardIconWorkerWidth = 116.dp
+    val authRoleCardIconWorkerHeight = 82.dp
+    val registerRoleCardIconClientHeight = 84.dp
 }
 
 // Alias de compatibilidad con código previo del template

@@ -168,7 +168,7 @@ class AuthRepositoryImpl @Inject constructor(
     private fun roleNotFoundError(): AppResult.Error =
         AppResult.Error(
             com.cocido.oficios.core.common.result.AppError.Unknown(
-                "No se pudo determinar el rol de usuario. Intentá más tarde.",
+                "No se pudo determinar el rol de usuario. Intente más tarde.",
             ),
         )
 }

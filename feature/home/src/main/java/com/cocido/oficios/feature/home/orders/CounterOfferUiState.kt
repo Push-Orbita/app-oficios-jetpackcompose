@@ -21,4 +21,5 @@ sealed interface CounterOfferEvent {
 sealed interface CounterOfferEffect {
     data object NavigateBack : CounterOfferEffect
     data class ShowMessage(val message: String) : CounterOfferEffect
+    data object CounterOfferSentSuccess : CounterOfferEffect
 }

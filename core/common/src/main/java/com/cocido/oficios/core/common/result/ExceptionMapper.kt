@@ -30,39 +30,39 @@ fun Throwable.toAppError(): AppError {
 
 fun AppError.userMessage(): String = when (this) {
     is AppError.Network -> message.toProfessionalMessage(
-        fallback = "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente.",
+        fallback = "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
     )
     is AppError.Validation -> message.toProfessionalMessage(
-        fallback = "No pudimos guardar los cambios. Revisá los datos e intentá nuevamente.",
+        fallback = "No pudimos guardar los cambios. Revise los datos e intente nuevamente.",
     )
     is AppError.Unauthorized -> message.toProfessionalMessage(
-        fallback = "Tu sesión venció. Volvé a ingresar para continuar.",
+        fallback = "Su sesión venció. Vuelva a ingresar para continuar.",
     )
     is AppError.Forbidden -> message.toProfessionalMessage(
-        fallback = "No tenés permiso para realizar esta acción.",
+        fallback = "No tiene permiso para realizar esta acción.",
     )
     is AppError.NotFound -> message.toProfessionalMessage(
-        fallback = "No encontramos la información solicitada. Actualizá la pantalla e intentá nuevamente.",
+        fallback = "No encontramos la información solicitada. Actualice la pantalla e intente nuevamente.",
     )
     is AppError.Conflict -> message.toProfessionalMessage(
-        fallback = "Ese dato ya está registrado. Revisalo e intentá nuevamente.",
+        fallback = "Ese dato ya está registrado. Revíselo e intente nuevamente.",
     )
-    is AppError.Unknown -> "Algo salió mal. Intentá de nuevo."
+    is AppError.Unknown -> "Algo salió mal. Intente de nuevo."
 }
 
 private fun String.toProfessionalMessage(fallback: String): String {
     val normalized = trim()
     if (normalized.isBlank()) return fallback
     if (normalized.isInfrastructureFailure()) {
-        return "El servicio no está disponible en este momento. Intentá más tarde."
+        return "El servicio no está disponible en este momento. Intente más tarde."
     }
     if (normalized.containsTechnicalDetail()) return fallback
     return when (normalized.lowercase()) {
         "network error", "no internet connection" ->
-            "No pudimos conectarnos. Revisá tu conexión e intentá nuevamente."
-        "request timed out" -> "La conexión tardó demasiado. Intentá nuevamente."
+            "No pudimos conectarnos. Revise su conexión e intente nuevamente."
+        "request timed out" -> "La conexión tardó demasiado. Intente nuevamente."
         "secure connection could not be established" ->
-            "No pudimos establecer una conexión segura. Intentá nuevamente más tarde."
+            "No pudimos establecer una conexión segura. Intente nuevamente más tarde."
         else -> normalized
     }
 }

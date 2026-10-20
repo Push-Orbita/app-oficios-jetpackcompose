@@ -1,7 +1,7 @@
 package com.cocido.oficios.feature.home.agenda
 
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,7 +21,7 @@ fun AgendaListRoute(
     viewModel: AgendaListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     ReloadAgendaOnResume { viewModel.onEvent(AgendaListEvent.RetrySlots) }
 
@@ -29,7 +29,7 @@ fun AgendaListRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 is AgendaListEffect.ShowMessage -> onShowMessage(effect.message)
-                is AgendaListEffect.ShowError -> snackbar.showError(effect.message)
+                is AgendaListEffect.ShowError -> toastController.showError(effect.message)
                 AgendaListEffect.NavigateToConfig -> onNavigateToConfig()
             }
         }

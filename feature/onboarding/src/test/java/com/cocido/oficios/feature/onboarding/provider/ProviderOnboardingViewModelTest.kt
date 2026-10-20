@@ -160,7 +160,7 @@ class ProviderOnboardingViewModelTest {
                         password: String,
                         confirmPassword: String,
                     ) = AppResult.Success(Unit)
-                    override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a tu correo")
+                    override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a su correo")
                     override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
                     override suspend fun getUserRoles() =
                         AppResult.Success(emptyList<com.cocido.oficios.domain.model.UserRoleDefinition>())
@@ -239,7 +239,7 @@ class ProviderOnboardingViewModelTest {
                             OnboardingStep(
                                 id = "finalizar_perfil",
                                 title = "Finalizar perfil",
-                                description = "Confirmá",
+                                description = "Confirme",
                                 status = OnboardingStepStatus.PENDING,
                             ),
                         )

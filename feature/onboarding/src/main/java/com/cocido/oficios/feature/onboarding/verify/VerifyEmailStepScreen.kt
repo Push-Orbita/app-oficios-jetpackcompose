@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.onboarding.verify
 
+import android.content.Intent
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,13 +9,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
-import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.OficiosCodeInput
+import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.steps.OnboardingStepScaffold
@@ -27,6 +30,8 @@ fun VerifyEmailStepScreen(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    
     OnboardingStepScaffold(
         title = stringResource(R.string.onboarding_step_verify_email_title),
         modifier = modifier,
@@ -41,10 +46,40 @@ fun VerifyEmailStepScreen(
         onSubmit = onSubmit,
     ) {
         Text(
-            text = stringResource(R.string.onboarding_step_verify_email_subtitle, uiState.email),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = stringResource(R.string.onboarding_step_verify_email_subtitle_no_format),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
         )
+        
+        // Email en negrita
+        Text(
+            text = uiState.email,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            ),
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        
+        // Botón "Abrir correo"
+        OficiosButton(
+            text = stringResource(R.string.onboarding_step_verify_email_open_email),
+            onClick = {
+                val intent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_APP_EMAIL)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    // Si no hay app de correo, no hacer nada
+                }
+            },
+            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Primary,
+            size = OficiosButtonSize.Large,
+        )
+        
         if (uiState.infoMessage != null) {
             Text(
                 text = uiState.infoMessage,
@@ -54,22 +89,28 @@ fun VerifyEmailStepScreen(
             Text(
                 text = stringResource(R.string.onboarding_step_verify_email_spam_hint),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = OficiosColorMutedText,
             )
         }
+        
         FieldAndCtaBlock {
-            OficiosTextField(
+            // Componente de 6 dígitos
+            OficiosCodeInput(
                 value = uiState.code,
                 onValueChange = onCodeChanged,
-                label = stringResource(R.string.onboarding_step_verify_email_code_label),
                 isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(onDone = { onSubmit() }),
+                enabled = !uiState.isLoading,
+                onDone = onSubmit,
             )
+            
+            if (uiState.hasAttemptedSubmit && uiState.codeError != null) {
+                Text(
+                    text = uiState.codeError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            
             OficiosButton(
                 text = when {
                     uiState.isResending -> stringResource(R.string.onboarding_step_verify_email_resending)
@@ -84,10 +125,11 @@ fun VerifyEmailStepScreen(
                 modifier = Modifier.fillMaxWidth(),
                 variant = OficiosButtonVariant.Ghost,
             )
+            
             OficiosButton(
                 text = stringResource(R.string.onboarding_step_verify_email_submit),
                 onClick = onSubmit,
-                enabled = !uiState.isLoading,
+                enabled = !uiState.isLoading && uiState.canSubmit,
                 loading = uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 variant = OficiosButtonVariant.Secondary,

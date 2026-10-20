@@ -2,7 +2,6 @@ package com.cocido.oficios.core.designsystem.component.brand
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,11 +20,11 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 fun OficiosBrandRow(
     modifier: Modifier = Modifier,
     iconWidth: Dp = OficiosComponentSize.authLogoIconWidthCompact,
+    iconHeight: Dp = iconWidth * (270f / 165f),
     wordmarkHeight: Dp = OficiosComponentSize.authWordmarkHeight,
+    wordmarkWidth: Dp? = null,
     spacing: Dp = OficiosSpacing.sm,
 ) {
-    val iconHeight = iconWidth * (270f / 165f)
-
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(spacing),
@@ -37,7 +36,11 @@ fun OficiosBrandRow(
             modifier = Modifier.width(iconWidth),
         )
         OficiosFormosaWordmark(
-            modifier = Modifier.height(wordmarkHeight),
+            modifier = Modifier.then(
+                if (wordmarkWidth != null) Modifier.width(wordmarkWidth) else Modifier,
+            ),
+            height = wordmarkHeight,
+            fillWidth = wordmarkWidth == null,
         )
     }
 }

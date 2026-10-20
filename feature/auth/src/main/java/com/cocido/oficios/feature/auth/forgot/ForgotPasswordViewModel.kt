@@ -105,7 +105,7 @@ class ForgotPasswordViewModel @Inject constructor(
                     // cualquier otro rechazo del backend relacionado a la cuenta.
                     val message = when (result.error) {
                         is AppError.Unauthorized, is AppError.NotFound ->
-                            "Si el correo está registrado, vas a recibir instrucciones para recuperar tu contraseña."
+                            "Si el correo está registrado, recibirá instrucciones para recuperar su contraseña."
                         else -> result.error.userMessage()
                     }
                     _uiState.update {
@@ -147,7 +147,7 @@ class ResetPasswordViewModel @Inject constructor(
     }
 
     private fun submit() {
-        val codeError = if (_uiState.value.code.isBlank()) "Ingresá el código" else null
+        val codeError = if (_uiState.value.code.isBlank()) "Ingrese el código" else null
         val passwordError = AuthValidators.validatePassword(_uiState.value.password)
         val confirmPasswordError = AuthValidators.validatePasswordConfirmation(
             _uiState.value.password,

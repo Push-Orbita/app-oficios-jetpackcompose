@@ -30,9 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -58,6 +61,7 @@ import com.cocido.oficios.feature.onboarding.client.ClientContactoUiState
 import com.cocido.oficios.feature.onboarding.client.ClientDomicilioUiState
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.feature.onboarding.provider.ProviderDniUiState
+import com.cocido.oficios.feature.onboarding.provider.ProviderIdentityUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderSelfieUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderLocalUiState
 import com.cocido.oficios.feature.onboarding.provider.ProviderPaymentMethodsUiState
@@ -476,7 +480,9 @@ private fun DniImageUploadCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = if (isLoaded) Icons.Outlined.CheckCircle else Icons.Outlined.PhotoCamera,
+                imageVector = ImageVector.vectorResource(
+                    if (isLoaded) OficiosIcons.CircleCheck else OficiosIcons.Camera
+                ),
                 contentDescription = null,
                 modifier = Modifier.size(OficiosSpacing.lg),
                 tint = if (isLoaded) OficiosColorSuccess else MaterialTheme.colorScheme.primary,
@@ -773,5 +779,198 @@ fun ProviderLocalStepScreen(
             onPermissionDenied = onLocationPermissionDenied,
             isLocating = uiState.isLocating,
         )
+    }
+}
+
+/**
+ * Pantalla unificada de Identidad (Figma 526:1118)
+ * Combina DNI frente, DNI dorso, selfie y certificado opcional en una sola pantalla
+ */
+@Composable
+fun ProviderIdentityStepScreen(
+    uiState: com.cocido.oficios.feature.onboarding.provider.ProviderIdentityUiState,
+    onDocumentoChanged: (String) -> Unit,
+    onFrontImageSelected: (String?) -> Unit,
+    onBackImageSelected: (String?) -> Unit,
+    onSelfieImageSelected: (String?) -> Unit,
+    onCertificateNameChanged: (String) -> Unit,
+    onCertificateSelected: (String?) -> Unit,
+    onSubmit: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
+    val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
+    val galleryLabel = stringResource(R.string.onboarding_image_picker_gallery)
+    val cancelLabel = stringResource(R.string.onboarding_image_picker_cancel)
+
+    val frontImagePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onFrontImageSelected,
+    )
+    val backImagePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onBackImageSelected,
+    )
+    val selfieImagePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onSelfieImageSelected,
+    )
+    val certificatePicker = rememberImageSourcePicker(
+        title = pickerTitle,
+        cameraLabel = cameraLabel,
+        galleryLabel = galleryLabel,
+        cancelLabel = cancelLabel,
+        onImageSelected = onCertificateSelected,
+    )
+
+    OnboardingStepScaffold(
+        title = stringResource(R.string.onboarding_step_dni_title),
+        isLoading = uiState.isLoading,
+        canSubmit = uiState.canSubmit,
+        error = uiState.uploadError,
+        submitText = stringResource(R.string.onboarding_step_upload_dni),
+        onSubmit = onSubmit,
+        modifier = modifier,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_step_dni_number_section),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_step_dni_number_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OficiosTextField(
+                    value = uiState.documento,
+                    onValueChange = onDocumentoChanged,
+                    label = stringResource(R.string.onboarding_step_dni_number_label),
+                    placeholder = "12345678",
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_step_dni_photos_section),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_step_dni_photos_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_step_dni_light_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+
+                DniImageUploadCard(
+                    title = stringResource(R.string.onboarding_step_dni_front_title),
+                    subtitle = stringResource(R.string.onboarding_step_dni_front_subtitle),
+                    isLoaded = uiState.frontImagePath != null || uiState.frontRemoteLoaded,
+                    onClick = { frontImagePicker.requestImage() },
+                )
+
+                DniImageUploadCard(
+                    title = stringResource(R.string.onboarding_step_dni_back_title),
+                    subtitle = stringResource(R.string.onboarding_step_dni_back_subtitle),
+                    isLoaded = uiState.backImagePath != null || uiState.backRemoteLoaded,
+                    onClick = { backImagePicker.requestImage() },
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_step_selfie_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_step_selfie_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                DniImageUploadCard(
+                    title = stringResource(R.string.onboarding_step_selfie_card_title),
+                    subtitle = stringResource(R.string.onboarding_step_selfie_card_subtitle),
+                    isLoaded = uiState.selfieImagePath != null || uiState.selfieRemoteLoaded,
+                    onClick = { selfieImagePicker.requestImage() },
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_step_certificate_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_step_certificate_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                if (uiState.existingCertificateName != null) {
+                    OficiosInlineAlert(
+                        message = "Ya tiene un certificado cargado: ${uiState.existingCertificateName}",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                OficiosTextField(
+                    value = uiState.certificateName,
+                    onValueChange = onCertificateNameChanged,
+                    label = stringResource(R.string.onboarding_step_certificate_name_label),
+                    placeholder = "Ej: Curso de electricidad",
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                OficiosButton(
+                    text = stringResource(R.string.onboarding_step_certificate_upload),
+                    onClick = { certificatePicker.requestImage() },
+                    variant = OficiosButtonVariant.Secondary,
+                    size = OficiosButtonSize.Medium,
+                    enabled = !uiState.isLoading && uiState.certificateName.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                if (uiState.certificatePath != null) {
+                    Text(
+                        text = "Certificado seleccionado: ${uiState.certificatePath.substringAfterLast('/')}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OficiosColorSuccess,
+                    )
+                }
+            }
+        }
     }
 }

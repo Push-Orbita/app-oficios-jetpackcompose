@@ -1,7 +1,7 @@
 package com.cocido.oficios.feature.home.notifications
 
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -17,13 +17,13 @@ fun NotificationsRoute(
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is NotificationsEffect.NavigateToDeepLink -> onNavigateToDeepLink(effect.route)
-                is NotificationsEffect.ShowMessage -> snackbar.showError(effect.message)
+                is NotificationsEffect.ShowMessage -> toastController.showError(effect.message)
             }
         }
     }

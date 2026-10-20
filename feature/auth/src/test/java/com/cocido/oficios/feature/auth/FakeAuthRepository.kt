@@ -31,7 +31,7 @@ class FakeAuthRepository(
     override suspend fun verifyPasswordResetCode(code: String) = AppResult.Error(AppError.Unknown())
     override suspend fun resetPassword(resetToken: String, password: String, confirmPassword: String) =
         AppResult.Error(AppError.Unknown())
-    override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a tu correo")
+    override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a su correo")
     override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
     override suspend fun getUserRoles() = AppResult.Success(
         listOf(

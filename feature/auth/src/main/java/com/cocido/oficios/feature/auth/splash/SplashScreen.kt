@@ -1,7 +1,9 @@
 package com.cocido.oficios.feature.auth.splash
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandScale
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 @Composable
@@ -23,22 +26,27 @@ fun SplashScreen(
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
         OficiosStateContent(
             targetState = uiState,
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
             contentKey = { it is SplashUiState.Error },
         ) { state ->
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 when (state) {
                     SplashUiState.Loading, is SplashUiState.Ready -> {
-                        OficiosBrandBlock(scale = OficiosBrandScale.Splash)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = OficiosComponentSize.authSplashLogoTop),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            OficiosBrandBlock(scale = OficiosBrandScale.Splash)
+                        }
                     }
                     is SplashUiState.Error -> {
                         OficiosErrorState(
                             title = "No se pudo iniciar",
                             description = state.message,
                             onRetry = onRetry,
+                            modifier = Modifier.align(Alignment.Center),
                         )
                     }
                 }

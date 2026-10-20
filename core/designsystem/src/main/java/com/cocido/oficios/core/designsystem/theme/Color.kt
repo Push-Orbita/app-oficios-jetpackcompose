@@ -17,6 +17,8 @@ val OficiosColorBackground = Color(0xFF00358B)
 
 /** Outline / fill de tarjetas — borde 1px inset en casi todos los contenedores. Figma rgb(0,77,168) */
 val OficiosColorOutlineFill = Color(0xFF004DA8)
+/** Divisor auth — Figma Vector 1 ~#0047A0 (356:90). */
+val OficiosColorAuthDivider = Color(0xFF0047A0)
 val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 
 /** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
@@ -30,8 +32,8 @@ val OficiosColorSecondaryTextFigma = Color(0xFF7F9AC5)
 /** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)
 
-/** Casco de marca. Figma Thumbnail `666:2`, rgb(0, 106, 240). No es el acento dorado. */
-val OficiosColorBrandMark = Color(0xFF006AF0)
+/** Casco de marca — Figma splash 16:2 y login 356:49: acento dorado rgb(248,174,26). */
+val OficiosColorBrandMark = Color(0xFFF8AE1A)
 val OficiosColorActionContainer = Color(0xFF003C9A) // ver "unavailable" abajo, reutilizado como contenedor oscuro
 
 /** Estado "no disponible" (turnos, disponibilidad). Figma rgb(0,60,154) */

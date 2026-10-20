@@ -10,7 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosSnackbarController
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosAnimatedSuccessOverlay
 import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.oficiosTween
@@ -48,7 +48,7 @@ fun OrderDetailRoute(
     viewModel: OrderDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbar = LocalOficiosSnackbarController.current
+    val toastController = LocalOficiosToastController.current
     val context = LocalContext.current
     var pendingLocationAction by remember { mutableStateOf<TrackingLocationAction?>(null) }
     var showCompletionSuccess by remember { mutableStateOf(false) }
@@ -80,7 +80,7 @@ fun OrderDetailRoute(
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
-                is OrderDetailEffect.ShowMessage -> snackbar.showError(effect.message)
+                is OrderDetailEffect.ShowMessage -> toastController.showError(effect.message)
                 is OrderDetailEffect.NavigateToCounterOffer -> onNavigateToCounterOffer(effect.orderId)
                 is OrderDetailEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerId, effect.workerName)
                 is OrderDetailEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)

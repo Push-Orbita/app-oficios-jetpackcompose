@@ -3,11 +3,13 @@ package com.cocido.oficios.feature.auth.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -39,6 +41,9 @@ fun AuthScreenLayout(
     brandScale: OficiosBrandScale = OficiosBrandScale.Compact,
     showBrand: Boolean = true,
     contentTopPadding: Dp = OficiosSpacing.md,
+    sectionSpacing: Dp = OficiosSpacing.lg,
+    brandToContentSpacing: Dp = sectionSpacing,
+    supportTopSpacing: Dp = sectionSpacing,
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     support: @Composable (ColumnScope.() -> Unit)? = null,
     footer: @Composable (ColumnScope.() -> Unit)? = null,
@@ -60,35 +65,37 @@ fun AuthScreenLayout(
                     .imePadding()
                     .onSizeChanged { viewportHeightPx = it.height }
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = OficiosSpacing.md)
+                    .padding(horizontal = OficiosSpacing.xl)
                     .padding(top = contentTopPadding, bottom = OficiosSpacing.lg),
                 horizontalAlignment = horizontalAlignment,
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             ) {
                 if (showBrand) {
                     OficiosBrandBlock(
                         modifier = Modifier.widthIn(max = OficiosComponentSize.authBrandMaxWidth),
                         scale = brandScale,
                     )
+                    Spacer(Modifier.height(brandToContentSpacing))
                 }
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = horizontalAlignment,
-                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(sectionSpacing),
                     content = content,
                 )
 
                 if (footer != null) {
+                    Spacer(Modifier.height(sectionSpacing))
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = horizontalAlignment,
-                        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+                        verticalArrangement = Arrangement.spacedBy(sectionSpacing),
                         content = footer,
                     )
                 }
 
                 if (support != null) {
+                    Spacer(Modifier.height(supportTopSpacing))
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         content = support,

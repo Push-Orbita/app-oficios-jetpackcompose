@@ -1,16 +1,23 @@
 package com.cocido.oficios.feature.auth.forgot
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -19,8 +26,11 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessSta
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthFormLayout
+import com.cocido.oficios.feature.auth.components.AuthScreenLayout
 
 @Composable
 fun ForgotPasswordScreen(
@@ -40,17 +50,33 @@ fun ForgotPasswordScreen(
         return
     }
 
-    AuthFormLayout(
-        title = stringResource(R.string.auth_forgot_title),
-        subtitle = stringResource(R.string.auth_forgot_subtitle),
+    AuthScreenLayout(
         modifier = modifier,
         isLoading = uiState.isLoading,
+        contentTopPadding = OficiosSpacing.xxl + OficiosSpacing.xs,
+        brandToContentSpacing = OficiosComponentSize.authForgotBrandToSubtitle,
     ) {
-        FieldAndCtaBlock {
+        Text(
+            text = stringResource(R.string.auth_forgot_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            text = stringResource(R.string.auth_forgot_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        FieldAndCtaBlock(spacing = OficiosSpacing.md) {
             OficiosTextField(
                 value = uiState.email,
                 onValueChange = { onEvent(ForgotPasswordEvent.EmailChanged(it)) },
                 label = stringResource(R.string.auth_email_label),
+                placeholder = stringResource(R.string.auth_email_label),
+                floatingLabel = false,
                 isError = uiState.emailError != null,
                 supportingText = uiState.emailError,
                 keyboardOptions = KeyboardOptions(
@@ -68,15 +94,20 @@ fun ForgotPasswordScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Small,
+                figmaAuthStroke = true,
             )
         }
-        OficiosButton(
+        Text(
             text = stringResource(R.string.auth_back_to_login),
-            onClick = onBackToLogin,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Ghost,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { role = Role.Button }
+                .clickable(onClick = onBackToLogin),
         )
     }
 }
