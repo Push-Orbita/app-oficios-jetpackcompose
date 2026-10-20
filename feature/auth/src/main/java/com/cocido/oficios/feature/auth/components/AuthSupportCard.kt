@@ -2,11 +2,12 @@ package com.cocido.oficios.feature.auth.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,10 +17,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.core.ui.intent.isSupportPhoneConfigured
@@ -39,22 +43,23 @@ fun AuthSupportCard(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(OficiosSpacing.md),
         ) {
-            Column(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             ) {
                 Text(
                     text = resolvedMessage,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(end = OficiosSpacing.lg),
+                    modifier = Modifier.weight(1f),
                 )
                 OficiosButton(
                     text = stringResource(R.string.auth_support_contact),
                     onClick = onContactClick,
                     enabled = enabled && supportAvailable,
                     variant = OficiosButtonVariant.Secondary,
-                    modifier = Modifier.align(Alignment.End),
+                    size = OficiosButtonSize.Small,
                 )
             }
         }
@@ -62,9 +67,11 @@ fun AuthSupportCard(
             label = "?",
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .offset(x = OficiosSpacing.xs, y = -OficiosSpacing.xs),
+                .offset(x = OficiosSpacing.xs, y = -OficiosSpacing.sm),
             containerColor = OficiosColorOutlineFill,
             contentColor = OficiosColorWhite,
+            size = OficiosComponentSize.authSupportBadgeSize,
+            shape = RoundedCornerShape(OficiosRadius.sm),
         )
     }
 }
