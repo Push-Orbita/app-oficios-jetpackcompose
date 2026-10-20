@@ -18,19 +18,32 @@ import com.cocido.oficios.feature.onboarding.provider.ProviderLocalViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderPaymentMethodsViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderProfessionalInfoViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderRubrosViewModel
+import com.cocido.oficios.feature.onboarding.provider.ProviderSelfieViewModel
 import com.cocido.oficios.feature.onboarding.provider.ProviderStepEffect
 
 @Composable
-fun ClientContactDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
+fun ClientContactDomicilioRoute(
+    onSaved: () -> Unit,
+    onNavigateToVerifyPhone: (Long, String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val viewModel: ClientContactDomicilioViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
-        viewModel.effects.collect { if (it is ClientContactDomicilioEffect.Saved) onSaved() }
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is ClientContactDomicilioEffect.Saved -> onSaved()
+                is ClientContactDomicilioEffect.NavigateToPhoneVerification -> {
+                    onNavigateToVerifyPhone(effect.contactId, effect.telefono)
+                }
+            }
+        }
     }
     ClientContactDomicilioStepScreen(
         uiState = uiState,
         onNombreChanged = viewModel::onNombreChanged,
         onTelefonoChanged = viewModel::onTelefonoChanged,
+        onCountrySelected = viewModel::onCountrySelected,
         onEmailChanged = viewModel::onEmailChanged,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
         onBarrioSelected = viewModel::onBarrioSelected,
@@ -39,6 +52,9 @@ fun ClientContactDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifi
         onNumeroChanged = viewModel::onNumeroChanged,
         onPisoChanged = viewModel::onPisoChanged,
         onDepartamentoChanged = viewModel::onDepartamentoChanged,
+        onMapLocationSelected = viewModel::onMapLocationSelected,
+        onUseCurrentLocation = viewModel::useCurrentLocation,
+        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
         onSubmit = viewModel::submit,
     )
 }
@@ -57,6 +73,9 @@ fun ClientDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
         onNumeroChanged = viewModel::onNumeroChanged,
+        onMapLocationSelected = viewModel::onMapLocationSelected,
+        onUseCurrentLocation = viewModel::useCurrentLocation,
+        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
         onSubmit = viewModel::submit,
     )
 }
@@ -89,6 +108,20 @@ fun ProviderDniRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onDocumentoChanged = viewModel::onDocumentoChanged,
         onFrontImage = viewModel::onFrontImage,
         onBackImage = viewModel::onBackImage,
+        onSubmit = viewModel::submit,
+    )
+}
+
+@Composable
+fun ProviderSelfieRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
+    val viewModel: ProviderSelfieViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { if (it is ProviderStepEffect.Saved) onSaved() }
+    }
+    ProviderSelfieStepScreen(
+        uiState = uiState,
+        onImageSelected = viewModel::onImageSelected,
         onSubmit = viewModel::submit,
     )
 }
@@ -171,6 +204,9 @@ fun ProviderLocalRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
+        onMapLocationSelected = viewModel::onMapLocationSelected,
+        onUseCurrentLocation = viewModel::useCurrentLocation,
+        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
         onSubmit = viewModel::submit,
     )
 }

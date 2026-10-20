@@ -1,6 +1,8 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
@@ -39,6 +41,8 @@ fun <T> OficiosAutocompleteField(
     isError: Boolean = false,
     supportingText: String? = null,
     onSuggestionsDismissed: () -> Unit = {},
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -65,6 +69,8 @@ fun <T> OficiosAutocompleteField(
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryEditable, enabled),
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             trailingContent = {
                 Icon(
                     imageVector = Icons.Outlined.Search,
@@ -103,7 +109,7 @@ fun <T> OficiosAutocompleteField(
     }
 }
 
-@Preview(name = "Autocomplete Field", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Autocomplete Field", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun AutocompleteFieldPreview() {
     OficiosTheme {

@@ -5,6 +5,8 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.data.mapper.toHomeCategoryItems
 import com.cocido.oficios.domain.model.ClientHomeContent
 import com.cocido.oficios.domain.model.HomeCategoryItem
+import com.cocido.oficios.domain.model.ProviderHomeContent
+import com.cocido.oficios.domain.model.ProviderProfileStatus
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.model.User
@@ -13,9 +15,14 @@ import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
+import com.cocido.oficios.domain.repository.OnboardingRepository
+import com.cocido.oficios.domain.repository.OrderRepository
+import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 class HomeRepositoryImpl @Inject constructor(
@@ -23,6 +30,9 @@ class HomeRepositoryImpl @Inject constructor(
     private val catalogRepository: CatalogRepository,
     private val recentSearchRepository: RecentSearchRepository,
     private val workerSearchRepository: WorkerSearchRepository,
+    private val onboardingRepository: OnboardingRepository,
+    private val providerProfileRepository: ProviderProfileRepository,
+    private val orderRepository: OrderRepository,
     private val dispatcherProvider: DispatcherProvider,
 ) : HomeRepository {
 
@@ -30,17 +40,21 @@ class HomeRepositoryImpl @Inject constructor(
         return withContext(dispatcherProvider.io) {
             when (val userResult = authRepository.getCurrentUser()) {
                 is AppResult.Error -> userResult
-                is AppResult.Success -> {
-                    when (val categoriesResult = catalogRepository.getCategories()) {
-                        is AppResult.Error -> categoriesResult
+                is AppResult.Success -> coroutineScope {
+                    val categoriesDeferred = async { catalogRepository.getCategories() }
+                    val featuredDeferred = async { loadFeaturedWorkers() }
+                    when (val categoriesResult = categoriesDeferred.await()) {
+                        is AppResult.Error -> {
+                            featuredDeferred.cancel()
+                            categoriesResult
+                        }
                         is AppResult.Success -> {
                             val categories = categoriesResult.data.toHomeCategoryItems()
                             val recent = resolveRecentSearches(categories)
-                            val featuredWorkers = loadFeaturedWorkers()
                             AppResult.Success(
                                 userResult.data.toClientHomeContent(
                                     recentSearches = recent,
-                                    featuredWorkers = featuredWorkers,
+                                    featuredWorkers = featuredDeferred.await(),
                                 ),
                             )
                         }
@@ -48,6 +62,75 @@ class HomeRepositoryImpl @Inject constructor(
                 }
             }
         }
+    }
+
+    override suspend fun getProviderHome(): AppResult<ProviderHomeContent> {
+        return withContext(dispatcherProvider.io) {
+            when (val userResult = authRepository.getCurrentUser()) {
+                is AppResult.Error -> userResult
+                is AppResult.Success -> {
+                    when (val statusResult = onboardingRepository.getProviderProfileStatus()) {
+                        is AppResult.Error -> statusResult
+                        is AppResult.Success -> {
+                            val status = statusResult.data
+                            val missingItems = onboardingRepository
+                                .getProviderRequiredSteps(status)
+                                .map { it.title }
+                            val primarySpecialtyLabel = loadPrimarySpecialtyLabel()
+                            val upcomingOrders = loadUpcomingWorkerOrders()
+                            AppResult.Success(
+                                ProviderHomeContent(
+                                    userDisplayName = listOf(userResult.data.firstName, userResult.data.lastName)
+                                        .filter { it.isNotBlank() }
+                                        .joinToString(" "),
+                                    isVerified = status.isIdentityVerified,
+                                    primarySpecialtyLabel = primarySpecialtyLabel,
+                                    profileCompletionPercent = status.toCompletionPercent(),
+                                    missingProfileItems = missingItems,
+                                    benefits = emptyList(),
+                                    hasActiveBooking = upcomingOrders.any {
+                                        it.bookingStatus == com.cocido.oficios.domain.model.BookingStatus.IN_PROGRESS
+                                    },
+                                    upcomingOrders = upcomingOrders,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun loadPrimarySpecialtyLabel(): String? {
+        return when (val syncResult = providerProfileRepository.loadProviderProfileForSync()) {
+            is AppResult.Success -> syncResult.data.tradeDraft?.let { "${it.categoryName} · ${it.rubroName}" }
+            is AppResult.Error -> null
+        }
+    }
+
+    private suspend fun loadUpcomingWorkerOrders(): List<com.cocido.oficios.domain.model.ServiceOrderListItem> {
+        return when (val result = orderRepository.getWorkerOrders()) {
+            is AppResult.Success -> result.data
+                .filter {
+                    it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.PENDING ||
+                        it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.COUNTER_OFFER ||
+                        (it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.ACCEPTED &&
+                            it.bookingStatus != com.cocido.oficios.domain.model.BookingStatus.FINISHED)
+                }
+                .take(UPCOMING_ORDERS_PREVIEW_SIZE)
+            is AppResult.Error -> emptyList()
+        }
+    }
+
+    /**
+     * El backend no expone un porcentaje numérico de completitud (solo flags booleanos),
+     * así que se deriva un valor aproximado en incrementos de 25% a partir de los 4 hitos
+     * reales que sí devuelve `trabajador-oficio/me/estado-perfil`.
+     */
+    private fun ProviderProfileStatus.toCompletionPercent(): Int {
+        val milestones = listOf(isIdentityVerified, isProfileComplete, isConfigurationComplete, isOperational)
+        val completed = milestones.count { it }
+        return (completed * 100) / milestones.size
     }
 
     override suspend fun getCategories(): AppResult<List<HomeCategoryItem>> {
@@ -108,5 +191,6 @@ class HomeRepositoryImpl @Inject constructor(
 
     private companion object {
         const val FEATURED_WORKERS_PAGE_SIZE = 5
+        const val UPCOMING_ORDERS_PREVIEW_SIZE = 3
     }
 }

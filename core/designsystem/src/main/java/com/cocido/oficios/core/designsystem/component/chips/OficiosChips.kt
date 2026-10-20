@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.cards.OrderStatus
+import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -43,9 +45,19 @@ fun OficiosChip(
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     borderColor: Color = MaterialTheme.colorScheme.outline,
+    leadingIcon: ImageVector? = null,
+    verticalPadding: androidx.compose.ui.unit.Dp = OficiosSpacing.xs,
     onClick: (() -> Unit)? = null,
 ) {
-    val clickModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+    val haptics = rememberOficiosHaptics()
+    val clickModifier = if (onClick != null) {
+        Modifier.clickable {
+            haptics.tick()
+            onClick()
+        }
+    } else {
+        Modifier
+    }
 
     Box(
         modifier = modifier
@@ -53,14 +65,27 @@ fun OficiosChip(
             .background(containerColor)
             .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
             .then(clickModifier)
-            .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxxs),
+            .padding(horizontal = OficiosSpacing.sm, vertical = verticalPadding),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = contentColor,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+        ) {
+            if (leadingIcon != null) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = contentColor,
+            )
+        }
     }
 }
 
@@ -78,13 +103,17 @@ fun OficiosFilterChip(
     val containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
     val contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+    val haptics = rememberOficiosHaptics()
 
     Row(
         modifier = modifier
             .clip(MaterialTheme.shapes.extraSmall)
             .background(containerColor)
             .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
-            .clickable(onClick = onToggle)
+            .clickable {
+                haptics.tick()
+                onToggle()
+            }
             .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -164,7 +193,7 @@ private fun statusColors(status: OrderStatus): Pair<Color, Color> = when (status
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Chips", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Chips", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ChipsPreview() {
     OficiosTheme {

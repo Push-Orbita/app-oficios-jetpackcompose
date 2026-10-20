@@ -49,3 +49,17 @@ Thumbs.db
 
 # Log
 *.log
+
+# Heap dumps
+*.hprof
+
+# VS Code (some contributors use it alongside Android Studio)
+.vscode/
+
+# Local QA / handoff (never commit)
+qa-artifacts/
+qa-artifacts/**
+docs/backend/solo.md
+docs/backend/handoff/
+docs/reports/Oficios-Formosa-Informe-Avance-Android.pdf
+

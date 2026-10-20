@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -43,12 +44,14 @@ fun OficiosTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = OficiosTypography,
-        shapes = AppShapes,
-        content = content,
-    )
+    CompositionLocalProvider(LocalReducedMotion provides rememberSystemReducedMotion()) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = OficiosTypography,
+            shapes = AppShapes,
+            content = content,
+        )
+    }
 }
 
 // Alias de compatibilidad con código previo del template

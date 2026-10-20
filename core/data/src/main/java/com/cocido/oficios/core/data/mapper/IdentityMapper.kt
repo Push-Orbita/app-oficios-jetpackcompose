@@ -2,6 +2,7 @@ package com.cocido.oficios.core.data.mapper
 
 import com.cocido.oficios.core.network.api.profile.dto.CertificadoTrabajoDto
 import com.cocido.oficios.domain.model.ProviderDniDocuments
+import com.cocido.oficios.domain.model.ProviderSelfieDocument
 import com.cocido.oficios.domain.model.WorkCertificateInfo
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -19,14 +20,7 @@ fun CertificadoTrabajoDto.toDomain() = WorkCertificateInfo(
 )
 
 fun JsonElement.toProviderDniDocuments(): ProviderDniDocuments? {
-    val root = this as? JsonObject ?: return null
-    val data = root["data"]?.jsonArray ?: return null
-    val firstGroup = data.firstOrNull()?.jsonObject ?: return null
-    val documents = firstGroup["documentos"]?.jsonArray ?: data.firstOrNull()?.jsonArray
-    val document = when {
-        documents != null && documents.isNotEmpty() -> documents.first().jsonObject
-        else -> firstGroup
-    }
+    val document = findFirstDocument() ?: return null
     return ProviderDniDocuments(
         frontUrl = document.stringOrNull("frenteUrl"),
         backUrl = document.stringOrNull("reversoUrl"),
@@ -35,6 +29,27 @@ fun JsonElement.toProviderDniDocuments(): ProviderDniDocuments? {
         frontFileName = document.stringOrNull("frenteNombreArchivo"),
         backFileName = document.stringOrNull("reversoNombreArchivo"),
     )
+}
+
+fun JsonElement.toProviderSelfieDocument(): ProviderSelfieDocument? {
+    val document = findFirstDocument() ?: return null
+    return ProviderSelfieDocument(
+        id = document.longOrNull("id"),
+        url = document.stringOrNull("selfieUrl"),
+        status = document.stringOrNull("selfieEstado"),
+        rejectionReason = document.stringOrNull("motivoRechazo"),
+    )
+}
+
+private fun JsonElement.findFirstDocument(): JsonObject? {
+    val root = this as? JsonObject ?: return null
+    val data = root["data"]?.jsonArray ?: return null
+    val firstGroup = data.firstOrNull()?.jsonObject ?: return null
+    val documents = firstGroup["documentos"]?.jsonArray
+    return when {
+        documents != null && documents.isNotEmpty() -> documents.first().jsonObject
+        else -> firstGroup
+    }
 }
 
 fun JsonElement.toWorkCertificateList(): List<WorkCertificateInfo> {
@@ -54,3 +69,6 @@ fun JsonElement.toWorkCertificateList(): List<WorkCertificateInfo> {
 
 private fun JsonObject.stringOrNull(key: String): String? =
     this[key]?.jsonPrimitive?.contentOrNull
+
+private fun JsonObject.longOrNull(key: String): Long? =
+    this[key]?.jsonPrimitive?.longOrNull

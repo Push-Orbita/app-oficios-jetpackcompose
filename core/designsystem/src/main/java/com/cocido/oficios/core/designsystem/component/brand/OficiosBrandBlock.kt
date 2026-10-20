@@ -34,7 +34,7 @@ fun OficiosBrandBlock(
     )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38, name = "Compact")
+@Preview(showBackground = true, backgroundColor = 0xFF00358B, name = "Compact")
 @Composable
 private fun OficiosBrandBlockCompactPreview() {
     OficiosTheme {
@@ -42,7 +42,7 @@ private fun OficiosBrandBlockCompactPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38, name = "Splash")
+@Preview(showBackground = true, backgroundColor = 0xFF00358B, name = "Splash")
 @Composable
 private fun OficiosBrandBlockSplashPreview() {
     OficiosTheme {

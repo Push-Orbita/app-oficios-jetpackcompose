@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ClientContactoRequest
+import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientContactoUseCase
+import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,6 +36,7 @@ sealed interface ClientContactoEffect {
 @HiltViewModel
 class ClientContactoViewModel @Inject constructor(
     private val saveClientContactoUseCase: SaveClientContactoUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientContactoUiState())
@@ -42,20 +45,44 @@ class ClientContactoViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ClientContactoEffect>()
     val effects: SharedFlow<ClientContactoEffect> = _effects.asSharedFlow()
 
+    init {
+        preloadAccount()
+    }
+
+    private fun preloadAccount() {
+        viewModelScope.launch {
+            val user = (getCurrentUserUseCase() as? AppResult.Success)?.data ?: return@launch
+            _uiState.update { state ->
+                state.copy(
+                    nombre = state.nombre.ifBlank {
+                        listOf(user.firstName, user.lastName)
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                            .joinToString(" ")
+                    },
+                    email = state.email.ifBlank { user.email },
+                )
+            }
+        }
+    }
+
     fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
     fun onTelefonoChanged(value: String) = _uiState.update { it.copy(telefono = value, error = null) }
     fun onEmailChanged(value: String) = _uiState.update { it.copy(email = value, error = null) }
 
     fun submit() {
         val state = _uiState.value
-        if (!state.canSubmit) return
+        if (!state.canSubmit) {
+            _uiState.update { it.copy(error = "Completá nombre y WhatsApp") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (
                 val result = saveClientContactoUseCase(
                     ClientContactoRequest(
                         nombre = state.nombre.trim(),
-                        telefonoWhatsapp = state.telefono.trim(),
+                        telefonoWhatsapp = AuthValidators.normalizeArgentinePhone(state.telefono),
                         email = state.email.trim().ifBlank { null },
                         favorito = true,
                     ),

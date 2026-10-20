@@ -16,6 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -43,6 +45,7 @@ fun OficiosCheckbox(
                 Modifier
             },
         )
+        .semantics(mergeDescendants = true) { contentDescription = label }
         .clickable(enabled = enabled) { onCheckedChange(!checked) }
 
     Row(
@@ -87,7 +90,7 @@ fun OficiosCheckbox(
     }
 }
 
-@Preview(name = "Checkbox States", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Checkbox States", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun CheckboxPreview() {
     OficiosTheme {

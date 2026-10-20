@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ResolveInitialDestinationUseCaseTest {
@@ -103,12 +105,42 @@ class ResolveInitialDestinationUseCaseTest {
 
     @Test
     fun `invalid token goes to login`() = runTest {
+        var cleared = false
         val useCase = createUseCase(
             accessToken = "token",
             userResult = AppResult.Error(AppError.Unauthorized("expired")),
+            onClear = { cleared = true },
         )
         val result = useCase()
         assertEquals(InitialDestination.Login, (result as AppResult.Success).data)
+        assertTrue(cleared)
+    }
+
+    @Test
+    fun `network error on auth me keeps tokens and opens cached home`() = runTest {
+        var cleared = false
+        val useCase = createUseCase(
+            accessToken = "token",
+            userResult = AppResult.Error(AppError.Network("No internet connection")),
+            cachedUser = clientUser,
+            onClear = { cleared = true },
+        )
+        val result = useCase()
+        assertEquals(InitialDestination.ClientHome, (result as AppResult.Success).data)
+        assertFalse(cleared)
+    }
+
+    @Test
+    fun `network error without cache keeps tokens and stays retriable`() = runTest {
+        var cleared = false
+        val useCase = createUseCase(
+            accessToken = "token",
+            userResult = AppResult.Error(AppError.Network("timeout")),
+            onClear = { cleared = true },
+        )
+        val result = useCase()
+        assertTrue(result is AppResult.Error)
+        assertFalse(cleared)
     }
 
     private fun createUseCase(
@@ -130,17 +162,19 @@ class ResolveInitialDestinationUseCaseTest {
             isOperational = false,
             missingSteps = listOf("rubro_principal"),
         ),
+        cachedUser: User? = null,
+        onClear: () -> Unit = {},
     ): ResolveInitialDestinationUseCase {
         val sessionRepository = object : SessionRepository {
             override val authState: Flow<com.cocido.oficios.domain.model.AuthState> =
                 flowOf(com.cocido.oficios.domain.model.AuthState.Unauthenticated)
             override suspend fun saveSession(tokens: AuthTokens, user: User) = Unit
-            override suspend fun clearSession() = Unit
+            override suspend fun clearSession() = onClear()
             override suspend fun getAccessToken() = accessToken
             override suspend fun getRefreshToken() = null
             override suspend fun updateTokens(tokens: AuthTokens) = Unit
             override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
-            override suspend fun getCachedUser() = null
+            override suspend fun getCachedUser() = cachedUser
             override suspend fun updateCachedUser(user: User) = Unit
         }
         val authRepository = object : AuthRepository {

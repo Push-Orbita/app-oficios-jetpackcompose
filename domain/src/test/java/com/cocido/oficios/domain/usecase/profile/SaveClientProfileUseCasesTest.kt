@@ -39,10 +39,13 @@ class SaveClientProfileUseCasesTest {
 
     private class FakeClientRepository(
         private val domicilioResult: AppResult<Unit> = AppResult.Success(Unit),
-        private val contactoResult: AppResult<Unit> = AppResult.Success(Unit),
+        private val contactoResult: AppResult<Long> = AppResult.Success(1L),
     ) : ClientProfileRepository {
         override suspend fun saveDomicilio(request: ClientDomicilioRequest) = domicilioResult
         override suspend fun saveContacto(request: ClientContactoRequest) = contactoResult
+        override suspend fun sendPhoneVerificationCode(contactId: Long) =
+            AppResult.Success(com.cocido.oficios.domain.model.PhoneVerificationSendResult("ok", null))
+        override suspend fun verifyPhoneCode(contactId: Long, code: String) = AppResult.Success(Unit)
         override suspend fun getMyDomicilios(): AppResult<List<ClientDomicilio>> = AppResult.Success(emptyList())
         override suspend fun getMyContactos(): AppResult<List<ClientContacto>> = AppResult.Success(emptyList())
     }

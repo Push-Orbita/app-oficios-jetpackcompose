@@ -8,7 +8,7 @@
 
 | Nodo Figma | Pantalla / Sección | Hallazgos clave | Componentes Compose |
 |---|---|---|---|
-| `16:2` | Pantalla Login | Fondo `#231D38`, input border `#413764`, botón primario `#A32F56` radius 8dp | `OficiosTextField`, `OficiosPasswordField`, `OficiosButton (Primary)` |
+| `16:2` | Pantalla Login | Fondo `#00358B`. Casco de marca en Thumbnail `666:2` = `#006AF0` | `OficiosTextField`, `OficiosPasswordField`, `OficiosButton` |
 | `16:245` | Pantalla Registro | Mismo sistema visual que Login + Checkbox términos | `OficiosTextField`, `OficiosCheckbox` |
 | `25:95` | Home / Dashboard | BottomNav con border-top `#413764`, selected container `#413764` | `OficiosBottomNavigationBar`, `OficiosTopAppBar` |
 | `16:572` | Search / Explorar | Campo de búsqueda con ícono mic + lupa | `OficiosSearchField` |
@@ -25,16 +25,14 @@
 
 ### Colores identificados
 ```
-Background principal:    #231D38  → OficiosColorBackground
-Superficie:              #2A2340  → OficiosColorSurface  
-Container/Outline:       #413764  → OficiosColorContainer / OficiosColorOutline
-Primary/Magenta:         #A32F56  → OficiosColorPrimary
-Texto blanco:            #FFFFFF  → OficiosColorWhite
-Texto muted:             #918E9B  → OficiosColorMutedText
-Tertiary/Ámbar:          #F4A426  → OficiosColorTertiary (casco logo)
-Error/Rosa:              #CF6679  → OficiosColorError
-Success/Verde:           #4CAF7D  → OficiosColorSuccess
-Border primario:         rgba(209,151,171,0.5) → OficiosColorPrimaryBorder
+Background:              #00358B  → OficiosColorBackground
+Outline / card:          #004DA8  → OficiosColorOutlineFill
+Texto secundario:        #7F9AC5  → OficiosColorSecondaryText
+Acción (CTA medio):      #006DEF  → OficiosColorAction
+CTA dominante:           #FFFFFF  → OficiosColorWhite, texto #00358B
+Casco de marca:          #006AF0  → OficiosColorBrandMark (nodo 666:2)
+Acento UI (no logo):     #F8AE1A  → OficiosColorAccent
+Alerta:                  #BA6380 / #D197AB → OficiosColorAlert / OficiosColorAlertText
 ```
 
 ### Tipografías identificadas en Figma

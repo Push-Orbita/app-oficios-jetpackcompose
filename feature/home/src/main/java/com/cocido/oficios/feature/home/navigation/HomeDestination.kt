@@ -11,7 +11,8 @@ object HomeDestination {
         "home/search/results?rubroId={rubroId}&subRubroId={subRubroId}&barrioId={barrioId}" +
             "&query={query}&rubroLabel={rubroLabel}&subRubroLabel={subRubroLabel}" +
             "&barrioLabel={barrioLabel}&categoryId={categoryId}&categoryLabel={categoryLabel}"
-    const val workerStub = "home/worker/{workerId}"
+    const val workerProfile = "home/worker/{workerId}"
+    const val workerReport = "home/worker/{workerId}/report?workerName={workerName}"
 
     fun rubros(categoryId: Long, categoryName: String): String =
         "home/rubros/$categoryId?categoryName=${Uri.encode(categoryName)}"
@@ -39,5 +40,8 @@ object HomeDestination {
         append("&categoryLabel=").append(Uri.encode(categoryLabel.orEmpty()))
     }
 
-    fun workerStub(workerId: Long): String = "home/worker/$workerId"
+    fun workerProfile(workerId: Long): String = "home/worker/$workerId"
+
+    fun workerReport(workerId: Long, workerName: String): String =
+        "home/worker/$workerId/report?workerName=${Uri.encode(workerName)}"
 }

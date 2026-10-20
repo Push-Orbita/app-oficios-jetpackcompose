@@ -37,6 +37,8 @@ class SessionManager @Inject constructor(
             firstName = user.firstName,
             lastName = user.lastName,
             emailVerified = user.emailVerified,
+            personaId = user.personaId,
+            profilePhotoUrl = user.profilePhotoUrl,
             accessTokenExpiresAtMillis = TokenExpiry.expiresAtMillis(tokens.expiresIn),
         )
         _authState.update { AuthState.Authenticated(UserSession(tokens = tokens, user = user)) }
@@ -69,7 +71,14 @@ class SessionManager @Inject constructor(
     }
 
     override suspend fun updateCachedUser(user: User) {
-        tokenDataStore.updateEmailVerified(user.emailVerified)
+        tokenDataStore.updateCachedUser(
+            email = user.email,
+            firstName = user.firstName,
+            lastName = user.lastName,
+            emailVerified = user.emailVerified,
+            personaId = user.personaId,
+            profilePhotoUrl = user.profilePhotoUrl,
+        )
         val current = _authState.value
         if (current is AuthState.Authenticated) {
             _authState.update {
@@ -88,6 +97,8 @@ class SessionManager @Inject constructor(
             lastName = tokenDataStore.getUserLastName().orEmpty(),
             role = UserRole.valueOf(tokenDataStore.getUserRole() ?: UserRole.UNKNOWN.name),
             emailVerified = tokenDataStore.isEmailVerified(),
+            personaId = tokenDataStore.getUserPersonaId(),
+            profilePhotoUrl = tokenDataStore.getUserProfilePhotoUrl(),
         )
     }
 
@@ -109,6 +120,8 @@ class SessionManager @Inject constructor(
                     UserRole.valueOf(tokenDataStore.getUserRole() ?: UserRole.UNKNOWN.name)
                 }.getOrDefault(UserRole.UNKNOWN),
                 emailVerified = tokenDataStore.isEmailVerified(),
+                personaId = tokenDataStore.getUserPersonaId(),
+                profilePhotoUrl = tokenDataStore.getUserProfilePhotoUrl(),
             )
             UserSession(tokens = AuthTokens(access, refresh), user = cachedUser)
         }.getOrNull() ?: return

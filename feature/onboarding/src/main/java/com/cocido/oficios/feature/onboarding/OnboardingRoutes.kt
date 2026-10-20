@@ -100,6 +100,7 @@ fun ProviderOnboardingRoute(
 @Composable
 fun ProviderPendingRoute(
     onLoggedOut: () -> Unit,
+    onNavigateToStep: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProviderPendingViewModel = hiltViewModel(),
     logoutViewModel: LogoutViewModel = hiltViewModel(),
@@ -108,10 +109,13 @@ fun ProviderPendingRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
 
+    ReloadOnResume { viewModel.load() }
+
     ProviderPendingApprovalScreen(
         uiState = uiState,
         onRetry = viewModel::load,
         onLogout = logoutViewModel::logout,
+        onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
         isLoggingOut = isLoggingOut,
         modifier = modifier,
     )

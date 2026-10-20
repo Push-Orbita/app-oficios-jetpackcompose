@@ -29,4 +29,17 @@ class IdentityDocumentUploadDataSource @Inject constructor(
             ),
         )
     }
+
+    suspend fun uploadSelfie(imagePath: String) {
+        val file = File(imagePath)
+        identityDocumentApi.uploadSelfie(createSelfieImagePart(file))
+    }
+
+    suspend fun replaceSelfie(documentId: Long, imagePath: String) {
+        val file = File(imagePath)
+        identityDocumentApi.replaceSelfie(
+            documentId = documentId,
+            selfieArchivo = createSelfieImagePart(file),
+        )
+    }
 }

@@ -1,21 +1,24 @@
 package com.cocido.oficios.feature.auth.forgot
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessState
+import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthFormLayout
 
@@ -31,6 +34,8 @@ fun ForgotPasswordScreen(
             title = stringResource(R.string.auth_forgot_title),
             description = stringResource(R.string.auth_forgot_success),
             modifier = modifier,
+            ctaLabel = stringResource(R.string.auth_back_to_login),
+            onCta = onBackToLogin,
         )
         return
     }
@@ -41,33 +46,38 @@ fun ForgotPasswordScreen(
         modifier = modifier,
         isLoading = uiState.isLoading,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+        FieldAndCtaBlock {
             OficiosTextField(
                 value = uiState.email,
                 onValueChange = { onEvent(ForgotPasswordEvent.EmailChanged(it)) },
                 label = stringResource(R.string.auth_email_label),
                 isError = uiState.emailError != null,
                 supportingText = uiState.emailError,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { onEvent(ForgotPasswordEvent.Submit) }),
             )
             if (uiState.generalError != null) {
-                Text(
-                    text = uiState.generalError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                OficiosInlineAlert(message = uiState.generalError)
             }
             OficiosButton(
                 text = stringResource(R.string.auth_forgot_button),
                 onClick = { onEvent(ForgotPasswordEvent.Submit) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState.canSubmit && !uiState.isLoading,
+                enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
             )
-            TextButton(onClick = onBackToLogin, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.auth_back_to_login))
-            }
         }
+        OficiosButton(
+            text = stringResource(R.string.auth_back_to_login),
+            onClick = onBackToLogin,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Ghost,
+        )
     }
 }
 
@@ -83,6 +93,8 @@ fun ResetPasswordScreen(
             title = stringResource(R.string.auth_reset_title),
             description = stringResource(R.string.auth_reset_success),
             modifier = modifier,
+            ctaLabel = stringResource(R.string.auth_back_to_login),
+            onCta = onBackToLogin,
         )
         return
     }
@@ -92,14 +104,20 @@ fun ResetPasswordScreen(
         modifier = modifier,
         isLoading = uiState.isLoading,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
+        val passwordFocus = remember { FocusRequester() }
+        val confirmFocus = remember { FocusRequester() }
+        FieldAndCtaBlock {
             OficiosTextField(
                 value = uiState.code,
                 onValueChange = { onEvent(ResetPasswordEvent.CodeChanged(it)) },
                 label = stringResource(R.string.auth_reset_code_label),
                 isError = uiState.hasAttemptedSubmit && uiState.codeError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.codeError else null,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
             )
             OficiosPasswordField(
                 value = uiState.password,
@@ -107,6 +125,9 @@ fun ResetPasswordScreen(
                 label = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
+                modifier = Modifier.focusRequester(passwordFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
@@ -114,24 +135,28 @@ fun ResetPasswordScreen(
                 label = stringResource(R.string.auth_confirm_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.confirmPasswordError != null,
                 supportingText = if (uiState.hasAttemptedSubmit) uiState.confirmPasswordError else null,
+                modifier = Modifier.focusRequester(confirmFocus),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onEvent(ResetPasswordEvent.Submit) }),
             )
             if (uiState.generalError != null) {
-                Text(
-                    text = uiState.generalError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                OficiosInlineAlert(message = uiState.generalError)
             }
             OficiosButton(
                 text = stringResource(R.string.auth_reset_button),
                 onClick = { onEvent(ResetPasswordEvent.Submit) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = uiState.canSubmit && !uiState.isLoading,
+                enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
+                variant = OficiosButtonVariant.Secondary,
+                size = OficiosButtonSize.Large,
             )
-            TextButton(onClick = onBackToLogin, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.auth_back_to_login))
-            }
         }
+        OficiosButton(
+            text = stringResource(R.string.auth_back_to_login),
+            onClick = onBackToLogin,
+            modifier = Modifier.fillMaxWidth(),
+            variant = OficiosButtonVariant.Ghost,
+        )
     }
 }

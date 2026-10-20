@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Schedule
@@ -56,6 +57,7 @@ fun OficiosCalendarDay(
     state: CalendarDayState = CalendarDayState.Normal,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    hasEvent: Boolean = state == CalendarDayState.HasEvent,
 ) {
     val isDisabled = state == CalendarDayState.Disabled
     val (bgColor, textColor, borderColor) = when (state) {
@@ -90,7 +92,7 @@ fun OficiosCalendarDay(
 
     Column(
         modifier = modifier
-            .width(40.dp)
+            .widthIn(min = OficiosComponentSize.agendaCell)
             .clip(MaterialTheme.shapes.small)
             .background(bgColor)
             .then(
@@ -113,7 +115,7 @@ fun OficiosCalendarDay(
             style = MaterialTheme.typography.titleMedium,
             color = textColor,
         )
-        if (state == CalendarDayState.HasEvent) {
+        if (hasEvent) {
             Box(
                 modifier = Modifier
                     .size(4.dp)
@@ -243,7 +245,7 @@ fun OficiosScheduleSlot(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Calendar Days", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Calendar Days", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun CalendarDaysPreview() {
     OficiosTheme {
@@ -260,7 +262,7 @@ private fun CalendarDaysPreview() {
     }
 }
 
-@Preview(name = "Schedule Slots", showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(name = "Schedule Slots", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun ScheduleSlotsPreview() {
     OficiosTheme {

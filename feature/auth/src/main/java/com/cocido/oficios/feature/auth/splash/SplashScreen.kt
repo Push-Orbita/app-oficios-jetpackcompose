@@ -10,6 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandBlock
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandScale
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -20,29 +21,33 @@ fun SplashScreen(
     modifier: Modifier = Modifier,
 ) {
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.Center,
-        ) {
-            when (uiState) {
-                SplashUiState.Loading, is SplashUiState.Ready -> {
-                    OficiosBrandBlock(scale = OficiosBrandScale.Splash)
-                }
-                is SplashUiState.Error -> {
-                    OficiosErrorState(
-                        title = "No se pudo iniciar",
-                        description = uiState.message,
-                        onRetry = onRetry,
-                    )
+        OficiosStateContent(
+            targetState = uiState,
+            modifier = Modifier.padding(padding),
+            contentKey = { it is SplashUiState.Error },
+        ) { state ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                when (state) {
+                    SplashUiState.Loading, is SplashUiState.Ready -> {
+                        OficiosBrandBlock(scale = OficiosBrandScale.Splash)
+                    }
+                    is SplashUiState.Error -> {
+                        OficiosErrorState(
+                            title = "No se pudo iniciar",
+                            description = state.message,
+                            onRetry = onRetry,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF231D38)
+@Preview(showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
 private fun SplashScreenPreview() {
     OficiosTheme {

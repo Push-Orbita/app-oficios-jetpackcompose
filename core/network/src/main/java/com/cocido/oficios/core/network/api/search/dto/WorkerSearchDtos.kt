@@ -3,6 +3,7 @@ package com.cocido.oficios.core.network.api.search.dto
 import com.cocido.oficios.core.network.api.auth.dto.UsuarioDto
 import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class WorkerSearchItemDto(
@@ -20,4 +21,10 @@ data class WorkerSearchItemDto(
 data class ReputacionResumenDto(
     val promedio: Double? = null,
     val cantidadCalificaciones: Int? = null,
+
+    @SerialName("puntajeGlobal")
+    val puntajeGlobal: Double? = null,
+
+    @SerialName("comentariosTotales")
+    val comentariosTotales: Int? = null,
 )

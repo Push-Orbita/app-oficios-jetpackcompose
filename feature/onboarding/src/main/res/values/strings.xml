@@ -5,7 +5,7 @@
     <string name="onboarding_provider_title">Configurá tu perfil profesional</string>
     <string name="onboarding_provider_subtitle">Completá los pasos obligatorios para operar en la plataforma</string>
     <string name="onboarding_pending_title">Tu perfil está en revisión</string>
-    <string name="onboarding_pending_subtitle">Cuando sea aprobado podrás recibir solicitudes de trabajo.</string>
+    <string name="onboarding_pending_subtitle">Cuando lo aprobemos vas a poder recibir solicitudes de trabajo.</string>
     <string name="onboarding_rejected_title">Tu perfil fue rechazado</string>
     <string name="onboarding_rejected_subtitle">Revisá los datos y corregí lo indicado para volver a enviar.</string>
     <string name="onboarding_rejected_reason">Motivo: %1$s</string>
@@ -18,11 +18,11 @@
     <string name="onboarding_inactive_subtitle">Tu cuenta está inactiva. Contactá soporte si necesitás reactivarla.</string>
     <string name="onboarding_logout">Cerrar sesión</string>
     <string name="onboarding_step_complete">Completo</string>
-    <string name="onboarding_step_incomplete">Falta Completar</string>
+    <string name="onboarding_step_incomplete">Falta completar</string>
     <string name="onboarding_step_in_review">En revisión</string>
     <string name="onboarding_step_rejected">Rechazado</string>
     <string name="onboarding_step_blocked">Bloqueado</string>
-    <string name="onboarding_provider_identity_gate_error">Tu DNI debe estar aprobado antes de configurar rubros y servicios. Si ya lo cargaste en el registro, quedó guardado en el dispositivo.</string>
+    <string name="onboarding_provider_identity_gate_error">Tu DNI tiene que estar aprobado antes de configurar rubros y servicios. Si ya lo cargaste en el registro, quedó guardado en el dispositivo.</string>
     <string name="onboarding_finalize_profile">Finalizar perfil</string>
     <string name="onboarding_finalize_submitting">Enviando tu perfil…</string>
     <string name="onboarding_client_confirmed_home_title">¡Perfil listo!</string>
@@ -51,6 +51,7 @@
     <string name="onboarding_step_contact_domicilio_address_section">Tu domicilio</string>
     <string name="onboarding_step_contact_nombre_label">Nombre</string>
     <string name="onboarding_step_contact_whatsapp_label">WhatsApp</string>
+    <string name="onboarding_step_contact_whatsapp_hint">11 dígitos con el 9</string>
     <string name="onboarding_step_contact_email_label">Email (opcional)</string>
     <string name="onboarding_step_piso_label">Piso</string>
     <string name="onboarding_step_departamento_label">Dpto.</string>
@@ -70,7 +71,12 @@
     <string name="onboarding_step_contacto_title">Agregar contacto</string>
     <string name="onboarding_step_dni_title">Documentación DNI</string>
     <string name="onboarding_step_professional_title">Información profesional</string>
+    <string name="onboarding_step_professional_description_label">Descripción</string>
+    <string name="onboarding_step_professional_experience_label">Experiencia</string>
     <string name="onboarding_step_rubros_title">Rubro y especialidades</string>
+    <string name="onboarding_step_rubros_category_label">Categoría</string>
+    <string name="onboarding_step_rubros_trade_label">Rubro</string>
+    <string name="onboarding_step_rubros_select_placeholder">Seleccionar</string>
     <string name="onboarding_step_availability_title">Días y horarios laborales</string>
     <string name="onboarding_step_availability_work_days">Días laborables</string>
     <string name="onboarding_step_availability_schedule">Horarios</string>
@@ -108,6 +114,19 @@
     <string name="onboarding_image_picker_camera">Tomar foto</string>
     <string name="onboarding_image_picker_gallery">Elegir de galería</string>
     <string name="onboarding_image_picker_cancel">Cancelar</string>
+    <string name="onboarding_step_verify_phone_title">Verificar teléfono</string>
+    <string name="onboarding_step_verify_phone_subtitle">Ingresá el código de 6 dígitos que enviamos a %1$s por WhatsApp.</string>
+    <string name="onboarding_step_verify_phone_code_label">Código de verificación</string>
+    <string name="onboarding_step_verify_phone_resend">Reenviar código</string>
+    <string name="onboarding_step_verify_phone_resend_cooldown">Reenviar código en %1$d s</string>
+    <string name="onboarding_step_verify_phone_resending">Enviando código…</string>
+    <string name="onboarding_step_verify_phone_submit">Verificar teléfono</string>
+    <string name="onboarding_step_verify_phone_edit_number">¿El número está mal? Editalo</string>
+    <string name="onboarding_step_selfie_title">Foto de rostro</string>
+    <string name="onboarding_step_selfie_hint">Subí una selfie con buena luz, sin anteojos ni gorro, mostrando tu rostro completo.</string>
+    <string name="onboarding_step_selfie_card_title">Tu selfie</string>
+    <string name="onboarding_step_selfie_card_subtitle">Tocá para tomar o elegir una foto</string>
+    <string name="onboarding_step_selfie_submit">Enviar selfie</string>
     <string name="onboarding_home_client_subtitle">Bienvenido a Oficios</string>
     <string name="onboarding_home_provider_subtitle">Tu perfil está listo para operar</string>
 </resources>

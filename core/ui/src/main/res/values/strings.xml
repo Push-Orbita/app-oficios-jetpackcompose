@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terms_title">Términos y condiciones</string>
+    <string name="terms_intro">Este texto resume cómo funciona Oficios mientras publicamos la versión definitiva. Si más adelante hay una dirección web vigente, la app te va a llevar ahí.</string>
+    <string name="terms_service_title">El servicio</string>
+    <string name="terms_service_body">Oficios conecta a quien necesita un trabajo con un trabajador de oficio. El acuerdo sobre el alcance, el horario y el precio se cierra entre las dos personas, dentro del pedido.</string>
+    <string name="terms_account_title">Tu cuenta</string>
+    <string name="terms_account_body">Los datos que cargás tienen que ser tuyos y estar actualizados. Cuidá el acceso a tu cuenta y avisanos desde la app si ves un uso que no reconocés.</string>
+    <string name="terms_orders_title">Pedidos y calificaciones</string>
+    <string name="terms_orders_body">Un pedido queda sujeto a que el trabajador lo acepte. Podés cancelarlo según el estado en el que esté. Las calificaciones corresponden a un trabajo que ya se hizo.</string>
+    <string name="terms_use_title">Uso de la app</string>
+    <string name="terms_use_body">No publiques datos falsos, no hostigues a otras personas y no pidas ni ofrezcas servicios ilegales. Podemos limitar una cuenta que incumpla estas condiciones.</string>
+</resources>

@@ -35,6 +35,15 @@ class ForgotPasswordViewModelTest {
     }
 
     @Test
+    fun `invalid email submit shows field error`() {
+        val viewModel = ForgotPasswordViewModel(ForgotPasswordUseCase(FakeAuthRepository()))
+        viewModel.onEvent(ForgotPasswordEvent.EmailChanged("invalido"))
+        assertFalse(viewModel.uiState.value.canSubmit)
+        viewModel.onEvent(ForgotPasswordEvent.Submit)
+        assertNotNull(viewModel.uiState.value.emailError)
+    }
+
+    @Test
     fun `valid email enables submit`() {
         val viewModel = ForgotPasswordViewModel(ForgotPasswordUseCase(FakeAuthRepository()))
         viewModel.onEvent(ForgotPasswordEvent.EmailChanged("user@test.com"))
