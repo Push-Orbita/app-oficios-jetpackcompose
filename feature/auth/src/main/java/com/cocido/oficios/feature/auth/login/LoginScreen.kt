@@ -39,6 +39,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.auth.R
+import com.cocido.oficios.feature.auth.components.AuthHairlineDivider
 import com.cocido.oficios.feature.auth.components.AuthScreenLayout
 import com.cocido.oficios.feature.auth.components.AuthSupportCard
 
@@ -61,6 +62,7 @@ fun LoginScreen(
             AuthSupportCard(
                 onContactClick = { onEvent(LoginEvent.ContactSupportClicked) },
                 enabled = !uiState.isLoading,
+                cardHeight = OficiosComponentSize.authLoginSupportCardHeight,
             )
             Spacer(Modifier.height(OficiosComponentSize.authLoginSupportToForgot))
             Text(
@@ -157,7 +159,9 @@ fun LoginScreen(
             )
         }
 
-        Spacer(Modifier.height(OficiosComponentSize.authLoginActionsToPrompt))
+        Spacer(Modifier.height(OficiosComponentSize.authLoginActionsToDivider))
+        AuthHairlineDivider()
+        Spacer(Modifier.height(OficiosComponentSize.authLoginDividerToPrompt))
 
         OficiosPromptActionRow(
             prompt = stringResource(R.string.auth_no_account_yet),

@@ -18,7 +18,7 @@
       android:strokeWidth="1"
       android:pathData="M81.86,14.5C116.93,14.5 145.36,42.93 145.36,78V84.5H18.36V78C18.36,42.93 46.79,14.5 81.86,14.5Z"
       android:fillColor="#F8AE1A"
-      android:strokeColor="#F8AE1A"/>
+      android:strokeColor="#E49E1B"/>
   <path
       android:pathData="M51.86,16C51.86,12.69 54.55,10 57.86,10H105.86C109.17,10 111.86,12.69 111.86,16V68C111.86,69.1 110.96,70 109.86,70H53.86C52.75,70 51.86,69.1 51.86,68V16Z"
       android:fillColor="#F8AE1A"/>
@@ -44,25 +44,35 @@
       android:pathData="M15.86,75.5L147.86,75.5A4.5,4.5 0,0 1,152.36 80L152.36,80A4.5,4.5 0,0 1,147.86 84.5L15.86,84.5A4.5,4.5 0,0 1,11.36 80L11.36,80A4.5,4.5 0,0 1,15.86 75.5z"
       android:strokeLineJoin="round"
       android:fillColor="#F8AE1A"
-      android:strokeColor="#F8AE1A"/>
+      android:strokeColor="#E49E1B"/>
   <path
       android:pathData="M68.36,67L95.36,67A1.5,1.5 0,0 1,96.86 68.5L96.86,68.5A1.5,1.5 0,0 1,95.36 70L68.36,70A1.5,1.5 0,0 1,66.86 68.5L66.86,68.5A1.5,1.5 0,0 1,68.36 67z"
       android:fillColor="#F8AE1A"/>
-  <!-- Nervaduras del casco (Figma 16:2): 4 líneas en oro más oscuro. -->
+  <!-- Línea oscura del ala (Figma Rectangle 1 stroke #E49E1B). -->
+  <path
+      android:pathData="M15.86,75.5 L147.86,75.5"
+      android:strokeWidth="1.4"
+      android:strokeColor="#E49E1B"
+      android:strokeLineCap="round"/>
+  <!-- Nervaduras: 2 exteriores rectas; 2 interiores desde la cresta abriéndose. -->
   <group>
     <clip-path
         android:pathData="M81.86,14.5C116.93,14.5 145.36,42.93 145.36,78V84.5H18.36V78C18.36,42.93 46.79,14.5 81.86,14.5Z"/>
     <path
-        android:pathData="M39.4,30h1.7v46h-1.7z"
-        android:fillColor="#E49E1B"/>
+        android:pathData="M58,32 L58,76"
+        android:strokeWidth="1.5"
+        android:strokeColor="#E49E1B"/>
     <path
-        android:pathData="M56.2,22h1.7v54h-1.7z"
-        android:fillColor="#E49E1B"/>
+        android:pathData="M106,32 L106,76"
+        android:strokeWidth="1.5"
+        android:strokeColor="#E49E1B"/>
     <path
-        android:pathData="M107.0,22h1.7v54h-1.7z"
-        android:fillColor="#E49E1B"/>
+        android:pathData="M77,10 L71,72"
+        android:strokeWidth="1.5"
+        android:strokeColor="#E49E1B"/>
     <path
-        android:pathData="M123.8,30h1.7v46h-1.7z"
-        android:fillColor="#E49E1B"/>
+        android:pathData="M87,10 L93,72"
+        android:strokeWidth="1.5"
+        android:strokeColor="#E49E1B"/>
   </group>
 </vector>

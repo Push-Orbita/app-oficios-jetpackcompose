@@ -50,7 +50,6 @@ fun RegisterRoleCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(OficiosComponentSize.registerRoleCardIconAreaHeight)
                     .padding(top = OficiosComponentSize.authRoleCardIconTopInset),
                 contentAlignment = Alignment.Center,
             ) {

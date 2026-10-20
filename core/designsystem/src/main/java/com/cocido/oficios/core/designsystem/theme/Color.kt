@@ -17,6 +17,8 @@ val OficiosColorBackground = Color(0xFF00358B)
 
 /** Outline / fill de tarjetas — borde 1px inset en casi todos los contenedores. Figma rgb(0,77,168) */
 val OficiosColorOutlineFill = Color(0xFF004DA8)
+/** Divisor auth — Figma Vector 1 ~#0047A0 (356:90). */
+val OficiosColorAuthDivider = Color(0xFF0047A0)
 val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 
 /** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */

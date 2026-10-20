@@ -1,25 +1,33 @@
 package com.cocido.oficios.feature.auth.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -34,13 +42,17 @@ fun AuthSupportCard(
     onContactClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    cardHeight: Dp = OficiosComponentSize.authLoginSupportCardHeight,
     message: String = stringResource(R.string.auth_support_message),
 ) {
     val supportAvailable = isSupportPhoneConfigured()
     val resolvedMessage = if (supportAvailable) message else stringResource(R.string.auth_support_unavailable)
+    val badgeShape = RoundedCornerShape(OficiosRadius.sm)
     Box(modifier = modifier.fillMaxWidth()) {
         OficiosCard(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(cardHeight),
             contentPadding = PaddingValues(OficiosSpacing.md),
         ) {
             Row(
@@ -63,16 +75,22 @@ fun AuthSupportCard(
                 )
             }
         }
-        OficiosBadge(
-            label = "?",
+        Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .offset(x = OficiosSpacing.xs, y = -OficiosSpacing.sm),
-            containerColor = OficiosColorOutlineFill,
-            contentColor = OficiosColorWhite,
-            size = OficiosComponentSize.authSupportBadgeSize,
-            shape = RoundedCornerShape(OficiosRadius.sm),
-        )
+                .offset(x = OficiosSpacing.xs, y = -OficiosComponentSize.authSupportBadgeOffsetY)
+                .size(OficiosComponentSize.authSupportBadgeSize)
+                .clip(badgeShape)
+                .drawBehind { drawRect(OficiosColorBackground) }
+                .border(1.dp, OficiosColorOutlineFill, badgeShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "?",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = OficiosColorWhite,
+            )
+        }
     }
 }
 

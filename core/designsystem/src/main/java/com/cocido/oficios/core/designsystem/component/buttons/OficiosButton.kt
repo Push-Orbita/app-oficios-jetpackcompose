@@ -91,15 +91,15 @@ fun OficiosButton(
         OficiosButtonVariant.Primary -> ButtonColors(
             container = OficiosColorAction,
             content = OficiosColorWhite,
-            border = BorderStroke(1.dp, Color.Transparent),
-            shadow = Color.Black.copy(alpha = 0.15f),
+            border = BorderStroke(1.dp, OficiosColorAlertText.copy(alpha = 0.5f)),
+            shadow = Color(0xFFA32F56).copy(alpha = 0.15f),
         )
-        // Botón secundario — Figma: fondo blanco, texto rgb(0,53,139)
+        // Botón secundario — Figma: fondo blanco, borde #E2E2E2, sombra blanca suave
         OficiosButtonVariant.Secondary -> ButtonColors(
             container = OficiosColorWhite,
             content = OficiosColorBackground,
             border = BorderStroke(1.dp, Color(0xFFE2E2E2)),
-            shadow = Color.Black.copy(alpha = 0.15f),
+            shadow = Color.White.copy(alpha = 0.1f),
         )
         // Botón outline — Figma: transparente + box-shadow inset 1px rgb(0,77,168)
         OficiosButtonVariant.Outlined -> ButtonColors(

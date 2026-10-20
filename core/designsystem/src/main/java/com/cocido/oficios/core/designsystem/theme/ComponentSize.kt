@@ -52,39 +52,54 @@ object OficiosComponentSize {
     val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
     val authWordmarkHeightSplash = 48.dp
-    /** Login 356:49: status 48 + 64 = logo y=112, wordmark y≈327. */
+    /** Login 356:49: logo 122×201.75. */
+    val authLogoIconHeightCompact = 202.dp
+    /** Login 356:49: gap logo→wordmark 13dp (wordmark visual y=327). */
+    val authLoginLogoWordmarkGap = 13.dp
+    /** Login 356:49: status 48 + 64 = logo y=112. */
     val authLoginContentTopPadding = 64.dp
     val authLoginBrandToSubtitle = 58.dp
     val authLoginSubtitleToField = 18.dp
     val authLoginPasswordToActions = 16.dp
-    val authLoginActionsToPrompt = 34.dp
-    val authLoginPromptToSupport = 43.dp
+    val authLoginActionsToDivider = 16.dp
+    val authLoginDividerToPrompt = 16.dp
+    /** Login: prompt bottom 693 → soporte 746 (error 750). */
+    val authLoginPromptToSupport = 53.dp
     val authLoginSupportToForgot = 16.dp
+    val authLoginSupportCardHeight = 101.dp
     val authRegisterHeaderWidth = 345.dp
     val authRegisterBrandIconWidth = 62.dp
     val authRegisterBrandIconHeight = 102.dp
+    val authRegisterBrandSpacing = 24.dp
     /** Rol 356:482: status 48 + 19 = logo y=67. */
     val authRegisterHeaderTop = 19.dp
-    /** Registro 356:422: título 6dp más arriba (y=75). */
-    val authRegisterTitleTop = 18.dp
-    val authRegisterEmailToHint = 16.dp
-    val authRegisterHintToPassword = 16.dp
-    val authRegisterTermsToPrompt = 34.dp
+    /** Registro: título y=75 (status 48 + 27). */
+    val authRegisterTitleTop = 27.dp
+    val authRegisterTitleToSubtitle = 11.dp
+    val authRegisterSubtitleToField = 13.dp
+    val authRegisterEmailToHint = 19.dp
+    val authRegisterHintToPassword = 13.dp
+    val authRegisterPasswordToTerms = 17.dp
+    val authRegisterTermsToDivider = 13.dp
+    val authRegisterDividerToPrompt = 16.dp
     val authRegisterTermsCheckboxToText = 8.dp
     val authSupportBadgeSize = 32.dp
+    val authSupportBadgeOffsetY = 10.dp
     val authRoleHeaderToSubtitle = 16.dp
-    val authRoleSubtitleToCards = 16.dp
-    val authRoleCardsToPrompt = 16.dp
-    val authRolePromptToSupport = 49.dp
-    val authRoleCardIconTopInset = 16.dp
+    val authRoleSubtitleToCards = 23.dp
+    val authRoleCardsToDivider = 22.dp
+    val authRoleDividerToPrompt = 16.dp
+    val authRolePromptToSupport = 59.dp
+    val authRoleSupportCardHeight = 80.dp
+    val authRoleCardIconTopInset = 12.dp
 
-    // Selección de rol — Figma 356:482
+    // Selección de rol — Figma 356:482 / QA r3
     val registerRoleCardWidth = 179.dp
-    val registerRoleCardHeight = 170.dp
+    val registerRoleCardHeight = 160.dp
     val registerRoleCardGap = 16.dp
     val registerRoleCardIconAreaHeight = 100.dp
-    val registerRoleCardIconWorkerHeight = 64.dp
-    val registerRoleCardIconClientHeight = 87.dp
+    val registerRoleCardIconWorkerHeight = 84.dp
+    val registerRoleCardIconClientHeight = 84.dp
 }
 
 // Alias de compatibilidad con código previo del template

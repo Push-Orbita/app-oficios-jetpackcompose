@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
-import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 enum class OficiosBrandScale {
@@ -33,13 +32,16 @@ fun OficiosBrandBlock(
         OficiosBrandScale.Compact -> OficiosComponentSize.authLogoIconWidthCompact
         OficiosBrandScale.Splash -> OficiosComponentSize.authLogoIconWidthSplash
     }
-    val iconHeight: Dp = iconWidth * LogoAspectHeightOverWidth
+    val iconHeight: Dp = when (scale) {
+        OficiosBrandScale.Compact -> OficiosComponentSize.authLogoIconHeightCompact
+        OficiosBrandScale.Splash -> iconWidth * LogoAspectHeightOverWidth
+    }
     val wordmarkHeight = when (scale) {
         OficiosBrandScale.Compact -> OficiosComponentSize.authWordmarkHeight
         OficiosBrandScale.Splash -> OficiosComponentSize.authWordmarkHeightSplash
     }
     val logoWordmarkGap = when (scale) {
-        OficiosBrandScale.Compact -> OficiosSpacing.md
+        OficiosBrandScale.Compact -> OficiosComponentSize.authLoginLogoWordmarkGap
         OficiosBrandScale.Splash -> OficiosComponentSize.authSplashLogoWordmarkGap
     }
 
