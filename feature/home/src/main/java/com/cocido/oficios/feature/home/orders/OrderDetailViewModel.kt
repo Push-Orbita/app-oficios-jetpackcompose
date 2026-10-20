@@ -19,6 +19,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,6 +41,9 @@ class OrderDetailViewModel @Inject constructor(
     private val orderId: Long = savedStateHandle.get<Long>("orderId") ?: 0L
     private var viewerRole: UserRole = UserRole.UNKNOWN
     private var trackingRefreshJob: Job? = null
+
+    /** Último código fresco obtenido de GET /booking/{id}, para no pisarlo con el del detalle de la solicitud. */
+    private var latestCompletionCode: Pair<Long, String>? = null
 
     private val _uiState = MutableStateFlow<OrderDetailUiState>(OrderDetailUiState.Loading)
     val uiState: StateFlow<OrderDetailUiState> = _uiState.asStateFlow()
@@ -102,11 +109,12 @@ class OrderDetailViewModel @Inject constructor(
         }
     }
 
-    private fun load(fromRefresh: Boolean = false) {
+    private fun load(fromRefresh: Boolean = false, silent: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
             try {
                 when {
+                    silent -> Unit
                     fromRefresh && previous is OrderDetailUiState.Success ->
                         _uiState.update { previous.copy(isRefreshing = true) }
                     fromRefresh && previous is OrderDetailUiState.Error ->
@@ -124,13 +132,15 @@ class OrderDetailViewModel @Inject constructor(
                         }?.let { bookingId ->
                             (orderUseCases.getBookingTracking(bookingId) as? AppResult.Success)?.data
                         }
-                        val order = loaded.withArrivedTracking(tracking?.status)
+                        val order = loaded.withArrivedTracking(tracking?.status).withFreshCompletionCode()
                         _uiState.update { OrderDetailUiState.Success(order, viewerRole, tracking) }
                         startTrackingRefreshIfNeeded(loaded.bookingId, loaded.bookingStatus)
                     }
                     is AppResult.Error -> {
                         val message = result.error.userMessage().ifBlank { "No pudimos cargar el pedido" }
-                        if (previous is OrderDetailUiState.Success) {
+                        if (silent) {
+                            // Recarga silenciosa (refresco del código): no molestamos al cliente.
+                        } else if (previous is OrderDetailUiState.Success) {
                             _uiState.update { previous.copy(isRefreshing = false) }
                             if (fromRefresh) emitEffect(OrderDetailEffect.ShowMessage(message))
                         } else {
@@ -149,6 +159,90 @@ class OrderDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /**
+     * Mantiene vigente el código de finalización que ve el cliente mientras la pantalla está visible.
+     * La Route la llama dentro de `repeatOnLifecycle(STARTED)`: se cancela al salir de la pantalla o
+     * pasar a segundo plano, y al volver arranca de nuevo (regenera + GET).
+     *
+     * - Al entrar/volver: POST completion-code/resend (silencioso) y luego GET /booking/{id}.
+     * - Cada [COMPLETION_CODE_FETCH_MILLIS]: GET para mostrar el código vigente.
+     * - Cada [COMPLETION_CODE_REGENERATE_MILLIS]: regenera, por debajo de cualquier vencimiento razonable.
+     * - 429 (COMPLETION_CODE_RATE_LIMITED) u otros errores del resend se ignoran: el GET trae el vigente.
+     */
+    suspend fun keepCompletionCodeFresh() {
+        uiState
+            .filterIsInstance<OrderDetailUiState.Success>()
+            .map { it.completionCodeBookingId() }
+            .distinctUntilChanged()
+            .collectLatest { bookingId ->
+                if (bookingId != null) refreshCompletionCodeWhileVisible(bookingId)
+            }
+    }
+
+    private fun OrderDetailUiState.Success.completionCodeBookingId(): Long? =
+        order.bookingId?.takeIf {
+            viewerRole == UserRole.CLIENT && order.bookingStatus == BookingStatus.IN_PROGRESS
+        }
+
+    private suspend fun refreshCompletionCodeWhileVisible(bookingId: Long) {
+        regenerateCompletionCode(bookingId)
+        var ticks = 0
+        while (true) {
+            delay(COMPLETION_CODE_FETCH_MILLIS)
+            ticks++
+            if (ticks % REGENERATE_EVERY_TICKS == 0) {
+                regenerateCompletionCode(bookingId)
+            } else {
+                fetchCompletionCode(bookingId)
+            }
+        }
+    }
+
+    private suspend fun regenerateCompletionCode(bookingId: Long) {
+        // Resultado ignorado a propósito: si hay 429 o falla, el código anterior sigue vigente y el GET lo trae.
+        orderUseCases.resendCompletionCode(bookingId)
+        fetchCompletionCode(bookingId)
+    }
+
+    private suspend fun fetchCompletionCode(bookingId: Long) {
+        when (val result = orderUseCases.getCompletionCode(bookingId)) {
+            is AppResult.Success -> {
+                val code = result.data
+                if (code.isNullOrBlank()) {
+                    // El backend ya no expone código: el booking cambió de estado (p. ej. finalizado).
+                    latestCompletionCode = null
+                    load(silent = true)
+                } else {
+                    latestCompletionCode = bookingId to code
+                    _uiState.update { state ->
+                        if (state is OrderDetailUiState.Success && state.order.bookingId == bookingId) {
+                            state.copy(
+                                order = state.order.copy(completionCode = code),
+                                completionCodeUnavailable = false,
+                            )
+                        } else {
+                            state
+                        }
+                    }
+                }
+            }
+            is AppResult.Error -> _uiState.update { state ->
+                // Solo avisamos si no hay ningún código para mostrar; si hay uno, lo dejamos.
+                if (state is OrderDetailUiState.Success && state.order.completionCode.isNullOrBlank()) {
+                    state.copy(completionCodeUnavailable = true)
+                } else {
+                    state
+                }
+            }
+        }
+    }
+
+    private fun ServiceOrder.withFreshCompletionCode(): ServiceOrder {
+        val fresh = latestCompletionCode?.takeIf { it.first == bookingId }?.second ?: return this
+        if (viewerRole != UserRole.CLIENT || bookingStatus != BookingStatus.IN_PROGRESS) return this
+        return copy(completionCode = fresh)
     }
 
     private fun performLocationAction(action: TrackingLocationAction) {
@@ -270,7 +364,10 @@ class OrderDetailViewModel @Inject constructor(
         super.onCleared()
     }
 
-    private companion object {
+    internal companion object {
         const val TRACKING_REFRESH_MILLIS = 15_000L
+        const val COMPLETION_CODE_FETCH_MILLIS = 30_000L
+        const val COMPLETION_CODE_REGENERATE_MILLIS = 4 * 60_000L
+        const val REGENERATE_EVERY_TICKS = (COMPLETION_CODE_REGENERATE_MILLIS / COMPLETION_CODE_FETCH_MILLIS).toInt()
     }
 }

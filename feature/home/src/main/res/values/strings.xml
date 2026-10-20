@@ -229,6 +229,8 @@
     <string name="orders_code_copy">Copiar código</string>
     <string name="orders_code_copied">Código copiado</string>
     <string name="orders_code_missing">Tu código aparecerá acá cuando el servicio esté en curso.</string>
+    <string name="orders_code_auto_refresh">El código se actualiza automáticamente.</string>
+    <string name="orders_code_unavailable">No pudimos cargar tu código. Deslizá hacia abajo para reintentar.</string>
     <string name="orders_rate_worker">Puntuar al trabajador</string>
     <string name="orders_already_rated">Ya puntuaste al trabajador</string>
     <string name="orders_rating_quality">Calidad</string>

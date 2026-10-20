@@ -80,6 +80,7 @@ private class FakeOrdersApi : OrdersApi {
     override suspend fun aceptarContrapropuesta(id: Long): JsonElement = error("no")
     override suspend fun rechazarContrapropuesta(id: Long): JsonElement = error("no")
     override suspend fun getBooking(id: Long) = BookingDto(id = id, estado = "PENDIENTE")
+    override suspend fun resendCompletionCode(id: Long): com.cocido.oficios.core.network.api.orders.dto.ResendCompletionCodeResponseDto = error("no")
     override suspend fun finalizarBooking(id: Long, request: FinalizeBookingRequestDto) = error("no")
     override suspend fun marcarTracking(bookingId: Long, request: MarcarTrackingRequestDto): TrackingBookingDto = error("no")
     override suspend fun getTracking(bookingId: Long): JsonElement = JsonNull
