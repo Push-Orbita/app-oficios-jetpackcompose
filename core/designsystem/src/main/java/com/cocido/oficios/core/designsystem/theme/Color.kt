@@ -37,6 +37,18 @@ val OficiosColorAccentBorder = Color(0xFFE49E1B)
 val OficiosColorAlert = Color(0xFFBA6380)
 val OficiosColorAlertText = Color(0xFFD197AB)
 
+// Login (solo esa pantalla): fondo oscuro neutro + variantes con contraste AA sobre él.
+/** Fondo de la pantalla de login. #111827 */
+val OficiosColorLoginBackground = Color(0xFF111827)
+/** Card/superficie elevada sobre el fondo de login. */
+val OficiosColorLoginSurface = Color(0xFF1F2937)
+/** Bordes de campos/cards sobre login: 3.7:1 (AA no-texto). */
+val OficiosColorLoginOutline = Color(0xFF6B7280)
+/** Texto/íconos secundarios sobre login: 12:1. */
+val OficiosColorLoginSecondaryText = Color(0xFFD1D5DB)
+/** Acción/foco sobre login: 4.8:1 como texto, check blanco 3.7:1. */
+val OficiosColorLoginAction = Color(0xFF3B82F6)
+
 val OficiosColorWhite = Color(0xFFFFFFFF)
 /** Placeholders sobre fondo — rgba(255,255,255,0.5) */
 val OficiosColorPlaceholder = Color(0x80FFFFFF)
