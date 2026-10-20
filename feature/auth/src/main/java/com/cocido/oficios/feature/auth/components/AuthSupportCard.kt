@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,7 +42,7 @@ fun AuthSupportCard(
     onContactClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    cardHeight: Dp = OficiosComponentSize.authLoginSupportCardHeight,
+    minHeight: Dp = OficiosComponentSize.authLoginSupportCardMinHeight,
     message: String = stringResource(R.string.auth_support_message),
 ) {
     val supportAvailable = isSupportPhoneConfigured()
@@ -52,7 +52,7 @@ fun AuthSupportCard(
         OficiosCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(cardHeight),
+                .heightIn(min = minHeight),
             contentPadding = PaddingValues(OficiosSpacing.md),
         ) {
             Row(
@@ -72,13 +72,17 @@ fun AuthSupportCard(
                     enabled = enabled && supportAvailable,
                     variant = OficiosButtonVariant.Secondary,
                     size = OficiosButtonSize.Small,
+                    figmaAuthStroke = true,
                 )
             }
         }
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .offset(x = OficiosSpacing.xs, y = -OficiosComponentSize.authSupportBadgeOffsetY)
+                .offset(
+                    x = OficiosComponentSize.authSupportBadgeOffsetX,
+                    y = -OficiosComponentSize.authSupportBadgeOffsetY,
+                )
                 .size(OficiosComponentSize.authSupportBadgeSize)
                 .clip(badgeShape)
                 .drawBehind { drawRect(OficiosColorBackground) }

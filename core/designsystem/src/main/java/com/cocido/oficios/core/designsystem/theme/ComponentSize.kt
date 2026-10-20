@@ -57,40 +57,44 @@ object OficiosComponentSize {
     /** Login 356:49: gap logo→wordmark 13dp (wordmark visual y=327). */
     val authLoginLogoWordmarkGap = 13.dp
     /** Login 356:49: status 48 + 64 = logo y=112. */
-    val authLoginContentTopPadding = 64.dp
+    val authLoginContentTopPadding = 63.dp
     val authLoginBrandToSubtitle = 58.dp
     val authLoginSubtitleToField = 18.dp
     val authLoginPasswordToActions = 16.dp
     val authLoginActionsToDivider = 16.dp
     val authLoginDividerToPrompt = 16.dp
-    /** Login: prompt bottom 693 → soporte 746 (error 750). */
-    val authLoginPromptToSupport = 53.dp
+    /** Login: prompt → soporte para card top 746 (error 750). */
+    val authLoginPromptToSupport = 59.dp
     val authLoginSupportToForgot = 16.dp
-    val authLoginSupportCardHeight = 101.dp
+    val authLoginSupportCardMinHeight = 101.dp
     val authRegisterHeaderWidth = 345.dp
     val authRegisterBrandIconWidth = 62.dp
     val authRegisterBrandIconHeight = 102.dp
     val authRegisterBrandSpacing = 24.dp
-    /** Rol 356:482: status 48 + 19 = logo y=67. */
-    val authRegisterHeaderTop = 19.dp
-    /** Registro: título y=75 (status 48 + 27). */
-    val authRegisterTitleTop = 27.dp
-    val authRegisterTitleToSubtitle = 11.dp
-    val authRegisterSubtitleToField = 13.dp
+    /** Wordmark del header de rol: ~7% más chico, glifo x118–377. */
+    val authRegisterHeaderWordmarkHeight = 27.dp
+    val authRegisterHeaderWordmarkWidth = 259.dp
+    /** Rol 356:482: status 48 + 18 = logo glifo y=67. */
+    val authRegisterHeaderTop = 18.dp
+    /** Registro: glifo del título en y=75 (caja 64 + ~11 de D-DIN). */
+    val authRegisterTitleTop = 16.dp
+    val authRegisterTitleToSubtitle = 28.dp
+    val authRegisterSubtitleToField = 19.dp
     val authRegisterEmailToHint = 19.dp
-    val authRegisterHintToPassword = 13.dp
+    val authRegisterHintToPassword = 18.dp
     val authRegisterPasswordToTerms = 17.dp
-    val authRegisterTermsToDivider = 13.dp
+    val authRegisterTermsToDivider = 16.dp
     val authRegisterDividerToPrompt = 16.dp
     val authRegisterTermsCheckboxToText = 8.dp
-    val authSupportBadgeSize = 32.dp
-    val authSupportBadgeOffsetY = 10.dp
+    val authSupportBadgeSize = 31.dp
+    val authSupportBadgeOffsetY = 22.dp
+    val authSupportBadgeOffsetX = 15.dp
     val authRoleHeaderToSubtitle = 16.dp
-    val authRoleSubtitleToCards = 23.dp
+    val authRoleSubtitleToCards = 28.dp
     val authRoleCardsToDivider = 22.dp
     val authRoleDividerToPrompt = 16.dp
-    val authRolePromptToSupport = 59.dp
-    val authRoleSupportCardHeight = 80.dp
+    val authRolePromptToSupport = 60.dp
+    val authRoleSupportCardMinHeight = 80.dp
     val authRoleCardIconTopInset = 12.dp
 
     // Selección de rol — Figma 356:482 / QA r3

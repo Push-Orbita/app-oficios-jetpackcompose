@@ -79,6 +79,11 @@ fun OficiosButton(
     loading: Boolean = false,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
+    /**
+     * Stroke/sombra del frame de auth (356:49 / 356:422). Apagado por defecto
+     * para no cambiar Home ni el resto de pantallas fuera de este PR.
+     */
+    figmaAuthStroke: Boolean = false,
 ) {
     val minHeight = when (size) {
         OficiosButtonSize.Small -> OficiosComponentSize.buttonHeightSmall
@@ -87,19 +92,31 @@ fun OficiosButton(
     }
 
     val (containerColor, contentColor, border, shadowColor) = when (variant) {
-        // Botón primario — Figma: fondo rgb(0,109,239), sombra 0px 4px 10px rgba(0,0,0,.15)
+        // Botón primario — Figma home: fondo rgb(0,109,239), sombra 0px 4px 10px rgba(0,0,0,.15)
         OficiosButtonVariant.Primary -> ButtonColors(
             container = OficiosColorAction,
             content = OficiosColorWhite,
-            border = BorderStroke(1.dp, OficiosColorAlertText.copy(alpha = 0.5f)),
-            shadow = Color(0xFFA32F56).copy(alpha = 0.15f),
+            border = if (figmaAuthStroke) {
+                BorderStroke(1.dp, OficiosColorAlertText.copy(alpha = 0.5f))
+            } else {
+                BorderStroke(1.dp, Color.Transparent)
+            },
+            shadow = if (figmaAuthStroke) {
+                Color(0xFFA32F56).copy(alpha = 0.15f)
+            } else {
+                Color.Black.copy(alpha = 0.15f)
+            },
         )
-        // Botón secundario — Figma: fondo blanco, borde #E2E2E2, sombra blanca suave
+        // Botón secundario — Figma: fondo blanco, borde #E2E2E2
         OficiosButtonVariant.Secondary -> ButtonColors(
             container = OficiosColorWhite,
             content = OficiosColorBackground,
             border = BorderStroke(1.dp, Color(0xFFE2E2E2)),
-            shadow = Color.White.copy(alpha = 0.1f),
+            shadow = if (figmaAuthStroke) {
+                Color.White.copy(alpha = 0.1f)
+            } else {
+                Color.Black.copy(alpha = 0.15f)
+            },
         )
         // Botón outline — Figma: transparente + box-shadow inset 1px rgb(0,77,168)
         OficiosButtonVariant.Outlined -> ButtonColors(

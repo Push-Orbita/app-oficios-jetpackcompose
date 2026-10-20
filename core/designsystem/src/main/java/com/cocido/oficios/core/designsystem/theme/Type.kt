@@ -1,10 +1,12 @@
 package com.cocido.oficios.core.designsystem.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.R
 
@@ -179,6 +181,18 @@ val OficiosTypography = Typography(
         fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
+    ),
+)
+
+/**
+ * Título de registro: mismo 36sp D-DIN Bold, sin padding extra de fuente
+ * para que el glifo caiga en el top del layout (Figma y=75).
+ */
+val OficiosAuthGlyphTitleStyle = OficiosTypography.headlineLarge.copy(
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+    lineHeightStyle = LineHeightStyle(
+        alignment = LineHeightStyle.Alignment.Top,
+        trim = LineHeightStyle.Trim.Both,
     ),
 )
 

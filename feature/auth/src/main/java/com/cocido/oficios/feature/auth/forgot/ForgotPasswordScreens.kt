@@ -96,6 +96,7 @@ fun ForgotPasswordScreen(
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Small,
+                figmaAuthStroke = true,
             )
         }
         Text(

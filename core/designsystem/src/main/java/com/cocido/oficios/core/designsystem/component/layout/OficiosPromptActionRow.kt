@@ -32,6 +32,7 @@ fun OficiosPromptActionRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     actionVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
+    figmaAuthStroke: Boolean = false,
 ) {
     val fontScale = LocalConfiguration.current.fontScale
     val stackVertically = fontScale >= 1.3f
@@ -52,6 +53,7 @@ fun OficiosPromptActionRow(
                 enabled = enabled,
                 variant = actionVariant,
                 modifier = Modifier.fillMaxWidth(),
+                figmaAuthStroke = figmaAuthStroke,
             )
         }
     } else {
@@ -71,6 +73,7 @@ fun OficiosPromptActionRow(
                 onClick = onAction,
                 enabled = enabled,
                 variant = actionVariant,
+                figmaAuthStroke = figmaAuthStroke,
             )
         }
     }

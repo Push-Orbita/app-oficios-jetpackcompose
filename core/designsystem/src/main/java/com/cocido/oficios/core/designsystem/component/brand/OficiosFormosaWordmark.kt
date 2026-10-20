@@ -22,15 +22,21 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 fun OficiosFormosaWordmark(
     modifier: Modifier = Modifier,
     height: Dp = OficiosComponentSize.authWordmarkHeight,
+    fillWidth: Boolean = true,
     contentDescription: String? = "Oficios Formosa",
 ) {
+    val sizeModifier = if (fillWidth) {
+        modifier
+            .widthIn(max = OficiosComponentSize.authBrandMaxWidth)
+            .fillMaxWidth()
+            .height(height)
+    } else {
+        modifier.height(height)
+    }
     Image(
         painter = painterResource(R.drawable.oficios_formosa),
         contentDescription = contentDescription,
-        modifier = modifier
-            .widthIn(max = OficiosComponentSize.authBrandMaxWidth)
-            .fillMaxWidth()
-            .height(height),
+        modifier = sizeModifier,
         contentScale = ContentScale.Fit,
     )
 }

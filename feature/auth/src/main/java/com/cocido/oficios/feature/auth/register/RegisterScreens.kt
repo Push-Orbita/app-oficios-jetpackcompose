@@ -32,6 +32,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosColorDisabledText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -62,7 +63,7 @@ fun RegisterRoleSelectionScreen(
             AuthSupportCard(
                 onContactClick = onContactSupport,
                 message = stringResource(R.string.auth_support_message_compact),
-                cardHeight = OficiosComponentSize.authRoleSupportCardHeight,
+                minHeight = OficiosComponentSize.authRoleSupportCardMinHeight,
             )
         },
     ) {
@@ -70,7 +71,8 @@ fun RegisterRoleSelectionScreen(
             modifier = Modifier.fillMaxWidth(),
             iconWidth = OficiosComponentSize.authRegisterBrandIconWidth,
             iconHeight = OficiosComponentSize.authRegisterBrandIconHeight,
-            wordmarkHeight = OficiosComponentSize.authWordmarkHeight,
+            wordmarkHeight = OficiosComponentSize.authRegisterHeaderWordmarkHeight,
+            wordmarkWidth = OficiosComponentSize.authRegisterHeaderWordmarkWidth,
             spacing = OficiosComponentSize.authRegisterBrandSpacing,
         )
         Spacer(Modifier.height(OficiosComponentSize.authRoleHeaderToSubtitle))
@@ -109,6 +111,7 @@ fun RegisterRoleSelectionScreen(
             prompt = stringResource(R.string.auth_already_have_account),
             actionLabel = stringResource(R.string.auth_start_session_button),
             onAction = onNavigateToLogin,
+            figmaAuthStroke = true,
         )
     }
 }
@@ -132,7 +135,7 @@ fun RegisterFormScreen(
     ) {
         Text(
             text = screenTitle,
-            style = MaterialTheme.typography.headlineLarge,
+            style = OficiosAuthGlyphTitleStyle,
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(OficiosComponentSize.authRegisterTitleToSubtitle))
@@ -253,6 +256,7 @@ fun RegisterFormScreen(
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Small,
+                figmaAuthStroke = true,
             )
         }
         if (uiState.hasAttemptedSubmit && uiState.termsError != null) {
@@ -271,6 +275,7 @@ fun RegisterFormScreen(
             actionLabel = stringResource(R.string.auth_login_button),
             onAction = { onEvent(RegisterFormEvent.LoginClicked) },
             enabled = !uiState.isLoading,
+            figmaAuthStroke = true,
         )
     }
 }

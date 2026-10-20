@@ -62,7 +62,7 @@ fun LoginScreen(
             AuthSupportCard(
                 onContactClick = { onEvent(LoginEvent.ContactSupportClicked) },
                 enabled = !uiState.isLoading,
-                cardHeight = OficiosComponentSize.authLoginSupportCardHeight,
+                minHeight = OficiosComponentSize.authLoginSupportCardMinHeight,
             )
             Spacer(Modifier.height(OficiosComponentSize.authLoginSupportToForgot))
             Text(
@@ -156,6 +156,7 @@ fun LoginScreen(
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Small,
+                figmaAuthStroke = true,
             )
         }
 
@@ -168,6 +169,7 @@ fun LoginScreen(
             actionLabel = stringResource(R.string.auth_register_button),
             onAction = { onEvent(LoginEvent.RegisterClicked) },
             enabled = !uiState.isLoading,
+            figmaAuthStroke = true,
         )
     }
 }
