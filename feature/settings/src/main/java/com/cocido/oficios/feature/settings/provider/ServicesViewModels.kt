@@ -70,7 +70,7 @@ class ServicesViewModel @Inject constructor(
         val service = _uiState.value.pendingDelete ?: return
         if (service.isPrimary) {
             _uiState.update {
-                it.copy(pendingDelete = null, errorMessage = "El servicio principal no se puede eliminar. Podés sumar otros servicios sin perderlo.")
+                it.copy(pendingDelete = null, errorMessage = "El servicio principal no se puede eliminar. Puede sumar otros servicios sin perderlo.")
             }
             return
         }
@@ -133,7 +133,7 @@ class AddServiceViewModel @Inject constructor(
             }
             AddServiceEvent.UseCurrentLocation -> useCurrentLocation()
             AddServiceEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Permití la ubicación o marcá manualmente la entrada de tu local en el mapa.")
+                it.copy(errorMessage = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
             }
             is AddServiceEvent.WorkDayToggled -> update {
                 it.copy(workDays = it.workDays.toggled(event.day, event.checked), errorMessage = null)
@@ -182,19 +182,19 @@ class AddServiceViewModel @Inject constructor(
     private fun next() {
         val state = _uiState.value
         val error = when (state.step) {
-            AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) "Elegí un oficio y al menos una especialidad." else null
+            AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) "Seleccione un oficio y al menos una especialidad." else null
             AddServiceStep.MODALITY -> when {
-                !state.servesAtClientHome && !state.servesAtLocal -> "Elegí al menos una modalidad de atención."
-                state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Completá el barrio y la calle de tu local."
-                state.servesAtLocal && (state.localLatitude == null || state.localLongitude == null) -> "Marcá la entrada de tu local en el mapa."
+                !state.servesAtClientHome && !state.servesAtLocal -> "Elija al menos una modalidad de atención."
+                state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Complete el barrio y la calle de su local."
+                state.servesAtLocal && (state.localLatitude == null || state.localLongitude == null) -> "Marque la entrada de su local en el mapa."
                 else -> null
             }
             AddServiceStep.SCHEDULE -> when {
-                state.workDays.isEmpty() -> "Elegí al menos un día de trabajo."
-                state.timeSlots.any { !it.isValidRange() } -> "Revisá los horarios: la hora de fin debe ser posterior al inicio."
+                state.workDays.isEmpty() -> "Elija al menos un día de trabajo."
+                state.timeSlots.any { !it.isValidRange() } -> "Revise los horarios: la hora de fin debe ser posterior al inicio."
                 else -> null
             }
-            AddServiceStep.PAYMENT -> if (state.paymentMethods.isEmpty()) "Elegí al menos un medio de cobro." else null
+            AddServiceStep.PAYMENT -> if (state.paymentMethods.isEmpty()) "Elija al menos un medio de cobro." else null
             AddServiceStep.REVIEW -> null
         }
         if (error != null) update { it.copy(errorMessage = error) }
@@ -214,7 +214,7 @@ class AddServiceViewModel @Inject constructor(
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
             val local = if (state.servesAtLocal) ProviderLocalDomicilioRequest(
-                barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccioná el barrio de tu local.") },
+                barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccione el barrio de su local.") },
                 calle = state.localStreet.trim(),
                 nombre = state.localName.trim().ifBlank { null },
                 latitud = GeoCoordinates.roundForApi(state.localLatitude),
@@ -232,7 +232,7 @@ class AddServiceViewModel @Inject constructor(
                 paymentMethods = state.paymentMethods.toList(),
             )
             when (val result = accountUseCases.addService(request)) {
-                is AppResult.Success -> emit(AddServiceEffect.Saved("Servicio agregado a tu perfil."))
+                is AppResult.Success -> emit(AddServiceEffect.Saved("Servicio agregado a su perfil."))
                 is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
             }
         }

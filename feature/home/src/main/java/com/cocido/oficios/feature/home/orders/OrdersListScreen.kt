@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -172,7 +171,7 @@ private fun OrdersListSuccess(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+                        contentPadding = OficiosSpacing.OficiosScreenPadding,
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
                         items(current.visibleOrders, key = { it.id }) { order ->

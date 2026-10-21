@@ -93,7 +93,7 @@ class WorkerReportViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     errorMessage = if (state.selectedReasonCode == null) {
-                        "Elegí un motivo"
+                        "Seleccione un motivo"
                     } else {
                         state.descriptionHint
                     },
@@ -115,7 +115,7 @@ class WorkerReportViewModel @Inject constructor(
             ) {
                 is AppResult.Success -> {
                     _uiState.update { it.copy(isSubmitting = false) }
-                    emitEffect(WorkerReportEffect.ShowMessage("Recibimos tu denuncia. Vamos a revisarla."))
+                    emitEffect(WorkerReportEffect.ShowMessage("Recibimos su denuncia. Vamos a revisarla."))
                     emitEffect(WorkerReportEffect.NavigateBack)
                 }
                 is AppResult.Error -> {
@@ -139,7 +139,7 @@ class WorkerReportViewModel @Inject constructor(
     }
 
     private fun reportErrorMessage(error: AppError): String = when {
-        error is AppError.Forbidden -> "No podés denunciar este perfil."
+        error is AppError.Forbidden -> "No puede denunciar este perfil."
         error.backendCode == "REPORT_ALREADY_OPEN" -> error.userMessage()
         else -> error.userMessage()
     }

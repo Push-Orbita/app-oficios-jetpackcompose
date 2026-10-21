@@ -167,7 +167,7 @@ class OrderRepositoryImpl @Inject constructor(
         if (code.isEmpty()) {
             return AppResult.Error(
                 AppError.Validation(
-                    message = "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
+                    message = "Ingrese el código de 6 dígitos que ve el cliente en el pedido.",
                     backendCode = "COMPLETION_CODE_REQUIRED",
                 ),
             )

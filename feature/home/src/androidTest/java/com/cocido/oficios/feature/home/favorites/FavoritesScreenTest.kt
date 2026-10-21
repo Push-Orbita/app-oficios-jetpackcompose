@@ -30,9 +30,9 @@ class FavoritesScreenTest {
         }
 
         composeTestRule.onNodeWithText("Favoritos").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Todavía no tenés favoritos").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Todavía no tiene favoritos").assertIsDisplayed()
         composeTestRule
-            .onNodeWithText("Tocá el corazón en el perfil de un trabajador para guardarlo acá y encontrarlo más rápido.")
+            .onNodeWithText("Toque el corazón en el perfil de un trabajador para guardarlo acá y encontrarlo más rápido.")
             .assertIsDisplayed()
     }
 

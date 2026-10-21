@@ -120,7 +120,7 @@ private fun AutocompleteFieldPreview() {
             onSuggestionSelected = {},
             suggestionLabel = { it },
             label = "Barrio",
-            placeholder = "Buscá tu barrio",
+            placeholder = "Busque su barrio",
         )
     }
 }

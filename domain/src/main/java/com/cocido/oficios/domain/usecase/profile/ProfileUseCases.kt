@@ -33,7 +33,7 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
             return if (requireDraft) {
                 AppResult.Error(
                     ClientValidationException(
-                        "No se encontraron los datos del rubro. Volvé al paso anterior y completalos de nuevo.",
+                        "No se encontraron los datos del rubro. Vuelva al paso anterior y complete los de nuevo.",
                     ).toAppError(),
                 )
             } else {

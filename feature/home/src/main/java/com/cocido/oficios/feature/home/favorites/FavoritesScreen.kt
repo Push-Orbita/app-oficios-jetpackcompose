@@ -1,7 +1,6 @@
 package com.cocido.oficios.feature.home.favorites
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -119,7 +118,7 @@ private fun FavoritesList(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        contentPadding = OficiosSpacing.OficiosScreenPadding,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         items(items, key = { it.favoriteId }) { worker ->

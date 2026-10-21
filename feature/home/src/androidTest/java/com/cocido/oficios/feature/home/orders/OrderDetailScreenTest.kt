@@ -90,7 +90,7 @@ class OrderDetailScreenTest {
         }
 
         composeTestRule
-            .onNodeWithText("No pudimos cargar el detalle de la contrapropuesta. Volvé a intentar más tarde.")
+            .onNodeWithText("No pudimos cargar el detalle de la contrapropuesta. Vuelva a intentar más tarde.")
             .assertIsDisplayed()
     }
 

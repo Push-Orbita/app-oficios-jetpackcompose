@@ -30,7 +30,7 @@ fun PortfolioRoute(
     val certificatePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
         val path = resolveCertificateUriToFilePath(context, uri)
-        if (path == null) onShowMessage("Elegí un PDF o una imagen de hasta 10 MB.")
+        if (path == null) onShowMessage("Seleccione un PDF o una imagen de hasta 10 MB.")
         else viewModel.onEvent(PortfolioEvent.CertificateFileSelected(path))
     }
     LaunchedEffect(Unit) {

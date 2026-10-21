@@ -45,7 +45,7 @@ class OnboardingStepNavigatorTest {
         val step = OnboardingStep(
             id = "dni_pendiente_revision",
             title = "DNI en revisión",
-            description = "Esperá",
+            description = "Espere",
             status = OnboardingStepStatus.IN_REVIEW,
         )
         assertFalse(OnboardingStepNavigator.isActionable(step))

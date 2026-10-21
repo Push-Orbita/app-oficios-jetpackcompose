@@ -13,7 +13,7 @@ class WorkGalleryUploadDataSource @Inject constructor(
     private val api: WorkGalleryApi,
 ) {
     suspend fun upload(filePaths: List<String>): List<WorkGalleryDto> {
-        require(filePaths.size in 1..5) { "Seleccioná entre 1 y 5 fotos por carga." }
+        require(filePaths.size in 1..5) { "Seleccione entre 1 y 5 fotos por carga." }
         val parts = filePaths.map { path ->
             val file = File(path)
             require(file.exists() && file.length() > 0L) { "Una de las fotos ya no está disponible." }

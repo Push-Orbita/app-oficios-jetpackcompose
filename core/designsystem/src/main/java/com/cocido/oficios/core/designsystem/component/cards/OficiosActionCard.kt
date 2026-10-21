@@ -60,8 +60,8 @@ private fun ActionCardPreview() {
     OficiosTheme {
         Column(modifier = Modifier.padding(OficiosSpacing.md)) {
             OficiosActionCard(
-                title = "Completá tu perfil",
-                description = "Para acceder a todas las funciones necesitás completar tu información.",
+                title = "Complete su perfil",
+                description = "Para acceder a todas las funciones necesita completar su información.",
                 primaryActionLabel = "Completar perfil",
                 onPrimaryAction = {},
                 secondaryActionLabel = "Más tarde",
