@@ -44,8 +44,30 @@ class MisUbicacionesViewModel @Inject constructor(
 
     private var barrioSearchJob: Job? = null
     private var personaId: Long? = null
+    private var skipNextResume = true
 
     init {
+        viewModelScope.launch {
+            accountUseCases.domicilios.collect { list ->
+                if (list == null) return@collect
+                updateSuccess {
+                    copy(
+                        domicilios = list,
+                        selectedId = list.firstOrNull { it.id == selectedId }?.id
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id,
+                    )
+                }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
         load()
     }
 

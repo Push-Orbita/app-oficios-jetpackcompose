@@ -2,6 +2,8 @@ package com.cocido.oficios.core.data.repository
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.data.cache.ClientProfileStore
+import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
 import com.cocido.oficios.core.data.remote.ClientProfileRemoteDataSource
 import com.cocido.oficios.core.data.test.NetworkTestHelper
 import com.cocido.oficios.domain.model.ClientContactoRequest
@@ -24,7 +26,10 @@ class ClientProfileRepositoryIntegrationTest {
         server = MockWebServer()
         server.start()
         val api = NetworkTestHelper.createClientProfileApi(server)
-        repository = ClientProfileRepositoryImpl(ClientProfileRemoteDataSource(api))
+        repository = ClientProfileRepositoryImpl(
+            ClientProfileRemoteDataSource(api),
+            ClientProfileStore(SessionCacheCoordinator()),
+        )
     }
 
     @After
@@ -38,6 +43,11 @@ class ClientProfileRepositoryIntegrationTest {
             MockResponse()
                 .setResponseCode(200)
                 .setBody(NetworkTestHelper.loadFixture("profile/domicilio_ok.json")),
+        )
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"domicilios":[]}"""),
         )
 
         val result = repository.saveDomicilio(

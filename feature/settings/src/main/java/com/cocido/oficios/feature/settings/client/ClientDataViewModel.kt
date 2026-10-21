@@ -37,8 +37,29 @@ class ClientDataViewModel @Inject constructor(
     private val _effects = Channel<ClientDataEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
     private var barrioSearchJob: Job? = null
+    private var skipNextResume = true
 
-    init { load() }
+    init {
+        viewModelScope.launch {
+            accountUseCases.domicilios.collect { list ->
+                if (list != null) update { it.copy(domicilios = list) }
+            }
+        }
+        viewModelScope.launch {
+            accountUseCases.contactos.collect { list ->
+                if (list != null) update { it.copy(contacts = list) }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
 
     fun onEvent(event: ClientDataEvent) {
         when (event) {
@@ -101,7 +122,8 @@ class ClientDataViewModel @Inject constructor(
 
     private fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val keepContent = _uiState.value.contacts.isNotEmpty() || _uiState.value.domicilios.isNotEmpty()
+            _uiState.update { it.copy(isLoading = !keepContent, errorMessage = null) }
             val result = coroutineScope {
                 val profile = async { accountUseCases.getProfile() }
                 val contacts = async { accountUseCases.getContactos() }

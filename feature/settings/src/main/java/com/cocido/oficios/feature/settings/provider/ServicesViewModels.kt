@@ -40,8 +40,33 @@ class ServicesViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<ServicesEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
-    init { load() }
+    init {
+        viewModelScope.launch {
+            accountUseCases.providerDetails.collect { details ->
+                if (details != null) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isDeleting = false,
+                            services = details.services,
+                            errorMessage = null,
+                        )
+                    }
+                }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
 
     fun onEvent(event: ServicesEvent) {
         when (event) {
@@ -57,7 +82,8 @@ class ServicesViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val keepContent = _uiState.value.services.isNotEmpty()
+            _uiState.update { it.copy(isLoading = !keepContent, errorMessage = null) }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> _uiState.update {
                     it.copy(

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.ui.crop.ImageCropMode
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 
 @Composable
@@ -15,6 +16,7 @@ fun PersonalDataRoute(
     viewModel: PersonalDataViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
     val picker = rememberImageSourcePicker(
         title = "Foto de perfil",
         cameraLabel = "Sacar una foto",

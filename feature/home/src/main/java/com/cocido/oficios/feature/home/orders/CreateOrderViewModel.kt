@@ -41,9 +41,44 @@ class CreateOrderViewModel @Inject constructor(
 
     private val _effects = Channel<CreateOrderEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
     init {
+        viewModelScope.launch {
+            clientProfileRepository.domicilios.collect { list ->
+                if (list == null) return@collect
+                updateSuccess {
+                    copy(
+                        domicilios = list,
+                        selectedDomicilioId = selectedDomicilioId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id,
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            clientProfileRepository.contactos.collect { list ->
+                if (list == null) return@collect
+                updateSuccess {
+                    copy(
+                        contactos = list,
+                        selectedContactoId = selectedContactoId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id,
+                    )
+                }
+            }
+        }
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        refreshDomiciliosAndContactos()
     }
 
     fun onEvent(event: CreateOrderEvent) {
@@ -105,6 +140,31 @@ class CreateOrderViewModel @Inject constructor(
                         ?: list.firstOrNull { it.favorito }?.id
                         ?: list.singleOrNull()?.id,
                     submitIdempotencyKey = null,
+                )
+            }
+        }
+    }
+
+    private fun refreshDomiciliosAndContactos() {
+        viewModelScope.launch {
+            val domiciliosResult = clientProfileRepository.getMyDomicilios()
+            val contactosResult = clientProfileRepository.getMyContactos()
+            val domicilios = (domiciliosResult as? AppResult.Success)?.data
+            val contactos = (contactosResult as? AppResult.Success)?.data
+            updateSuccess {
+                copy(
+                    domicilios = domicilios ?: this.domicilios,
+                    contactos = contactos ?: this.contactos,
+                    selectedDomicilioId = (domicilios ?: this.domicilios).let { list ->
+                        selectedDomicilioId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id
+                    },
+                    selectedContactoId = (contactos ?: this.contactos).let { list ->
+                        selectedContactoId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id
+                    },
                 )
             }
         }

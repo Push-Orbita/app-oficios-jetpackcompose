@@ -41,9 +41,20 @@ class CommercialLocalViewModel @Inject constructor(
     private var searchJob: Job? = null
     private var targetService: ManagedProviderService? = null
     private var paymentMethods: List<String> = emptyList()
+    private var skipNextResume = true
 
     init {
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        val state = _uiState.value
+        if (state.isSaving) return
+        if (state.loadFailed || state.missingService) load()
     }
 
     fun onEvent(event: CommercialLocalEvent) {

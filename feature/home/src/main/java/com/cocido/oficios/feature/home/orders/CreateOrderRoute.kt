@@ -8,6 +8,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 
@@ -25,6 +26,7 @@ fun CreateOrderRoute(
     viewModel: CreateOrderViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
     val toastController = LocalOficiosToastController.current
     val sentToast = stringResource(R.string.create_order_sent_toast)
 

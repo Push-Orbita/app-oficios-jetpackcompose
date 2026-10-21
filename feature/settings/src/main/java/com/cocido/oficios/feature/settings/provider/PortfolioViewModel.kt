@@ -30,8 +30,32 @@ class PortfolioViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<PortfolioEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
-    init { load() }
+    init {
+        viewModelScope.launch {
+            accountUseCases.providerDetails.collect { details ->
+                if (details != null) {
+                    update {
+                        it.copy(
+                            isLoading = false,
+                            gallery = details.gallery,
+                            certificates = details.certificates,
+                        )
+                    }
+                }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
 
     fun onEvent(event: PortfolioEvent) {
         when (event) {
@@ -60,7 +84,12 @@ class PortfolioViewModel @Inject constructor(
     }
 
     private fun load() = viewModelScope.launch {
-        update { it.copy(isLoading = true, errorMessage = null) }
+        update {
+            it.copy(
+                isLoading = it.gallery.isEmpty() && it.certificates.isEmpty(),
+                errorMessage = null,
+            )
+        }
         val (certificateResult, galleryResult) = coroutineScope {
             val certificates = async { accountUseCases.getCertificates() }
             val gallery = async { accountUseCases.getGallery() }
@@ -93,7 +122,7 @@ class PortfolioViewModel @Inject constructor(
         update { it.copy(isSaving = true, errorMessage = null) }
         when (val result = accountUseCases.uploadGallery(listOf(path))) {
             is AppResult.Success -> {
-                update { it.copy(isSaving = false, gallery = it.gallery + result.data) }
+                update { it.copy(isSaving = false) }
                 emit(PortfolioEffect.ShowMessage("Foto agregada a su galería."))
             }
             is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
@@ -161,9 +190,6 @@ class PortfolioViewModel @Inject constructor(
             }
             when (result) {
                 is AppResult.Success -> {
-                    if (target is PortfolioDeleteTarget.Gallery) {
-                        update { it.copy(gallery = it.gallery.filterNot { item -> item.id == target.id }) }
-                    }
                     load()
                     emit(PortfolioEffect.ShowMessage("Elemento eliminado."))
                 }

@@ -120,7 +120,7 @@ private fun sampleDomicilio(
 
 private class FakeLocationsAccountRepository : AccountRepository {
     private val unused = AppResult.Error(AppError.Unknown("unused"))
-    private val domicilios = mutableListOf(
+    private val savedDomicilios = mutableListOf(
         sampleDomicilio(3L, "Fuerza Aérea", "237", true),
         sampleDomicilio(8L, "Juan Luis Díaz", "1275", false),
     )
@@ -131,14 +131,14 @@ private class FakeLocationsAccountRepository : AccountRepository {
         ),
     )
 
-    override suspend fun getClientDomicilios() = AppResult.Success(domicilios.toList())
+    override suspend fun getClientDomicilios() = AppResult.Success(savedDomicilios.toList())
     override suspend fun createClientDomicilio(request: ClientDomicilioRequest): AppResult<Unit> {
-        domicilios += sampleDomicilio(90L, request.calle.orEmpty(), request.numero.orEmpty(), request.favorito)
+        savedDomicilios += sampleDomicilio(90L, request.calle.orEmpty(), request.numero.orEmpty(), request.favorito)
         return AppResult.Success(Unit)
     }
     override suspend fun setFavoriteDomicilio(id: Long, favorite: Boolean): AppResult<Unit> {
-        val index = domicilios.indexOfFirst { it.id == id }
-        if (index >= 0) domicilios[index] = domicilios[index].copy(favorito = favorite)
+        val index = savedDomicilios.indexOfFirst { it.id == id }
+        if (index >= 0) savedDomicilios[index] = savedDomicilios[index].copy(favorito = favorite)
         return AppResult.Success(Unit)
     }
 

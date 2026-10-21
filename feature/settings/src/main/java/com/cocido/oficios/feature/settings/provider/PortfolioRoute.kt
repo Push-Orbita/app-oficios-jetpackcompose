@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.common.contract.ImageUploadContract
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.crop.ImageCropRequest
 import com.cocido.oficios.core.ui.crop.prepareImageForCropFromPath
@@ -25,6 +26,7 @@ fun PortfolioRoute(
     viewModel: PortfolioViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
     val context = LocalContext.current
     val imagePicker = rememberImageSourcePicker(
         title = "Foto de trabajo",

@@ -26,28 +26,44 @@ class PersonalDataViewModel @Inject constructor(
 
     private val _effects = Channel<PersonalDataEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
+    private var formDirty = false
 
     init {
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        if (formDirty || _uiState.value.isSaving) return
         load()
     }
 
     fun onEvent(event: PersonalDataEvent) {
         when (event) {
             PersonalDataEvent.Retry -> load()
-            is PersonalDataEvent.FirstNameChanged -> _uiState.update {
-                it.copy(firstName = event.value, firstNameError = null)
+            is PersonalDataEvent.FirstNameChanged -> {
+                formDirty = true
+                _uiState.update { it.copy(firstName = event.value, firstNameError = null) }
             }
-            is PersonalDataEvent.LastNameChanged -> _uiState.update {
-                it.copy(lastName = event.value, lastNameError = null)
+            is PersonalDataEvent.LastNameChanged -> {
+                formDirty = true
+                _uiState.update { it.copy(lastName = event.value, lastNameError = null) }
             }
-            is PersonalDataEvent.EmailChanged -> _uiState.update {
-                it.copy(email = event.value, emailError = null)
+            is PersonalDataEvent.EmailChanged -> {
+                formDirty = true
+                _uiState.update { it.copy(email = event.value, emailError = null) }
             }
-            is PersonalDataEvent.PhotoSelected -> _uiState.update {
-                it.copy(selectedPhotoPath = event.path, removePhoto = false)
+            is PersonalDataEvent.PhotoSelected -> {
+                formDirty = true
+                _uiState.update { it.copy(selectedPhotoPath = event.path, removePhoto = false) }
             }
-            PersonalDataEvent.RemovePhoto -> _uiState.update {
-                it.copy(selectedPhotoPath = null, removePhoto = true)
+            PersonalDataEvent.RemovePhoto -> {
+                formDirty = true
+                _uiState.update { it.copy(selectedPhotoPath = null, removePhoto = true) }
             }
             PersonalDataEvent.Save -> save()
             PersonalDataEvent.Back -> emitEffect(PersonalDataEffect.NavigateBack)
@@ -56,10 +72,12 @@ class PersonalDataViewModel @Inject constructor(
 
     private fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val keepForm = _uiState.value.userId != 0L
+            _uiState.update { it.copy(isLoading = !keepForm, errorMessage = null) }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> {
                     val user = result.data.user
+                    formDirty = false
                     _uiState.update {
                         PersonalDataUiState(
                             isLoading = false,
@@ -107,6 +125,7 @@ class PersonalDataViewModel @Inject constructor(
             when (val result = accountUseCases.updateProfile(request)) {
                 is AppResult.Success -> {
                     val user = result.data.user
+                    formDirty = false
                     _uiState.update {
                         it.copy(
                             isSaving = false,

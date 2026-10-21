@@ -21,8 +21,24 @@ class ProfessionalProfileViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<ProfessionalProfileEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
-    init { load() }
+    init {
+        viewModelScope.launch {
+            accountUseCases.providerDetails.collect { details ->
+                details?.let(::applyDetails)
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
 
     fun onEvent(event: ProfessionalProfileEvent) {
         when (event) {
@@ -36,9 +52,29 @@ class ProfessionalProfileViewModel @Inject constructor(
         }
     }
 
+    private fun applyDetails(provider: com.cocido.oficios.domain.model.ProviderAccountDetails) {
+        val oficios = provider.services.map { it.rubroName }.filter { it.isNotBlank() }.distinct()
+        val specialized = provider.services
+            .flatMap { service -> service.subServices.map { it.name } }
+            .filter { it.isNotBlank() }
+            .distinct()
+        _uiState.value = ProfessionalProfileUiState(
+            isLoading = false,
+            oficiosLabel = oficios.joinToString(", "),
+            specializedLabel = specialized.joinToString(", "),
+            gallery = provider.gallery,
+            certificates = provider.certificates.map { it.toUi() },
+        )
+    }
+
     private fun load() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, loadFailed = false)
+            val hasCached = _uiState.value.gallery.isNotEmpty() || _uiState.value.certificates.isNotEmpty()
+            if (!hasCached) {
+                _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, loadFailed = false)
+            } else {
+                _uiState.value = _uiState.value.copy(errorMessage = null, loadFailed = false)
+            }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> {
                     val provider = result.data.providerDetails
@@ -49,25 +85,16 @@ class ProfessionalProfileViewModel @Inject constructor(
                             errorMessage = "Esta sección es solo para trabajadores de oficio.",
                         )
                     } else {
-                        val oficios = provider.services.map { it.rubroName }.filter { it.isNotBlank() }.distinct()
-                        val specialized = provider.services
-                            .flatMap { service -> service.subServices.map { it.name } }
-                            .filter { it.isNotBlank() }
-                            .distinct()
-                        _uiState.value = ProfessionalProfileUiState(
-                            isLoading = false,
-                            oficiosLabel = oficios.joinToString(", "),
-                            specializedLabel = specialized.joinToString(", "),
-                            gallery = provider.gallery,
-                            certificates = provider.certificates.map { it.toUi() },
-                        )
+                        applyDetails(provider)
                     }
                 }
-                is AppResult.Error -> _uiState.value = ProfessionalProfileUiState(
-                    isLoading = false,
-                    loadFailed = true,
-                    errorMessage = result.error.userMessage(),
-                )
+                is AppResult.Error -> if (!hasCached) {
+                    _uiState.value = ProfessionalProfileUiState(
+                        isLoading = false,
+                        loadFailed = true,
+                        errorMessage = result.error.userMessage(),
+                    )
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 
 @Composable
 fun SettingsRoute(
@@ -25,6 +26,7 @@ fun SettingsRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val loggedOut by viewModel.loggedOut.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLoggedOut()
