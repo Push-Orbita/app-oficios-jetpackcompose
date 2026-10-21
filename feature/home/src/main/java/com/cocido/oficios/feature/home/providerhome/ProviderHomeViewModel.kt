@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.nowInArgentina
+import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.usecase.GetProviderHomeUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Clock
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +23,7 @@ import kotlinx.coroutines.launch
 class ProviderHomeViewModel @Inject constructor(
     private val getProviderHomeUseCase: GetProviderHomeUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProviderHomeUiState>(ProviderHomeUiState.Loading)
@@ -72,7 +76,16 @@ class ProviderHomeViewModel @Inject constructor(
                     _uiState.update { ProviderHomeUiState.Loading }
                 }
                 when (val result = getProviderHomeUseCase()) {
-                    is AppResult.Success -> _uiState.update { ProviderHomeUiState.Success(result.data) }
+                    is AppResult.Success -> {
+                        val now = nowInArgentina(clock)
+                        val agenda = upcomingAgendaAppointments(result.data.upcomingOrders, now)
+                        _uiState.update {
+                            ProviderHomeUiState.Success(
+                                content = result.data.copy(upcomingOrders = agenda),
+                                now = now,
+                            )
+                        }
+                    }
                     is AppResult.Error -> {
                         val message = result.error.userMessage()
                         if (previous is ProviderHomeUiState.Success) {

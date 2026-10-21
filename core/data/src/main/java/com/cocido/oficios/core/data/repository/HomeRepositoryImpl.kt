@@ -10,6 +10,8 @@ import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ProviderHomeTiles
 import com.cocido.oficios.domain.model.ProviderProfileStatus
 import com.cocido.oficios.domain.model.inferProviderHomeTiles
+import com.cocido.oficios.domain.model.nowInArgentina
+import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.repository.AccountRepository
@@ -20,6 +22,7 @@ import com.cocido.oficios.domain.repository.OnboardingRepository
 import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
+import java.time.Clock
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 
@@ -32,6 +35,7 @@ class HomeRepositoryImpl @Inject constructor(
     private val accountRepository: AccountRepository,
     private val orderRepository: OrderRepository,
     private val dispatcherProvider: DispatcherProvider,
+    private val clock: Clock,
 ) : HomeRepository {
 
     override suspend fun getClientHome(): AppResult<ClientHomeContent> {
@@ -114,14 +118,15 @@ class HomeRepositoryImpl @Inject constructor(
 
     private suspend fun loadUpcomingWorkerOrders(): List<com.cocido.oficios.domain.model.ServiceOrderListItem> {
         return when (val result = orderRepository.getWorkerOrders()) {
-            is AppResult.Success -> result.data
-                .filter {
+            is AppResult.Success -> upcomingAgendaAppointments(
+                orders = result.data.filter {
                     it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.PENDING ||
                         it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.COUNTER_OFFER ||
                         (it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.ACCEPTED &&
                             it.bookingStatus != com.cocido.oficios.domain.model.BookingStatus.FINISHED)
-                }
-                .take(UPCOMING_ORDERS_PREVIEW_SIZE)
+                },
+                now = nowInArgentina(clock),
+            ).take(UPCOMING_ORDERS_PREVIEW_SIZE)
             is AppResult.Error -> emptyList()
         }
     }

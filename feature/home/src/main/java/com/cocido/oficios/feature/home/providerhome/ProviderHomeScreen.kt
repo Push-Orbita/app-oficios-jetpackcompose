@@ -34,7 +34,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
-import java.time.LocalDate
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +45,6 @@ fun ProviderHomeScreen(
     onEvent: (ProviderHomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
-    today: LocalDate = LocalDate.now(),
 ) {
     OficiosScaffold(
         modifier = modifier,
@@ -85,7 +84,7 @@ fun ProviderHomeScreen(
                         ProviderHomeSuccessContent(
                             content = state.content,
                             unreadNotificationCount = unreadNotificationCount,
-                            today = today,
+                            now = state.now,
                             onEvent = onEvent,
                         )
                     }
@@ -99,7 +98,7 @@ fun ProviderHomeScreen(
 private fun ProviderHomeSuccessContent(
     content: ProviderHomeContent,
     unreadNotificationCount: Int,
-    today: LocalDate,
+    now: ZonedDateTime,
     onEvent: (ProviderHomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -133,7 +132,7 @@ private fun ProviderHomeSuccessContent(
 
         ProviderAgendaSection(
             upcomingOrders = content.upcomingOrders,
-            today = today,
+            now = now,
             onViewFullAgenda = {
                 if (content.hasAgendaConfigured) {
                     onEvent(ProviderHomeEvent.ViewFullAgendaClicked)

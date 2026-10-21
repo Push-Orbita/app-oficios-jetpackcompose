@@ -63,8 +63,10 @@ import com.cocido.oficios.feature.home.orders.CreateOrderUiState
 import com.cocido.oficios.feature.home.orders.OrdersListScreen
 import com.cocido.oficios.feature.home.orders.OrdersListUiState
 import java.io.File
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import org.junit.Assume
@@ -231,7 +233,8 @@ internal fun SearchScreenshotFicha(
     }
 }
 
-internal val ProviderHomeScreenshotToday: LocalDate = LocalDate.of(2026, 3, 4)
+internal val ProviderHomeScreenshotNow: ZonedDateTime =
+    ZonedDateTime.of(2026, 3, 4, 10, 0, 0, 0, DisplayDateTime.ARGENTINA)
 
 @Composable
 internal fun SearchScreenshotProviderHome(
@@ -241,7 +244,7 @@ internal fun SearchScreenshotProviderHome(
     SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
         ProviderHomeScreen(
             uiState = ProviderHomeUiState.Success(
-                ProviderHomeContent(
+                content = ProviderHomeContent(
                     userDisplayName = "Emanuel Molina",
                     isVerified = true,
                     primarySpecialtyLabel = "Albañil, Electricista",
@@ -254,12 +257,12 @@ internal fun SearchScreenshotProviderHome(
                     hasCommercialLocal = false,
                     hasCertificate = false,
                 ),
+                now = ProviderHomeScreenshotNow,
             ),
             unreadNotificationCount = 0,
             selectedTab = ClientHomeTab.INICIO,
             onEvent = {},
             onTabSelected = {},
-            today = ProviderHomeScreenshotToday,
         )
     }
 }
@@ -272,7 +275,7 @@ internal fun SearchScreenshotProviderHomeComplete(
     SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
         ProviderHomeScreen(
             uiState = ProviderHomeUiState.Success(
-                ProviderHomeContent(
+                content = ProviderHomeContent(
                     userDisplayName = "Emanuel Molina",
                     isVerified = true,
                     primarySpecialtyLabel = "Albañil, Electricista",
@@ -285,12 +288,12 @@ internal fun SearchScreenshotProviderHomeComplete(
                     hasCommercialLocal = true,
                     hasCertificate = true,
                 ),
+                now = ProviderHomeScreenshotNow,
             ),
             unreadNotificationCount = 0,
             selectedTab = ClientHomeTab.INICIO,
             onEvent = {},
             onTabSelected = {},
-            today = ProviderHomeScreenshotToday,
         )
     }
 }
