@@ -38,6 +38,7 @@ import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.AgendaAppointmentTag
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.agendaRubroLabel
 import com.cocido.oficios.domain.model.agendaTag
 import com.cocido.oficios.domain.model.agendaTimeLabel
@@ -184,12 +185,25 @@ private fun OrdersListSuccess(
                 val visibleOrders = current.visibleOrders(now)
                 if (visibleOrders.isEmpty()) {
                     val history = current.filter == OrdersListFilter.HISTORY
+                    val worker = current.viewerRole == UserRole.PROVIDER
                     RefreshablePlaceholder {
                         OficiosEmptyState(
-                            title = stringResource(if (history) R.string.orders_empty_history_title else R.string.orders_empty_active_title),
-                            description = stringResource(if (history) R.string.orders_empty_history_description else R.string.orders_empty_active_description),
-                            ctaLabel = if (history) null else stringResource(R.string.orders_empty_cta),
-                            onCta = if (history) null else ({ onEvent(OrdersListEvent.SearchClicked) }),
+                            title = stringResource(
+                                when {
+                                    history -> R.string.orders_empty_history_title
+                                    worker -> R.string.orders_empty_active_worker_title
+                                    else -> R.string.orders_empty_active_title
+                                },
+                            ),
+                            description = stringResource(
+                                when {
+                                    history -> R.string.orders_empty_history_description
+                                    worker -> R.string.orders_empty_active_worker_description
+                                    else -> R.string.orders_empty_active_description
+                                },
+                            ),
+                            ctaLabel = if (history || worker) null else stringResource(R.string.orders_empty_cta),
+                            onCta = if (history || worker) null else ({ onEvent(OrdersListEvent.SearchClicked) }),
                             modifier = Modifier.fillMaxSize(),
                         )
                     }

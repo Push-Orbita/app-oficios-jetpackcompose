@@ -201,6 +201,8 @@
     <string name="orders_filter_history">Historial</string>
     <string name="orders_empty_active_title">No tiene pedidos activos</string>
     <string name="orders_empty_active_description">Cuando solicite un servicio, va a verlo acá.</string>
+    <string name="orders_empty_active_worker_title">No tiene pedidos activos</string>
+    <string name="orders_empty_active_worker_description">Cuando reciba una solicitud, va a verla acá.</string>
     <string name="orders_empty_history_title">Todavía no hay historial</string>
     <string name="orders_empty_history_description">Los pedidos finalizados o cancelados van a aparecer acá.</string>
     <string name="orders_empty_cta">Buscar trabajadores</string>
