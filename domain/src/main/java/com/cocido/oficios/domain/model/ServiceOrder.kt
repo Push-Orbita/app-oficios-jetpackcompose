@@ -88,6 +88,8 @@ data class ServiceOrderListItem(
     val workerId: Long = 0L,
     val bookingId: Long? = null,
     val scheduledSortKey: String? = null,
+    val scheduledEndKey: String? = null,
+    val scheduledDurationMinutes: Int? = null,
 )
 
 enum class OrdersListFilter {

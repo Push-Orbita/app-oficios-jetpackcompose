@@ -55,7 +55,10 @@ fun groupAgendaAppointments(
                 date = date,
                 headerLabel = "${date.dayOfMonth} de $month",
                 isToday = date == today,
-                items = items,
+                items = items.sortedWith(
+                    compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
+                        .thenBy { it.id },
+                ),
             )
         }
 }

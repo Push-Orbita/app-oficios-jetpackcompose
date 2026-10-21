@@ -22,16 +22,19 @@ import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.common.time.DisplayDateTime
+import com.cocido.oficios.domain.model.AgendaAppointmentTag
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.agendaRubroLabel
+import com.cocido.oficios.domain.model.agendaTag
 import com.cocido.oficios.domain.model.agendaTimeLabel
 import com.cocido.oficios.domain.model.groupAgendaAppointments
 import com.cocido.oficios.domain.model.scheduledDate
 import com.cocido.oficios.feature.home.R
-import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZonedDateTime
 
 /**
  * Agenda en Inicio trabajador — Figma `191:11` + `259:534`.
@@ -43,8 +46,9 @@ fun ProviderAgendaSection(
     onViewFullAgenda: () -> Unit,
     onOrderClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    today: LocalDate = LocalDate.now(),
+    now: ZonedDateTime = ZonedDateTime.now(DisplayDateTime.ARGENTINA),
 ) {
+    val today = now.toLocalDate()
     val groups = remember(upcomingOrders, today) {
         groupAgendaAppointments(upcomingOrders, today)
     }
@@ -52,7 +56,6 @@ fun ProviderAgendaSection(
         upcomingOrders.mapNotNull { it.scheduledDate() }.toSet()
     }
     var visibleMonth by remember(today) { mutableStateOf(YearMonth.from(today)) }
-    var selectedDate by remember(today) { mutableStateOf<LocalDate?>(today) }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
@@ -69,10 +72,10 @@ fun ProviderAgendaSection(
             )
             OficiosMonthCalendar(
                 month = visibleMonth,
-                selectedDate = selectedDate,
+                selectedDate = today,
                 onMonthChange = { visibleMonth = it },
-                onDateSelected = { selectedDate = it },
-                isDateHighlighted = { it in appointmentDates && it != selectedDate },
+                onDateSelected = {},
+                isDateHighlighted = { it in appointmentDates && it != today },
             )
             groups.forEach { group ->
                 Text(
@@ -81,12 +84,13 @@ fun ProviderAgendaSection(
                     color = OficiosColorWhite,
                 )
                 group.items.forEach { order ->
+                    val tag = order.agendaTag(now)
                     AgendaAppointmentRow(
                         rubro = order.agendaRubroLabel(),
                         address = order.addressLabel,
                         time = order.agendaTimeLabel(),
-                        isToday = group.isToday,
-                        isNow = order.bookingStatus == BookingStatus.IN_PROGRESS,
+                        isToday = tag == AgendaAppointmentTag.TODAY,
+                        isNow = tag == AgendaAppointmentTag.NOW,
                         todayLabel = stringResource(R.string.provider_home_agenda_today_tag),
                         nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
                         onClick = { onOrderClick(order.id) },
@@ -114,7 +118,7 @@ fun ProviderAgendaSection(
 private fun ProviderAgendaSectionPreview() {
     OficiosTheme {
         ProviderAgendaSection(
-            today = LocalDate.of(2026, 3, 4),
+            now = ZonedDateTime.of(2026, 3, 4, 13, 45, 0, 0, DisplayDateTime.ARGENTINA),
             onViewFullAgenda = {},
             onOrderClick = {},
             upcomingOrders = listOf(

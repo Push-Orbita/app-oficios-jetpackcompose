@@ -40,9 +40,12 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.common.time.DisplayDateTime
+import com.cocido.oficios.domain.model.AgendaAppointmentTag
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.agendaRubroLabel
+import com.cocido.oficios.domain.model.agendaTag
 import com.cocido.oficios.domain.model.agendaTimeLabel
 import com.cocido.oficios.domain.model.groupAgendaAppointments
 import com.cocido.oficios.domain.model.scheduledDate
@@ -53,6 +56,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.OrdersDestination
 import java.time.LocalDate
+import java.time.ZonedDateTime
 
 @Composable
 fun OrdersListScreen(
@@ -63,7 +67,8 @@ fun OrdersListScreen(
     showBackNavigation: Boolean = true,
     onTabSelected: ((ClientHomeTab) -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    today: LocalDate = LocalDate.now(),
+    today: LocalDate = LocalDate.now(DisplayDateTime.ARGENTINA),
+    now: ZonedDateTime = ZonedDateTime.now(DisplayDateTime.ARGENTINA),
     showFavorites: Boolean? = null,
 ) {
     if (!showBackNavigation && onTabSelected == null) {
@@ -73,6 +78,7 @@ fun OrdersListScreen(
                     uiState = uiState,
                     onEvent = onEvent,
                     today = today,
+                    now = now,
                     titleBack = null,
                     modifier = Modifier.weight(1f),
                 )
@@ -98,6 +104,7 @@ fun OrdersListScreen(
             uiState = uiState,
             onEvent = onEvent,
             today = today,
+            now = now,
             titleBack = if (showBackNavigation) onNavigateBack else null,
             modifier = Modifier.padding(paddingValues),
         )
@@ -110,6 +117,7 @@ private fun OrdersListBody(
     uiState: OrdersListUiState,
     onEvent: (OrdersListEvent) -> Unit,
     today: LocalDate,
+    now: ZonedDateTime,
     titleBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -146,6 +154,7 @@ private fun OrdersListBody(
                 state = state,
                 onEvent = onEvent,
                 today = today,
+                now = now,
                 titleBack = titleBack,
             )
         }
@@ -158,6 +167,7 @@ private fun OrdersListSuccess(
     state: OrdersListUiState.Success,
     onEvent: (OrdersListEvent) -> Unit,
     today: LocalDate,
+    now: ZonedDateTime,
     titleBack: (() -> Unit)?,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -205,14 +215,17 @@ private fun OrdersListSuccess(
                                 )
                             }
                             items(group.items, key = { it.id }) { order ->
+                                val tag = order.agendaTag(now)
                                 AgendaAppointmentRow(
                                     rubro = order.agendaRubroLabel(),
                                     address = order.addressLabel.ifBlank { order.counterpartName },
                                     time = order.agendaTimeLabel(),
-                                    isToday = group.isToday,
+                                    isToday = tag == AgendaAppointmentTag.TODAY,
+                                    isNow = tag == AgendaAppointmentTag.NOW,
                                     onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) },
                                     modifier = oficiosAnimateItem(),
                                     todayLabel = stringResource(R.string.provider_home_agenda_today_tag),
+                                    nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
                                 )
                             }
                         }

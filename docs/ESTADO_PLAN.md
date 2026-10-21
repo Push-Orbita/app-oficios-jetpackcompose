@@ -79,6 +79,19 @@ El casco amarillo (`#F8AE1A`, nodo `12:101`) no se usa. Marca vigente exportada 
 
 `OficiosColorBrandMark` = `#006AF0`. El acento UI `#F8AE1A` (`OficiosColorAccent`) no pinta el logo. `ic_casco` del rol sigue blanco.
 
+### Fix en #21 — Agenda Inicio: AHORA/HOY y sin turnos pasados
+
+Causa raíz: `isNow = bookingStatus == IN_PROGRESS`. LLEGUE/EN_CURSO pintaba **AHORA** en todas las cards, sin mirar fecha ni franja. `loadUpcomingWorkerOrders` filtraba por estado abierto y hacía `take(20)` **sin recortar por fecha**, así que turnos de septiembre seguían en Inicio.
+
+Reglas (`Clock` inyectable, zona `America/Argentina/Buenos_Aires`):
+- **AHORA:** hoy y (ahora en la franja `inicio ≤ ahora < fin`, o LLEGUE/EN_CURSO). Nunca por estado solo. Sin fin → `inicio + duración` o 60 min de sesión.
+- **HOY:** fecha de hoy que no cumple AHORA.
+- **Sin etiqueta:** futuro (card normal Figma, no blanca).
+- Lista del Inicio: solo hoy en adelante, orden ascendente. Pasados no cerrados quedan en Mis pedidos.
+- Calendario: hoy blanco, días con turnos (de esa lista) azul.
+
+“Ver agenda completa” es disponibilidad (`AgendaListScreen`, slots), no cards de turno. El mismo mapeo de etiqueta se aplicó a **Mis pedidos**, que sí usa `AgendaAppointmentRow`. Hoy de esa pantalla también usa zona Argentina.
+
 ### Fix en #21 — Perfil trabajador: una sola entrada Editar Perfil
 
 Matías: las 3 filas de Ajustes (Presentación profesional / Servicios que ofrece / Galería y certificados) se sentían redundantes.

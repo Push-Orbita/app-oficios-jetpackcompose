@@ -60,6 +60,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.AgendaSlotStatus
 import com.cocido.oficios.feature.home.orders.DateTimePickerButton
@@ -431,7 +432,7 @@ private fun WeekRow(
 
 private fun calendarState(date: LocalDate, uiState: AgendaListUiState.Success): CalendarDayState = when {
     date == uiState.selectedDate -> CalendarDayState.Selected
-    date == LocalDate.now() -> CalendarDayState.Today
+    date == LocalDate.now(DisplayDateTime.ARGENTINA) -> CalendarDayState.Today
     date in uiState.datesWithSlots -> CalendarDayState.HasEvent
     else -> CalendarDayState.Normal
 }
