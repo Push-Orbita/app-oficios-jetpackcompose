@@ -63,7 +63,11 @@ class WorkerProfileViewModel @Inject constructor(
             WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
             WorkerProfileEvent.RateClicked -> {
                 val state = uiState.value as? WorkerProfileUiState.Success ?: return
-                val bookingId = state.rateBookingId ?: return
+                val bookingId = state.rateBookingId
+                if (bookingId == null) {
+                    emitEffect(WorkerProfileEffect.ShowRateUnavailable)
+                    return
+                }
                 emitEffect(WorkerProfileEffect.NavigateToRate(bookingId, state.profile.displayName))
             }
             WorkerProfileEvent.ReportProfileClicked -> {

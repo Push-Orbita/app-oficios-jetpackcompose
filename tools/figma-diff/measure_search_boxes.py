@@ -67,6 +67,17 @@ def measure_rubros(arr, density, width_dp):
     return measure_categories(arr, density, width_dp)
 
 
+def measure_ficha(arr, density, width_dp):
+    white = is_white(arr)
+    outline = is_outline(arr)
+    right = width_dp
+    return {
+        "title": box_dp(band_mask(white, 48, 140, 20, 380, density), density, capital=True, min_width_dp=12),
+        "profile_card": long_h_span(outline, density, 28, min(412, right), 90, 420, 200),
+        "gallery": long_h_span(outline, density, 28, min(412, right), 420, 820, 200),
+    }
+
+
 def measure_results(arr, density, width_dp):
     white = is_white(arr)
     yellow = is_yellow(arr)
@@ -86,6 +97,7 @@ TARGETS_REL = {
     "categories": {"title": 16, "search": 80, "first_card": 144},
     "rubros": {"title": 16, "search": 80, "first_card": 144},
     "results": {"logo": 19, "title": 16, "search": 155, "worker_card": 259},
+    "ficha": {"title": 16, "profile_card": 80},
 }
 
 
@@ -128,6 +140,7 @@ def main() -> None:
         ("categories", refs / "06-oficios.png", "categories", measure_categories),
         ("rubros", refs / "07-construccion.png", "rubros", measure_rubros),
         ("results", refs / "08-albaniles-de-oficios-formosa.png", "results", measure_results),
+        ("ficha", refs / "09-ficha-completa.png", "ficha", measure_ficha),
     ]
 
     for set_label, class_prefix, status_bar in sets:

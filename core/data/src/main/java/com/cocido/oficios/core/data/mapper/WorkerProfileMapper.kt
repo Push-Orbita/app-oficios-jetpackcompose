@@ -219,8 +219,7 @@ fun reviewAuthorLabel(contactoTexto: String?): String? {
 
 fun formatReviewDate(iso: String?, zone: ZoneId = DisplayDateTime.ARGENTINA): String? {
     val zoned = DisplayDateTime.toZonedDateTime(iso, zone) ?: return null
-    return DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-AR"))
+    return DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss", Locale.forLanguageTag("es-AR"))
         .format(zoned)
-        .replace(".", "")
 }
 

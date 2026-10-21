@@ -76,7 +76,7 @@ class WorkerProfileMapperTest {
         assertEquals("Ana", reviewAuthorLabel("Ana"))
         assertEquals("María G.", reviewAuthorLabel("María Gómez | Tel: +543704000000 | Email: ana@mail.com"))
         assertNull(reviewAuthorLabel("Tel: 3704000000 | Email: ana@mail.com"))
-        assertEquals("1 oct 2026", formatReviewDate("2026-10-01T14:00:00.000Z", zone))
+        assertEquals("01/10/2026, 11:00:00", formatReviewDate("2026-10-01T14:00:00.000Z", zone))
     }
 
     @Test
