@@ -3,7 +3,9 @@ package com.cocido.oficios.core.designsystem.component.cards
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -64,12 +66,13 @@ fun WorkerCard(
     OficiosCard(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = OficiosComponentSize.workerCardMinHeight)
             .semantics(mergeDescendants = true) { contentDescription = name },
         contentPadding = androidx.compose.foundation.layout.PaddingValues(OficiosSpacing.md),
+        expandContent = true,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -82,8 +85,10 @@ fun WorkerCard(
                     showBorder = true,
                 )
                 Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(top = OficiosComponentSize.workerCardTextTopInset),
+                    verticalArrangement = Arrangement.spacedBy(OficiosComponentSize.workerCardNameToRating),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -145,12 +150,14 @@ fun WorkerCard(
                 }
             }
 
+            Spacer(modifier = Modifier.height(OficiosComponentSize.workerCardHeaderToSpecialty))
             Text(
                 text = specialty,
                 style = MaterialTheme.typography.bodyLarge,
                 color = OficiosColorSecondaryTextFigma,
                 modifier = Modifier.fillMaxWidth(),
             )
+            Spacer(modifier = Modifier.height(OficiosComponentSize.workerCardSpecialtyToActions))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

@@ -56,6 +56,7 @@ fun OficiosSearchField(
     onFilterClick: (() -> Unit)? = null,
     filterContentDescription: String? = null,
     activeFilterCount: Int = 0,
+    placeholderMaxLines: Int = 1,
     enabled: Boolean = true,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
@@ -98,7 +99,7 @@ fun OficiosSearchField(
                             text = placeholder,
                             style = MaterialTheme.typography.bodyLarge,
                             color = placeholderColor,
-                            maxLines = 1,
+                            maxLines = placeholderMaxLines,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }

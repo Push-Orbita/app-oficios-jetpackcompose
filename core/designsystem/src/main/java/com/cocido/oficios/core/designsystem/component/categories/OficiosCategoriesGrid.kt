@@ -47,16 +47,16 @@ object CategoryIconResolver {
             key.contains("alba") -> R.drawable.ill_albanil
             key.contains("plom") -> R.drawable.ill_plomero
             key.contains("instal") -> R.drawable.ill_instalador
-            key.contains("pintor") -> R.drawable.ill_pintor
+            key.contains("pint") -> R.drawable.ill_pintor
             key.contains("carpin") -> R.drawable.ill_carpintero
             key.contains("gas") -> R.drawable.ill_gasista
             key.contains("electr") -> R.drawable.ill_electricista
             key.contains("ingen") -> R.drawable.ill_ingeniero
             key.contains("construc") -> R.drawable.ill_construccion
+            key.contains("hogar") -> R.drawable.ill_construccion
             key.contains("manten") || key.contains("refacc") -> R.drawable.ill_mantenimiento
             key.contains("bienestar") -> R.drawable.ill_bienestar
-            // Seguridad / Personales: el export de Figma llegó recortado mal.
-            // Caen a Lucide (shield-check / users) hasta que haya asset bueno.
+            // Seguridad / Personales / Cerrajero: sin asset Figma usable → Lucide.
             else -> null
         }
     }
@@ -68,7 +68,7 @@ object CategoryIconResolver {
             key.contains("todo") -> OficiosIcons.BookUser
             key.contains("segur") -> OficiosIcons.ShieldCheck
             key.contains("personal") || key.contains("user") -> OficiosIcons.Users
-            key.contains("cerr") -> OficiosIcons.Asterisk
+            key.contains("cerr") -> OficiosIcons.Key
             else -> if (categoryId % 2L == 0L) OficiosIcons.Hammer else OficiosIcons.House
         }
     }
