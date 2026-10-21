@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun ProfessionalProfileRoute(
     onNavigateBack: () -> Unit,
     onShowMessage: (String) -> Unit,
+    onNavigateToServices: () -> Unit = {},
     viewModel: ProfessionalProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -21,6 +22,7 @@ fun ProfessionalProfileRoute(
                     onShowMessage(effect.message)
                     onNavigateBack()
                 }
+                ProfessionalProfileEffect.NavigateToServices -> onNavigateToServices()
             }
         }
     }

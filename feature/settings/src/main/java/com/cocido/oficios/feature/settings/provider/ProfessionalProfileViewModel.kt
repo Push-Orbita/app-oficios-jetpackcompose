@@ -43,6 +43,7 @@ class ProfessionalProfileViewModel @Inject constructor(
             }
             ProfessionalProfileEvent.Save -> save()
             ProfessionalProfileEvent.Back -> emit(ProfessionalProfileEffect.NavigateBack)
+            ProfessionalProfileEvent.EditRubro -> emit(ProfessionalProfileEffect.NavigateToServices)
         }
     }
 

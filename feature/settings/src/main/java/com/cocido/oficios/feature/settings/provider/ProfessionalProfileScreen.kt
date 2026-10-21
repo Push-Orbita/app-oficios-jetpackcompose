@@ -105,6 +105,12 @@ private fun ProfessionalProfileForm(
         PaymentOption(stringResource(R.string.professional_profile_cash), ProviderPaymentMethods.EFECTIVO, state, onEvent)
         PaymentOption(stringResource(R.string.professional_profile_transfer), ProviderPaymentMethods.TRANSFERENCIA, state, onEvent)
         PaymentOption(stringResource(R.string.professional_profile_mercadopago), ProviderPaymentMethods.MERCADOPAGO, state, onEvent)
+        OficiosButton(
+            text = stringResource(R.string.professional_profile_edit_rubro),
+            onClick = { onEvent(ProfessionalProfileEvent.EditRubro) },
+            variant = OficiosButtonVariant.Primary,
+            modifier = Modifier.fillMaxWidth(),
+        )
         state.errorMessage?.let { OficiosInlineAlert(it) }
         OficiosButton(
             text = stringResource(R.string.professional_profile_save),

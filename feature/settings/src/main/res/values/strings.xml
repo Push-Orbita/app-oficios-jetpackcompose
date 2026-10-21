@@ -109,7 +109,8 @@
     <string name="personal_data_email">Correo electrónico</string>
     <string name="personal_data_email_hint">Si lo cambiás, es posible que debas volver a verificarlo.</string>
     <string name="personal_data_save">Guardar cambios</string>
-    <string name="professional_profile_title">Presentación profesional</string>
+    <string name="professional_profile_title">Editar Perfil</string>
+    <string name="professional_profile_edit_rubro">Editar Rubro o Especialidad</string>
     <string name="professional_profile_load_error">No pudimos cargar tu perfil profesional</string>
     <string name="professional_profile_retry">Intentá nuevamente.</string>
     <string name="professional_profile_intro">Explicá con claridad qué hacés y qué experiencia tenés. Es lo primero que evalúa un cliente.</string>
@@ -182,10 +183,12 @@
     <string name="services_publish">Publicar servicio</string>
     <string name="services_continue">Continuar</string>
     <string name="services_category">Categoría</string>
-    <string name="services_category_hint">Elegí una categoría</string>
+    <string name="services_category_hint">Seleccione una categoría</string>
+    <string name="services_elegi_rubro_title">Elegí Rubro</string>
+    <string name="services_elegi_rubro_hint">Seleccione la categoría y el rubro de este servicio.</string>
     <string name="services_trade">Oficio</string>
-    <string name="services_trade_hint_locked">Primero elegí una categoría</string>
-    <string name="services_trade_hint">Elegí un oficio</string>
+    <string name="services_trade_hint_locked">Primero seleccione una categoría</string>
+    <string name="services_trade_hint">Seleccione un oficio</string>
     <string name="services_specialties">Especialidades</string>
     <string name="services_client_home">Voy al domicilio del cliente</string>
     <string name="services_local">Atiendo en mi local</string>

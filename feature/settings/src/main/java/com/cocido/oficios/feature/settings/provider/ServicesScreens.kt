@@ -36,6 +36,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingSta
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
+import com.cocido.oficios.core.designsystem.component.categories.CategoryGridItem
+import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -248,25 +250,38 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
 
 @Composable
 private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    OficiosDropdownField(
-        value = state.selectedCategoryLabel,
-        options = state.categories.map { it.label },
-        onOptionSelected = { label -> state.categories.firstOrNull { it.label == label }?.let { onEvent(AddServiceEvent.CategorySelected(it.id)) } },
-        label = stringResource(R.string.services_category),
-        placeholder = stringResource(R.string.services_category_hint),
+    Text(
+        text = stringResource(R.string.services_elegi_rubro_title),
+        style = MaterialTheme.typography.headlineLarge,
+        color = MaterialTheme.colorScheme.onBackground,
     )
-    OficiosDropdownField(
-        value = state.selectedRubroLabel,
-        options = state.rubros.map { it.label },
-        onOptionSelected = { label -> state.rubros.firstOrNull { it.label == label }?.let { onEvent(AddServiceEvent.RubroSelected(it.id)) } },
-        label = stringResource(R.string.services_trade),
-        placeholder = if (state.selectedCategoryId == null) stringResource(R.string.services_trade_hint_locked) else stringResource(R.string.services_trade_hint),
-        enabled = state.selectedCategoryId != null && !state.isLoading,
+    Text(
+        text = stringResource(R.string.services_elegi_rubro_hint),
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    if (state.subRubros.isNotEmpty()) {
-        Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
-        state.subRubros.forEach { option ->
-            OficiosCheckbox(option.id in state.selectedSubRubroIds, { onEvent(AddServiceEvent.SubRubroToggled(option.id, it)) }, option.label)
+    if (state.selectedCategoryId == null) {
+        Text(stringResource(R.string.services_category), style = MaterialTheme.typography.titleMedium)
+        OficiosCategoriesGrid(
+            categories = state.categories.map { CategoryGridItem(it.id, it.label) },
+            onCategoryClick = { onEvent(AddServiceEvent.CategorySelected(it.id)) },
+        )
+    } else {
+        Text(stringResource(R.string.services_trade), style = MaterialTheme.typography.titleMedium)
+        OficiosCategoriesGrid(
+            categories = state.rubros.map { CategoryGridItem(it.id, it.label) },
+            onCategoryClick = { onEvent(AddServiceEvent.RubroSelected(it.id)) },
+            selectedCategoryId = state.selectedRubroId,
+        )
+        if (state.subRubros.isNotEmpty()) {
+            Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
+            state.subRubros.forEach { option ->
+                OficiosCheckbox(
+                    option.id in state.selectedSubRubroIds,
+                    { onEvent(AddServiceEvent.SubRubroToggled(option.id, it)) },
+                    option.label,
+                )
+            }
         }
     }
 }
