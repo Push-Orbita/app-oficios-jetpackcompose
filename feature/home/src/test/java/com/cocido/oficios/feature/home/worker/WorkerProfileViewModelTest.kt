@@ -88,6 +88,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = FakeFavoritesStatusRepository(),
         )
 
         advanceUntilIdle()
@@ -123,6 +124,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = FakeFavoritesStatusRepository(),
         )
 
         val effects = mutableListOf<WorkerProfileEffect>()
@@ -158,6 +160,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = FakeFavoritesStatusRepository(),
         )
         advanceUntilIdle()
 
@@ -215,6 +218,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = FakeFavoritesStatusRepository(),
         )
 
         advanceUntilIdle()
@@ -252,6 +256,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(favorites),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(favorites),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = favorites,
         )
         advanceUntilIdle()
 
@@ -285,6 +290,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(favorites),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(favorites),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = favorites,
         )
         advanceUntilIdle()
         val effects = mutableListOf<WorkerProfileEffect>()
@@ -315,6 +321,7 @@ class WorkerProfileViewModelTest {
             getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
             toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
             orderUseCases = OrderUseCases(IdleOrderRepository()),
+            favoritesRepository = FakeFavoritesStatusRepository(),
         )
         advanceUntilIdle()
         val effects = mutableListOf<WorkerProfileEffect>()

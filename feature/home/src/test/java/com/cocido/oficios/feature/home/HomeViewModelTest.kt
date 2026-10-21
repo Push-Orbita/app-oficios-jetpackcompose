@@ -139,7 +139,7 @@ class HomeViewModelTest {
     @Test
     fun `unread badge keeps the last known count when refresh fails`() = runTest(testDispatcher) {
         val notifications = FakeNotificationsRepository()
-        notifications.unreadCount = 3
+        notifications.unreadItems = 3
         val first = createViewModel(FakeHomeRepository(), notifications)
         advanceUntilIdle()
         assertEquals(3, first.unreadNotificationCount.value)
@@ -165,7 +165,7 @@ class HomeViewModelTest {
 }
 
 private class FakeNotificationsRepository : NotificationsRepository {
-    var unreadCount: Int = 0
+    var unreadItems: Int = 0
     var fail: Boolean = false
     private var cachedUnread: Int? = null
 
@@ -180,7 +180,7 @@ private class FakeNotificationsRepository : NotificationsRepository {
     ): AppResult<NotificationPage> {
         if (fail) return AppResult.Error(AppError.Network("No internet connection"))
         val page = NotificationPage(
-            items = List(unreadCount) { index ->
+            items = List(unreadItems) { index ->
                 NotificationItem(
                     id = index.toLong(),
                     type = "info",

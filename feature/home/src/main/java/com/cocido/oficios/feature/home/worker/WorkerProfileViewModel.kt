@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.domain.repository.FavoritesRepository
 import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
 import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
@@ -34,6 +35,7 @@ class WorkerProfileViewModel @Inject constructor(
     private val getFavoriteStatusUseCase: GetFavoriteStatusUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val orderUseCases: OrderUseCases,
+    private val favoritesRepository: FavoritesRepository,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -46,13 +48,26 @@ class WorkerProfileViewModel @Inject constructor(
 
     private var currentReviewsPage = 0
     private var hasMoreReviews = false
+    private var skipNextResume = true
 
     init {
         if (workerId > 0) {
             loadInitial()
+            viewModelScope.launch {
+                favoritesRepository.favoritesChanged.collect { refreshFavoriteFlag() }
+            }
         } else {
             _uiState.value = WorkerProfileUiState.Error("ID de trabajador inválido")
         }
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        refresh()
+        refreshFavoriteFlag()
     }
 
     fun onEvent(event: WorkerProfileEvent) {
@@ -251,6 +266,19 @@ class WorkerProfileViewModel @Inject constructor(
                         if (current is WorkerProfileUiState.Success) current.copy(isLoadingReviews = false) else current
                     }
                     emitEffect(WorkerProfileEffect.ShowMessage(reviewsResult.error.userMessage()))
+                }
+            }
+        }
+    }
+
+    private fun refreshFavoriteFlag() {
+        viewModelScope.launch {
+            val flags = getFavoriteStatusUseCase(workerId).toFavoriteFlags()
+            _uiState.update { current ->
+                if (current is WorkerProfileUiState.Success) {
+                    current.copy(canFavorite = flags.canFavorite, isFavorite = flags.isFavorite)
+                } else {
+                    current
                 }
             }
         }

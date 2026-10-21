@@ -57,7 +57,7 @@ class OrdersListViewModelTest {
         val viewModel = viewModel(repository)
         advanceUntilIdle()
 
-        repository.clientOrders = AppResult.Error(AppError.Network("No internet connection"))
+        repository.clientOrdersResult = AppResult.Error(AppError.Network("No internet connection"))
         val effects = mutableListOf<OrdersListEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
         viewModel.onEvent(OrdersListEvent.Refresh)
@@ -118,7 +118,7 @@ class OrdersListViewModelTest {
                 emailVerified = true,
             ),
         )
-        repository.clientOrders = AppResult.Success(emptyList())
+        repository.clientOrdersResult = AppResult.Success(emptyList())
         viewModel.onEvent(OrdersListEvent.Refresh)
         advanceUntilIdle()
 
@@ -180,13 +180,13 @@ class OrdersListViewModelTest {
 }
 
 private class FakeOrderRepository(
-    var clientOrders: AppResult<List<ServiceOrderListItem>>,
+    var clientOrdersResult: AppResult<List<ServiceOrderListItem>>,
 ) : OrderRepository {
     private val changes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     override val ordersChanged: SharedFlow<Unit> = changes
 
-    override suspend fun getClientOrders() = clientOrders
-    override suspend fun getWorkerOrders() = clientOrders
+    override suspend fun getClientOrders() = clientOrdersResult
+    override suspend fun getWorkerOrders() = clientOrdersResult
     override suspend fun createServiceRequest(params: CreateServiceRequestParams): AppResult<Long> = unused()
     override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> = unused()
     override suspend fun acceptOrder(orderId: Long): AppResult<Unit> = unused()

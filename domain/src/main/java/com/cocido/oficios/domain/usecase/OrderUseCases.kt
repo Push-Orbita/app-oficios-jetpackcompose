@@ -18,6 +18,9 @@ class CreateServiceRequestUseCase @Inject constructor(
 class OrderUseCases @Inject constructor(
     private val orderRepository: OrderRepository,
 ) {
+    val clientOrders get() = orderRepository.clientOrders
+    val workerOrders get() = orderRepository.workerOrders
+
     suspend fun getClientOrders() = orderRepository.getClientOrders()
     suspend fun getWorkerOrders() = orderRepository.getWorkerOrders()
     suspend fun getOrderDetail(orderId: Long) = orderRepository.getOrderDetail(orderId)

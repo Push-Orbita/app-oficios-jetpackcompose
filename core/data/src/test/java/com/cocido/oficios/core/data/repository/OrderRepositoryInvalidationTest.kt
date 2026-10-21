@@ -2,6 +2,8 @@ package com.cocido.oficios.core.data.repository
 
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
+import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.core.data.remote.OrderRemoteDataSource
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
 import com.cocido.oficios.core.network.api.orders.OrdersApi
@@ -43,6 +45,7 @@ class OrderRepositoryInvalidationTest {
                 override val io: CoroutineDispatcher = Dispatchers.Unconfined
                 override val default: CoroutineDispatcher = Dispatchers.Unconfined
             },
+            SessionCacheCoordinator(),
         )
         val events = mutableListOf<Unit>()
         val job = launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -69,6 +72,7 @@ class OrderRepositoryInvalidationTest {
                 override val io: CoroutineDispatcher = Dispatchers.Unconfined
                 override val default: CoroutineDispatcher = Dispatchers.Unconfined
             },
+            SessionCacheCoordinator(),
         )
         val blank = repository.cancelConfirmedOrder(8L, "   ")
         assertTrue(blank is AppResult.Error)
@@ -79,19 +83,72 @@ class OrderRepositoryInvalidationTest {
         assertEquals(1, api.cancelConfirmedCalls)
         assertEquals("No voy a poder asistir", api.lastCancelMotivo)
     }
+
+    @Test
+    fun `cancelar un pedido actualiza el cache de la lista`() = runTest {
+        val api = FakeOrdersApi()
+        api.clientOrders += SolicitudServicioSimpleDto(id = 8L, estado = "PENDIENTE")
+        val repository = OrderRepositoryImpl(
+            OrderRemoteDataSource(api),
+            object : DispatcherProvider {
+                override val main: CoroutineDispatcher = Dispatchers.Unconfined
+                override val io: CoroutineDispatcher = Dispatchers.Unconfined
+                override val default: CoroutineDispatcher = Dispatchers.Unconfined
+            },
+            SessionCacheCoordinator(),
+        )
+        assertTrue(repository.getClientOrders() is AppResult.Success)
+        assertEquals(listOf(8L), repository.clientOrders.value?.map { it.id })
+
+        assertTrue(repository.cancelOrderBeforeAcceptance(8L) is AppResult.Success)
+        assertEquals(emptyList<Long>(), repository.clientOrders.value?.map { it.id }.orEmpty())
+    }
+
+    @Test
+    fun `crear un pedido actualiza el cache de la lista`() = runTest {
+        val api = FakeOrdersApi()
+        val repository = OrderRepositoryImpl(
+            OrderRemoteDataSource(api),
+            object : DispatcherProvider {
+                override val main: CoroutineDispatcher = Dispatchers.Unconfined
+                override val io: CoroutineDispatcher = Dispatchers.Unconfined
+                override val default: CoroutineDispatcher = Dispatchers.Unconfined
+            },
+            SessionCacheCoordinator(),
+        )
+        assertTrue(repository.getClientOrders() is AppResult.Success)
+        assertEquals(emptyList<Long>(), repository.clientOrders.value?.map { it.id }.orEmpty())
+
+        val created = repository.createServiceRequest(
+            CreateServiceRequestParams(
+                trabajadorOficioSubRubroId = 1L,
+                domicilioId = 2L,
+                contactoId = 3L,
+                description = "Cambio de canilla",
+                idempotencyKey = "key",
+            ),
+        )
+        assertTrue(created is AppResult.Success)
+        assertEquals(listOf(12L), repository.clientOrders.value?.map { it.id })
+    }
 }
 
 private class FakeOrdersApi : OrdersApi {
     var fail = false
     var cancelConfirmedCalls = 0
     var lastCancelMotivo: String? = null
+    val clientOrders = mutableListOf<SolicitudServicioSimpleDto>()
     private fun <T> result(value: T): T {
         if (fail) error("fallo")
         return value
     }
 
-    override suspend fun createSolicitud(idempotencyKey: String, request: CreateSolicitudServicioRequestDto) = error("no")
-    override suspend fun getMisSolicitudesCliente(): PaginatedResponseDto<SolicitudServicioSimpleDto> = error("no")
+    override suspend fun createSolicitud(idempotencyKey: String, request: CreateSolicitudServicioRequestDto) =
+        result(SolicitudServicioDto(id = 12L, estado = "PENDIENTE")).also {
+            clientOrders += SolicitudServicioSimpleDto(id = 12L, estado = "PENDIENTE")
+        }
+    override suspend fun getMisSolicitudesCliente(): PaginatedResponseDto<SolicitudServicioSimpleDto> =
+        PaginatedResponseDto(data = clientOrders.toList())
     override suspend fun getSolicitudesTrabajador() = SolicitudServicioSearchPageDto()
     override suspend fun getSolicitud(id: Long) = SolicitudServicioDto(id = id, estado = "PENDIENTE")
     override suspend fun aceptarSolicitud(id: Long) = error("no")
@@ -103,7 +160,9 @@ private class FakeOrdersApi : OrdersApi {
         return result(SolicitudServicioDto(id = id, estado = "CANCELADA"))
     }
     override suspend fun cancelarSolicitudPendiente(id: Long, request: UpdateSolicitudEstadoRequestDto) =
-        result(SolicitudServicioDto(id = id, estado = "CANCELADA"))
+        result(SolicitudServicioDto(id = id, estado = "CANCELADA")).also {
+            clientOrders.removeAll { order -> order.id == id }
+        }
     override suspend fun aceptarContrapropuesta(id: Long): JsonElement = error("no")
     override suspend fun rechazarContrapropuesta(id: Long): JsonElement = error("no")
     override suspend fun getBooking(id: Long) = BookingDto(id = id, estado = "PENDIENTE")

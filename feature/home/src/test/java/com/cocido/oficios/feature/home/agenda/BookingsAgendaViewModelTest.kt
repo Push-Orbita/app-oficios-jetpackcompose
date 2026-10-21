@@ -121,10 +121,10 @@ class BookingsAgendaViewModelTest {
 }
 
 private class FakeWorkerOrdersRepository(
-    private val workerOrders: AppResult<List<ServiceOrderListItem>>,
+    private val workerOrdersResult: AppResult<List<ServiceOrderListItem>>,
 ) : OrderRepository {
     override val ordersChanged: SharedFlow<Unit> = MutableSharedFlow()
-    override suspend fun getWorkerOrders() = workerOrders
+    override suspend fun getWorkerOrders() = workerOrdersResult
     override suspend fun getClientOrders() = unused()
     override suspend fun createServiceRequest(params: CreateServiceRequestParams) = unused()
     override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> = unused()

@@ -40,6 +40,16 @@ class OrdersListViewModel @Inject constructor(
     private var loadedUserId: Long? = null
 
     init {
+        viewModelScope.launch {
+            orderRepository.clientOrders.collect { list ->
+                applyCachedOrders(list, workerView = false)
+            }
+        }
+        viewModelScope.launch {
+            orderRepository.workerOrders.collect { list ->
+                applyCachedOrders(list, workerView = true)
+            }
+        }
         load()
         viewModelScope.launch {
             orderRepository.ordersChanged.collect {
@@ -135,6 +145,16 @@ class OrdersListViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun applyCachedOrders(list: List<com.cocido.oficios.domain.model.ServiceOrderListItem>?, workerView: Boolean) {
+        if (list == null) return
+        val current = _uiState.value as? OrdersListUiState.Success ?: return
+        val isWorker = current.viewerRole == UserRole.PROVIDER
+        if (workerView != isWorker) return
+        val next = current.copy(orders = list, isRefreshing = false)
+        lastSuccess = next
+        _uiState.value = next
     }
 
     private fun emitEffect(effect: OrdersListEffect) {

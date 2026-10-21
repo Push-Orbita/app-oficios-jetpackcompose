@@ -41,6 +41,11 @@ class ProviderHomeViewModel @Inject constructor(
     private var loadJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            getUnreadNotificationCountUseCase.unreadCount.collect { count ->
+                if (count != null) _unreadNotificationCount.value = count
+            }
+        }
         loadHome()
         refreshUnreadCount()
     }

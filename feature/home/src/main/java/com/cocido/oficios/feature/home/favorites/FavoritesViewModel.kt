@@ -31,6 +31,20 @@ class FavoritesViewModel @Inject constructor(
     private var skipNextResume = true
 
     init {
+        viewModelScope.launch {
+            favoritesRepository.favorites.collect { page ->
+                if (page == null || _uiState.value.isLoadingMore) return@collect
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        items = page.items,
+                        pageNumber = page.pageNumber,
+                        hasMore = page.hasMore,
+                        errorMessage = null,
+                    )
+                }
+            }
+        }
         load(pageNumber = 1, append = false)
         viewModelScope.launch {
             favoritesRepository.favoritesChanged.collect {

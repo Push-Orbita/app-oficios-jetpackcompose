@@ -41,6 +41,11 @@ class HomeViewModel @Inject constructor(
     private var loadGeneration = 0
 
     init {
+        viewModelScope.launch {
+            getUnreadNotificationCountUseCase.unreadCount.collect { count ->
+                if (count != null) _unreadNotificationCount.value = count
+            }
+        }
         loadHome()
         refreshUnreadCount()
     }
