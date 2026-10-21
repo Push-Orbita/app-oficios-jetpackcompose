@@ -1,5 +1,8 @@
 package com.cocido.oficios.core.designsystem.a11y
 
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -94,6 +97,64 @@ class OficiosButtonA11yTest {
             }
         }
         assertTrue("Filter height=${touchHeightDp("Hoy")}dp", touchHeightDp("Hoy") >= 48f)
+    }
+
+    @Test
+    fun filterChipVisualHeightDoesNotInflateToTouchTarget() {
+        var visualHeightDp = 0f
+        composeRule.setContent {
+            OficiosTheme {
+                val density = LocalDensity.current
+                OficiosFilterChip(
+                    label = "Hoy",
+                    selected = false,
+                    onToggle = {},
+                    modifier = Modifier.onGloballyPositioned { coords ->
+                        visualHeightDp = coords.size.height / density.density
+                    },
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            assertTrue(
+                "Filter visual height=${visualHeightDp}dp should stay in the 36–44 dp slot",
+                visualHeightDp in 32f..44f,
+            )
+            assertTrue(
+                "Filter visual height=${visualHeightDp}dp must not inflate to 48",
+                visualHeightDp < 48f,
+            )
+        }
+        assertTrue("Filter touch height=${touchHeightDp("Hoy")}dp", touchHeightDp("Hoy") >= 48f)
+    }
+
+    @Test
+    fun smallButtonVisualHeightDoesNotInflateToTouchTarget() {
+        var visualHeightDp = 0f
+        composeRule.setContent {
+            OficiosTheme {
+                val density = LocalDensity.current
+                OficiosButton(
+                    text = "Enviar",
+                    onClick = {},
+                    size = OficiosButtonSize.Small,
+                    modifier = Modifier.onGloballyPositioned { coords ->
+                        visualHeightDp = coords.size.height / density.density
+                    },
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            assertTrue(
+                "Small visual height=${visualHeightDp}dp should stay near 36 dp",
+                visualHeightDp in 32f..44f,
+            )
+            assertTrue(
+                "Small visual height=${visualHeightDp}dp must not inflate to 48",
+                visualHeightDp < 48f,
+            )
+        }
+        assertTrue("Small touch height=${touchHeightDp("Enviar")}dp", touchHeightDp("Enviar") >= 48f)
     }
 
     @Test

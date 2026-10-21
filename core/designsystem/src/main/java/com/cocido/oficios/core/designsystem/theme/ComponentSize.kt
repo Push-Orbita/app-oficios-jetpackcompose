@@ -10,6 +10,8 @@ object OficiosComponentSize {
     val buttonHeightMedium = 44.dp
     val buttonHeightSmall = 36.dp
     val buttonMinHeight = buttonHeightSmall
+    /** Chip de filtro / Rubros: visual 36–40 dp; el touch 48 es overlay. */
+    val filterChipHeight = buttonHeightSmall
     /** Área táctil de íconos y controles que no son el CTA. */
     val buttonHeight = minTouchTarget
     val buttonPaddingHorizontal = 12.dp

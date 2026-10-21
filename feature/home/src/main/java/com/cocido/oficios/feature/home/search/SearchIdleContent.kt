@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,6 +32,7 @@ import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.feature.home.R
@@ -74,20 +77,10 @@ fun SearchIdleContent(
         }
         if (state.rubroChips.isNotEmpty()) {
             IdleSectionTitle(stringResource(R.string.home_search_rubros_title))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-            ) {
-                state.rubroChips.forEach { rubro ->
-                    OficiosFilterChip(
-                        label = rubro.label,
-                        selected = false,
-                        onToggle = { onEvent(SearchResultsEvent.RubroChipSelected(rubro)) },
-                    )
-                }
-            }
+            RubroChipsRow(
+                rubros = state.rubroChips,
+                onRubroClick = { onEvent(SearchResultsEvent.RubroChipSelected(it)) },
+            )
         }
         if (state.suggestions.isEmpty() &&
             state.recentSearches.isEmpty() &&
@@ -115,6 +108,28 @@ private fun IdleSectionTitle(text: String) {
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onBackground,
     )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RubroChipsRow(
+    rubros: List<CatalogOption>,
+    onRubroClick: (CatalogOption) -> Unit,
+) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+    ) {
+        rubros.forEach { rubro ->
+            OficiosFilterChip(
+                label = rubro.label,
+                selected = false,
+                iconUrl = rubro.iconUrl,
+                onToggle = { onRubroClick(rubro) },
+            )
+        }
+    }
 }
 
 @Composable

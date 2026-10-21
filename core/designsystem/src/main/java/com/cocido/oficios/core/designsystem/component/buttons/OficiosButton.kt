@@ -8,7 +8,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -36,13 +35,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.component.interaction.oficiosMinTouchTarget
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
@@ -187,19 +183,13 @@ fun OficiosButton(
     val shape = MaterialTheme.shapes.small
     val paintedColor = if (isInteractive) containerColor else disabledContainerColor
     val paintedContent = if (isInteractive) contentColor else disabledContentColor
-    Box(
-        modifier = modifier
-            .oficiosMinTouchTarget()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                enabled = isInteractive,
-                role = Role.Button,
-                onClick = { if (!loading) onClick() },
-            )
-            .semantics(mergeDescendants = true) { role = Role.Button },
-        contentAlignment = Alignment.Center,
-        propagateMinConstraints = true,
+    OficiosTouchTarget(
+        onClick = { if (!loading) onClick() },
+        modifier = modifier,
+        enabled = isInteractive,
+        accessibilityText = text,
+        interactionSource = interactionSource,
+        indication = null,
     ) {
         Box(
             modifier = Modifier

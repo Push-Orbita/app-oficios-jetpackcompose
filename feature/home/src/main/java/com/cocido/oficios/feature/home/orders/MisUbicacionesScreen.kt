@@ -39,6 +39,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.interaction.oficiosMinTouchTarget
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -229,21 +230,24 @@ private fun LocationPickerList(
                     color = if (selected) OficiosColorBackground else OficiosColorWhite,
                     modifier = Modifier.weight(1f),
                 )
-                Icon(
-                    imageVector = ImageVector.vectorResource(OficiosIcons.Star),
-                    contentDescription = stringResource(
-                        if (domicilio.favorito) R.string.locations_favorite else R.string.locations_unfavorite,
-                    ),
-                    tint = when {
-                        !domicilio.favorito -> OficiosColorWhite.copy(alpha = 0.45f)
-                        selected -> OficiosColorBackground
-                        else -> OficiosColorWhite
-                    },
-                    modifier = Modifier
-                        .size(OficiosComponentSize.iconMd)
-                        .oficiosMinTouchTarget()
-                        .clickable { onFavorite(domicilio.id, !domicilio.favorito) },
+                val favoriteLabel = stringResource(
+                    if (domicilio.favorito) R.string.locations_favorite else R.string.locations_unfavorite,
                 )
+                OficiosTouchTarget(
+                    onClick = { onFavorite(domicilio.id, !domicilio.favorito) },
+                    accessibilityContentDescription = favoriteLabel,
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(OficiosIcons.Star),
+                        contentDescription = null,
+                        tint = when {
+                            !domicilio.favorito -> OficiosColorWhite.copy(alpha = 0.45f)
+                            selected -> OficiosColorBackground
+                            else -> OficiosColorWhite
+                        },
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
+                }
             }
         }
         Row(
