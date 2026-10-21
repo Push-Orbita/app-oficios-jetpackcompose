@@ -36,15 +36,15 @@ PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 | Oficios | `25:258` | #11 | Grilla + ilustraciones locales | BK-10: assets locales |
 | Rubros | `35:2` | #11 | Grilla | — |
 | Resultados | `40:309` | #11 | Header, aviso 3/10 min, buscador | BK-12, BK-14 (aviso estático) |
-| Ficha | `40:559` | #12 | Galería, certs, reseñas, CTA | — |
-| Detalle / cancelar | `198:697`… | #13 | Motivo obligatorio + plazo InfoRow | Sin frame de cancelar; Danger CTA |
-| Completá tu Solicitud | `455:27` | #14 | Form + radios de ubicación | Título Figma en voseo; Presupuesto/Trabajo oculto (BK-15) |
-| Agendar Cita | `613:1373` | #14 | Calendario + grilla horas | Días off #918E9B |
+| Ficha | `40:559` | #21 | Estructura card 1:1; QA `docs/qa-1a1/ficha-trabajador.png` ~33.7% | Certs/reseñas vacíos no ocupan; nav 4 tabs |
+| Detalle / cancelar | `198:697`… | #21 | Mapa primero + filas Figma; QA `docs/qa-1a1/detalle-pedido.png` ~35.8% | Motivo cancelar de #13; mapa placeholder sin key |
+| Completá tu Solicitud | `455:27` | #14/#21 | Form + radios de ubicación | Título Figma en voseo; Presupuesto/Trabajo oculto (BK-15) |
+| Agendar Cita | `613:1373` | #21 | Mini-card + Fecha + calendario 5 semanas + Horario. QA `docs/qa-1a1/solicitud.png` ~18.3% | Días con cupo en azul; nav 4 tabs |
 | Resumen Solicitud | `455:423` | #14 | Toast `Solicitud enviada` → home | Sin shell intermedio |
 | Home trabajador | `259:254` (#15 usaba `191:11`) | #21 | Lista Agenda 1:1; sin calendario ni banner AHORA. QA `docs/qa-1a1/home-trabajador.png`. Pixel-diff ~32% (nav 3 tabs acordada vs 5 Figma, D-DIN, scroll). Layout filas de turno ±3–14 dp (P9 427 vs frame 440). | Beneficios Figma voseo + bold; Completa tu perfil 40 dp dashed + 3 hitos; calendario solo en ver agenda completa; bottom nav acordada |
-| Calendario general | `239:475` | #16 | Do–Sá, 30/60/120, grilla máx. 12 h | Editar `sesion` = delete+recreate (BK-02/03) |
+| Calendario general | `239:475` | #21 | Pills + división + grilla + oficio. QA `docs/qa-1a1/agenda.png` ~28.5% | Editar `sesion` = delete+recreate (BK-02/03); CTA Guardar (Figma no lo muestra) |
 | Agenda completa | `210:106` | #16 | — | `diasLaborales` por día en alta |
-| Editar Perfil | `231:15` | #17 | CTA Editar Rubro o Especialidad | PATCH limitado (BK-01) |
+| Editar Perfil | `231:15` | #21 | Oficios/galería/certs/Darme De Baja 1:1. QA `docs/qa-1a1/perfil.png` ~28.8% | PATCH limitado (BK-01); tab Perfil = Ajustes |
 | Elegí Rubro | `526:903` | #17 | Grilla 2 col. | Título Figma en voseo |
 | Elegí tu categoría | `526:1026` | #18 | Grilla 2 col. | Checkboxes (API multi), no radios; título Figma |
 | Forgot / Settings / Pedidos / Notif / Favoritos / Ayuda | — | #19 | Lenguaje DS + usted + `OficiosScreenPadding` | Sin baseline Figma |
@@ -87,14 +87,14 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 
 | Pantalla | Nodo | Diff pixel | Commit | Notas |
 |---|---|---|---|---|
-| Home trabajador | `259:254` | ~32% (nav acordada + fuente) | (este PR) | Beneficios bold, perfil 40 dp + hitos dashed, Agenda lista HOY, sin calendario/AHORA |
-| Home cliente | `25:95` | ~9.6% (nav acordada, placeholder usted, datos reales) | (este PR) | Recientes sin "Ver todos"; 3 cards r16 |
-| Detalle pedido | `198:697` | pendiente | | |
-| Ficha trabajador | `40:559` | pendiente | | |
-| Solicitud/reserva | `455:27` | pendiente | | |
-| Agenda/calendario | `239:475` | pendiente | | |
-| Perfil/editar perfil | `231:15` | pendiente | | |
-| Mis pedidos | — | pendiente | | |
+| Home trabajador | `259:254` | ~32% (nav acordada + fuente) | `efd049f` | Beneficios bold, perfil 40 dp + hitos dashed, Agenda lista HOY, sin calendario/AHORA |
+| Home cliente | `25:95` | ~9.6% (nav acordada, placeholder usted, datos reales) | `6d3bea5` | Recientes sin "Ver todos"; 3 cards r16 |
+| Detalle pedido | `198:697` | ~35.8% (mapa sin API key, D-DIN, P9 427 vs 440) | `64c68c1` | Mapa 248 dp → filas icon-box + Contacto/Estoy En Camino a la derecha; sin chips/avatar |
+| Ficha trabajador | `40:559` | ~33.7% (sin foto, nav 4 vs 5) | `d491c96` | Título + card + oficios/especializado + Contactar/Calificar + Trabajos realizados |
+| Solicitud/reserva | `613:1373` | ~18.3% (nav acordada, sin foto) | `608afdf` | Agendar Cita: mini-card, Fecha, calendario 5 semanas, Horario; `455:27` Completá tu Solicitud conserva ubicación |
+| Agenda/calendario | `239:475` | ~28.5% (Guardar extra, nav, D-DIN) | `d7503bd` | Días pill, división 30/1h/2h, grilla, Calendario Por Oficio; sin form viejo duración/intervalo |
+| Perfil/editar perfil | `231:15` | ~28.8% (sin fotos reales, nested sin 5-tab Figma) | `bd151d3` | Oficios + especializado + Editar Rubro + galería/certs dashed Añadir + Darme De Baja |
+| Mis pedidos | — (sin frame) | ~6.4% vs placeholder navy | `0e34b36` | Lista agrupada por fecha + HOY; Activos/Historial; nav acordada |
 
 ## Bloqueos abiertos
 
