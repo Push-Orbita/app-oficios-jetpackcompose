@@ -8,6 +8,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 
 @Composable
 fun WorkerProfileRoute(
@@ -16,12 +17,16 @@ fun WorkerProfileRoute(
     onNavigateToRate: (Long, String) -> Unit = { _, _ -> },
     onNavigateToReport: (Long, String) -> Unit,
     onShowMessage: (String) -> Unit,
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToFavorites: () -> Unit = {},
+    onNavigateToOrders: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: WorkerProfileViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val favoriteSavedMessage = stringResource(R.string.home_worker_favorite_saved)
     val favoriteRemovedMessage = stringResource(R.string.home_worker_favorite_removed)
+    val rateUnavailableMessage = stringResource(R.string.home_worker_rate_unavailable)
     val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
@@ -35,14 +40,23 @@ fun WorkerProfileRoute(
                 )
                 is WorkerProfileEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerName)
                 is WorkerProfileEffect.NavigateToReport -> onNavigateToReport(effect.workerId, effect.workerName)
+                WorkerProfileEffect.ShowRateUnavailable -> onShowMessage(rateUnavailableMessage)
             }
         }
     }
 
-    WorkerProfileScreen(
-        uiState = uiState,
-        onEvent = viewModel::onEvent,
-        modifier = modifier,
-    )
+    ClientHomeTabRouteHost(
+        onStay = onNavigateBack,
+        onNavigateToOrders = onNavigateToOrders,
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToFavorites = onNavigateToFavorites,
+    ) { selectedTab, onTabSelected ->
+        WorkerProfileScreen(
+            uiState = uiState,
+            onEvent = viewModel::onEvent,
+            selectedTab = selectedTab,
+            onTabSelected = onTabSelected,
+            modifier = modifier,
+        )
+    }
 }
-

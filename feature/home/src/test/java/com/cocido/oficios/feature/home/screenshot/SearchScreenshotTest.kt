@@ -56,4 +56,11 @@ class SearchScreenshotTest {
         composeRule.setContent { SearchScreenshotResults() }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun ficha() {
+        assumeGoldenOrRecording(javaClass, "ficha")
+        composeRule.setContent { SearchScreenshotFicha() }
+        composeRule.onRoot().captureRoboImage()
+    }
 }

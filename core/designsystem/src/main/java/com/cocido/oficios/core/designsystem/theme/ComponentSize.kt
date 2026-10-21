@@ -50,6 +50,8 @@ object OficiosComponentSize {
     val workerCardNameToRating = 7.dp
     val workerCardHeaderToSpecialty = 11.dp
     val workerCardSpecialtyToActions = 18.dp
+    /** Ficha 40:559: slide de galería 376×376 (440 − 32 − 32). */
+    val workerGallerySize = 376.dp
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f
     val agendaCell = 48.dp

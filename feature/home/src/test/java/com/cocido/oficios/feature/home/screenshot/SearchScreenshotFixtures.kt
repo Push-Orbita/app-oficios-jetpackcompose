@@ -35,6 +35,8 @@ import com.cocido.oficios.feature.home.rubros.RubrosUiState
 import com.cocido.oficios.feature.home.search.SearchResultsScreen
 import com.cocido.oficios.feature.home.search.SearchResultsUiState
 import com.cocido.oficios.feature.home.search.FilterSheetUiState
+import com.cocido.oficios.feature.home.worker.WorkerProfileScreen
+import com.cocido.oficios.feature.home.worker.previewState
 import java.io.File
 import org.junit.Assume
 
@@ -180,6 +182,20 @@ internal fun SearchScreenshotResults(
             ),
             filterSheetState = FilterSheetUiState(),
             searchQuery = "",
+            onEvent = {},
+            showFavorites = true,
+        )
+    }
+}
+
+@Composable
+internal fun SearchScreenshotFicha(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        WorkerProfileScreen(
+            uiState = previewState(withGallery = true, withReviews = true),
             onEvent = {},
             showFavorites = true,
         )

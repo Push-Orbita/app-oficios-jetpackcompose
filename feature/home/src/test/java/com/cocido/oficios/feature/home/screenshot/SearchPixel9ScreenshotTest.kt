@@ -59,4 +59,11 @@ class SearchPixel9ScreenshotTest {
         composeRule.setContent { SearchScreenshotResults(status, nav) }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun ficha() {
+        assumeGoldenOrRecording(javaClass, "ficha")
+        composeRule.setContent { SearchScreenshotFicha(status, nav) }
+        composeRule.onRoot().captureRoboImage()
+    }
 }
