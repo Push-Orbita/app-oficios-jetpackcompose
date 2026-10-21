@@ -19,7 +19,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificatio
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
@@ -40,6 +40,19 @@ fun CategoriesScreen(
 ) {
     OficiosScaffold(
         modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.home_categories_title),
+                onBack = { onEvent(CategoriesEvent.Back) },
+                actions = {
+                    OficiosNotificationButton(
+                        onClick = { onEvent(CategoriesEvent.OpenNotifications) },
+                        contentDescription = stringResource(R.string.home_notifications),
+                        unreadCount = unreadNotificationCount,
+                    )
+                },
+            )
+        },
         bottomBar = {
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
@@ -74,7 +87,6 @@ fun CategoriesScreen(
                 ) {
                     CategoriesContent(
                         state = state,
-                        unreadNotificationCount = unreadNotificationCount,
                         onEvent = onEvent,
                     )
                 }
@@ -86,7 +98,6 @@ fun CategoriesScreen(
 @Composable
 private fun CategoriesContent(
     state: CategoriesUiState.Success,
-    unreadNotificationCount: Int,
     onEvent: (CategoriesEvent) -> Unit,
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -97,17 +108,6 @@ private fun CategoriesContent(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(R.string.home_categories_title),
-            onNavigateBack = { onEvent(CategoriesEvent.Back) },
-            trailingAction = {
-                OficiosNotificationButton(
-                    onClick = { onEvent(CategoriesEvent.OpenNotifications) },
-                    contentDescription = stringResource(R.string.home_notifications),
-                    unreadCount = unreadNotificationCount,
-                )
-            },
-        )
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { searchQuery = it },

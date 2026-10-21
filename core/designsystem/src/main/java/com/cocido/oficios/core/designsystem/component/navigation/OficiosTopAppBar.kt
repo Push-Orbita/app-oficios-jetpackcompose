@@ -11,7 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -69,6 +69,33 @@ fun OficiosTopAppBar(
     }
 }
 
+/**
+ * Raíz de tab (Inicio / Pedidos / Perfil / Favoritos): título grande a la izquierda, sin back.
+ * Las pantallas internas usan [OficiosBackTopBar] (título chico centrado con chevron).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OficiosRootTopBar(
+    title: String,
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    val colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.background,
+        titleContentColor = MaterialTheme.colorScheme.onBackground,
+        actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+    )
+    Column(modifier = modifier.fillMaxWidth()) {
+        TopAppBar(
+            title = {
+                Text(text = title, style = MaterialTheme.typography.headlineLarge)
+            },
+            actions = actions,
+            colors = colors,
+        )
+    }
+}
+
 // ---------------------------------------------------------------------------
 // OficiosBackTopBar — barra superior con botón de retroceso + acciones
 // ---------------------------------------------------------------------------
@@ -121,6 +148,7 @@ private fun TopAppBarPreview() {
                     }
                 },
             )
+            OficiosRootTopBar(title = "Mis pedidos")
             OficiosBackTopBar(title = "Detalle del pedido", onBack = {}, subtitle = "Pedido #1234")
         }
     }

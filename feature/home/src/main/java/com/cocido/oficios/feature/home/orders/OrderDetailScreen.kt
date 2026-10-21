@@ -81,7 +81,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.component.motion.oficiosShake
 import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosRejectShake
@@ -112,7 +112,18 @@ fun OrderDetailScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OficiosScaffold(modifier = modifier) { paddingValues ->
+    val topBarTitle = when (val state = uiState) {
+        is OrderDetailUiState.Success -> stringResource(
+            orderScreenTitleRes(state.order.status, state.order.bookingStatus),
+        )
+        else -> stringResource(R.string.orders_detail_title)
+    }
+    OficiosScaffold(
+        modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(title = topBarTitle, onBack = onNavigateBack)
+        },
+    ) { paddingValues ->
         OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
             when (state) {
                 OrderDetailUiState.Loading -> OrderDetailSkeleton(
@@ -143,7 +154,6 @@ fun OrderDetailScreen(
                     OrderDetailContent(
                         state = state,
                         onEvent = onEvent,
-                        onNavigateBack = onNavigateBack,
                     )
                 }
             }
@@ -173,7 +183,6 @@ private fun OrderDetailSkeleton(message: String, modifier: Modifier = Modifier) 
 private fun OrderDetailContent(
     state: OrderDetailUiState.Success,
     onEvent: (OrderDetailEvent) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val order = state.order
@@ -191,10 +200,6 @@ private fun OrderDetailContent(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(orderScreenTitleRes(order.status, order.bookingStatus)),
-            onNavigateBack = onNavigateBack,
-        )
         cancelledByLabelRes(order.cancelledBy)?.let { label ->
             Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
         }

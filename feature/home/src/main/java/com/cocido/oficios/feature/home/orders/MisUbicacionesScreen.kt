@@ -40,7 +40,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.interaction.oficiosMinTouchTarget
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
@@ -65,8 +65,18 @@ fun MisUbicacionesScreen(
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = true,
 ) {
+    val adding = uiState is MisUbicacionesUiState.Success &&
+        uiState.mode == MisUbicacionesMode.ADD
     OficiosScaffold(
         modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.locations_title),
+                onBack = {
+                    if (adding) onEvent(MisUbicacionesEvent.CancelAdd) else onNavigateBack()
+                },
+            )
+        },
         bottomBar = {
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
@@ -91,13 +101,11 @@ fun MisUbicacionesScreen(
                     MisUbicacionesAddForm(
                         state = state,
                         onEvent = onEvent,
-                        onNavigateBack = { onEvent(MisUbicacionesEvent.CancelAdd) },
                     )
                 } else {
                     MisUbicacionesPicker(
                         state = state,
                         onEvent = onEvent,
-                        onNavigateBack = onNavigateBack,
                     )
                 }
             }
@@ -109,7 +117,6 @@ fun MisUbicacionesScreen(
 private fun MisUbicacionesPicker(
     state: MisUbicacionesUiState.Success,
     onEvent: (MisUbicacionesEvent) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val selected = state.domicilios.firstOrNull { it.id == state.selectedId }
@@ -120,10 +127,6 @@ private fun MisUbicacionesPicker(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(R.string.locations_title),
-            onNavigateBack = onNavigateBack,
-        )
         OficiosTextField(
             value = selected?.pickerLabel().orEmpty(),
             onValueChange = {},
@@ -271,7 +274,6 @@ private fun LocationPickerList(
 private fun MisUbicacionesAddForm(
     state: MisUbicacionesUiState.Success,
     onEvent: (MisUbicacionesEvent) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -281,10 +283,6 @@ private fun MisUbicacionesAddForm(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(R.string.locations_title),
-            onNavigateBack = onNavigateBack,
-        )
         OficiosAutocompleteField(
             value = state.barrioQuery,
             onValueChange = { onEvent(MisUbicacionesEvent.BarrioQueryChanged(it)) },

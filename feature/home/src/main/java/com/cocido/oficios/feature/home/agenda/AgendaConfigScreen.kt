@@ -39,7 +39,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingSta
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
@@ -61,7 +61,15 @@ fun AgendaConfigScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OficiosScaffold(modifier = modifier) { paddingValues ->
+    OficiosScaffold(
+        modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.agenda_config_title),
+                onBack = onNavigateBack,
+            )
+        },
+    ) { paddingValues ->
         OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
             when (state) {
                 AgendaConfigUiState.Loading -> OficiosLoadingState(
@@ -77,7 +85,6 @@ fun AgendaConfigScreen(
                 is AgendaConfigUiState.Success -> AgendaConfigContent(
                     uiState = state,
                     onEvent = onEvent,
-                    onNavigateBack = onNavigateBack,
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -89,7 +96,6 @@ fun AgendaConfigScreen(
 private fun AgendaConfigContent(
     uiState: AgendaConfigUiState.Success,
     onEvent: (AgendaConfigEvent) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (uiState.subRubroOptions.isEmpty()) {
@@ -110,12 +116,6 @@ private fun AgendaConfigContent(
         contentPadding = OficiosSpacing.OficiosScreenPadding,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        item {
-            OficiosScreenTitle(
-                title = stringResource(R.string.agenda_config_title),
-                onNavigateBack = onNavigateBack,
-            )
-        }
         item {
             Text(
                 text = stringResource(R.string.agenda_config_days_title),

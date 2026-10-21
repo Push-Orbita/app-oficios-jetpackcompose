@@ -44,7 +44,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingSta
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
@@ -93,8 +93,21 @@ fun CreateOrderScreen(
     val showBottomBar = uiState !is CreateOrderUiState.Success ||
         uiState.step == CreateOrderStep.FORM
 
+    val topBarTitle = when (val state = uiState) {
+        is CreateOrderUiState.Success -> stringResource(
+            when {
+                state.step == CreateOrderStep.SUMMARY -> R.string.create_order_title_summary
+                state.hasAgenda -> R.string.create_order_title_schedule
+                else -> R.string.create_order_title_request
+            },
+        )
+        else -> stringResource(R.string.create_order_title_request)
+    }
     OficiosScaffold(
         modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(title = topBarTitle, onBack = handleBack)
+        },
         bottomBar = {
             if (showBottomBar) {
                 ClientHomeBottomBar(
@@ -121,13 +134,11 @@ fun CreateOrderScreen(
                     CreateOrderSummary(
                         state = state,
                         onEvent = onEvent,
-                        onNavigateBack = { onEvent(CreateOrderEvent.EditRequest) },
                     )
                 } else {
                     CreateOrderForm(
                         state = state,
                         onEvent = onEvent,
-                        onNavigateBack = handleBack,
                         today = today,
                     )
                 }
@@ -140,7 +151,6 @@ fun CreateOrderScreen(
 private fun CreateOrderForm(
     state: CreateOrderUiState.Success,
     onEvent: (CreateOrderEvent) -> Unit,
-    onNavigateBack: () -> Unit,
     today: LocalDate,
     modifier: Modifier = Modifier,
 ) {
@@ -151,13 +161,6 @@ private fun CreateOrderForm(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(
-                if (state.hasAgenda) R.string.create_order_title_schedule else R.string.create_order_title_request,
-            ),
-            onNavigateBack = onNavigateBack,
-        )
-
         if (state.hasAgenda) {
             WorkerMiniCard(state)
         }
@@ -306,7 +309,6 @@ private fun CreateOrderForm(
 private fun CreateOrderSummary(
     state: CreateOrderUiState.Success,
     onEvent: (CreateOrderEvent) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val domicilio = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }
@@ -318,11 +320,6 @@ private fun CreateOrderSummary(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(R.string.create_order_title_summary),
-            onNavigateBack = onNavigateBack,
-        )
-
         SummaryMap(domicilio)
 
         SummaryInfoRow(

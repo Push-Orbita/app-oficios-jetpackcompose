@@ -23,7 +23,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonLi
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.feedback.oficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
@@ -53,7 +53,7 @@ fun FavoritesScreen(
                     onBack = onNavigateBack,
                 )
             } else {
-                OficiosTopAppBar(title = stringResource(R.string.home_nav_favoritos))
+                OficiosRootTopBar(title = stringResource(R.string.home_nav_favoritos))
             }
         },
         bottomBar = {

@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -30,7 +29,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -66,25 +66,19 @@ fun OrdersListScreen(
     now: ZonedDateTime = ZonedDateTime.now(DisplayDateTime.ARGENTINA),
     showFavorites: Boolean? = null,
 ) {
-    if (!showBackNavigation && onTabSelected == null) {
-        Box(modifier = modifier.fillMaxSize()) {
-            Column(Modifier.fillMaxSize()) {
-                OrdersListBody(
-                    uiState = uiState,
-                    onEvent = onEvent,
-                    today = today,
-                    now = now,
-                    titleBack = null,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
-        }
-        return
-    }
     OficiosScaffold(
         modifier = modifier,
         snackbarHostState = snackbarHostState,
+        topBar = {
+            if (showBackNavigation) {
+                OficiosBackTopBar(
+                    title = stringResource(R.string.orders_title),
+                    onBack = onNavigateBack,
+                )
+            } else {
+                OficiosRootTopBar(title = stringResource(R.string.orders_title))
+            }
+        },
         bottomBar = {
             if (!showBackNavigation && onTabSelected != null) {
                 ClientHomeBottomBar(
@@ -100,7 +94,6 @@ fun OrdersListScreen(
             onEvent = onEvent,
             today = today,
             now = now,
-            titleBack = if (showBackNavigation) onNavigateBack else null,
             modifier = Modifier.padding(paddingValues),
         )
     }
@@ -113,18 +106,14 @@ private fun OrdersListBody(
     onEvent: (OrdersListEvent) -> Unit,
     today: LocalDate,
     now: ZonedDateTime,
-    titleBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
         when (state) {
-            OrdersListUiState.Loading -> Column(Modifier.fillMaxSize()) {
-                OrdersListHeader(onNavigateBack = titleBack)
-                OficiosSkeletonList(
-                    contentDescription = stringResource(R.string.orders_loading),
-                    lines = 3,
-                )
-            }
+            OrdersListUiState.Loading -> OficiosSkeletonList(
+                contentDescription = stringResource(R.string.orders_loading),
+                lines = 3,
+            )
             is OrdersListUiState.Error -> {
                 val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
                     onEvent(OrdersListEvent.Refresh)
@@ -150,7 +139,6 @@ private fun OrdersListBody(
                 onEvent = onEvent,
                 today = today,
                 now = now,
-                titleBack = titleBack,
             )
         }
     }
@@ -163,10 +151,8 @@ private fun OrdersListSuccess(
     onEvent: (OrdersListEvent) -> Unit,
     today: LocalDate,
     now: ZonedDateTime,
-    titleBack: (() -> Unit)?,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        OrdersListHeader(onNavigateBack = titleBack)
         OrdersFilterRow(selected = state.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
         val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
             onEvent(OrdersListEvent.Refresh)
@@ -183,9 +169,9 @@ private fun OrdersListSuccess(
                 label = "OrdersListEmptyTransition",
             ) { current ->
                 val visibleOrders = current.visibleOrders(now)
+                val history = current.filter == OrdersListFilter.HISTORY
+                val worker = current.viewerRole == UserRole.PROVIDER
                 if (visibleOrders.isEmpty()) {
-                    val history = current.filter == OrdersListFilter.HISTORY
-                    val worker = current.viewerRole == UserRole.PROVIDER
                     RefreshablePlaceholder {
                         OficiosEmptyState(
                             title = stringResource(
@@ -208,7 +194,11 @@ private fun OrdersListSuccess(
                         )
                     }
                 } else {
-                    val groups = groupAgendaAppointments(visibleOrders, today)
+                    val groups = groupAgendaAppointments(
+                        visibleOrders,
+                        today,
+                        newestFirst = history,
+                    )
                     val undated = visibleOrders.filter { it.scheduledDate() == null }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -262,15 +252,6 @@ private fun OrdersListSuccess(
             }
         }
     }
-}
-
-@Composable
-private fun OrdersListHeader(onNavigateBack: (() -> Unit)?) {
-    OficiosScreenTitle(
-        title = stringResource(R.string.orders_title),
-        onNavigateBack = onNavigateBack,
-        modifier = Modifier.padding(OficiosSpacing.OficiosScreenPadding).padding(bottom = 0.dp),
-    )
 }
 
 @Composable

@@ -49,7 +49,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
@@ -75,7 +75,7 @@ fun SettingsScreen(
                     onBack = { onEvent(SettingsEvent.NavigateBack) },
                 )
             } else {
-                OficiosTopAppBar(title = stringResource(R.string.settings_title))
+                OficiosRootTopBar(title = stringResource(R.string.settings_title))
             }
         },
         bottomBar = bottomBar,

@@ -33,7 +33,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -66,6 +66,12 @@ fun WorkerProfileScreen(
     val haptics = rememberOficiosHaptics()
     OficiosScaffold(
         modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.home_worker_profile_title),
+                onBack = { onEvent(WorkerProfileEvent.Back) },
+            )
+        },
         bottomBar = {
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
@@ -138,10 +144,6 @@ private fun WorkerProfileContent(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        OficiosScreenTitle(
-            title = stringResource(R.string.home_worker_profile_title),
-            onNavigateBack = { onEvent(WorkerProfileEvent.Back) },
-        )
         WorkerProfileHeader(
             profile = uiState.profile,
             onFavoriteClick = { onEvent(WorkerProfileEvent.FavoriteClicked) },

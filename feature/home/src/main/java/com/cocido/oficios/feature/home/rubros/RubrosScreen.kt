@@ -19,7 +19,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificatio
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.home.R
@@ -39,8 +39,23 @@ fun RubrosScreen(
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = null,
 ) {
+    val topBarTitle = (uiState as? RubrosUiState.Success)?.categoryName
+        ?: stringResource(R.string.home_categories_title)
     OficiosScaffold(
         modifier = modifier,
+        topBar = {
+            OficiosBackTopBar(
+                title = topBarTitle,
+                onBack = { onEvent(RubrosEvent.Back) },
+                actions = {
+                    OficiosNotificationButton(
+                        onClick = { onEvent(RubrosEvent.OpenNotifications) },
+                        contentDescription = stringResource(R.string.home_notifications),
+                        unreadCount = unreadNotificationCount,
+                    )
+                },
+            )
+        },
         bottomBar = {
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
@@ -75,7 +90,6 @@ fun RubrosScreen(
                 ) {
                     RubrosContent(
                         state = state,
-                        unreadNotificationCount = unreadNotificationCount,
                         onEvent = onEvent,
                     )
                 }
@@ -87,7 +101,6 @@ fun RubrosScreen(
 @Composable
 private fun RubrosContent(
     state: RubrosUiState.Success,
-    unreadNotificationCount: Int,
     onEvent: (RubrosEvent) -> Unit,
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -98,17 +111,6 @@ private fun RubrosContent(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = state.categoryName,
-            onNavigateBack = { onEvent(RubrosEvent.Back) },
-            trailingAction = {
-                OficiosNotificationButton(
-                    onClick = { onEvent(RubrosEvent.OpenNotifications) },
-                    contentDescription = stringResource(R.string.home_notifications),
-                    unreadCount = unreadNotificationCount,
-                )
-            },
-        )
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { searchQuery = it },

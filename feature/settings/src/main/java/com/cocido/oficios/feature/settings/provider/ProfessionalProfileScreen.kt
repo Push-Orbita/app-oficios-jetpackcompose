@@ -35,7 +35,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPha
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
@@ -50,7 +50,14 @@ fun ProfessionalProfileScreen(
     uiState: ProfessionalProfileUiState,
     onEvent: (ProfessionalProfileEvent) -> Unit,
 ) {
-    OficiosScaffold { padding ->
+    OficiosScaffold(
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.professional_profile_title),
+                onBack = { onEvent(ProfessionalProfileEvent.Back) },
+            )
+        },
+    ) { padding ->
         OficiosStateContent(
             targetState = uiState,
             modifier = Modifier.padding(padding),
@@ -91,10 +98,6 @@ private fun ProfessionalProfileForm(
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        OficiosScreenTitle(
-            title = stringResource(R.string.professional_profile_title),
-            onNavigateBack = { onEvent(ProfessionalProfileEvent.Back) },
-        )
         Text(
             text = stringResource(R.string.professional_profile_oficios),
             style = MaterialTheme.typography.titleMedium,
