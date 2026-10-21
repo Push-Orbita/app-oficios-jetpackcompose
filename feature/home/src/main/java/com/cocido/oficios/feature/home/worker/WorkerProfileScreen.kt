@@ -51,6 +51,7 @@ import com.cocido.oficios.feature.home.worker.components.WorkerGalleryViewer
 import com.cocido.oficios.feature.home.worker.components.WorkerProfileHeader
 import com.cocido.oficios.feature.home.worker.components.WorkerReviewsSection
 
+/** Ficha trabajador — fuente de verdad Flujos `613:460` / `453:343`. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkerProfileScreen(
