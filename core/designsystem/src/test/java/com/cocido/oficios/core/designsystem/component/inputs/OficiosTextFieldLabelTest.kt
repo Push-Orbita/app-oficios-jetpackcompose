@@ -62,7 +62,7 @@ class OficiosTextFieldLabelTest {
             onValueChange = {},
             label = "D.N.I.",
             isError = true,
-            supportingText = "Ingresá un D.N.I. válido",
+            supportingText = "Ingrese un D.N.I. válido",
             modifier = Modifier.fillMaxWidth(),
         )
     }

@@ -266,8 +266,8 @@ private fun LoadingPreview() {
 private fun EmptyPreview() {
     OficiosTheme {
         OficiosEmptyState(
-            title = "No tenés pedidos activos",
-            description = "Cuando recibas un pedido aparecerá aquí.",
+            title = "No tiene pedidos activos",
+            description = "Cuando reciba un pedido aparecerá aquí.",
             variant = OficiosEmptyVariant.NoOrders,
             ctaLabel = "Explorar categorías",
             onCta = {},
@@ -281,7 +281,7 @@ private fun ErrorPreview() {
     OficiosTheme {
         OficiosErrorState(
             title = "Sin conexión",
-            description = "Revisá tu conexión a Internet e intentá nuevamente.",
+            description = "Revise su conexión a Internet e intente nuevamente.",
             isNetworkError = true,
             onRetry = {},
         )

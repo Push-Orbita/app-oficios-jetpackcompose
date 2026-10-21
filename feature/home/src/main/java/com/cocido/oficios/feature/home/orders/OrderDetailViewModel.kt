@@ -93,7 +93,7 @@ class OrderDetailViewModel @Inject constructor(
             is OrderDetailEvent.LocationPermissionGranted -> performLocationAction(event.action)
             is OrderDetailEvent.LocationPermissionDenied -> emitEffect(
                 OrderDetailEffect.ShowMessage(
-                    "Para compartir el recorrido necesitamos ubicación precisa. Podés habilitarla desde los ajustes del teléfono.",
+                    "Para compartir el recorrido necesitamos ubicación precisa. Puede habilitarla desde los ajustes del teléfono.",
                 ),
             )
             OrderDetailEvent.Finalize -> Unit
@@ -347,7 +347,7 @@ class OrderDetailViewModel @Inject constructor(
         val code = rawCode.trim()
         if (code.length != 6) {
             _uiState.update {
-                current.copy(completionCodeError = "Ingresá el código de 6 dígitos que ve el cliente en el pedido.")
+                current.copy(completionCodeError = "Ingrese el código de 6 dígitos que ve el cliente en el pedido.")
             }
             return
         }

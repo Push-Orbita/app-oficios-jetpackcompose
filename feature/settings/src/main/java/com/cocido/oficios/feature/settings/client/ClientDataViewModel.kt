@@ -73,7 +73,7 @@ class ClientDataViewModel @Inject constructor(
             }
             ClientDataEvent.UseCurrentLocation -> useCurrentLocation()
             ClientDataEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Para usar tu ubicación, permití el acceso cuando Android te lo solicite. También podés marcar el punto manualmente.")
+                it.copy(errorMessage = "Para usar su ubicación, permita el acceso cuando Android se lo solicite. También puede marcar el punto manualmente.")
             }
             is ClientDataEvent.AddressFavoriteChanged -> update { it.copy(addressFavorite = event.value) }
             ClientDataEvent.SaveDomicilio -> saveDomicilio()
@@ -167,10 +167,10 @@ class ClientDataViewModel @Inject constructor(
         val state = _uiState.value
         val phone = AuthValidators.normalizeArgentinePhone(state.contactPhone)
         val error = when {
-            state.contactName.isBlank() -> "Ingresá un nombre para identificar este contacto."
-            phone.length != 11 || !phone.startsWith("9") -> "Ingresá el celular con el 9 de móvil, sin +54."
+            state.contactName.isBlank() -> "Ingrese un nombre para identificar este contacto."
+            phone.length != 11 || !phone.startsWith("9") -> "Ingrese el celular con el 9 de móvil, sin +54."
             state.contactEmail.isNotBlank() && AuthValidators.validateEmail(state.contactEmail.trim()) != null ->
-                "Ingresá un correo válido o dejalo vacío."
+                "Ingrese un correo válido o déjelo vacío."
             else -> null
         }
         if (error != null) {
@@ -228,9 +228,9 @@ class ClientDataViewModel @Inject constructor(
         val barrioId = state.barrioId
         val personaId = state.personaId
         val error = when {
-            barrioId == null -> "Seleccioná un barrio de la lista."
-            state.street.isBlank() -> "Ingresá la calle."
-            state.number.isBlank() -> "Ingresá la altura."
+            barrioId == null -> "Seleccione un barrio de la lista."
+            state.street.isBlank() -> "Ingrese la calle."
+            state.number.isBlank() -> "Ingrese la altura."
             state.editingId == null && personaId == null -> "No pudimos identificar a qué cuenta pertenece el domicilio."
             else -> null
         }

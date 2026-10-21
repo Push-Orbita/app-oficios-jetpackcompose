@@ -12,7 +12,7 @@ private const val SELFIE_FILE_PREFIX = "selfie"
 
 internal fun validateDniImageFile(file: File, sideLabel: String) {
     if (!file.exists() || file.length() == 0L) {
-        throw ClientValidationException("La imagen del $sideLabel está vacía. Volvé a cargarla.")
+        throw ClientValidationException("La imagen del $sideLabel está vacía. Vuelva a cargarla.")
     }
 
     val extension = file.extension

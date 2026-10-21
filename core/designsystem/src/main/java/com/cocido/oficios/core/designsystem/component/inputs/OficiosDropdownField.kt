@@ -90,7 +90,7 @@ private fun DropdownFieldPreview() {
                 options = listOf("Construcción", "Mantenimiento", "Bienestar"),
                 onOptionSelected = {},
                 label = "Rubro",
-                placeholder = "Seleccioná un rubro",
+                placeholder = "Seleccione un rubro",
             )
         }
     }

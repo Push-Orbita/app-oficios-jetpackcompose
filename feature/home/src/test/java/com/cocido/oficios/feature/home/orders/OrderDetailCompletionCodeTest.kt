@@ -122,7 +122,7 @@ class OrderDetailCompletionCodeTest {
     fun `rate limited resend is ignored and the current code is fetched without errors`() = runTest(testDispatcher) {
         val orders = CodeOrderRepository(detailCode = null, currentCode = "555555").apply {
             resendResult = AppResult.Error(
-                AppError.Network("Esperá un momento", code = 429, backendCode = "COMPLETION_CODE_RATE_LIMITED"),
+                AppError.Network("Espere un momento", code = 429, backendCode = "COMPLETION_CODE_RATE_LIMITED"),
             )
         }
         val viewModel = viewModel(orders)

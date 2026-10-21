@@ -77,7 +77,7 @@ class ProfessionalProfileViewModel @Inject constructor(
         val state = _uiState.value
         if (state.description.isBlank() || state.experience.isBlank() || state.paymentMethods.isEmpty()) {
             _uiState.update {
-                it.copy(errorMessage = "Completá tu presentación, experiencia y al menos un medio de cobro.")
+                it.copy(errorMessage = "Complete su presentación, experiencia y al menos un medio de cobro.")
             }
             return
         }

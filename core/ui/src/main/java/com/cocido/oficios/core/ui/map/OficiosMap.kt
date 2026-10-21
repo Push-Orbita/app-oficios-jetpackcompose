@@ -109,7 +109,7 @@ fun OficiosLocationPicker(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = "Mové el mapa o tocá un punto para ubicar la entrada. Podés corregirla manualmente.",
+            text = "Mueva el mapa o toque un punto para ubicar la entrada. Puede corregirla manualmente.",
             style = MaterialTheme.typography.bodySmall,
             color = OficiosColorSecondaryText,
         )
@@ -161,7 +161,7 @@ fun OficiosLocationPicker(
                         tint = OficiosColorWhite,
                     )
                     Text(
-                        text = "No pudimos cargar el mapa. Usá tu ubicación actual para guardar el domicilio.",
+                        text = "No pudimos cargar el mapa. Use su ubicación actual para guardar el domicilio.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
