@@ -136,6 +136,9 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
     val pendingCounterOffer = contrapropuestas
         .firstOrNull { it.estado.equals("PENDIENTE", ignoreCase = true) }
         ?.toDomain()
+    val acceptedPrice = contrapropuestas
+        .firstOrNull { it.estado.equals("ACEPTADA", ignoreCase = true) }
+        ?.nuevoPrecio
 
     return ServiceOrder(
         id = id,
@@ -164,6 +167,7 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         canCancelBooking = booking?.puedeCancelar ?: false,
         cancellationDeadlineLabel = booking?.fechaLimiteCancelacion.toDisplayDateLabel(),
         pendingCounterOffer = pendingCounterOffer,
+        acceptedPrice = acceptedPrice,
         completionCode = booking?.codigoFinalizacion,
         workerAvatarUrl = trabajadorOficio?.usuario?.fotoPerfil.toPhotoUrl(),
         clientAvatarUrl = cliente?.usuario?.fotoPerfil.toPhotoUrl(),

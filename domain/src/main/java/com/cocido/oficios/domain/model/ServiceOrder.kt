@@ -52,6 +52,8 @@ data class ServiceOrder(
     /** `fechaLimiteCancelacion` del booking, ya formateada. */
     val cancellationDeadlineLabel: String? = null,
     val pendingCounterOffer: CounterOffer? = null,
+    /** `nuevoPrecio` de una contrapropuesta ACEPTADA, si el backend la envía. */
+    val acceptedPrice: Double? = null,
     val alreadyRated: Boolean = false,
     val qualityScore: Int? = null,
     val punctualityScore: Int? = null,
@@ -122,6 +124,9 @@ fun ServiceOrderListItem.isElapsedUnstartedSlot(now: ZonedDateTime): Boolean {
 /** LLEGUE en el tracking deja el pedido en la misma UI que EN_CURSO: el código de finalización. */
 private fun ServiceOrderListItem.isPendingFirst(): Boolean =
     status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER
+
+/** Precio a mostrar: contrapropuesta pendiente o la ya aceptada. No hay monto ni medio de pago en el booking. */
+fun ServiceOrder.displayPrice(): Double? = pendingCounterOffer?.proposedPrice ?: acceptedPrice
 
 fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
     if (!trackingStatus.orEmpty().trim().equals("LLEGUE", ignoreCase = true)) return this

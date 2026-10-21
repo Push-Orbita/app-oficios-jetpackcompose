@@ -101,7 +101,9 @@ import com.cocido.oficios.core.ui.map.OficiosTrackingMap
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.UserRole
+import com.cocido.oficios.domain.model.displayPrice
 
+/** Detalle de pedido — Flujos `613:572` Confirmado, `613:637` Pendiente, `613:982` Terminar. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderDetailScreen(
@@ -263,20 +265,21 @@ private fun OrderDetailContent(
                 value = time,
             )
         }
-        order.pendingCounterOffer?.proposedPrice?.let { price ->
+        order.displayPrice()?.let { price ->
             OrderDetailLabeledRow(
                 icon = OficiosIcons.DollarSign,
                 label = stringResource(R.string.orders_field_amount),
                 value = formatArsAmount(price),
-                trailing = stringResource(R.string.orders_payment_cash),
             )
         }
-        order.cancellationDeadlineLabel?.takeIf { it.isNotBlank() }?.let { deadline ->
-            OrderDetailLabeledRow(
-                icon = OficiosIcons.Clock,
-                label = stringResource(R.string.orders_cancel_deadline, deadline),
-                value = deadline,
-            )
+        if (order.status == ServiceRequestStatus.PENDING) {
+            order.cancellationDeadlineLabel?.takeIf { it.isNotBlank() }?.let { deadline ->
+                OrderDetailLabeledRow(
+                    icon = OficiosIcons.Clock,
+                    label = stringResource(R.string.orders_cancel_deadline, deadline),
+                    value = deadline,
+                )
+            }
         }
 
         when {
@@ -803,8 +806,8 @@ private fun OrderDetailLabeledRow(
         modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
-        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+        verticalAlignment = Alignment.Top,
     ) {
         Box(
             modifier = Modifier
