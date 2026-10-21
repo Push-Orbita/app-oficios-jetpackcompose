@@ -91,7 +91,7 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 
 | Pantalla | Nodo | Diff pixel | Commit | Notas |
 |---|---|---|---|---|
-| Home trabajador | `191:11` + `259:534` | 15.6% incompleto / 33.5% completo | este PR | Incompleto: Beneficios + Completa Tu Perfil 80% + calendario. Completo: sin perfil; Beneficios queda (Figma `259:534` no lo tiene). Agenda completa solo por el link. |
+| Home trabajador | `191:11` + `259:534` | 15.6% incompleto / 33.5% completo | `ad703ed` | Incompleto: Beneficios + Completa Tu Perfil 80% + calendario. Completo: sin perfil; Beneficios queda (Figma `259:534` no lo tiene). Agenda completa solo por el link. |
 | Home cliente | `25:95` | ~9.6% (nav acordada, placeholder usted, datos reales) | `6d3bea5` | Recientes sin "Ver todos"; 3 cards r16 |
 | Detalle pedido | `198:697` | ~35.8% (mapa sin API key, D-DIN, P9 427 vs 440) | `64c68c1` | Mapa 248 dp → filas icon-box + Contacto/Estoy En Camino a la derecha; sin chips/avatar |
 | Ficha trabajador | `40:559` | ~33.7% (sin foto, nav 4 vs 5) | `d491c96` | Título + card + oficios/especializado + Contactar/Calificar + Trabajos realizados |
