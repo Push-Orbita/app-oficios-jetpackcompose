@@ -44,7 +44,8 @@ class RegisterViewModel @Inject constructor(
 
     fun onEvent(event: RegisterFormEvent) {
         when (event) {
-            is RegisterFormEvent.FullNameChanged -> update { it.copy(fullName = event.value, fullNameError = null) }
+            is RegisterFormEvent.FirstNameChanged -> update { it.copy(firstName = event.value, firstNameError = null) }
+            is RegisterFormEvent.LastNameChanged -> update { it.copy(lastName = event.value, lastNameError = null) }
             is RegisterFormEvent.EmailChanged -> update { it.copy(email = event.value, emailError = null) }
             is RegisterFormEvent.PasswordChanged -> update { it.copy(password = event.value, passwordError = null) }
             is RegisterFormEvent.ConfirmPasswordChanged -> update {
@@ -74,8 +75,6 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        val (firstName, lastName) = AuthValidators.splitFullName(state.fullName)
-
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
             when (mode) {
@@ -83,8 +82,8 @@ class RegisterViewModel @Inject constructor(
                     when (
                         val result = registerClientUseCase(
                             RegisterClientRequest(
-                                firstName = firstName,
-                                lastName = lastName,
+                                firstName = state.firstName.trim(),
+                                lastName = state.lastName.trim(),
                                 email = state.email.trim(),
                                 password = state.password,
                                 document = state.document.trim(),
@@ -110,8 +109,8 @@ class RegisterViewModel @Inject constructor(
                     when (
                         val result = registerProviderUseCase(
                             RegisterProviderRequest(
-                                firstName = firstName,
-                                lastName = lastName,
+                                firstName = state.firstName.trim(),
+                                lastName = state.lastName.trim(),
                                 email = state.email.trim(),
                                 password = state.password,
                                 document = state.document.trim(),
@@ -138,7 +137,8 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun validate(state: RegisterFormUiState): RegisterFormUiState? {
-        val fullNameError = AuthValidators.validateFullName(state.fullName)
+        val firstNameError = AuthValidators.validateName(state.firstName, "nombres")
+        val lastNameError = AuthValidators.validateName(state.lastName, "apellido")
         val emailError = AuthValidators.validateEmail(state.email)
         val passwordError = AuthValidators.validatePassword(state.password)
         val confirmPasswordError = AuthValidators.validatePasswordConfirmation(
@@ -149,11 +149,12 @@ class RegisterViewModel @Inject constructor(
         val termsError = if (!state.acceptedTerms) "Debe aceptar los términos" else null
 
         return if (
-            listOf(fullNameError, emailError, passwordError, confirmPasswordError, documentError, termsError)
+            listOf(firstNameError, lastNameError, emailError, passwordError, confirmPasswordError, documentError, termsError)
                 .any { it != null }
         ) {
             state.copy(
-                fullNameError = fullNameError,
+                firstNameError = firstNameError,
+                lastNameError = lastNameError,
                 emailError = emailError,
                 passwordError = passwordError,
                 confirmPasswordError = confirmPasswordError,
@@ -166,7 +167,8 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun RegisterFormUiState.validated(): RegisterFormUiState {
-        val baseValid = AuthValidators.validateFullName(fullName) == null &&
+        val baseValid = AuthValidators.validateName(firstName, "nombres") == null &&
+            AuthValidators.validateName(lastName, "apellido") == null &&
             AuthValidators.validateEmail(email) == null &&
             AuthValidators.validatePassword(password) == null &&
             AuthValidators.validatePasswordConfirmation(password, confirmPassword) == null &&

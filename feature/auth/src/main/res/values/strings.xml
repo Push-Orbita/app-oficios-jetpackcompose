@@ -28,8 +28,7 @@
     <string name="auth_register_client_screen_title">Registro de cliente</string>
     <string name="auth_register_provider_screen_title">Registro de trabajador</string>
     <string name="auth_register_subtitle">Ingrese sus datos para crear su cuenta</string>
-    <string name="auth_full_name_label">Nombre completo</string>
-    <string name="auth_first_name_label">Nombre</string>
+    <string name="auth_first_name_label">Nombres</string>
     <string name="auth_last_name_label">Apellido</string>
     <string name="auth_email_electronic_label">Correo electrónico</string>
     <string name="auth_register_email_hint">Le enviaremos un código para validar el correo electrónico ingresado</string>

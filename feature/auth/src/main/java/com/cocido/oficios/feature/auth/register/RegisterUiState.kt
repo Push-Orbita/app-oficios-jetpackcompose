@@ -6,7 +6,8 @@ sealed interface RegisterRoleEvent {
 }
 
 sealed interface RegisterFormEvent {
-    data class FullNameChanged(val value: String) : RegisterFormEvent
+    data class FirstNameChanged(val value: String) : RegisterFormEvent
+    data class LastNameChanged(val value: String) : RegisterFormEvent
     data class EmailChanged(val value: String) : RegisterFormEvent
     data class PasswordChanged(val value: String) : RegisterFormEvent
     data class ConfirmPasswordChanged(val value: String) : RegisterFormEvent
@@ -18,13 +19,15 @@ sealed interface RegisterFormEvent {
 }
 
 data class RegisterFormUiState(
-    val fullName: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val document: String = "",
     val acceptedTerms: Boolean = false,
-    val fullNameError: String? = null,
+    val firstNameError: String? = null,
+    val lastNameError: String? = null,
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
