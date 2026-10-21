@@ -129,8 +129,8 @@ private fun ProfileMilestonePreview() {
         ) {
             ProfileProgressBar(percent = 80)
             Row {
-                ProfileMilestoneTile("Agrega fotos a tu galería", done = true, modifier = Modifier.weight(1f))
-                ProfileMilestoneTile("Agrega tu local comercial", done = false, modifier = Modifier.weight(1f))
+                ProfileMilestoneTile("Agregue fotos a su galería", done = true, modifier = Modifier.weight(1f))
+                ProfileMilestoneTile("Agregue su local comercial", done = false, modifier = Modifier.weight(1f))
             }
         }
     }

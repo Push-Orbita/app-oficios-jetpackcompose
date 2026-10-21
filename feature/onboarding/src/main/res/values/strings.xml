@@ -83,7 +83,7 @@
     <string name="onboarding_step_professional_title">Información profesional</string>
     <string name="onboarding_step_professional_description_label">Descripción</string>
     <string name="onboarding_step_professional_experience_label">Experiencia</string>
-    <string name="onboarding_step_rubros_title">Elegí tu categoría</string>
+    <string name="onboarding_step_rubros_title">Elija su categoría</string>
     <string name="onboarding_step_rubros_category_label">Categoría</string>
     <string name="onboarding_step_rubros_trade_label">Rubro</string>
     <string name="onboarding_step_rubros_select_placeholder">Seleccionar</string>

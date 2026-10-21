@@ -123,18 +123,18 @@
         <item quantity="other">(%d reseñas)</item>
     </plurals>
     <string name="provider_home_benefits_title">Beneficios</string>
-    <string name="provider_home_benefit_services">Todos tus servicios en un mismo espacio</string>
+    <string name="provider_home_benefit_services">Todos sus servicios en un mismo espacio</string>
     <string name="provider_home_benefit_services_emphasis">Todos</string>
     <string name="provider_home_benefit_reach">Mayor alcance a potenciales clientes</string>
     <string name="provider_home_benefit_reach_emphasis">alcance</string>
-    <string name="provider_home_benefit_efficient">Organizate de manera más eficiente</string>
+    <string name="provider_home_benefit_efficient">Organícese de manera más eficiente</string>
     <string name="provider_home_benefit_efficient_emphasis">eficiente</string>
-    <string name="provider_home_complete_profile_title">Completa Tu Perfil</string>
+    <string name="provider_home_complete_profile_title">Complete su perfil</string>
     <string name="provider_home_complete_profile_percent">%1$d%%</string>
     <string name="provider_home_complete_profile_link">completar perfil</string>
-    <string name="provider_home_tile_gallery">Agrega fotos a tu galería</string>
-    <string name="provider_home_tile_local">Agrega tu local comercial</string>
-    <string name="provider_home_tile_certificate">Agrega un certificado</string>
+    <string name="provider_home_tile_gallery">Agregue fotos a su galería</string>
+    <string name="provider_home_tile_local">Agregue su local comercial</string>
+    <string name="provider_home_tile_certificate">Agregue un certificado</string>
     <string name="provider_home_agenda_today_tag">HOY</string>
     <string name="provider_home_agenda_now_tag">AHORA</string>
     <string name="provider_home_pending_validation">Pendiente de validación</string>
@@ -375,8 +375,8 @@
     <string name="agenda_config_division_30">30 minutos</string>
     <string name="agenda_config_division_60">1 hora</string>
     <string name="agenda_config_division_120">2 horas</string>
-    <string name="agenda_config_hours_hint">Podés marcar hasta 12 horas en un mismo día</string>
-    <string name="agenda_config_applies_note">El calendario aplica para todos los oficios que agregas, para cambiar sobre un oficio en específico podés hacerlo acá abajo.</string>
+    <string name="agenda_config_hours_hint">Puede marcar hasta 12 horas en un mismo día</string>
+    <string name="agenda_config_applies_note">El calendario aplica para todos los oficios que agregue. Para cambiarlo sobre un oficio en específico, puede hacerlo acá abajo.</string>
     <string name="agenda_config_general_subtitle">Calendario General</string>
     <string name="agenda_config_loading">Cargando configuración…</string>
     <string name="agenda_config_error">No pudimos cargar su configuración</string>
@@ -393,8 +393,8 @@
     <string name="agenda_config_delete_confirm">Eliminar</string>
     <string name="agenda_config_interval_value">Intervalo: %1$s min</string>
     <string name="agenda_config_delete_action">Eliminar configuración</string>
-    <string name="create_order_title">Completá tu Solicitud</string>
-    <string name="create_order_title_request">Completá tu Solicitud</string>
+    <string name="create_order_title">Complete su solicitud</string>
+    <string name="create_order_title_request">Complete su solicitud</string>
     <string name="create_order_title_schedule">Agendar Cita</string>
     <string name="create_order_title_summary">Solicitud</string>
     <string name="create_order_loading">Cargando datos…</string>
@@ -406,7 +406,7 @@
     <string name="create_order_location">Ubicación</string>
     <string name="create_order_add_location">Añadir nueva ubicación</string>
     <string name="locations_title">Mis Ubicaciones</string>
-    <string name="locations_add_placeholder">Agrega la nueva ubicación</string>
+    <string name="locations_add_placeholder">Agregue la nueva ubicación</string>
     <string name="locations_mark_map">Marcar en el mapa</string>
     <string name="locations_add_new">Añadir nueva ubicación</string>
     <string name="locations_hint">Puede guardar la ubicación para un acceso más rápido en una próxima solicitud</string>

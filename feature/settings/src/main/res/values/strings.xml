@@ -187,7 +187,7 @@
     <string name="services_continue">Continuar</string>
     <string name="services_category">Categoría</string>
     <string name="services_category_hint">Seleccione una categoría</string>
-    <string name="services_elegi_rubro_title">Elegí Rubro</string>
+    <string name="services_elegi_rubro_title">Elija rubro</string>
     <string name="services_elegi_rubro_hint">Seleccione la categoría y el rubro de este servicio.</string>
     <string name="services_trade">Oficio</string>
     <string name="services_trade_hint_locked">Primero seleccione una categoría</string>

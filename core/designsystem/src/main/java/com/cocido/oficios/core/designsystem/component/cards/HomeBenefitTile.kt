@@ -68,7 +68,7 @@ fun emphasizedBody(full: String, emphasis: String): AnnotatedString {
 private fun HomeBenefitTilePreview() {
     OficiosTheme {
         HomeBenefitTile(
-            text = emphasizedBody("Todos tus servicios en un mismo espacio", "Todos"),
+            text = emphasizedBody("Todos sus servicios en un mismo espacio", "Todos"),
             modifier = Modifier.padding(OficiosSpacing.md),
         )
     }
