@@ -42,8 +42,10 @@ class ProfileScreensTest {
             }
         }
         composeRule.onNodeWithText("Trabajador Prueba").assertIsDisplayed()
-        composeRule.onNodeWithText("Servicios que ofrecés").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Galería y certificados").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Editar Perfil").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Oficios, trabajos realizados y certificados").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Servicios que ofrece").assertDoesNotExist()
+        composeRule.onNodeWithText("Galería y certificados").assertDoesNotExist()
         composeRule.onNodeWithText("Eliminar cuenta").performScrollTo().assertIsDisplayed()
     }
 
@@ -57,7 +59,7 @@ class ProfileScreensTest {
                 )
             }
         }
-        composeRule.onNodeWithText("El número se valida por WhatsApp. Argentina usa +54 y vos ingresás solo el número local, por ejemplo 9 370 5219109.").assertIsDisplayed()
+        composeRule.onNodeWithText("El número se valida por WhatsApp. Argentina usa +54 y usted ingresa solo el número local, por ejemplo 9 370 5219109.").assertIsDisplayed()
         composeRule.onNodeWithText("11 dígitos con el 9").assertIsDisplayed()
         composeRule.onNodeWithText("Guardar y verificar").assertIsDisplayed()
     }
@@ -103,7 +105,7 @@ class ProfileScreensTest {
             }
         }
         composeRule.onNodeWithText("Servicio principal").assertIsDisplayed()
-        composeRule.onNodeWithText("El servicio principal se conserva para proteger tu perfil y tus pedidos activos.").assertIsDisplayed()
+        composeRule.onNodeWithText("El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar especialidades, modalidad y horarios.").assertIsDisplayed()
     }
 
     @Test
@@ -136,7 +138,30 @@ class ProfileScreensTest {
         }
         composeRule.onNodeWithText("Eliminar cuenta").assertIsDisplayed()
         composeRule.onNodeWithText("Contraseña actual").assertIsDisplayed()
-        composeRule.onNodeWithText("Escribí ELIMINAR").assertIsDisplayed()
+        composeRule.onNodeWithText("Escriba ELIMINAR").assertIsDisplayed()
         composeRule.onNodeWithText("Eliminar mi cuenta").assertIsDisplayed()
+    }
+
+    @Test
+    fun settings_logoutButtonIsVisible() {
+        composeRule.setContent {
+            OficiosTheme {
+                SettingsScreen(
+                    uiState = SettingsUiState(
+                        isLoading = false,
+                        profile = AccountProfile(
+                            user = User(9, "trabajador@test.com", "Trabajador", "Prueba", UserRole.PROVIDER, true),
+                            providerDetails = ProviderAccountDetails(
+                                9, "VALIDADO", "99887766", "Descripción", "Experiencia",
+                                emptyList(), emptyList(), emptyList(), emptyList(),
+                            ),
+                        ),
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Ayuda").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cerrar sesión").performScrollTo().assertIsDisplayed()
     }
 }

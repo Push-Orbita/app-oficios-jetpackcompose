@@ -80,7 +80,7 @@ fun HelpScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(OficiosSpacing.lg)
+                .padding(OficiosSpacing.OficiosScreenPaddingAfterTopBar)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
         ) {

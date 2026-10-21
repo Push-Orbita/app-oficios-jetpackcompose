@@ -150,6 +150,7 @@ fun RegisterFormScreen(
         )
         Spacer(Modifier.height(OficiosComponentSize.authRegisterSubtitleToField))
 
+        val lastNameFocus = remember { FocusRequester() }
         val documentFocus = remember { FocusRequester() }
         val emailFocus = remember { FocusRequester() }
         val passwordFocus = remember { FocusRequester() }
@@ -160,13 +161,25 @@ fun RegisterFormScreen(
             }
 
             OficiosTextField(
-                value = uiState.fullName,
-                onValueChange = { onEvent(RegisterFormEvent.FullNameChanged(it)) },
-                label = stringResource(R.string.auth_full_name_label),
-                placeholder = stringResource(R.string.auth_full_name_label),
+                value = uiState.firstName,
+                onValueChange = { onEvent(RegisterFormEvent.FirstNameChanged(it)) },
+                label = stringResource(R.string.auth_first_name_label),
+                placeholder = stringResource(R.string.auth_first_name_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.fullNameError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.fullNameError else null,
+                isError = uiState.hasAttemptedSubmit && uiState.firstNameError != null,
+                supportingText = if (uiState.hasAttemptedSubmit) uiState.firstNameError else null,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { lastNameFocus.requestFocus() }),
+            )
+            OficiosTextField(
+                value = uiState.lastName,
+                onValueChange = { onEvent(RegisterFormEvent.LastNameChanged(it)) },
+                label = stringResource(R.string.auth_last_name_label),
+                placeholder = stringResource(R.string.auth_last_name_label),
+                floatingLabel = false,
+                isError = uiState.hasAttemptedSubmit && uiState.lastNameError != null,
+                supportingText = if (uiState.hasAttemptedSubmit) uiState.lastNameError else null,
+                modifier = Modifier.focusRequester(lastNameFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { documentFocus.requestFocus() }),
             )

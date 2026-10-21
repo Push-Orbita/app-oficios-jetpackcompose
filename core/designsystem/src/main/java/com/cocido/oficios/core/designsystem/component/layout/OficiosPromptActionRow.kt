@@ -19,7 +19,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
  * Fila "texto + acción secundaria" que se usa al pie de los formularios de auth
- * (ej. «¿Ya tenés cuenta?» + Iniciar sesión).
+ * (ej. «¿Ya tiene cuenta?» + Iniciar sesión).
  *
  * Con fuente estándar se muestra en una sola fila con el texto a la izquierda y
  * el botón a la derecha. A partir de fontScale grande (>= 1.3) degrada a columna
@@ -85,7 +85,7 @@ fun OficiosPromptActionRow(
 private fun OficiosPromptActionRowPreview() {
     OficiosTheme {
         OficiosPromptActionRow(
-            prompt = "¿Todavía no tenés cuenta?",
+            prompt = "¿Todavía no tiene cuenta?",
             actionLabel = "Registrate",
             onAction = {},
         )

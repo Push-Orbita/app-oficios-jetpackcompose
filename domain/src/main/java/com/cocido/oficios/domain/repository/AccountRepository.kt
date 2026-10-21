@@ -36,6 +36,15 @@ interface AccountRepository {
     suspend fun updateProviderProfessionalInfo(request: ProviderProfessionalInfoRequest): AppResult<Unit>
     suspend fun addProviderService(request: ProviderRubroFullRequest): AppResult<Unit>
     suspend fun deleteProviderService(id: Long): AppResult<Unit>
+    /**
+     * No hay PATCH atómico de especialidades/modalidad/`diasLaborales`.
+     * Recrea el rubro: DELETE + POST `/full` (principal) o `/full/secundario`.
+     */
+    suspend fun replaceProviderService(
+        existingId: Long,
+        isPrimary: Boolean,
+        request: ProviderRubroFullRequest,
+    ): AppResult<Unit>
 
     suspend fun getCertificates(): AppResult<List<WorkCertificateItem>>
     suspend fun uploadCertificate(name: String, filePath: String): AppResult<WorkCertificateItem>

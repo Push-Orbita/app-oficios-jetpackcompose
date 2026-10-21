@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -20,13 +20,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosDialogActions
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
+import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
+import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.AttentionModality
 import com.cocido.oficios.feature.home.R
@@ -46,6 +48,9 @@ fun SearchFilterBottomSheet(
     ModalBottomSheet(
         onDismissRequest = { onEvent(SearchResultsEvent.DismissFilters) },
         sheetState = sheetState,
+        containerColor = OficiosColorBackground,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        tonalElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
@@ -54,7 +59,11 @@ fun SearchFilterBottomSheet(
                 .padding(bottom = OficiosSpacing.xl),
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
-            Text(text = stringResource(R.string.home_search_filters))
+            Text(
+                text = stringResource(R.string.home_search_filters),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
 
             if (state.categories.isNotEmpty()) {
                 OficiosDropdownField(
@@ -106,6 +115,8 @@ fun SearchFilterBottomSheet(
                 suggestionLabel = { it.label },
                 label = stringResource(R.string.home_filter_zone),
                 placeholder = stringResource(R.string.home_filter_zone_hint),
+                isLoading = state.isSearchingBarrios,
+                onFocused = { onEvent(SearchResultsEvent.FilterBarrioFocused) },
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
@@ -184,14 +195,12 @@ private fun ModalityFilterChip(
     selectedModality: AttentionModality?,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
-    val haptics = rememberOficiosHaptics()
     val selected = selectedModality == modality
-    FilterChip(
+    OficiosFilterChip(
+        label = label,
         selected = selected,
-        onClick = {
-            haptics.tick()
+        onToggle = {
             onEvent(SearchResultsEvent.FilterModalitySelected(if (selected) null else modality))
         },
-        label = { Text(label) },
     )
 }

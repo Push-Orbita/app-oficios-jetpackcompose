@@ -27,7 +27,7 @@ class SubmitReportUseCase @Inject constructor(
         if (reasonCode.isBlank()) {
             return AppResult.Error(
                 AppError.Validation(
-                    message = "Elegí un motivo de la lista.",
+                    message = "Seleccione un motivo de la lista.",
                     backendCode = "REPORT_REASON_INVALID",
                 ),
             )
@@ -35,7 +35,7 @@ class SubmitReportUseCase @Inject constructor(
         if (trimmed.length < MIN_DESCRIPTION_LENGTH) {
             return AppResult.Error(
                 AppError.Validation(
-                    message = "Contanos qué pasó con un poco más de detalle (mínimo $MIN_DESCRIPTION_LENGTH caracteres).",
+                    message = "Cuéntenos qué pasó con un poco más de detalle (mínimo $MIN_DESCRIPTION_LENGTH caracteres).",
                     backendCode = "REPORT_DESCRIPTION_INVALID",
                 ),
             )

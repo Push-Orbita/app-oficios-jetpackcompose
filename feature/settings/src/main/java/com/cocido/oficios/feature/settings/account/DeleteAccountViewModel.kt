@@ -80,9 +80,9 @@ class DeleteAccountViewModel @Inject constructor(
     private fun submit() {
         val state = _uiState.value
         if (state.hasPendingGrace || state.isSubmitting) return
-        val passwordError = if (state.password.isBlank()) "Ingresá tu contraseña actual." else null
+        val passwordError = if (state.password.isBlank()) "Ingrese su contraseña actual." else null
         val confirmationError = if (state.confirmation.trim() != CONFIRMATION_WORD) {
-            "Escribí ELIMINAR para confirmar la baja."
+            "Escriba ELIMINAR para confirmar la baja."
         } else {
             null
         }
@@ -108,9 +108,9 @@ class DeleteAccountViewModel @Inject constructor(
                     emit(
                         DeleteAccountEffect.ShowMessage(
                             if (whenLabel != null) {
-                                "Solicitamos la baja. Tenés tiempo hasta el $whenLabel para cancelarla si volvés a iniciar sesión."
+                                "Solicitamos la baja. Tiene tiempo hasta el $whenLabel para cancelarla si vuelve a iniciar sesión."
                             } else {
-                                "Solicitamos la baja de tu cuenta. Tenés 3 días para cancelarla si volvés a iniciar sesión."
+                                "Solicitamos la baja de su cuenta. Tiene 3 días para cancelarla si vuelve a iniciar sesión."
                             },
                         ),
                     )
@@ -148,7 +148,7 @@ class DeleteAccountViewModel @Inject constructor(
                             confirmation = "",
                         )
                     }
-                    emit(DeleteAccountEffect.ShowMessage("Cancelamos la solicitud de baja. Tu cuenta sigue activa."))
+                    emit(DeleteAccountEffect.ShowMessage("Cancelamos la solicitud de baja. Su cuenta sigue activa."))
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isCancelling = false, errorMessage = result.error.userMessage())

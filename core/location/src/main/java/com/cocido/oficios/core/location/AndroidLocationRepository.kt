@@ -35,7 +35,7 @@ class AndroidLocationRepository @Inject constructor(
     override suspend fun getCurrentLocation(requirePrecise: Boolean): AppResult<GeoPoint> {
         permissionError(requirePrecise)?.let { return AppResult.Error(it) }
         if (!isLocationEnabled()) {
-            return AppResult.Error(AppError.Validation("Activá la ubicación del dispositivo para continuar."))
+            return AppResult.Error(AppError.Validation("Active la ubicación del dispositivo para continuar."))
         }
 
         return try {
@@ -49,14 +49,14 @@ class AndroidLocationRepository @Inject constructor(
                 fusedLocationClient.getCurrentLocation(request, cancellation.token).await()
             }
             if (location == null) {
-                AppResult.Error(AppError.Network("No pudimos obtener tu ubicación. Comprobá la señal e intentá nuevamente."))
+                AppResult.Error(AppError.Network("No pudimos obtener su ubicación. Compruebe la señal e intente nuevamente."))
             } else {
                 AppResult.Success(location.toGeoPoint())
             }
         } catch (_: SecurityException) {
             AppResult.Error(AppError.Forbidden("Necesitamos permiso de ubicación para continuar."))
         } catch (_: Exception) {
-            AppResult.Error(AppError.Network("No pudimos obtener tu ubicación. Intentá nuevamente."))
+            AppResult.Error(AppError.Network("No pudimos obtener su ubicación. Intente nuevamente."))
         }
     }
 
@@ -68,7 +68,7 @@ class AndroidLocationRepository @Inject constructor(
             return@callbackFlow
         }
         if (!isLocationEnabled()) {
-            trySend(AppResult.Error(AppError.Validation("Activá la ubicación del dispositivo para compartir tu recorrido.")))
+            trySend(AppResult.Error(AppError.Validation("Active la ubicación del dispositivo para compartir su recorrido.")))
             close()
             return@callbackFlow
         }
@@ -88,7 +88,7 @@ class AndroidLocationRepository @Inject constructor(
             trySend(AppResult.Error(AppError.Forbidden("Se quitó el permiso de ubicación durante el recorrido.")))
             close()
         } catch (_: Exception) {
-            trySend(AppResult.Error(AppError.Network("No pudimos actualizar tu ubicación.")))
+            trySend(AppResult.Error(AppError.Network("No pudimos actualizar su ubicación.")))
             close()
         }
         awaitClose { fusedLocationClient.removeLocationUpdates(callback) }
@@ -99,7 +99,7 @@ class AndroidLocationRepository @Inject constructor(
         val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
         return when {
             requirePrecise && !hasFine -> AppError.Forbidden(
-                "Permití la ubicación precisa para compartir tu recorrido de forma segura.",
+                "Permita la ubicación precisa para compartir su recorrido de forma segura.",
             )
             !hasFine && !hasCoarse -> AppError.Forbidden("Necesitamos permiso de ubicación para continuar.")
             else -> null

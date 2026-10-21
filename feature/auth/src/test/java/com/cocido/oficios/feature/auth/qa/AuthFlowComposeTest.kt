@@ -1,0 +1,94 @@
+package com.cocido.oficios.feature.auth.qa
+
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.feature.auth.forgot.ForgotPasswordScreen
+import com.cocido.oficios.feature.auth.forgot.ForgotPasswordUiState
+import com.cocido.oficios.feature.auth.login.LoginScreen
+import com.cocido.oficios.feature.auth.login.LoginUiState
+import com.cocido.oficios.feature.auth.register.RegisterFormScreen
+import com.cocido.oficios.feature.auth.register.RegisterFormUiState
+import com.cocido.oficios.feature.auth.register.RegisterMode
+import com.cocido.oficios.feature.auth.splash.SplashScreen
+import com.cocido.oficios.feature.auth.splash.SplashUiState
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
+class AuthFlowComposeTest {
+
+    @get:Rule
+    val composeRule = createComposeRule()
+
+    @Test
+    fun splashLoadingShowsBrand() {
+        composeRule.setContent {
+            OficiosTheme { SplashScreen(uiState = SplashUiState.Loading, onRetry = {}) }
+        }
+        composeRule.onAllNodesWithContentDescription("Oficios Formosa").onFirst().assertIsDisplayed()
+    }
+
+    @Test
+    fun splashErrorShowsRetry() {
+        composeRule.setContent {
+            OficiosTheme {
+                SplashScreen(uiState = SplashUiState.Error("Sin conexión"), onRetry = {})
+            }
+        }
+        composeRule.onNodeWithText("No se pudo iniciar").assertIsDisplayed()
+        composeRule.onNodeWithText("Reintentar").assertIsDisplayed()
+    }
+
+    @Test
+    fun loginUnauthorizedBanner() {
+        composeRule.setContent {
+            OficiosTheme {
+                LoginScreen(
+                    uiState = LoginUiState(bannerError = "Los datos de sesión no coinciden"),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Los datos de sesión no coinciden").assertIsDisplayed()
+        composeRule.onNodeWithText("Correo").assertIsDisplayed()
+    }
+
+    @Test
+    fun registerClientShowsNombresAndApellido() {
+        composeRule.setContent {
+            OficiosTheme {
+                RegisterFormScreen(
+                    mode = RegisterMode.CLIENT,
+                    uiState = RegisterFormUiState(),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Nombres").assertIsDisplayed()
+        composeRule.onNodeWithText("Apellido").assertIsDisplayed()
+    }
+
+    @Test
+    fun forgotPasswordShowsEmailCta() {
+        composeRule.setContent {
+            OficiosTheme {
+                ForgotPasswordScreen(
+                    uiState = ForgotPasswordUiState(),
+                    onEvent = {},
+                    onBackToLogin = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Recuperar contraseña").assertIsDisplayed()
+        composeRule.onNodeWithText("Enviar instrucciones").performScrollTo().assertIsDisplayed()
+    }
+}

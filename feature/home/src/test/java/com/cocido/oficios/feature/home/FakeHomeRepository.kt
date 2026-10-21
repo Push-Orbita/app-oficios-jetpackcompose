@@ -48,7 +48,8 @@ class FakeHomeRepository(
             HomeCategoryItem(2, "Mantenimiento"),
         ),
     ),
-    private var providerHomeResult: AppResult<ProviderHomeContent> = AppResult.Success(
+    var providerHomeLoads: Int = 0,
+    var providerHomeResult: AppResult<ProviderHomeContent> = AppResult.Success(
         ProviderHomeContent(
             userDisplayName = "Nicolas Ayala",
             isVerified = true,
@@ -61,7 +62,10 @@ class FakeHomeRepository(
 
     override suspend fun getClientHome(): AppResult<ClientHomeContent> = homeResult
 
-    override suspend fun getProviderHome(): AppResult<ProviderHomeContent> = providerHomeResult
+    override suspend fun getProviderHome(): AppResult<ProviderHomeContent> {
+        providerHomeLoads++
+        return providerHomeResult
+    }
 
     override suspend fun getCategories(): AppResult<List<HomeCategoryItem>> = categoriesResult
 

@@ -10,9 +10,12 @@ import com.cocido.oficios.feature.settings.account.PersonalDataRoute
 import com.cocido.oficios.feature.settings.client.ClientDataRoute
 import com.cocido.oficios.feature.settings.provider.ProfessionalProfileRoute
 import com.cocido.oficios.feature.settings.provider.AddServiceRoute
+import com.cocido.oficios.feature.settings.provider.CommercialLocalRoute
 import com.cocido.oficios.feature.settings.provider.PortfolioRoute
 import com.cocido.oficios.feature.settings.provider.ServicesRoute
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 fun NavGraphBuilder.settingsScreen(
     navController: NavHostController,
@@ -31,8 +34,6 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToPersonalData = { navController.navigate(SettingsDestination.personalData) },
             onNavigateToClientData = { navController.navigate(SettingsDestination.clientData) },
             onNavigateToProfessionalData = { navController.navigate(SettingsDestination.professionalData) },
-            onNavigateToServices = { navController.navigate(SettingsDestination.services) },
-            onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio) },
             onNavigateToChangePassword = { navController.navigate(SettingsDestination.changePassword) },
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
             onNavigateToTerms = onNavigateToTerms,
@@ -52,20 +53,47 @@ fun NavGraphBuilder.settingsScreen(
         )
     }
     composable(SettingsDestination.professionalData) {
-        ProfessionalProfileRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+        ProfessionalProfileRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onShowMessage = onShowMessage,
+            onNavigateToServices = { navController.navigate(SettingsDestination.services) },
+            onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio()) },
+            onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
+        )
     }
     composable(SettingsDestination.services) {
         ServicesRoute(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToAdd = { navController.navigate(SettingsDestination.addService) },
+            onNavigateToEdit = { serviceId -> navController.navigate(SettingsDestination.editService(serviceId)) },
             onShowMessage = onShowMessage,
         )
     }
     composable(SettingsDestination.addService) {
         AddServiceRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
     }
-    composable(SettingsDestination.portfolio) {
+    composable(
+        route = SettingsDestination.editService,
+        arguments = listOf(navArgument("serviceId") { type = NavType.LongType }),
+    ) {
+        AddServiceRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+    }
+    composable(
+        route = SettingsDestination.portfolio,
+        arguments = listOf(
+            navArgument("focus") {
+                type = NavType.StringType
+                defaultValue = SettingsDestination.FOCUS_GALLERY
+            },
+        ),
+    ) {
         PortfolioRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+    }
+    composable(SettingsDestination.commercialLocal) {
+        CommercialLocalRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onNavigateToAddService = { navController.navigate(SettingsDestination.addService) },
+        )
     }
     composable(SettingsDestination.changePassword) {
         ChangePasswordRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)

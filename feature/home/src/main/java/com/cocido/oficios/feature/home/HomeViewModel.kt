@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
+import com.cocido.oficios.domain.usecase.search.GetRecentSearchesUseCase
+import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -24,6 +27,8 @@ import kotlinx.coroutines.launch
 class HomeViewModel @Inject constructor(
     private val getClientHomeUseCase: GetClientHomeUseCase,
     private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
+    private val getRecentSearchesUseCase: GetRecentSearchesUseCase,
+    private val observeRecentSearchesUseCase: ObserveRecentSearchesUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
@@ -40,8 +45,14 @@ class HomeViewModel @Inject constructor(
     private var loadGeneration = 0
 
     init {
+        observeRecents()
         loadHome()
         refreshUnreadCount()
+    }
+
+    fun onVisible() {
+        refreshUnreadCount()
+        refreshRecents()
     }
 
     fun onEvent(event: HomeEvent) {
@@ -51,8 +62,10 @@ class HomeViewModel @Inject constructor(
             HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            HomeEvent.VoiceSearch -> emitComingSoon()
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
+            is HomeEvent.CategorySelected -> onCategorySelected(event.category)
+            HomeEvent.SeeAllCategories -> emitEffect(HomeEffect.NavigateToSearch)
+            HomeEvent.ContactSupport -> emitEffect(HomeEffect.ContactSupport)
             HomeEvent.NavigateToSettings -> emitEffect(HomeEffect.NavigateToSettings)
             HomeEvent.NavigateToFavorites -> emitEffect(HomeEffect.NavigateToFavorites)
             HomeEvent.NavigateToHelp -> emitEffect(HomeEffect.NavigateToHelp)
@@ -71,6 +84,20 @@ class HomeViewModel @Inject constructor(
                     _unreadNotificationCount.value = known
                 }
             }
+        }
+    }
+
+    private fun onCategorySelected(category: HomeCategoryItem) {
+        viewModelScope.launch {
+            trackRecentSearchUseCase(
+                RecentSearchEntry(
+                    type = RecentSearchType.CATEGORY,
+                    id = category.id,
+                    label = category.name,
+                    categoryId = category.id,
+                ),
+            )
+            emitEffect(HomeEffect.NavigateToRubros(category.id, category.name))
         }
     }
 
@@ -114,15 +141,30 @@ class HomeViewModel @Inject constructor(
             emitEffect(HomeEffect.NavigateToSearch)
             return
         }
+        emitEffect(HomeEffect.NavigateToSearchResults(query = trimmed))
+    }
+
+    private fun observeRecents() {
         viewModelScope.launch {
-            trackRecentSearchUseCase(
-                RecentSearchEntry(
-                    type = RecentSearchType.QUERY,
-                    id = trimmed.hashCode().toLong(),
-                    label = trimmed,
-                ),
-            )
-            emitEffect(HomeEffect.NavigateToSearchResults(query = trimmed))
+            observeRecentSearchesUseCase().collect { recents ->
+                applyRecents(recents)
+            }
+        }
+    }
+
+    fun refreshRecents() {
+        viewModelScope.launch {
+            applyRecents(getRecentSearchesUseCase())
+        }
+    }
+
+    private fun applyRecents(recents: List<RecentSearchEntry>) {
+        _uiState.update { state ->
+            if (state is HomeUiState.Success) {
+                state.copy(content = state.content.copy(recentSearches = recents.take(RECENT_LIMIT)))
+            } else {
+                state
+            }
         }
     }
 
@@ -173,11 +215,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun emitComingSoon() {
-        emitEffect(HomeEffect.ShowComingSoon)
-    }
-
     private fun emitEffect(effect: HomeEffect) {
         viewModelScope.launch { _effects.send(effect) }
+    }
+
+    private companion object {
+        const val RECENT_LIMIT = 3
     }
 }

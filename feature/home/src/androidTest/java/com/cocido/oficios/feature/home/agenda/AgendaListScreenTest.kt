@@ -95,7 +95,7 @@ class AgendaListScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Este horario se superpone con otro turno de tu agenda.")
+        composeTestRule.onNodeWithText("Este horario se superpone con otro turno de su agenda.")
             .performScrollTo()
             .assertIsDisplayed()
         composeTestRule.onNodeWithText("Guardar disponibilidad")

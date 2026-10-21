@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,9 +18,7 @@ import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.MiscellaneousServices
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +52,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.UserRole
@@ -140,8 +138,8 @@ private fun SettingsContent(
     val user = profile.user
     val displayName = "${user.firstName} ${user.lastName}".trim().ifBlank { user.email }
     LazyColumn(
-        modifier = modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
-        contentPadding = PaddingValues(top = OficiosSpacing.lg),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = OficiosSpacing.OficiosScreenPaddingAfterTopBar,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
@@ -179,7 +177,7 @@ private fun SettingsContent(
                                     if (user.emailVerified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert
                                 ),
                                 contentDescription = null,
-                                tint = if (user.emailVerified) MaterialTheme.colorScheme.tertiary else OficiosColorSecondaryText,
+                                tint = if (user.emailVerified) OficiosColorSuccess else OficiosColorSecondaryText,
                                 modifier = Modifier.size(OficiosComponentSize.iconSm),
                             )
                             Text(
@@ -228,22 +226,6 @@ private fun SettingsContent(
                     title = stringResource(R.string.settings_professional_data),
                     description = stringResource(R.string.settings_professional_data_description),
                     onClick = { onEvent(SettingsEvent.OpenProfessionalData) },
-                )
-            }
-            item {
-                SettingsActionRow(
-                    icon = Icons.Outlined.MiscellaneousServices,
-                    title = stringResource(R.string.settings_services),
-                    description = stringResource(R.string.settings_services_description),
-                    onClick = { onEvent(SettingsEvent.OpenServices) },
-                )
-            }
-            item {
-                SettingsActionRow(
-                    icon = Icons.Outlined.PhotoLibrary,
-                    title = stringResource(R.string.settings_portfolio),
-                    description = stringResource(R.string.settings_portfolio_description),
-                    onClick = { onEvent(SettingsEvent.OpenPortfolio) },
                 )
             }
         }

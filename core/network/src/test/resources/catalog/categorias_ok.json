@@ -1,0 +1,12 @@
+{
+  "data": [
+    { "id": 1, "nombre": "Hogar y Construccion", "iconUrl": null },
+    { "id": 2, "nombre": "Mascotas", "iconUrl": null }
+  ],
+  "metadata": {
+    "count": 2,
+    "pageSize": 100,
+    "pageNumber": 1,
+    "totalPages": 1
+  }
+}

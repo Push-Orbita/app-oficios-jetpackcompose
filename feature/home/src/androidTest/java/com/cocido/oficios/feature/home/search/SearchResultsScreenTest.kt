@@ -35,6 +35,7 @@ class SearchResultsScreenTest {
                     filterSheetState = FilterSheetUiState(),
                     searchQuery = "",
                     onEvent = {},
+                    showFavorites = true,
                 )
             }
         }
@@ -60,11 +61,64 @@ class SearchResultsScreenTest {
                     filterSheetState = FilterSheetUiState(),
                     searchQuery = "",
                     onEvent = {},
+                    showFavorites = true,
                 )
             }
         }
 
         composeTestRule.onNodeWithContentDescription("Filtros (2)").assertIsDisplayed()
         composeTestRule.onNodeWithText("2").assertIsDisplayed()
+    }
+
+    @Test
+    fun searchResults_emptyState() {
+        composeTestRule.setContent {
+            OficiosTheme {
+                SearchResultsScreen(
+                    uiState = SearchResultsUiState.Empty(
+                        activeFilters = WorkerSearchFilters(),
+                        filterChips = emptyList(),
+                    ),
+                    filterSheetState = FilterSheetUiState(),
+                    searchQuery = "",
+                    onEvent = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeTestRule.onNodeWithText("Sin resultados").assertIsDisplayed()
+    }
+
+    @Test
+    fun searchResults_errorState() {
+        composeTestRule.setContent {
+            OficiosTheme {
+                SearchResultsScreen(
+                    uiState = SearchResultsUiState.Error("Sin conexión"),
+                    filterSheetState = FilterSheetUiState(),
+                    searchQuery = "",
+                    onEvent = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeTestRule.onNodeWithText("Sin conexión").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Reintentar").assertIsDisplayed()
+    }
+
+    @Test
+    fun searchResults_loadingExposesContentDescription() {
+        composeTestRule.setContent {
+            OficiosTheme {
+                SearchResultsScreen(
+                    uiState = SearchResultsUiState.Loading,
+                    filterSheetState = FilterSheetUiState(),
+                    searchQuery = "",
+                    onEvent = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription("Buscando trabajadores…").assertIsDisplayed()
     }
 }

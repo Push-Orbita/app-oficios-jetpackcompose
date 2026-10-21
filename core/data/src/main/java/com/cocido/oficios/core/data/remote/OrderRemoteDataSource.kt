@@ -55,7 +55,7 @@ class OrderRemoteDataSource @Inject constructor(
         ordersApi.cancelarSolicitudPendiente(id, UpdateSolicitudEstadoRequestDto(estado = "CANCELADA"))
     }
 
-    suspend fun cancelarSolicitudConfirmada(id: Long, motivo: String?) = safeApiCall {
+    suspend fun cancelarSolicitudConfirmada(id: Long, motivo: String) = safeApiCall {
         ordersApi.cancelarSolicitudConfirmada(id, CancelarSolicitudRequestDto(motivoCancelacion = motivo))
     }
 

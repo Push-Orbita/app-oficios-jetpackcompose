@@ -1,55 +1,46 @@
 package com.cocido.oficios.feature.home.providerhome
 
-import com.cocido.oficios.feature.home.providerhome.components.agendaMonthCells
+import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.model.groupAgendaAppointments
 import java.time.LocalDate
-import java.time.YearMonth
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * El mini-calendario del Home de trabajador se dibuja como grilla no-lazy que se adapta
- * al font scale. Estos tests fijan el contrato de [agendaMonthCells]: la grilla siempre
- * cubre todos los dias del mes (incluida la 5a/6a semana, p. ej. 26-31) sin recortar.
+ * La home de trabajador ya no dibuja un mini-calendario (Figma 259:254).
+ * Este test cubre el agrupado por fecha que alimenta la lista.
  */
 class ProviderAgendaCellsTest {
 
     @Test
-    fun `la grilla cubre todos los dias del mes sin recortes`() {
-        // Marzo 2030 empieza en viernes y tiene 31 dias: fuerza una 6a fila con dias 26-31.
-        val month = YearMonth.of(2030, 3)
-        val cells = agendaMonthCells(month)
-
-        val days = cells.filterNotNull()
-        assertEquals(month.lengthOfMonth(), days.size)
-        // Todos los dias del 1 al ultimo estan presentes.
-        (1..month.lengthOfMonth()).forEach { day ->
-            assertTrue("Falta el dia $day", month.atDay(day) in days)
-        }
-        // La ultima semana (26-31) no se pierde.
-        (26..31).forEach { day ->
-            assertTrue("Falta el dia $day de la ultima semana", LocalDate.of(2030, 3, day) in days)
-        }
+    fun `la lista agrupa por dia y marca HOY`() {
+        val today = LocalDate.of(2026, 3, 4)
+        val groups = groupAgendaAppointments(
+            orders = listOf(
+                item(1, "2026-03-04T13:30:00"),
+                item(2, "2026-03-04T18:00:00"),
+                item(3, "2026-03-06T09:00:00"),
+            ),
+            today = today,
+        )
+        assertEquals(2, groups.size)
+        assertEquals(2, groups[0].items.size)
+        assertEquals(true, groups[0].isToday)
+        assertEquals(false, groups[1].isToday)
+        assertEquals("4 de marzo", groups[0].headerLabel)
     }
 
-    @Test
-    fun `la grilla es siempre multiplo de 7 y arranca en lunes`() {
-        // Varios meses con distinto dia de inicio y largo.
-        listOf(
-            YearMonth.of(2026, 2), // febrero (28 dias) que arranca domingo
-            YearMonth.of(2026, 3),
-            YearMonth.of(2024, 2), // bisiesto, 29 dias
-            YearMonth.of(2030, 11),
-        ).forEach { month ->
-            val cells = agendaMonthCells(month)
-            assertEquals("Debe ser multiplo de 7 en $month", 0, cells.size % 7)
-
-            val leadingBlanks = month.atDay(1).dayOfWeek.value - 1
-            // El primer dia del mes cae exactamente en la columna de su dia de semana.
-            assertEquals("Hueco inicial incorrecto en $month", month.atDay(1), cells[leadingBlanks])
-            repeat(leadingBlanks) { index ->
-                assertEquals("La celda $index deberia ser hueco en $month", null, cells[index])
-            }
-        }
-    }
+    private fun item(id: Long, sortKey: String) = ServiceOrderListItem(
+        id = id,
+        counterpartName = "Cliente",
+        subRubroLabel = "Albañilería",
+        status = ServiceRequestStatus.ACCEPTED,
+        bookingStatus = BookingStatus.CONFIRMED,
+        scheduledLabel = null,
+        addressLabel = "Maipú 745",
+        rubroLabel = "Albañilería",
+        scheduledSortKey = sortKey,
+    )
 }

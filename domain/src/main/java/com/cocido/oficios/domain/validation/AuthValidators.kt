@@ -25,19 +25,12 @@ object AuthValidators {
     }
 
     fun validateName(value: String, fieldName: String): String? = when {
-        value.isBlank() -> "El $fieldName es obligatorio"
+        value.isBlank() -> when (fieldName) {
+            "nombres" -> "Los nombres son obligatorios"
+            "apellido" -> "El apellido es obligatorio"
+            else -> "El $fieldName es obligatorio"
+        }
         else -> null
-    }
-
-    fun validateFullName(fullName: String): String? = when {
-        fullName.isBlank() -> "El nombre completo es obligatorio"
-        fullName.trim().split(Regex("\\s+")).size < 2 -> "Ingrese nombre y apellido"
-        else -> null
-    }
-
-    fun splitFullName(fullName: String): Pair<String, String> {
-        val parts = fullName.trim().split(Regex("\\s+"), limit = 2)
-        return parts[0] to parts.getOrElse(1) { "" }
     }
 
     fun validateDocument(document: String): String? = when {

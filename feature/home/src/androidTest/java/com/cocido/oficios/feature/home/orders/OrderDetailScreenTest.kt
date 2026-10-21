@@ -90,7 +90,7 @@ class OrderDetailScreenTest {
         }
 
         composeTestRule
-            .onNodeWithText("No pudimos cargar el detalle de la contrapropuesta. Volvé a intentar más tarde.")
+            .onNodeWithText("No pudimos cargar el detalle de la contrapropuesta. Vuelva a intentar más tarde.")
             .assertIsDisplayed()
     }
 
@@ -113,7 +113,7 @@ class OrderDetailScreenTest {
         }
 
         composeTestRule.onNodeWithText("Cancelar solicitud").performClick()
-        composeTestRule.onNodeWithText("¿Seguro que querés cancelar esta solicitud?").assertIsDisplayed()
+        composeTestRule.onNodeWithText("¿Seguro que quiere cancelar este pedido?").assertIsDisplayed()
         composeTestRule.onNodeWithText("Sí, cancelar").performClick()
 
         assert(cancelConfirmed) { "El diálogo de cancelar no disparó CancelBeforeAcceptance" }

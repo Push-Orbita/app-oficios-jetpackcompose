@@ -46,7 +46,7 @@ fun CounterOfferScreen(
                     .consumeWindowInsets(paddingValues)
                     .imePadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+                    .padding(horizontal = OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
             ) {
                 Text(

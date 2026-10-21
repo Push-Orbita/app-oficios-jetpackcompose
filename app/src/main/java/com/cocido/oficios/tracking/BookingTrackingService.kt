@@ -65,7 +65,7 @@ class BookingTrackingService : Service() {
     }
 
     private fun startTracking(bookingId: Long) {
-        startAsForeground(buildNotification("Compartiendo tu ubicación durante el recorrido"))
+        startAsForeground(buildNotification("Compartiendo su ubicación durante el recorrido"))
         if (activeBookingId == bookingId && trackingJob?.isActive == true) return
         activeBookingId = bookingId
         trackingJob?.cancel()

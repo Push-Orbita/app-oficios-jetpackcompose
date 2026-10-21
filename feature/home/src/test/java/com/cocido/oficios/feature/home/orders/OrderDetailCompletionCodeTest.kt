@@ -122,7 +122,7 @@ class OrderDetailCompletionCodeTest {
     fun `rate limited resend is ignored and the current code is fetched without errors`() = runTest(testDispatcher) {
         val orders = CodeOrderRepository(detailCode = null, currentCode = "555555").apply {
             resendResult = AppResult.Error(
-                AppError.Network("Esperá un momento", code = 429, backendCode = "COMPLETION_CODE_RATE_LIMITED"),
+                AppError.Network("Espere un momento", code = 429, backendCode = "COMPLETION_CODE_RATE_LIMITED"),
             )
         }
         val viewModel = viewModel(orders)
@@ -205,20 +205,26 @@ class OrderDetailCompletionCodeTest {
     )
 }
 
-private class CodeOrderRepository(
+internal class CodeOrderRepository(
     private val detailCode: String?,
     var currentCode: String?,
 ) : OrderRepository {
     var detailStatus: BookingStatus = BookingStatus.IN_PROGRESS
+    var requestStatus: ServiceRequestStatus = ServiceRequestStatus.ACCEPTED
     var resendResult: AppResult<Unit> = AppResult.Success(Unit)
     var codeError: AppError? = null
     var resendCalls = 0
     var getCodeCalls = 0
+    var detailCalls = 0
+    var cancelConfirmedCalls = 0
+    var lastCancelReason: String? = null
 
     private val changes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     override val ordersChanged: SharedFlow<Unit> = changes
 
-    override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> = AppResult.Success(
+    override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> {
+        detailCalls++
+        return AppResult.Success(
         ServiceOrder(
             id = orderId,
             clientName = "Ana",
@@ -226,7 +232,7 @@ private class CodeOrderRepository(
             workerId = 0L,
             rubroLabel = "Hogar",
             subRubroLabel = "Plomería",
-            status = ServiceRequestStatus.ACCEPTED,
+            status = requestStatus,
             description = "Pérdida en la cocina",
             addressLabel = "Calle 1",
             contactName = "Ana",
@@ -235,7 +241,8 @@ private class CodeOrderRepository(
             bookingStatus = detailStatus,
             completionCode = detailCode.takeIf { detailStatus == BookingStatus.IN_PROGRESS },
         ),
-    )
+        )
+    }
 
     override suspend fun getCompletionCode(bookingId: Long): AppResult<String?> {
         getCodeCalls++
@@ -264,7 +271,11 @@ private class CodeOrderRepository(
     override suspend fun acceptCounterOffer(counterOfferId: Long): AppResult<Unit> = unused()
     override suspend fun rejectCounterOffer(counterOfferId: Long): AppResult<Unit> = unused()
     override suspend fun cancelOrderBeforeAcceptance(orderId: Long): AppResult<Unit> = unused()
-    override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?): AppResult<Unit> = unused()
+    override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?): AppResult<Unit> {
+        cancelConfirmedCalls++
+        lastCancelReason = reason
+        return AppResult.Success(Unit)
+    }
     override suspend fun findOrderIdForBooking(bookingId: Long): AppResult<Long?> = unused()
     override suspend fun markEnRoute(bookingId: Long, location: GeoPoint): AppResult<Unit> = unused()
     override suspend fun markArrived(bookingId: Long, location: GeoPoint): AppResult<Unit> = unused()
@@ -277,7 +288,7 @@ private class CodeOrderRepository(
     ): AppResult<Unit> = unused()
 }
 
-private class RoleAuthRepository(private val role: UserRole) : AuthRepository {
+internal class RoleAuthRepository(private val role: UserRole) : AuthRepository {
     override suspend fun getCurrentUser(): AppResult<User> = AppResult.Success(
         User(
             id = 1,
@@ -306,12 +317,12 @@ private class RoleAuthRepository(private val role: UserRole) : AuthRepository {
     override suspend fun getUserRoles(): AppResult<List<UserRoleDefinition>> = unused()
 }
 
-private object NoLocationRepository : LocationRepository {
+internal object NoLocationRepository : LocationRepository {
     override suspend fun getCurrentLocation(requirePrecise: Boolean): AppResult<GeoPoint> = unused()
     override fun observeLocations(intervalMillis: Long): Flow<AppResult<GeoPoint>> = emptyFlow()
 }
 
-private object NoWorkerProfileRepository : WorkerProfileRepository {
+internal object NoWorkerProfileRepository : WorkerProfileRepository {
     override suspend fun getWorkerProfile(workerId: Long): AppResult<WorkerProfile> = unused()
     override suspend fun getWorkerReviews(workerId: Long, pageNumber: Int, pageSize: Int): AppResult<PagedWorkerReviews> =
         unused()

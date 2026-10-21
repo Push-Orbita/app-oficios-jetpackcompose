@@ -4,22 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,26 +22,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
-import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
+import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
-import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
-import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
+import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.common.time.DisplayDateTime
+import com.cocido.oficios.domain.model.AgendaAppointmentTag
 import com.cocido.oficios.domain.model.OrdersListFilter
-import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.agendaRubroLabel
+import com.cocido.oficios.domain.model.agendaTag
+import com.cocido.oficios.domain.model.agendaTimeLabel
+import com.cocido.oficios.domain.model.groupAgendaAppointments
+import com.cocido.oficios.domain.model.scheduledDate
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
+import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.OrdersDestination
+import java.time.LocalDate
+import java.time.ZonedDateTime
 
 @Composable
 fun OrdersListScreen(
@@ -60,12 +61,21 @@ fun OrdersListScreen(
     showBackNavigation: Boolean = true,
     onTabSelected: ((ClientHomeTab) -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    today: LocalDate = LocalDate.now(DisplayDateTime.ARGENTINA),
+    now: ZonedDateTime = ZonedDateTime.now(DisplayDateTime.ARGENTINA),
+    showFavorites: Boolean? = null,
 ) {
     if (!showBackNavigation && onTabSelected == null) {
         Box(modifier = modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize()) {
-                OficiosTopAppBar(title = stringResource(R.string.orders_title), windowInsets = WindowInsets(0, 0, 0, 0))
-                OrdersListBody(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
+                OrdersListBody(
+                    uiState = uiState,
+                    onEvent = onEvent,
+                    today = today,
+                    now = now,
+                    titleBack = null,
+                    modifier = Modifier.weight(1f),
+                )
             }
             SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
         }
@@ -74,18 +84,12 @@ fun OrdersListScreen(
     OficiosScaffold(
         modifier = modifier,
         snackbarHostState = snackbarHostState,
-        topBar = {
-            if (showBackNavigation) {
-                OficiosBackTopBar(title = stringResource(R.string.orders_title), onBack = onNavigateBack)
-            } else {
-                OficiosTopAppBar(title = stringResource(R.string.orders_title))
-            }
-        },
         bottomBar = {
             if (!showBackNavigation && onTabSelected != null) {
                 ClientHomeBottomBar(
                     selectedTab = ClientHomeTabNavigator.tabForDestination(OrdersDestination.ordersList),
                     onTabSelected = onTabSelected,
+                    showFavorites = showFavorites,
                 )
             }
         },
@@ -93,6 +97,9 @@ fun OrdersListScreen(
         OrdersListBody(
             uiState = uiState,
             onEvent = onEvent,
+            today = today,
+            now = now,
+            titleBack = if (showBackNavigation) onNavigateBack else null,
             modifier = Modifier.padding(paddingValues),
         )
     }
@@ -103,14 +110,20 @@ fun OrdersListScreen(
 private fun OrdersListBody(
     uiState: OrdersListUiState,
     onEvent: (OrdersListEvent) -> Unit,
+    today: LocalDate,
+    now: ZonedDateTime,
+    titleBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     OficiosStateContent(targetState = uiState, modifier = modifier) { state ->
         when (state) {
-            OrdersListUiState.Loading -> OficiosSkeletonList(
-                contentDescription = stringResource(R.string.orders_loading),
-                lines = 3,
-            )
+            OrdersListUiState.Loading -> Column(Modifier.fillMaxSize()) {
+                OrdersListHeader(onNavigateBack = titleBack)
+                OficiosSkeletonList(
+                    contentDescription = stringResource(R.string.orders_loading),
+                    lines = 3,
+                )
+            }
             is OrdersListUiState.Error -> {
                 val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
                     onEvent(OrdersListEvent.Refresh)
@@ -131,7 +144,13 @@ private fun OrdersListBody(
                     }
                 }
             }
-            is OrdersListUiState.Success -> OrdersListSuccess(state = state, onEvent = onEvent)
+            is OrdersListUiState.Success -> OrdersListSuccess(
+                state = state,
+                onEvent = onEvent,
+                today = today,
+                now = now,
+                titleBack = titleBack,
+            )
         }
     }
 }
@@ -141,8 +160,12 @@ private fun OrdersListBody(
 private fun OrdersListSuccess(
     state: OrdersListUiState.Success,
     onEvent: (OrdersListEvent) -> Unit,
+    today: LocalDate,
+    now: ZonedDateTime,
+    titleBack: (() -> Unit)?,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        OrdersListHeader(onNavigateBack = titleBack)
         OrdersFilterRow(selected = state.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
         val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
             onEvent(OrdersListEvent.Refresh)
@@ -155,10 +178,11 @@ private fun OrdersListSuccess(
         ) {
             OficiosStateContent(
                 targetState = state,
-                contentKey = { it.visibleOrders.isEmpty() },
+                contentKey = { it.visibleOrders(now).isEmpty() },
                 label = "OrdersListEmptyTransition",
             ) { current ->
-                if (current.visibleOrders.isEmpty()) {
+                val visibleOrders = current.visibleOrders(now)
+                if (visibleOrders.isEmpty()) {
                     val history = current.filter == OrdersListFilter.HISTORY
                     RefreshablePlaceholder {
                         OficiosEmptyState(
@@ -170,17 +194,54 @@ private fun OrdersListSuccess(
                         )
                     }
                 } else {
+                    val groups = groupAgendaAppointments(visibleOrders, today)
+                    val undated = visibleOrders.filter { it.scheduledDate() == null }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+                        contentPadding = OficiosSpacing.OficiosScreenPadding,
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
-                        items(current.visibleOrders, key = { it.id }) { order ->
-                            OrderListItemCard(
-                                order = order,
-                                onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) },
-                                modifier = oficiosAnimateItem(),
-                            )
+                        groups.forEach { group ->
+                            item(key = "h-${group.date}") {
+                                Text(
+                                    text = group.headerLabel,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = OficiosColorWhite,
+                                )
+                            }
+                            items(group.items, key = { it.id }) { order ->
+                                val tag = order.agendaTag(now)
+                                AgendaAppointmentRow(
+                                    rubro = order.agendaRubroLabel(),
+                                    address = order.addressLabel.ifBlank { order.counterpartName },
+                                    time = order.agendaTimeLabel(),
+                                    isToday = tag == AgendaAppointmentTag.TODAY,
+                                    isNow = tag == AgendaAppointmentTag.NOW,
+                                    onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) },
+                                    modifier = oficiosAnimateItem(),
+                                    todayLabel = stringResource(R.string.provider_home_agenda_today_tag),
+                                    nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
+                                )
+                            }
+                        }
+                        if (undated.isNotEmpty()) {
+                            item(key = "h-undated") {
+                                Text(
+                                    text = stringResource(R.string.orders_undated_group),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = OficiosColorWhite,
+                                )
+                            }
+                            items(undated, key = { it.id }) { order ->
+                                AgendaAppointmentRow(
+                                    rubro = order.agendaRubroLabel(),
+                                    address = order.addressLabel.ifBlank { order.counterpartName },
+                                    time = order.scheduledLabel.orEmpty(),
+                                    isToday = false,
+                                    onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) },
+                                    modifier = oficiosAnimateItem(),
+                                )
+                            }
                         }
                     }
                 }
@@ -189,7 +250,15 @@ private fun OrdersListSuccess(
     }
 }
 
-/** Contenido que llena el viewport y aun así participa del nested scroll del pull-to-refresh. */
+@Composable
+private fun OrdersListHeader(onNavigateBack: (() -> Unit)?) {
+    OficiosScreenTitle(
+        title = stringResource(R.string.orders_title),
+        onNavigateBack = onNavigateBack,
+        modifier = Modifier.padding(OficiosSpacing.OficiosScreenPadding).padding(bottom = 0.dp),
+    )
+}
+
 @Composable
 private fun RefreshablePlaceholder(
     modifier: Modifier = Modifier,
@@ -216,59 +285,20 @@ private fun LazyItemScope.PlaceholderPage(
 @Composable
 private fun OrdersFilterRow(selected: OrdersListFilter, onSelected: (OrdersListFilter) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = OficiosSpacing.xl, vertical = OficiosSpacing.xs),
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
-        FilterChip(stringResource(R.string.orders_filter_active), selected == OrdersListFilter.ACTIVE) { onSelected(OrdersListFilter.ACTIVE) }
-        FilterChip(stringResource(R.string.orders_filter_history), selected == OrdersListFilter.HISTORY) { onSelected(OrdersListFilter.HISTORY) }
-    }
-}
-
-@Composable
-private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    com.cocido.oficios.core.designsystem.component.chips.OficiosChip(
-        label = label,
-        onClick = onClick,
-        containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer,
-        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-        borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.heightIn(min = OficiosComponentSize.buttonHeight),
-    )
-}
-
-@Composable
-private fun OrderListItemCard(
-    order: ServiceOrderListItem,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    OficiosCard(
-        modifier = modifier.fillMaxWidth(),
-        onClick = onClick,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
-                OficiosAvatar(name = order.counterpartName, imageUrl = order.avatarUrl, circular = true)
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
-                    Text(order.counterpartName.ifBlank { order.subRubroLabel }, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                    val rubro = listOf(order.rubroLabel, order.subRubroLabel).filter { it.isNotBlank() }.joinToString(" · ")
-                    if (rubro.isNotBlank()) {
-                        Text(rubro, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-                    }
-                }
-            }
-            ServiceOrderStatusLabel(status = order.status, bookingStatus = order.bookingStatus)
-            order.scheduledLabel?.let { IconLine(Icons.Outlined.Schedule, it) }
-            if (order.addressLabel.isNotBlank()) IconLine(Icons.Outlined.Place, order.addressLabel)
-        }
-    }
-}
-
-@Composable
-private fun IconLine(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
-    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(OficiosComponentSize.iconSm))
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        OficiosSegmentChip(
+            label = stringResource(R.string.orders_filter_active),
+            selected = selected == OrdersListFilter.ACTIVE,
+            onClick = { onSelected(OrdersListFilter.ACTIVE) },
+        )
+        OficiosSegmentChip(
+            label = stringResource(R.string.orders_filter_history),
+            selected = selected == OrdersListFilter.HISTORY,
+            onClick = { onSelected(OrdersListFilter.HISTORY) },
+        )
     }
 }

@@ -75,23 +75,30 @@ fun RegisterTradeScreen(
             )
         } else {
             FieldAndCtaBlock {
-                OficiosDropdownField(
-                    value = uiState.selectedCategory,
-                    options = uiState.categories,
-                    onOptionSelected = { onEvent(RegisterTradeEvent.CategoryChanged(it)) },
-                    label = stringResource(R.string.auth_register_trade_category_label),
-                    placeholder = stringResource(R.string.auth_register_trade_category_hint),
-                    enabled = !uiState.isLoadingCatalog && uiState.categoryOptions.isNotEmpty(),
+                Text(
+                    text = uiState.selectedCategory,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
-
-                OficiosDropdownField(
-                    value = uiState.selectedTrade,
-                    options = uiState.trades,
-                    onOptionSelected = { onEvent(RegisterTradeEvent.TradeChanged(it)) },
-                    label = stringResource(R.string.auth_register_trade_trade_label),
-                    placeholder = stringResource(R.string.auth_register_trade_trade_hint),
-                    enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
-                )
+                if (uiState.selectedTrade.isBlank()) {
+                    OficiosCategoriesGrid(
+                        categories = uiState.tradeOptions.map { CategoryGridItem(it.id, it.label) },
+                        onCategoryClick = { item ->
+                            uiState.tradeOptions.find { it.id == item.id }?.let { option ->
+                                onEvent(RegisterTradeEvent.TradeChanged(option.label))
+                            }
+                        },
+                    )
+                } else {
+                    OficiosDropdownField(
+                        value = uiState.selectedTrade,
+                        options = uiState.trades,
+                        onOptionSelected = { onEvent(RegisterTradeEvent.TradeChanged(it)) },
+                        label = stringResource(R.string.auth_register_trade_trade_label),
+                        placeholder = stringResource(R.string.auth_register_trade_trade_hint),
+                        enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
+                    )
+                }
 
                 RegisterTradeSpecializationsSection(
                     options = uiState.specializationOptions,
@@ -126,6 +133,8 @@ fun RegisterTradeScreen(
                             suggestionLabel = { it.label },
                             label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
                             placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
+                            isLoading = uiState.isSearchingBarrios,
+                            onFocused = { onEvent(RegisterTradeEvent.NeighborhoodFocused) },
                             onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
                         )
                     }

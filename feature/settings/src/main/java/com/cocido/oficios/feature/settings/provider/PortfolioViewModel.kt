@@ -1,10 +1,12 @@
 package com.cocido.oficios.feature.settings.provider
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
+import com.cocido.oficios.feature.settings.navigation.SettingsDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.async
@@ -18,8 +20,12 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class PortfolioViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val accountUseCases: AccountUseCases,
 ) : ViewModel() {
+    private val openCertificateOnStart =
+        savedStateHandle.get<String>("focus") == SettingsDestination.FOCUS_CERTIFICATE
+    private var didOpenCertificateOnStart = false
     private val _uiState = MutableStateFlow(PortfolioUiState())
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<PortfolioEffect>(Channel.BUFFERED)
@@ -68,6 +74,10 @@ class PortfolioViewModel @Inject constructor(
                 errorMessage = null,
             )
         }
+        if (openCertificateOnStart && !didOpenCertificateOnStart) {
+            didOpenCertificateOnStart = true
+            editCertificate()
+        }
     }
 
     private fun uploadGallery(path: String) = viewModelScope.launch {
@@ -75,7 +85,7 @@ class PortfolioViewModel @Inject constructor(
         when (val result = accountUseCases.uploadGallery(listOf(path))) {
             is AppResult.Success -> {
                 update { it.copy(isSaving = false, gallery = it.gallery + result.data) }
-                emit(PortfolioEffect.ShowMessage("Foto agregada a tu galería."))
+                emit(PortfolioEffect.ShowMessage("Foto agregada a su galería."))
             }
             is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
         }
@@ -100,8 +110,8 @@ class PortfolioViewModel @Inject constructor(
         val state = _uiState.value
         val name = state.certificateName.trim()
         val error = when {
-            name.length < 3 -> "Ingresá un nombre claro para el certificado."
-            state.editingCertificateId == null && state.certificateFilePath == null -> "Seleccioná el archivo del certificado."
+            name.length < 3 -> "Ingrese un nombre claro para el certificado."
+            state.editingCertificateId == null && state.certificateFilePath == null -> "Seleccione el archivo del certificado."
             else -> null
         }
         if (error != null) return update { it.copy(errorMessage = error) }

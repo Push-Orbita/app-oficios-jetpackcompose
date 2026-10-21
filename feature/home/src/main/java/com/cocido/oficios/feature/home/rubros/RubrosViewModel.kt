@@ -6,10 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
-import com.cocido.oficios.domain.model.RecentSearchEntry
-import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
-import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +22,7 @@ import kotlinx.coroutines.launch
 class RubrosViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
-    private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
+    private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: 0L
@@ -33,11 +31,24 @@ class RubrosViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<RubrosUiState>(RubrosUiState.Loading)
     val uiState: StateFlow<RubrosUiState> = _uiState.asStateFlow()
 
+    private val _unreadNotificationCount = MutableStateFlow(0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
+
     private val _effects = Channel<RubrosEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
     init {
         loadRubros()
+        refreshUnreadCount()
+    }
+
+    fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.value = result.data
+                is AppResult.Error -> Unit
+            }
+        }
     }
 
     fun onEvent(event: RubrosEvent) {
@@ -47,7 +58,7 @@ class RubrosViewModel @Inject constructor(
             RubrosEvent.Back -> emitEffect(RubrosEffect.NavigateBack)
             is RubrosEvent.RubroSelected -> onRubroSelected(event.rubro)
             is RubrosEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            RubrosEvent.VoiceSearch -> emitEffect(RubrosEffect.ShowComingSoon)
+            RubrosEvent.OpenNotifications -> emitEffect(RubrosEffect.NavigateToNotifications)
         }
     }
 
@@ -66,25 +77,14 @@ class RubrosViewModel @Inject constructor(
     }
 
     private fun onRubroSelected(rubro: CatalogOption) {
-        viewModelScope.launch {
-            trackRecentSearchUseCase(
-                RecentSearchEntry(
-                    type = RecentSearchType.RUBRO,
-                    id = rubro.id,
-                    label = rubro.label,
-                    categoryId = categoryId,
-                    rubroId = rubro.id,
-                ),
-            )
-            emitEffect(
-                RubrosEffect.NavigateToSearchResults(
-                    rubroId = rubro.id,
-                    rubroLabel = rubro.label,
-                    categoryId = categoryId,
-                    categoryLabel = categoryName,
-                ),
-            )
-        }
+        emitEffect(
+            RubrosEffect.NavigateToSearchResults(
+                rubroId = rubro.id,
+                rubroLabel = rubro.label,
+                categoryId = categoryId,
+                categoryLabel = categoryName,
+            ),
+        )
     }
 
     private fun loadRubros(refreshing: Boolean = false) {
@@ -154,12 +154,12 @@ sealed interface RubrosEvent {
     data object Back : RubrosEvent
     data class RubroSelected(val rubro: CatalogOption) : RubrosEvent
     data class SearchSubmitted(val query: String) : RubrosEvent
-    data object VoiceSearch : RubrosEvent
+    data object OpenNotifications : RubrosEvent
 }
 
 sealed interface RubrosEffect {
     data object NavigateBack : RubrosEffect
-    data object ShowComingSoon : RubrosEffect
+    data object NavigateToNotifications : RubrosEffect
     data class ShowMessage(val message: String) : RubrosEffect
     data class NavigateToSearchResults(
         val rubroId: Long,

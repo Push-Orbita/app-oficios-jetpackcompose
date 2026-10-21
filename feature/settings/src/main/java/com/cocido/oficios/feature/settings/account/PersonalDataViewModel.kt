@@ -80,7 +80,7 @@ class PersonalDataViewModel @Inject constructor(
 
     private fun save() {
         val state = _uiState.value
-        val firstNameError = AuthValidators.validateName(state.firstName, "nombre")
+        val firstNameError = AuthValidators.validateName(state.firstName, "nombres")
         val lastNameError = AuthValidators.validateName(state.lastName, "apellido")
         val emailError = AuthValidators.validateEmail(state.email.trim())
         if (firstNameError != null || lastNameError != null || emailError != null) {

@@ -323,6 +323,7 @@ class WorkerProfileViewModelTest {
         advanceUntilIdle()
         job.cancel()
         assertTrue(effects.none { it is WorkerProfileEffect.NavigateToRate })
+        assertTrue(effects.any { it is WorkerProfileEffect.ShowRateUnavailable })
         assertTrue((viewModel.uiState.value as WorkerProfileUiState.Success).rateBookingId == null)
     }
 }
