@@ -5,6 +5,7 @@ data class ClientHomeContent(
     val emailVerified: Boolean,
     val profilePhotoUrl: String?,
     val recentSearches: List<RecentSearchEntry>,
+    val categories: List<HomeCategoryItem> = emptyList(),
     val featuredWorkers: List<WorkerSummary> = emptyList(),
 )
 

@@ -12,6 +12,9 @@ sealed interface HomeEvent {
     data class SearchSubmitted(val query: String) : HomeEvent
     data object VoiceSearch : HomeEvent
     data class RecentSearchSelected(val entry: RecentSearchEntry) : HomeEvent
+    data class CategorySelected(val category: HomeCategoryItem) : HomeEvent
+    data object SeeAllCategories : HomeEvent
+    data object ContactSupport : HomeEvent
     data class WorkerViewProfile(val workerId: Long) : HomeEvent
     data class WorkerContact(val workerId: Long) : HomeEvent
     data object SeeAllWorkers : HomeEvent
@@ -28,6 +31,7 @@ sealed interface CategoriesEvent {
     data object OpenNotifications : CategoriesEvent
     data class CategorySelected(val category: HomeCategoryItem) : CategoriesEvent
     data class SearchSubmitted(val query: String) : CategoriesEvent
+    data object SeeAll : CategoriesEvent
 }
 
 sealed interface HomeEffect {
@@ -51,6 +55,7 @@ sealed interface HomeEffect {
     data class NavigateToWorker(val workerId: Long) : HomeEffect
     data class NavigateToHire(val workerId: Long) : HomeEffect
     data object NavigateToMyOrders : HomeEffect
+    data object ContactSupport : HomeEffect
 }
 
 sealed interface CategoriesEffect {

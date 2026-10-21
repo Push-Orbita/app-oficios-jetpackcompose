@@ -8,10 +8,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ProviderProfileStatus
 import com.cocido.oficios.domain.model.RecentSearchEntry
-import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.model.User
-import com.cocido.oficios.domain.model.WorkerSearchFilters
-import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.HomeRepository
@@ -19,17 +16,13 @@ import com.cocido.oficios.domain.repository.OnboardingRepository
 import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
-import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 class HomeRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     private val catalogRepository: CatalogRepository,
     private val recentSearchRepository: RecentSearchRepository,
-    private val workerSearchRepository: WorkerSearchRepository,
     private val onboardingRepository: OnboardingRepository,
     private val providerProfileRepository: ProviderProfileRepository,
     private val orderRepository: OrderRepository,
@@ -40,21 +33,16 @@ class HomeRepositoryImpl @Inject constructor(
         return withContext(dispatcherProvider.io) {
             when (val userResult = authRepository.getCurrentUser()) {
                 is AppResult.Error -> userResult
-                is AppResult.Success -> coroutineScope {
-                    val categoriesDeferred = async { catalogRepository.getCategories() }
-                    val featuredDeferred = async { loadFeaturedWorkers() }
-                    when (val categoriesResult = categoriesDeferred.await()) {
-                        is AppResult.Error -> {
-                            featuredDeferred.cancel()
-                            categoriesResult
-                        }
+                is AppResult.Success -> {
+                    when (val categoriesResult = catalogRepository.getCategories()) {
+                        is AppResult.Error -> categoriesResult
                         is AppResult.Success -> {
                             val categories = categoriesResult.data.toHomeCategoryItems()
-                            val recent = resolveRecentSearches(categories)
+                            val recent = resolveRecentSearches()
                             AppResult.Success(
                                 userResult.data.toClientHomeContent(
                                     recentSearches = recent,
-                                    featuredWorkers = featuredDeferred.await(),
+                                    categories = categories,
                                 ),
                             )
                         }
@@ -148,49 +136,24 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun resolveRecentSearches(
-        categories: List<HomeCategoryItem>,
-    ): List<RecentSearchEntry> {
-        val stored = recentSearchRepository.getRecents()
-        if (stored.isNotEmpty()) return stored.take(3)
-
-        return categories.take(3).map { category ->
-            RecentSearchEntry(
-                type = RecentSearchType.CATEGORY,
-                id = category.id,
-                label = category.name,
-                categoryId = category.id,
-            )
-        }
-    }
-
-    private suspend fun loadFeaturedWorkers(): List<WorkerSummary> {
-        return when (
-            val result = workerSearchRepository.searchWorkers(
-                filters = WorkerSearchFilters(),
-                pageNumber = 1,
-                pageSize = FEATURED_WORKERS_PAGE_SIZE,
-            )
-        ) {
-            is AppResult.Success -> result.data.items
-            is AppResult.Error -> emptyList()
-        }
+    private suspend fun resolveRecentSearches(): List<RecentSearchEntry> {
+        return recentSearchRepository.getRecents().take(RECENT_RUBROS_LIMIT)
     }
 
     private fun User.toClientHomeContent(
         recentSearches: List<RecentSearchEntry>,
-        featuredWorkers: List<WorkerSummary>,
+        categories: List<HomeCategoryItem>,
     ): ClientHomeContent =
         ClientHomeContent(
             userDisplayName = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" "),
             emailVerified = emailVerified,
             profilePhotoUrl = profilePhotoUrl,
             recentSearches = recentSearches,
-            featuredWorkers = featuredWorkers,
+            categories = categories,
         )
 
     private companion object {
-        const val FEATURED_WORKERS_PAGE_SIZE = 5
+        const val RECENT_RUBROS_LIMIT = 3
         const val UPCOMING_ORDERS_PREVIEW_SIZE = 3
     }
 }

@@ -104,6 +104,10 @@ fun NavGraphBuilder.homeScreen(
                     )
                 },
                 onShowMessage = onShowMessage,
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
             )
         }
         composable(
@@ -129,6 +133,9 @@ fun NavGraphBuilder.homeScreen(
                     navController.navigate(OrdersDestination.createOrder(workerId))
                 },
                 onShowMessage = onShowMessage,
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToFavorites = { navController.navigateToFavorites() },
+                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
             )
         }
         composable(

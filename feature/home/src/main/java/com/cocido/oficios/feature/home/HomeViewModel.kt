@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
@@ -53,6 +54,9 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             HomeEvent.VoiceSearch -> emitComingSoon()
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
+            is HomeEvent.CategorySelected -> onCategorySelected(event.category)
+            HomeEvent.SeeAllCategories -> emitEffect(HomeEffect.NavigateToSearch)
+            HomeEvent.ContactSupport -> emitEffect(HomeEffect.ContactSupport)
             HomeEvent.NavigateToSettings -> emitEffect(HomeEffect.NavigateToSettings)
             HomeEvent.NavigateToFavorites -> emitEffect(HomeEffect.NavigateToFavorites)
             HomeEvent.NavigateToHelp -> emitEffect(HomeEffect.NavigateToHelp)
@@ -71,6 +75,20 @@ class HomeViewModel @Inject constructor(
                     _unreadNotificationCount.value = known
                 }
             }
+        }
+    }
+
+    private fun onCategorySelected(category: HomeCategoryItem) {
+        viewModelScope.launch {
+            trackRecentSearchUseCase(
+                RecentSearchEntry(
+                    type = RecentSearchType.CATEGORY,
+                    id = category.id,
+                    label = category.name,
+                    categoryId = category.id,
+                ),
+            )
+            emitEffect(HomeEffect.NavigateToRubros(category.id, category.name))
         }
     }
 

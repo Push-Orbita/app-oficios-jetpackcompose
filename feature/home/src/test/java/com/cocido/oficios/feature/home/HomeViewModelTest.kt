@@ -49,7 +49,8 @@ class HomeViewModelTest {
 
         assertTrue(viewModel.uiState.value is HomeUiState.Success)
         val content = (viewModel.uiState.value as HomeUiState.Success).content
-        assertEquals(1, content.featuredWorkers.size)
+        assertEquals(2, content.recentSearches.size)
+        assertEquals("Nicolas Ayala", content.userDisplayName)
     }
 
     @Test
