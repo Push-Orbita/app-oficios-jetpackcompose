@@ -19,6 +19,7 @@ fun ProviderHomeRoute(
     onNavigateToOrdersList: () -> Unit,
     onNavigateToOrderDetail: (Long) -> Unit,
     onNavigateToAgenda: () -> Unit,
+    onNavigateToAgendaConfig: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProviderHomeViewModel = hiltViewModel(),
@@ -34,6 +35,7 @@ fun ProviderHomeRoute(
                 ProviderHomeEffect.NavigateToCompleteProfile -> onNavigateToCompleteProfile()
                 ProviderHomeEffect.NavigateToOrdersList -> onNavigateToOrdersList()
                 ProviderHomeEffect.NavigateToAgenda -> onNavigateToAgenda()
+                ProviderHomeEffect.NavigateToAgendaConfig -> onNavigateToAgendaConfig()
                 is ProviderHomeEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 is ProviderHomeEffect.ShowMessage -> toastController.showError(effect.message)
                 ProviderHomeEffect.NavigateToFavorites -> onNavigateToFavorites()
