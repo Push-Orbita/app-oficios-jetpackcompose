@@ -17,9 +17,11 @@ sealed interface ProfessionalProfileEvent {
     data class PaymentToggled(val method: String, val checked: Boolean) : ProfessionalProfileEvent
     data object Save : ProfessionalProfileEvent
     data object Back : ProfessionalProfileEvent
+    data object EditRubro : ProfessionalProfileEvent
 }
 
 sealed interface ProfessionalProfileEffect {
     data object NavigateBack : ProfessionalProfileEffect
     data class Saved(val message: String) : ProfessionalProfileEffect
+    data object NavigateToServices : ProfessionalProfileEffect
 }

@@ -52,7 +52,11 @@ fun NavGraphBuilder.settingsScreen(
         )
     }
     composable(SettingsDestination.professionalData) {
-        ProfessionalProfileRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+        ProfessionalProfileRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onShowMessage = onShowMessage,
+            onNavigateToServices = { navController.navigate(SettingsDestination.services) },
+        )
     }
     composable(SettingsDestination.services) {
         ServicesRoute(
