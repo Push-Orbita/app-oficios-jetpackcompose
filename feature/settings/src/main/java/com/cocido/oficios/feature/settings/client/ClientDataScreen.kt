@@ -311,7 +311,7 @@ private fun ContactEditor(
             .consumeWindowInsets(WindowInsets.safeDrawing)
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+            .padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(
@@ -383,7 +383,7 @@ private fun DomicilioEditor(
             .consumeWindowInsets(WindowInsets.safeDrawing)
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+            .padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(

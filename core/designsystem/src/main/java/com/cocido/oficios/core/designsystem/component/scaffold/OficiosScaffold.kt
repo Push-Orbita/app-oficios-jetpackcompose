@@ -21,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosToastBar
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosToastController
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 // ---------------------------------------------------------------------------
@@ -45,7 +47,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 @Composable
 fun OficiosScaffold(
     modifier: Modifier = Modifier,
-    topBar: @Composable () -> Unit = {},
+    topBar: @Composable (() -> Unit)? = null,
     bottomBar: (@Composable () -> Unit)? = null,
     isLoading: Boolean = false,
     snackbarHostState: SnackbarHostState? = null,
@@ -55,11 +57,12 @@ fun OficiosScaffold(
 ) {
     val snackbarState = snackbarHostState ?: remember { SnackbarHostState() }
     val resolvedToastController = toastController ?: LocalOficiosToastController.current
+    val layoutDirection = LocalLayoutDirection.current
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            topBar = topBar,
+            topBar = topBar ?: {},
             bottomBar = bottomBar?.let { bar ->
                 { OficiosBottomBarSlot(content = bar) }
             } ?: {},
@@ -67,7 +70,18 @@ fun OficiosScaffold(
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
             contentWindowInsets = contentWindowInsets,
-            content = content,
+            content = { paddingValues ->
+                val resolved = if (topBar != null) {
+                    oficiosContentPaddingAfterTopBar(
+                        padding = paddingValues,
+                        extraTop = OficiosSpacing.afterTopBar,
+                        layoutDirection = layoutDirection,
+                    )
+                } else {
+                    paddingValues
+                }
+                content(resolved)
+            },
         )
 
         // Toast bar siempre visible
@@ -103,7 +117,7 @@ fun OficiosScaffold(
 @Composable
 fun OficiosScreen(
     modifier: Modifier = Modifier,
-    topBar: @Composable () -> Unit = {},
+    topBar: @Composable (() -> Unit)? = null,
     bottomBar: (@Composable () -> Unit)? = null,
     isLoading: Boolean = false,
     snackbarHostState: SnackbarHostState? = null,

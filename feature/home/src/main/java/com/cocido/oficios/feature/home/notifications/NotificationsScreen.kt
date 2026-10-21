@@ -95,7 +95,7 @@ fun NotificationsScreen(
                     )
                     OficiosContentPhase.Content -> NotificationsList(
                         items = state.items,
-                        contentPadding = OficiosSpacing.OficiosScreenPadding,
+                        contentPadding = OficiosSpacing.OficiosScreenPaddingAfterTopBar,
                         onItemClick = { onEvent(NotificationsEvent.NotificationClicked(it)) },
                         onLoadMore = { onEvent(NotificationsEvent.LoadMore) },
                         hasMore = state.hasMore,
@@ -119,7 +119,7 @@ private fun NotificationFilterRow(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(OficiosSpacing.OficiosScreenPadding),
+            .padding(OficiosSpacing.OficiosScreenPaddingAfterTopBar),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {

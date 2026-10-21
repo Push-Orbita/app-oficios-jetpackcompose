@@ -19,12 +19,26 @@ object OficiosSpacing {
     val xxl = 48.dp
     val xxxl = 64.dp
     
+    /** Separación Figma entre TopAppBar y el primer contenido (16 dp). */
+    val afterTopBar = md
+
     /** Padding del contenedor de pantalla según Figma: pt-16 px-32 pb-32 */
     val OficiosScreenPadding = PaddingValues(
         start = 32.dp,
         top = 16.dp,
         end = 32.dp,
         bottom = 32.dp
+    )
+
+    /**
+     * Igual que [OficiosScreenPadding] pero sin top: [OficiosScaffold] ya suma
+     * [afterTopBar] cuando hay barra superior.
+     */
+    val OficiosScreenPaddingAfterTopBar = PaddingValues(
+        start = 32.dp,
+        top = 0.dp,
+        end = 32.dp,
+        bottom = 32.dp,
     )
     
     /** Gap vertical entre secciones de pantalla — Figma gap-16 */

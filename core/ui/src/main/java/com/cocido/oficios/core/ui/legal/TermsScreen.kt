@@ -36,7 +36,7 @@ fun TermsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+                .padding(horizontal = OficiosSpacing.md),
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
             Text(

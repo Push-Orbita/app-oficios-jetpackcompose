@@ -79,6 +79,12 @@ El casco amarillo (`#F8AE1A`, nodo `12:101`) no se usa. Marca vigente exportada 
 
 `OficiosColorBrandMark` = `#006AF0`. El acento UI `#F8AE1A` (`OficiosColorAccent`) no pinta el logo. `ic_casco` del rol sigue blanco.
 
+### Fix en #21 — Editar servicio + padding TopAppBar
+
+**Servicios que ofrece:** tocar la card abre el wizard precargado (especialidades, modalidad, días/horario). Rubro principal bloqueado. Persistencia = DELETE `/trabajador-oficio-rubro/{id}` + POST `/full` o `/full/secundario` (no hay PATCH atómico; BK-01). Toast de éxito/error. `DELETE` tipado `Unit` (body vacío).
+
+**Padding:** `OficiosScaffold` suma `OficiosSpacing.afterTopBar` (16 dp) cuando hay `topBar`. Pantallas con barra: Servicios, Agregar/Editar servicio, Ajustes, Datos personales, Contraseña, Datos cliente, Portafolio, Favoritos, Notificaciones, Ayuda, Agenda lista, Calificar, Contrapropuesta, Términos, Denunciar trabajador.
+
 ### Fix en #21 — Badge verificado verde
 
 `OficiosVerifiedBadge`: Lucide `badge-check` outline 24 dp, tint `OficiosColorSuccess` (`#4CAF7D`). Home/ficha/cards/solicitud del **trabajador**. Home **cliente** lo conserva porque Figma `25:95` / `221:990` lo dibuja y la API expone `usuario.emailVerificado`. No se agregó junto al nombre en Ajustes (no hay frame Figma de esa tarjeta).
@@ -104,7 +110,7 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 
 | ID | Qué | Impacto | Doc |
 |---|---|---|---|
-| BK-01 | Editar subrubros/modalidad | Editar Rubro parcial | backlog reunión |
+| BK-01 | PATCH atómico especialidades/modalidad/`diasLaborales` | Edit servicio = DELETE+POST `/full` | [BK-01-editar-servicio.md](backend-requests/BK-01-editar-servicio.md) |
 | BK-02 / BK-03 | PATCH `diasLaborales` / `sesion` | Calendario borra y recrea | — |
 | BK-04 | Bloqueos de agenda | No hay UI de bloqueo | — |
 | BK-05 | Disponibilidad por subrubro / sin turnos | Horario por oficio incompleto | — |
