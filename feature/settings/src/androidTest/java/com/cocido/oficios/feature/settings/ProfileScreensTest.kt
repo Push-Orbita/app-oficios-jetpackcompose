@@ -42,8 +42,10 @@ class ProfileScreensTest {
             }
         }
         composeRule.onNodeWithText("Trabajador Prueba").assertIsDisplayed()
-        composeRule.onNodeWithText("Servicios que ofrece").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Galería y certificados").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Editar Perfil").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Oficios, trabajos realizados y certificados").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Servicios que ofrece").assertDoesNotExist()
+        composeRule.onNodeWithText("Galería y certificados").assertDoesNotExist()
         composeRule.onNodeWithText("Eliminar cuenta").performScrollTo().assertIsDisplayed()
     }
 

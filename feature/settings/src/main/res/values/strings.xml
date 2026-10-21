@@ -20,12 +20,8 @@
     <string name="settings_personal_data_description">Nombre, correo y foto de perfil</string>
     <string name="settings_client_data">Contactos y domicilios</string>
     <string name="settings_client_data_description">Administre dónde y cómo quiere que lo contacten</string>
-    <string name="settings_professional_data">Presentación profesional</string>
-    <string name="settings_professional_data_description">Descripción, experiencia y medios de cobro</string>
-    <string name="settings_services">Servicios que ofrece</string>
-    <string name="settings_services_description">Rubros, especialidades, modalidades y horarios</string>
-    <string name="settings_portfolio">Galería y certificados</string>
-    <string name="settings_portfolio_description">Muestre trabajos reales y documentación profesional</string>
+    <string name="settings_professional_data">Editar Perfil</string>
+    <string name="settings_professional_data_description">Oficios, trabajos realizados y certificados</string>
     <string name="settings_change_password">Cambiar contraseña</string>
     <string name="settings_change_password_description">Actualice su acceso de forma segura</string>
     <string name="settings_delete_account">Eliminar cuenta</string>

@@ -33,8 +33,6 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToPersonalData = { navController.navigate(SettingsDestination.personalData) },
             onNavigateToClientData = { navController.navigate(SettingsDestination.clientData) },
             onNavigateToProfessionalData = { navController.navigate(SettingsDestination.professionalData) },
-            onNavigateToServices = { navController.navigate(SettingsDestination.services) },
-            onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio) },
             onNavigateToChangePassword = { navController.navigate(SettingsDestination.changePassword) },
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
             onNavigateToTerms = onNavigateToTerms,

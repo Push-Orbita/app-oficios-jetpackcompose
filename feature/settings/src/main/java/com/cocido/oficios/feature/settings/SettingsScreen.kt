@@ -18,9 +18,7 @@ import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.MiscellaneousServices
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -228,22 +226,6 @@ private fun SettingsContent(
                     title = stringResource(R.string.settings_professional_data),
                     description = stringResource(R.string.settings_professional_data_description),
                     onClick = { onEvent(SettingsEvent.OpenProfessionalData) },
-                )
-            }
-            item {
-                SettingsActionRow(
-                    icon = Icons.Outlined.MiscellaneousServices,
-                    title = stringResource(R.string.settings_services),
-                    description = stringResource(R.string.settings_services_description),
-                    onClick = { onEvent(SettingsEvent.OpenServices) },
-                )
-            }
-            item {
-                SettingsActionRow(
-                    icon = Icons.Outlined.PhotoLibrary,
-                    title = stringResource(R.string.settings_portfolio),
-                    description = stringResource(R.string.settings_portfolio_description),
-                    onClick = { onEvent(SettingsEvent.OpenPortfolio) },
                 )
             }
         }
