@@ -6,11 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
-import com.cocido.oficios.domain.model.RecentSearchEntry
-import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
-import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -25,7 +22,6 @@ import kotlinx.coroutines.launch
 class RubrosViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
-    private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
@@ -82,25 +78,14 @@ class RubrosViewModel @Inject constructor(
     }
 
     private fun onRubroSelected(rubro: CatalogOption) {
-        viewModelScope.launch {
-            trackRecentSearchUseCase(
-                RecentSearchEntry(
-                    type = RecentSearchType.RUBRO,
-                    id = rubro.id,
-                    label = rubro.label,
-                    categoryId = categoryId,
-                    rubroId = rubro.id,
-                ),
-            )
-            emitEffect(
-                RubrosEffect.NavigateToSearchResults(
-                    rubroId = rubro.id,
-                    rubroLabel = rubro.label,
-                    categoryId = categoryId,
-                    categoryLabel = categoryName,
-                ),
-            )
-        }
+        emitEffect(
+            RubrosEffect.NavigateToSearchResults(
+                rubroId = rubro.id,
+                rubroLabel = rubro.label,
+                categoryId = categoryId,
+                categoryLabel = categoryName,
+            ),
+        )
     }
 
     private fun loadRubros(refreshing: Boolean = false) {

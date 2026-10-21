@@ -62,6 +62,8 @@ class SearchResultsViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var barrioSearchJob: Job? = null
     private var queryDebounceJob: Job? = null
+    private var pendingTrackOnSuccess = true
+    private var trackedKey: String? = null
 
     init {
         loadInitial()
@@ -105,6 +107,7 @@ class SearchResultsViewModel @Inject constructor(
         _searchQuery.value = query
         activeFilters = activeFilters.copy(query = query.takeIf { it.isNotBlank() })
         activeFilters.persistTo(savedStateHandle)
+        pendingTrackOnSuccess = false
         queryDebounceJob?.cancel()
         queryDebounceJob = viewModelScope.launch {
             delay(QUERY_DEBOUNCE_MS)
@@ -118,17 +121,7 @@ class SearchResultsViewModel @Inject constructor(
         _searchQuery.value = trimmed
         activeFilters = activeFilters.copy(query = trimmed.takeIf { it.isNotBlank() })
         activeFilters.persistTo(savedStateHandle)
-        if (trimmed.isNotEmpty()) {
-            viewModelScope.launch {
-                trackRecentSearchUseCase(
-                    RecentSearchEntry(
-                        type = RecentSearchType.QUERY,
-                        id = trimmed.hashCode().toLong(),
-                        label = trimmed,
-                    ),
-                )
-            }
-        }
+        pendingTrackOnSuccess = true
         refresh()
     }
 
@@ -199,10 +192,14 @@ class SearchResultsViewModel @Inject constructor(
                             )
                         }
                     } else {
-                        _uiState.update {
-                            if (result.data.items.isEmpty()) {
+                        if (result.data.items.isEmpty()) {
+                            pendingTrackOnSuccess = false
+                            _uiState.update {
                                 SearchResultsUiState.Empty(activeFilters, chips)
-                            } else {
+                            }
+                        } else {
+                            maybeTrackSuccessfulSearch()
+                            _uiState.update {
                                 SearchResultsUiState.Success(
                                     workers = result.data.items,
                                     activeFilters = activeFilters,
@@ -309,6 +306,7 @@ class SearchResultsViewModel @Inject constructor(
         )
         activeFilters.persistTo(savedStateHandle)
         _filterSheetState.update { it.copy(visible = false) }
+        pendingTrackOnSuccess = true
         refresh()
     }
 
@@ -434,6 +432,50 @@ class SearchResultsViewModel @Inject constructor(
         }
         filters.fechaDeseada?.let { add(FilterChip(FilterChipType.DATE, it)) }
         filters.query?.takeIf { it.isNotBlank() }?.let { add(FilterChip(FilterChipType.QUERY, it)) }
+    }
+
+    private fun maybeTrackSuccessfulSearch() {
+        if (!pendingTrackOnSuccess) return
+        pendingTrackOnSuccess = false
+        val entry = recentEntryForActiveFilters() ?: return
+        val key = listOf(
+            entry.type.name,
+            entry.id.toString(),
+            entry.label,
+        ).joinToString("|")
+        if (key == trackedKey) return
+        trackedKey = key
+        viewModelScope.launch { trackRecentSearchUseCase(entry) }
+    }
+
+    private fun recentEntryForActiveFilters(): RecentSearchEntry? {
+        val query = activeFilters.query?.trim().orEmpty()
+        val rubroId = activeFilters.rubroId
+        val rubroLabel = activeFilters.rubroLabel?.trim().orEmpty()
+        val subRubroId = activeFilters.subRubroId
+        val subRubroLabel = activeFilters.subRubroLabel?.trim().orEmpty()
+        return when {
+            subRubroId != null && subRubroLabel.isNotEmpty() -> RecentSearchEntry(
+                type = RecentSearchType.SUBRUBRO,
+                id = subRubroId,
+                label = subRubroLabel,
+                categoryId = activeFilters.categoryId,
+                rubroId = rubroId,
+            )
+            rubroId != null && rubroLabel.isNotEmpty() -> RecentSearchEntry(
+                type = RecentSearchType.RUBRO,
+                id = rubroId,
+                label = rubroLabel,
+                categoryId = activeFilters.categoryId,
+                rubroId = rubroId,
+            )
+            query.isNotEmpty() -> RecentSearchEntry(
+                type = RecentSearchType.QUERY,
+                id = query.hashCode().toLong(),
+                label = query,
+            )
+            else -> null
+        }
     }
 
     private fun emitEffect(effect: SearchResultsEffect) {

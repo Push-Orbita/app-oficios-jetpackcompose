@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -211,7 +212,11 @@ private fun SearchResultsHeader(
                 contentDescription = stringResource(R.string.home_back),
                 modifier = Modifier
                     .width(61.dp)
-                    .height(101.dp),
+                    .height(101.dp)
+                    .offset(
+                        x = OficiosComponentSize.searchResultsLogoOffsetX,
+                        y = OficiosComponentSize.searchResultsLogoOffsetY,
+                    ),
             )
             Text(
                 text = RubroDisplayNames.pluralTitle(rubroLabel),
@@ -239,6 +244,7 @@ private fun SearchResultsHeader(
             },
             activeFilterCount = activeFilterCount,
             placeholder = RubroDisplayNames.searchHint(rubroLabel),
+            placeholderMaxLines = 2,
             modifier = Modifier.focusRequester(searchFocusRequester),
         )
     }
@@ -272,6 +278,7 @@ private fun WorkersList(
         contentPadding = PaddingValues(
             start = OficiosSpacing.xl,
             end = OficiosSpacing.xl,
+            top = OficiosComponentSize.searchResultsListTop,
             bottom = OficiosSpacing.xl,
         ),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),

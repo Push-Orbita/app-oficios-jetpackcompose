@@ -5,6 +5,7 @@ import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 
 class SearchWorkersUseCase @Inject constructor(
     private val workerSearchRepository: WorkerSearchRepository,
@@ -28,4 +29,10 @@ class GetRecentSearchesUseCase @Inject constructor(
     private val recentSearchRepository: RecentSearchRepository,
 ) {
     suspend operator fun invoke(): List<RecentSearchEntry> = recentSearchRepository.getRecents()
+}
+
+class ObserveRecentSearchesUseCase @Inject constructor(
+    private val recentSearchRepository: RecentSearchRepository,
+) {
+    operator fun invoke(): Flow<List<RecentSearchEntry>> = recentSearchRepository.observeRecents()
 }

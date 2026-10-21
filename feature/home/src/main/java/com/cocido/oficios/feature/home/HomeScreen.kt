@@ -133,6 +133,7 @@ private fun HomeSuccessContent(
             HomeRecentRubrosSection(
                 searches = content.recentSearches,
                 onSearchClick = { onEvent(HomeEvent.RecentSearchSelected(it)) },
+                onSeeAllClick = { onEvent(HomeEvent.SeeAllCategories) },
             )
         } else {
             HomeCategoriesGrid(
@@ -150,6 +151,7 @@ private fun HomeSuccessContent(
             contactLabel = stringResource(R.string.home_support_contact),
             onContactClick = { onEvent(HomeEvent.ContactSupport) },
             enabled = supportAvailable,
+            minHeight = OficiosComponentSize.authRoleSupportCardMinHeight,
             modifier = Modifier.padding(top = OficiosComponentSize.homeSupportAfterRecentsExtra),
         )
     }
