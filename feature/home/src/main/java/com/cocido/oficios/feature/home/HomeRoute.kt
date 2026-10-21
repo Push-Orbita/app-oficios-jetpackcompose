@@ -6,7 +6,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.ui.intent.openSupportPhone
@@ -38,7 +37,6 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
-    val comingSoon = stringResource(R.string.home_coming_soon)
     val toastController = LocalOficiosToastController.current
     val context = LocalContext.current
 
@@ -65,7 +63,6 @@ fun HomeRoute(
                 HomeEffect.NavigateToHelp -> onNavigateToHelp()
                 HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
                 is HomeEffect.ShowMessage -> toastController.showError(effect.message)
-                HomeEffect.ShowComingSoon -> onShowMessage(comingSoon)
             }
         }
     }

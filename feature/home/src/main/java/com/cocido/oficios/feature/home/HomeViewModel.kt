@@ -62,7 +62,6 @@ class HomeViewModel @Inject constructor(
             HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            HomeEvent.VoiceSearch -> emitComingSoon()
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
             is HomeEvent.CategorySelected -> onCategorySelected(event.category)
             HomeEvent.SeeAllCategories -> emitEffect(HomeEffect.NavigateToSearch)
@@ -214,10 +213,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    private fun emitComingSoon() {
-        emitEffect(HomeEffect.ShowComingSoon)
     }
 
     private fun emitEffect(effect: HomeEffect) {

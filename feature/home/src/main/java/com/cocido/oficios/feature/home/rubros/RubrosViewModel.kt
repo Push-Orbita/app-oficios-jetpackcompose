@@ -58,7 +58,6 @@ class RubrosViewModel @Inject constructor(
             RubrosEvent.Back -> emitEffect(RubrosEffect.NavigateBack)
             is RubrosEvent.RubroSelected -> onRubroSelected(event.rubro)
             is RubrosEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            RubrosEvent.VoiceSearch -> emitEffect(RubrosEffect.ShowComingSoon)
             RubrosEvent.OpenNotifications -> emitEffect(RubrosEffect.NavigateToNotifications)
         }
     }
@@ -155,14 +154,12 @@ sealed interface RubrosEvent {
     data object Back : RubrosEvent
     data class RubroSelected(val rubro: CatalogOption) : RubrosEvent
     data class SearchSubmitted(val query: String) : RubrosEvent
-    data object VoiceSearch : RubrosEvent
     data object OpenNotifications : RubrosEvent
 }
 
 sealed interface RubrosEffect {
     data object NavigateBack : RubrosEffect
     data object NavigateToNotifications : RubrosEffect
-    data object ShowComingSoon : RubrosEffect
     data class ShowMessage(val message: String) : RubrosEffect
     data class NavigateToSearchResults(
         val rubroId: Long,

@@ -82,7 +82,6 @@ class SearchResultsViewModel @Inject constructor(
             SearchResultsEvent.ClearFilters -> clearFilters()
             is SearchResultsEvent.QueryChanged -> onQueryChanged(event.query)
             SearchResultsEvent.QuerySubmitted -> onQuerySubmitted()
-            SearchResultsEvent.VoiceSearch -> emitEffect(SearchResultsEffect.ShowComingSoon)
             is SearchResultsEvent.WorkerViewProfile -> {
                 emitEffect(SearchResultsEffect.NavigateToWorker(event.worker.id))
             }
@@ -565,7 +564,6 @@ sealed interface SearchResultsEvent {
     data object ClearFilters : SearchResultsEvent
     data class QueryChanged(val query: String) : SearchResultsEvent
     data object QuerySubmitted : SearchResultsEvent
-    data object VoiceSearch : SearchResultsEvent
     data class WorkerViewProfile(val worker: WorkerSummary) : SearchResultsEvent
     data class WorkerContact(val worker: WorkerSummary) : SearchResultsEvent
     data class FilterCategorySelected(val category: CatalogOption) : SearchResultsEvent
@@ -585,6 +583,5 @@ sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect
     data class NavigateToWorker(val workerId: Long) : SearchResultsEffect
     data class NavigateToHire(val workerId: Long) : SearchResultsEffect
-    data object ShowComingSoon : SearchResultsEffect
     data class ShowMessage(val message: String) : SearchResultsEffect
 }

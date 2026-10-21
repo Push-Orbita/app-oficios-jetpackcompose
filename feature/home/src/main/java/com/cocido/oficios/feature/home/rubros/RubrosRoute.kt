@@ -5,10 +5,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 
 @Composable
@@ -23,7 +21,6 @@ fun RubrosRoute(
     modifier: Modifier = Modifier,
     viewModel: RubrosViewModel = hiltViewModel(),
 ) {
-    val comingSoon = stringResource(R.string.home_coming_soon)
     val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
@@ -38,7 +35,6 @@ fun RubrosRoute(
                     effect.query,
                 )
                 RubrosEffect.NavigateToNotifications -> onNavigateToNotifications()
-                RubrosEffect.ShowComingSoon -> onShowMessage(comingSoon)
                 is RubrosEffect.ShowMessage -> toastController.showError(effect.message)
             }
         }

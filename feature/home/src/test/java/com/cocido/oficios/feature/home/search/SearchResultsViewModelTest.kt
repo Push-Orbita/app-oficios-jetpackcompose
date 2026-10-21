@@ -13,6 +13,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.core.ui.intent.dispatchSpokenSearch
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import com.cocido.oficios.feature.home.FakeRecentSearchRepository
@@ -62,6 +63,25 @@ class SearchResultsViewModelTest {
 
         assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
         assertEquals("plomero", viewModel.searchQuery.value)
+    }
+
+    @Test
+    fun `spoken query fills field and submits search`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val spoken = "  electricista "
+        assertTrue(
+            dispatchSpokenSearch(
+                spoken = spoken,
+                onQueryChange = { viewModel.onEvent(SearchResultsEvent.QueryChanged(it)) },
+                onSearch = { viewModel.onEvent(SearchResultsEvent.QuerySubmitted) },
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals("electricista", viewModel.searchQuery.value)
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
     }
 
     @Test

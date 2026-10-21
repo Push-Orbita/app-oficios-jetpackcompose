@@ -10,7 +10,6 @@ sealed interface HomeEvent {
     data object OpenSearch : HomeEvent
     data object OpenNotifications : HomeEvent
     data class SearchSubmitted(val query: String) : HomeEvent
-    data object VoiceSearch : HomeEvent
     data class RecentSearchSelected(val entry: RecentSearchEntry) : HomeEvent
     data class CategorySelected(val category: HomeCategoryItem) : HomeEvent
     data object SeeAllCategories : HomeEvent
@@ -41,7 +40,6 @@ sealed interface HomeEffect {
     data object NavigateToHelp : HomeEffect
     data object NavigateToNotifications : HomeEffect
     data class ShowMessage(val message: String) : HomeEffect
-    data object ShowComingSoon : HomeEffect
     data class NavigateToRubros(val categoryId: Long, val categoryName: String) : HomeEffect
     data class NavigateToSearchResults(
         val rubroId: Long? = null,

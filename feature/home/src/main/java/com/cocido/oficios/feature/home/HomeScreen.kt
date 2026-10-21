@@ -125,8 +125,7 @@ private fun HomeSuccessContent(
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { searchQuery = it },
-            onSearch = { onEvent(HomeEvent.SearchSubmitted(searchQuery)) },
-            onMicClick = { onEvent(HomeEvent.VoiceSearch) },
+            onSearch = { onEvent(HomeEvent.SearchSubmitted(it)) },
             placeholder = stringResource(R.string.home_search_hint),
         )
         if (content.recentSearches.isNotEmpty()) {

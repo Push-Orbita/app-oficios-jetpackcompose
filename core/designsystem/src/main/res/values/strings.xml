@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ds_search_voice">Buscar por voz</string>
+    <string name="ds_search_voice_unavailable">La búsqueda por voz no está disponible en este dispositivo</string>
     <string name="ds_search_action">Buscar</string>
     <string name="ds_search_filters">Filtros</string>
     <string name="ds_verified">Usuario verificado</string>
