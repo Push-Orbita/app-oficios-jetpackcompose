@@ -108,4 +108,11 @@ class SearchPixel9ScreenshotTest {
         composeRule.setContent { SearchScreenshotOrdersList(status, nav) }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun notifications() {
+        assumeGoldenOrRecording(javaClass, "notifications")
+        composeRule.setContent { SearchScreenshotNotifications(status, nav) }
+        composeRule.onRoot().captureRoboImage()
+    }
 }
