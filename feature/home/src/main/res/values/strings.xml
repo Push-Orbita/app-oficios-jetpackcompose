@@ -345,7 +345,11 @@
     <string name="agenda_booking">Reserva #%1$s</string>
     <string name="agenda_edit_action">Editar disponibilidad</string>
     <string name="agenda_delete_action">Eliminar disponibilidad</string>
-    <string name="agenda_config_title">Configurar agenda</string>
+    <string name="agenda_config_title">Calendario general</string>
+    <string name="agenda_config_days_title">Días de Atención</string>
+    <string name="agenda_config_division_title">División de Horarios</string>
+    <string name="agenda_config_hours_title">Horario de Atención</string>
+    <string name="agenda_config_by_trade_title">Calendario Por Oficio</string>
     <string name="agenda_config_loading">Cargando configuración…</string>
     <string name="agenda_config_error">No pudimos cargar tu configuración</string>
     <string name="agenda_config_empty_title">Todavía no tenés especialidades con agenda</string>

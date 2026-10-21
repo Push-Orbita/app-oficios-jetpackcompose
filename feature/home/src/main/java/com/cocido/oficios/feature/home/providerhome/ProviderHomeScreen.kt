@@ -163,7 +163,7 @@ private fun ProviderHomeSuccessContent(
             )
         } else {
             ProviderCalendarSetupCard(
-                onConfigure = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
+                onConfigure = { onEvent(ProviderHomeEvent.ConfigureAgendaClicked) },
             )
         }
     }

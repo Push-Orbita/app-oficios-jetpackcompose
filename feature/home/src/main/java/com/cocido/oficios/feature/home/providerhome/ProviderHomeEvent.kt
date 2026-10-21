@@ -6,6 +6,7 @@ sealed interface ProviderHomeEvent {
     data object OpenNotifications : ProviderHomeEvent
     data object CompleteProfileClicked : ProviderHomeEvent
     data object ViewFullAgendaClicked : ProviderHomeEvent
+    data object ConfigureAgendaClicked : ProviderHomeEvent
     data class OrderClicked(val orderId: Long) : ProviderHomeEvent
     data object NavigateToSettings : ProviderHomeEvent
     data object NavigateToFavorites : ProviderHomeEvent
@@ -17,6 +18,7 @@ sealed interface ProviderHomeEffect {
     data object NavigateToCompleteProfile : ProviderHomeEffect
     data object NavigateToOrdersList : ProviderHomeEffect
     data object NavigateToAgenda : ProviderHomeEffect
+    data object NavigateToAgendaConfig : ProviderHomeEffect
     data class NavigateToOrderDetail(val orderId: Long) : ProviderHomeEffect
     data class ShowMessage(val message: String) : ProviderHomeEffect
     data object NavigateToFavorites : ProviderHomeEffect
