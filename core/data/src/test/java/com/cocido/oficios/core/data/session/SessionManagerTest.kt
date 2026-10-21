@@ -1,5 +1,7 @@
 package com.cocido.oficios.core.data.session
 
+import com.cocido.oficios.core.data.cache.CachedValue
+import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
 import com.cocido.oficios.core.datastore.TokenDataStore
 import com.cocido.oficios.domain.model.AuthState
 import com.cocido.oficios.domain.model.AuthTokens
@@ -21,13 +23,18 @@ class SessionManagerTest {
 
     private lateinit var tokenDataStore: TokenDataStore
     private lateinit var sessionManager: SessionManager
+    private lateinit var coordinator: SessionCacheCoordinator
+    private lateinit var leftover: CachedValue<String>
 
     @Before
     fun setup() {
         val context = RuntimeEnvironment.getApplication()
         tokenDataStore = TokenDataStore(context)
         tokenDataStore.clear()
-        sessionManager = SessionManager(tokenDataStore)
+        coordinator = SessionCacheCoordinator()
+        leftover = CachedValue(coordinator)
+        leftover.set("pedidos-viejos")
+        sessionManager = SessionManager(tokenDataStore, coordinator)
     }
 
     @Test
@@ -50,5 +57,14 @@ class SessionManagerTest {
         val state = sessionManager.authState.first()
         assertTrue(state is AuthState.Unauthenticated)
         assertNull(sessionManager.getAccessToken())
+        assertNull(leftover.get())
+    }
+
+    @Test
+    fun `save session clears leftover caches from the previous account`() = runTest {
+        leftover.set("favoritos-anteriores")
+        val user = User(2, "otra@test.com", "Ana", "López", UserRole.CLIENT, true)
+        sessionManager.saveSession(AuthTokens("access", "refresh"), user)
+        assertNull(leftover.get())
     }
 }
