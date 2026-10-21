@@ -11,6 +11,8 @@ fun ProfessionalProfileRoute(
     onNavigateBack: () -> Unit,
     onShowMessage: (String) -> Unit,
     onNavigateToServices: () -> Unit = {},
+    onNavigateToPortfolio: () -> Unit = {},
+    onNavigateToDeleteAccount: () -> Unit = {},
     viewModel: ProfessionalProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -18,11 +20,9 @@ fun ProfessionalProfileRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 ProfessionalProfileEffect.NavigateBack -> onNavigateBack()
-                is ProfessionalProfileEffect.Saved -> {
-                    onShowMessage(effect.message)
-                    onNavigateBack()
-                }
                 ProfessionalProfileEffect.NavigateToServices -> onNavigateToServices()
+                ProfessionalProfileEffect.NavigateToPortfolio -> onNavigateToPortfolio()
+                ProfessionalProfileEffect.NavigateToDeleteAccount -> onNavigateToDeleteAccount()
             }
         }
     }

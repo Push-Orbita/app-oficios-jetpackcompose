@@ -56,6 +56,8 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateBack = { navController.popBackStack() },
             onShowMessage = onShowMessage,
             onNavigateToServices = { navController.navigate(SettingsDestination.services) },
+            onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio) },
+            onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
         )
     }
     composable(SettingsDestination.services) {

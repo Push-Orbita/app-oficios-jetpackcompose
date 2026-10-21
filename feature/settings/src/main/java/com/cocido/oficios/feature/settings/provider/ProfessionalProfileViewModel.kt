@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
-import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -12,7 +11,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -29,73 +27,47 @@ class ProfessionalProfileViewModel @Inject constructor(
     fun onEvent(event: ProfessionalProfileEvent) {
         when (event) {
             ProfessionalProfileEvent.Retry -> load()
-            is ProfessionalProfileEvent.DescriptionChanged -> _uiState.update {
-                it.copy(description = event.value, errorMessage = null)
-            }
-            is ProfessionalProfileEvent.ExperienceChanged -> _uiState.update {
-                it.copy(experience = event.value, errorMessage = null)
-            }
-            is ProfessionalProfileEvent.PaymentToggled -> _uiState.update {
-                val next = it.paymentMethods.toMutableSet().apply {
-                    if (event.checked) add(event.method) else remove(event.method)
-                }
-                it.copy(paymentMethods = next)
-            }
-            ProfessionalProfileEvent.Save -> save()
             ProfessionalProfileEvent.Back -> emit(ProfessionalProfileEffect.NavigateBack)
             ProfessionalProfileEvent.EditRubro -> emit(ProfessionalProfileEffect.NavigateToServices)
+            ProfessionalProfileEvent.AddWork,
+            ProfessionalProfileEvent.AddCertificate,
+            -> emit(ProfessionalProfileEffect.NavigateToPortfolio)
+            ProfessionalProfileEvent.DeleteAccount -> emit(ProfessionalProfileEffect.NavigateToDeleteAccount)
         }
     }
 
     private fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, loadFailed = false)
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> {
                     val provider = result.data.providerDetails
                     if (provider == null) {
-                        _uiState.update { it.copy(isLoading = false, loadFailed = true, errorMessage = "Esta sección es solo para trabajadores de oficio.") }
+                        _uiState.value = ProfessionalProfileUiState(
+                            isLoading = false,
+                            loadFailed = true,
+                            errorMessage = "Esta sección es solo para trabajadores de oficio.",
+                        )
                     } else {
-                        _uiState.update {
-                            ProfessionalProfileUiState(
-                                isLoading = false,
-                                description = provider.description.orEmpty(),
-                                experience = provider.experience.orEmpty(),
-                                paymentMethods = provider.paymentMethods.toSet(),
-                            )
-                        }
+                        val oficios = provider.services.map { it.rubroName }.filter { it.isNotBlank() }.distinct()
+                        val specialized = provider.services
+                            .flatMap { service -> service.subServices.map { it.name } }
+                            .filter { it.isNotBlank() }
+                            .distinct()
+                        _uiState.value = ProfessionalProfileUiState(
+                            isLoading = false,
+                            oficiosLabel = oficios.joinToString(", "),
+                            specializedLabel = specialized.joinToString(", "),
+                            gallery = provider.gallery,
+                            certificates = provider.certificates.map { it.toUi() },
+                        )
                     }
                 }
-                is AppResult.Error -> _uiState.update {
-                    it.copy(isLoading = false, loadFailed = true, errorMessage = result.error.userMessage())
-                }
-            }
-        }
-    }
-
-    private fun save() {
-        val state = _uiState.value
-        if (state.description.isBlank() || state.experience.isBlank() || state.paymentMethods.isEmpty()) {
-            _uiState.update {
-                it.copy(errorMessage = "Complete su presentación, experiencia y al menos un medio de cobro.")
-            }
-            return
-        }
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true, errorMessage = null) }
-            val request = ProviderProfessionalInfoRequest(
-                descripcion = state.description.trim(),
-                experiencia = state.experience.trim(),
-                paymentMethods = state.paymentMethods.toList(),
-            )
-            when (val result = accountUseCases.updateProfessionalInfo(request)) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isSaving = false) }
-                    emit(ProfessionalProfileEffect.Saved("Tu presentación profesional se actualizó."))
-                }
-                is AppResult.Error -> _uiState.update {
-                    it.copy(isSaving = false, errorMessage = result.error.userMessage())
-                }
+                is AppResult.Error -> _uiState.value = ProfessionalProfileUiState(
+                    isLoading = false,
+                    loadFailed = true,
+                    errorMessage = result.error.userMessage(),
+                )
             }
         }
     }
