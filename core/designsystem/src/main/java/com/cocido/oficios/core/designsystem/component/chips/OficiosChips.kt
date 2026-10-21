@@ -14,6 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import com.cocido.oficios.core.designsystem.component.interaction.oficiosMinTouchTarget
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
@@ -55,41 +59,51 @@ fun OficiosChip(
     onClick: (() -> Unit)? = null,
 ) {
     val haptics = rememberOficiosHaptics()
-    val clickModifier = if (onClick != null) {
-        Modifier.clickable {
-            haptics.tick()
-            onClick()
-        }
-    } else {
-        Modifier
-    }
-
-    Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(containerColor)
-            .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
-            .then(clickModifier)
-            .padding(horizontal = OficiosSpacing.sm, vertical = verticalPadding),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+    val visual = @Composable {
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.extraSmall)
+                .background(containerColor)
+                .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
+                .padding(horizontal = OficiosSpacing.sm, vertical = verticalPadding),
+            contentAlignment = Alignment.Center,
         ) {
-            if (leadingIcon != null) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null,
-                    tint = contentColor,
-                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+            ) {
+                if (leadingIcon != null) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = Modifier.size(OficiosComponentSize.iconSm),
+                    )
+                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor,
                 )
             }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = contentColor,
-            )
+        }
+    }
+    if (onClick != null) {
+        Box(
+            modifier = modifier
+                .oficiosMinTouchTarget()
+                .clickable {
+                    haptics.tick()
+                    onClick()
+                }
+                .semantics(mergeDescendants = true) { role = Role.Button },
+            contentAlignment = Alignment.Center,
+        ) {
+            visual()
+        }
+    } else {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            visual()
         }
     }
 }
@@ -110,21 +124,28 @@ fun OficiosSegmentChip(
     val shape = RoundedCornerShape(OficiosRadius.sm)
     Box(
         modifier = modifier
-            .defaultMinSize(minHeight = OficiosComponentSize.buttonHeightSmall)
-            .clip(shape)
-            .background(if (selected) OficiosColorAction else Color.Transparent)
+            .oficiosMinTouchTarget()
             .clickable {
                 haptics.tick()
                 onClick()
             }
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
+            .semantics(mergeDescendants = true) { role = Role.Button },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorWhite,
-        )
+        Box(
+            modifier = Modifier
+                .defaultMinSize(minHeight = OficiosComponentSize.buttonHeightSmall)
+                .clip(shape)
+                .background(if (selected) OficiosColorAction else Color.Transparent)
+                .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorWhite,
+            )
+        }
     }
 }
 
@@ -144,15 +165,21 @@ fun OficiosFilterChip(
     val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val haptics = rememberOficiosHaptics()
 
-    Row(
+    Box(
         modifier = modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(containerColor)
-            .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
+            .oficiosMinTouchTarget()
             .clickable {
                 haptics.tick()
                 onToggle()
             }
+            .semantics(mergeDescendants = true) { role = Role.Button },
+        contentAlignment = Alignment.Center,
+    ) {
+    Row(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.extraSmall)
+            .background(containerColor)
+            .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
             .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -170,6 +197,7 @@ fun OficiosFilterChip(
             style = MaterialTheme.typography.labelMedium,
             color = contentColor,
         )
+    }
     }
 }
 

@@ -5,6 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import com.cocido.oficios.core.designsystem.component.interaction.oficiosMinTouchTarget
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -34,18 +38,25 @@ fun OficiosIconButton(
 ) {
     Box(
         modifier = modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(containerColor)
+            .oficiosMinTouchTarget()
             .clickable(onClick = onClick)
-            .padding(OficiosSpacing.xs),
+            .semantics(mergeDescendants = true) { role = Role.Button },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            tint = tint,
-            modifier = Modifier.size(iconSize),
-        )
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .background(containerColor)
+                .padding(OficiosSpacing.xs),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.size(iconSize),
+            )
+        }
     }
 }
 

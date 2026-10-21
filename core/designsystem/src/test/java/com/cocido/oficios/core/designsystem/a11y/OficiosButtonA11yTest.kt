@@ -1,12 +1,20 @@
 package com.cocido.oficios.core.designsystem.a11y
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosIconButton
+import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
+import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
+import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
+import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,7 +43,6 @@ class OficiosButtonA11yTest {
         assertTrue("Large width=${widthDp}dp", widthDp >= 48f)
     }
 
-    @Ignore("QA-FAIL: OficiosButton Small=36dp y LocalMinimumInteractiveComponentSize=Unspecified; touch target < 48dp")
     @Test
     fun smallButtonTouchTargetAtLeast48dp() {
         composeRule.setContent {
@@ -46,7 +53,6 @@ class OficiosButtonA11yTest {
         assertTrue("Small height=${touchHeightDp("Enviar")}dp", touchHeightDp("Enviar") >= 48f)
     }
 
-    @Ignore("QA-FAIL: OficiosButton Medium=44dp; touch target < 48dp")
     @Test
     fun mediumButtonTouchTargetAtLeast48dp() {
         composeRule.setContent {
@@ -55,6 +61,88 @@ class OficiosButtonA11yTest {
             }
         }
         assertTrue("Medium height=${touchHeightDp("Guardar")}dp", touchHeightDp("Guardar") >= 48f)
+    }
+
+    @Test
+    fun chipTouchTargetAtLeast48dp() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosChip(label = "Plomería", onClick = {})
+            }
+        }
+        assertTrue("Chip height=${touchHeightDp("Plomería")}dp", touchHeightDp("Plomería") >= 48f)
+    }
+
+    @Test
+    fun segmentChipTouchTargetAtLeast48dp() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosSegmentChip(label = "Activos", selected = true, onClick = {})
+            }
+        }
+        assertTrue(
+            "Segment height=${touchHeightDp("Activos")}dp",
+            touchHeightDp("Activos") >= 48f,
+        )
+    }
+
+    @Test
+    fun filterChipTouchTargetAtLeast48dp() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosFilterChip(label = "Hoy", selected = false, onToggle = {})
+            }
+        }
+        assertTrue("Filter height=${touchHeightDp("Hoy")}dp", touchHeightDp("Hoy") >= 48f)
+    }
+
+    @Test
+    fun iconButtonTouchTargetAtLeast48dp() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosIconButton(
+                    icon = Icons.Outlined.Close,
+                    contentDescription = "Cerrar",
+                    onClick = {},
+                )
+            }
+        }
+        val node = composeRule.onNodeWithContentDescription("Cerrar").fetchSemanticsNode()
+        val heightDp = node.size.height / node.layoutInfo.density.density
+        assertTrue("IconButton height=${heightDp}dp", heightDp >= 48f)
+    }
+
+    @Test
+    fun passwordVisibilityIconTouchTargetAtLeast48dp() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosPasswordField(
+                    value = "secret",
+                    onValueChange = {},
+                    label = "Contraseña",
+                )
+            }
+        }
+        val node = composeRule.onNodeWithContentDescription("Mostrar contraseña")
+            .fetchSemanticsNode()
+        val heightDp = node.size.height / node.layoutInfo.density.density
+        val widthDp = node.size.width / node.layoutInfo.density.density
+        assertTrue("Password eye height=${heightDp}dp", heightDp >= 48f)
+        assertTrue("Password eye width=${widthDp}dp", widthDp >= 48f)
+    }
+
+    @Test
+    fun screenTitleBackTouchTargetAtLeast48dp() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosScreenTitle(title = "Pedido Confirmado", onNavigateBack = {})
+            }
+        }
+        val node = composeRule.onNodeWithContentDescription("Volver").fetchSemanticsNode()
+        val heightDp = node.size.height / node.layoutInfo.density.density
+        val widthDp = node.size.width / node.layoutInfo.density.density
+        assertTrue("Back height=${heightDp}dp", heightDp >= 48f)
+        assertTrue("Back width=${widthDp}dp", widthDp >= 48f)
     }
 
     private fun touchHeightDp(text: String): Float {

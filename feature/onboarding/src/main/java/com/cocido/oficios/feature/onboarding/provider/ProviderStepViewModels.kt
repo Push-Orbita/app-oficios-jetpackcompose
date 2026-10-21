@@ -803,7 +803,7 @@ class ProviderFinalizeViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ProviderStepEffect>()
     val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
 
-    fun finalize() {
+    fun finalizeProfile() {
         viewModelScope.launch {
             _isLoading.update { true }
             when (val result = finalizeProviderProfileUseCase()) {
