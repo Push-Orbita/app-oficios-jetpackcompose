@@ -15,10 +15,13 @@ fun ProviderHomeRoute(
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onNavigateToCompleteProfile: () -> Unit,
+    onNavigateToGallery: () -> Unit,
+    onNavigateToCommercialLocal: () -> Unit,
+    onNavigateToCertificate: () -> Unit,
     onNavigateToOrdersList: () -> Unit,
     onNavigateToOrderDetail: (Long) -> Unit,
     onNavigateToAgenda: () -> Unit,
+    onNavigateToAgendaConfig: () -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProviderHomeViewModel = hiltViewModel(),
@@ -31,9 +34,12 @@ fun ProviderHomeRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 ProviderHomeEffect.NavigateToSettings -> onNavigateToSettings()
-                ProviderHomeEffect.NavigateToCompleteProfile -> onNavigateToCompleteProfile()
+                ProviderHomeEffect.NavigateToGallery -> onNavigateToGallery()
+                ProviderHomeEffect.NavigateToCommercialLocal -> onNavigateToCommercialLocal()
+                ProviderHomeEffect.NavigateToCertificate -> onNavigateToCertificate()
                 ProviderHomeEffect.NavigateToOrdersList -> onNavigateToOrdersList()
                 ProviderHomeEffect.NavigateToAgenda -> onNavigateToAgenda()
+                ProviderHomeEffect.NavigateToAgendaConfig -> onNavigateToAgendaConfig()
                 is ProviderHomeEffect.NavigateToOrderDetail -> onNavigateToOrderDetail(effect.orderId)
                 is ProviderHomeEffect.ShowMessage -> toastController.showError(effect.message)
                 ProviderHomeEffect.NavigateToFavorites -> onNavigateToFavorites()
@@ -47,7 +53,7 @@ fun ProviderHomeRoute(
         onNavigateToOrders = onNavigateToOrdersList,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,
-        onVisible = viewModel::refreshUnreadCount,
+        onVisible = viewModel::onVisible,
     ) { selectedTab, onTabSelected ->
         ProviderHomeScreen(
             uiState = uiState,

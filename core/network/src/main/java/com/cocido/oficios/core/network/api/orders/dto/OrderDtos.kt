@@ -33,7 +33,7 @@ data class RechazarSolicitudRequestDto(
 
 @Serializable
 data class CancelarSolicitudRequestDto(
-    val motivoCancelacion: String? = null,
+    val motivoCancelacion: String,
 )
 
 @Serializable
@@ -98,6 +98,7 @@ data class SlotTurnoEnBookingDto(
     val id: Long,
     val inicio: String? = null,
     val fin: String? = null,
+    val duracion: Int? = null,
 )
 
 @Serializable

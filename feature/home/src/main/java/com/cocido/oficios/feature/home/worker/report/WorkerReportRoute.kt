@@ -102,7 +102,7 @@ private fun WorkerReportForm(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(OficiosSpacing.lg)
+            .padding(horizontal = OficiosSpacing.lg)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
     ) {

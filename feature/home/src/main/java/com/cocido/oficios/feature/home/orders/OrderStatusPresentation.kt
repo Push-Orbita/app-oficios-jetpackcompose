@@ -187,6 +187,17 @@ fun qualityStars(score: Int?): Int? = score?.div(2)?.coerceIn(1, 5)
 
 fun punctualityStars(score: Int?): Int? = score?.coerceIn(1, 5)
 
+fun orderScreenTitleRes(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int = when {
+    status == ServiceRequestStatus.CANCELLED || bookingStatus == BookingStatus.CANCELLED ->
+        R.string.orders_title_cancelled
+    status == ServiceRequestStatus.EXPIRED -> R.string.orders_title_cancelled
+    status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER ->
+        R.string.orders_title_pending
+    bookingStatus == BookingStatus.IN_PROGRESS || bookingStatus == BookingStatus.FINISHED ->
+        R.string.orders_title_finish
+    else -> R.string.orders_title_confirmed
+}
+
 fun cancelledByLabelRes(cancelledBy: String?): Int? = when (cancelledBy?.uppercase()) {
     "CLIENTE" -> R.string.orders_cancelled_by_client
     "TRABAJADOR" -> R.string.orders_cancelled_by_worker

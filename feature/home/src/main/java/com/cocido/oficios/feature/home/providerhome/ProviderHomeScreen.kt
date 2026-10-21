@@ -1,39 +1,40 @@
 package com.cocido.oficios.feature.home.providerhome
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.cocido.oficios.core.designsystem.component.cards.BenefitCard
-import com.cocido.oficios.core.designsystem.component.cards.ProfileCompletionCard
+import androidx.compose.ui.text.style.TextDecoration
+import com.cocido.oficios.core.designsystem.component.cards.HomeBenefitTile
+import com.cocido.oficios.core.designsystem.component.cards.ProfileMilestoneTile
+import com.cocido.oficios.core.designsystem.component.cards.ProfileProgressBar
+import com.cocido.oficios.core.designsystem.component.cards.emphasizedBody
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ProviderHomeContent
+import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
-import com.cocido.oficios.feature.home.providerhome.components.ProviderActiveBookingBanner
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
-import com.cocido.oficios.feature.home.R
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +52,7 @@ fun ProviderHomeScreen(
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
                 onTabSelected = onTabSelected,
+                showFavorites = false,
             )
         },
     ) { paddingValues ->
@@ -82,6 +84,7 @@ fun ProviderHomeScreen(
                         ProviderHomeSuccessContent(
                             content = state.content,
                             unreadNotificationCount = unreadNotificationCount,
+                            now = state.now,
                             onEvent = onEvent,
                         )
                     }
@@ -95,15 +98,16 @@ fun ProviderHomeScreen(
 private fun ProviderHomeSuccessContent(
     content: ProviderHomeContent,
     unreadNotificationCount: Int,
+    now: ZonedDateTime,
     onEvent: (ProviderHomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+            .padding(OficiosSpacing.OficiosScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         ProviderHomeHeader(
             userName = content.userDisplayName,
@@ -111,67 +115,136 @@ private fun ProviderHomeSuccessContent(
             specialtyLabel = content.primarySpecialtyLabel,
             unreadNotificationCount = unreadNotificationCount,
             onNotificationsClick = { onEvent(ProviderHomeEvent.OpenNotifications) },
+            profilePhotoUrl = content.profilePhotoUrl,
         )
 
-        // Banner "AHORA": condicional, solo si hay un servicio en curso ahora mismo
-        // (booking en estado EN_CURSO entre las solicitudes del trabajador).
-        if (content.hasActiveBooking) {
-            val activeOrder = content.upcomingOrders.firstOrNull { it.bookingStatus == BookingStatus.IN_PROGRESS }
-            if (activeOrder != null) {
-                ProviderActiveBookingBanner(
-                    clientName = activeOrder.counterpartName,
-                    serviceTitle = activeOrder.subRubroLabel,
-                    onClick = { onEvent(ProviderHomeEvent.OrderClicked(activeOrder.id)) },
-                )
-            }
-        }
+        ProviderBenefitsSection()
 
-        if (content.benefits.isNotEmpty()) {
-            ProviderBenefitsSection(content = content)
+        if (content.showProfileCompletion) {
+            ProviderProfileCompletionSection(
+                percent = content.profileCompletionPercent,
+                hasGallery = content.hasGalleryPhotos,
+                hasLocal = content.hasCommercialLocal,
+                hasCertificate = content.hasCertificate,
+                onGalleryClick = { onEvent(ProviderHomeEvent.GalleryTileClicked) },
+                onLocalClick = { onEvent(ProviderHomeEvent.CommercialLocalTileClicked) },
+                onCertificateClick = { onEvent(ProviderHomeEvent.CertificateTileClicked) },
+                onCompleteProfileLink = { onEvent(ProviderHomeEvent.CompleteProfileLinkClicked) },
+            )
         }
-
-        ProfileCompletionCard(
-            completionPercent = content.profileCompletionPercent,
-            onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
-            missingItems = content.missingProfileItems,
-        )
 
         ProviderAgendaSection(
-            onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
             upcomingOrders = content.upcomingOrders,
+            now = now,
+            onViewFullAgenda = {
+                if (content.hasAgendaConfigured) {
+                    onEvent(ProviderHomeEvent.ViewFullAgendaClicked)
+                } else {
+                    onEvent(ProviderHomeEvent.ConfigureAgendaClicked)
+                }
+            },
             onOrderClick = { onEvent(ProviderHomeEvent.OrderClicked(it)) },
         )
     }
 }
 
 @Composable
-private fun ProviderBenefitsSection(
-    content: ProviderHomeContent,
-    modifier: Modifier = Modifier,
-) {
+private fun ProviderBenefitsSection(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
     ) {
         Text(
             text = stringResource(R.string.provider_home_benefits_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.headlineLarge,
+            color = OficiosColorWhite,
         )
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val cardWidth = maxWidth * OficiosComponentSize.carouselWidthFraction
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-            ) {
-                items(content.benefits) { benefit ->
-                    BenefitCard(
-                        title = benefit.title,
-                        description = benefit.description,
-                        discount = benefit.discountLabel,
-                        modifier = Modifier.width(cardWidth),
-                    )
-                }
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
+        ) {
+            HomeBenefitTile(
+                text = emphasizedBody(
+                    stringResource(R.string.provider_home_benefit_services),
+                    stringResource(R.string.provider_home_benefit_services_emphasis),
+                ),
+                modifier = Modifier.weight(1f),
+            )
+            HomeBenefitTile(
+                text = emphasizedBody(
+                    stringResource(R.string.provider_home_benefit_reach),
+                    stringResource(R.string.provider_home_benefit_reach_emphasis),
+                ),
+                modifier = Modifier.weight(1f),
+            )
+            HomeBenefitTile(
+                text = emphasizedBody(
+                    stringResource(R.string.provider_home_benefit_efficient),
+                    stringResource(R.string.provider_home_benefit_efficient_emphasis),
+                ),
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProviderProfileCompletionSection(
+    percent: Int,
+    hasGallery: Boolean,
+    hasLocal: Boolean,
+    hasCertificate: Boolean,
+    onGalleryClick: () -> Unit,
+    onLocalClick: () -> Unit,
+    onCertificateClick: () -> Unit,
+    onCompleteProfileLink: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
+    ) {
+        Text(
+            text = stringResource(R.string.provider_home_complete_profile_title),
+            style = MaterialTheme.typography.headlineLarge,
+            color = OficiosColorWhite,
+        )
+        ProfileProgressBar(percent = percent)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
+        ) {
+            ProfileMilestoneTile(
+                label = stringResource(R.string.provider_home_tile_gallery),
+                done = hasGallery,
+                onClick = onGalleryClick,
+                modifier = Modifier.weight(1f),
+            )
+            ProfileMilestoneTile(
+                label = stringResource(R.string.provider_home_tile_local),
+                done = hasLocal,
+                onClick = onLocalClick,
+                modifier = Modifier.weight(1f),
+            )
+            ProfileMilestoneTile(
+                label = stringResource(R.string.provider_home_tile_certificate),
+                done = hasCertificate,
+                onClick = onCertificateClick,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.provider_home_complete_profile_link),
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorWhite,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onCompleteProfileLink),
+            )
         }
     }
 }

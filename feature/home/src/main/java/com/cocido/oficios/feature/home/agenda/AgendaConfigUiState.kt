@@ -11,10 +11,13 @@ sealed interface AgendaConfigUiState {
     data class Success(
         val subRubroOptions: List<ProviderSubRubroOption> = emptyList(),
         val selectedSubRubroId: Long? = null,
+        val selectedSubRubroIds: Set<Long> = emptySet(),
         val sessions: List<AgendaSessionConfig> = emptyList(),
         val isLoadingSessions: Boolean = false,
         val durationInput: String = "60",
         val intervalInput: String = "",
+        val selectedDays: Set<String> = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
+        val selectedHours: Set<Int> = setOf(9, 10, 11, 12, 13, 14, 15, 16, 17),
         val isSaving: Boolean = false,
         val sessionPendingDeleteId: Long? = null,
         val isDeleting: Boolean = false,
@@ -26,7 +29,7 @@ sealed interface AgendaConfigUiState {
 
         val durationError: String?
             get() = if (hasAttemptedSubmit && durationInput.toIntOrNull().let { it == null || it <= 0 }) {
-                "Ingresá una duración válida en minutos"
+                "Ingrese una duración válida en minutos"
             } else {
                 null
             }
@@ -41,6 +44,10 @@ sealed interface AgendaConfigEvent {
     data class SubRubroSelected(val subRubroId: Long) : AgendaConfigEvent
     data class DurationChanged(val value: String) : AgendaConfigEvent
     data class IntervalChanged(val value: String) : AgendaConfigEvent
+    data class DayToggled(val dayKey: String) : AgendaConfigEvent
+    data class HourToggled(val hour: Int) : AgendaConfigEvent
+    data class DivisionSelected(val minutes: Int) : AgendaConfigEvent
+    data class OficioToggled(val subRubroId: Long) : AgendaConfigEvent
     data object Save : AgendaConfigEvent
     data class RequestDeleteSession(val sessionId: Long) : AgendaConfigEvent
     data object ConfirmDeleteSession : AgendaConfigEvent

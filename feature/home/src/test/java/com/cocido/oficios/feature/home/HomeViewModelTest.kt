@@ -9,6 +9,8 @@ import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.repository.NotificationsRepository
 import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
+import com.cocido.oficios.domain.usecase.search.GetRecentSearchesUseCase
+import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,7 +51,8 @@ class HomeViewModelTest {
 
         assertTrue(viewModel.uiState.value is HomeUiState.Success)
         val content = (viewModel.uiState.value as HomeUiState.Success).content
-        assertEquals(1, content.featuredWorkers.size)
+        assertEquals(2, content.recentSearches.size)
+        assertEquals("Nicolas Ayala", content.userDisplayName)
     }
 
     @Test
@@ -66,6 +69,48 @@ class HomeViewModelTest {
         job.cancel()
 
         assertTrue(effects.any { it is HomeEffect.NavigateToSearchResults && it.query == "plomero" })
+    }
+
+    @Test
+    fun `search submitted does not persist recents before results`() = runTest(testDispatcher) {
+        val recents = FakeRecentSearchRepository()
+        val viewModel = HomeViewModel(
+            getClientHomeUseCase = GetClientHomeUseCase(FakeHomeRepository()),
+            trackRecentSearchUseCase = TrackRecentSearchUseCase(recents),
+            getRecentSearchesUseCase = GetRecentSearchesUseCase(recents),
+            observeRecentSearchesUseCase = ObserveRecentSearchesUseCase(recents),
+            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeNotificationsRepository()),
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(HomeEvent.SearchSubmitted("plomería"))
+        advanceUntilIdle()
+        assertTrue(recents.tracked.isEmpty())
+    }
+
+    @Test
+    fun `recents flow updates home after returning`() = runTest(testDispatcher) {
+        val recents = FakeRecentSearchRepository(liveUpdates = true)
+        val viewModel = HomeViewModel(
+            getClientHomeUseCase = GetClientHomeUseCase(FakeHomeRepository()),
+            trackRecentSearchUseCase = TrackRecentSearchUseCase(recents),
+            getRecentSearchesUseCase = GetRecentSearchesUseCase(recents),
+            observeRecentSearchesUseCase = ObserveRecentSearchesUseCase(recents),
+            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeNotificationsRepository()),
+        )
+        advanceUntilIdle()
+        recents.emitRecents(
+            listOf(
+                com.cocido.oficios.domain.model.RecentSearchEntry(
+                    type = RecentSearchType.RUBRO,
+                    id = 11,
+                    label = "Plomería",
+                    rubroId = 11,
+                ),
+            ),
+        )
+        advanceUntilIdle()
+        val content = (viewModel.uiState.value as HomeUiState.Success).content
+        assertEquals(listOf("Plomería"), content.recentSearches.map { it.label })
     }
 
     @Test
@@ -123,6 +168,8 @@ class HomeViewModelTest {
     ) = HomeViewModel(
         getClientHomeUseCase = GetClientHomeUseCase(repository),
         trackRecentSearchUseCase = TrackRecentSearchUseCase(FakeRecentSearchRepository()),
+        getRecentSearchesUseCase = GetRecentSearchesUseCase(FakeRecentSearchRepository()),
+        observeRecentSearchesUseCase = ObserveRecentSearchesUseCase(FakeRecentSearchRepository()),
         getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(notifications),
     )
 }

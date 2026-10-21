@@ -46,6 +46,7 @@ fun ClientContactDomicilioRoute(
         onCountrySelected = viewModel::onCountrySelected,
         onEmailChanged = viewModel::onEmailChanged,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
+        onBarrioFocused = viewModel::onBarrioFocused,
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
@@ -69,6 +70,7 @@ fun ClientDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
     ClientDomicilioStepScreen(
         uiState = uiState,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
+        onBarrioFocused = viewModel::onBarrioFocused,
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
@@ -201,6 +203,7 @@ fun ProviderLocalRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
     ProviderLocalStepScreen(
         uiState = uiState,
         onBarrioQueryChanged = viewModel::onBarrioQueryChanged,
+        onBarrioFocused = viewModel::onBarrioFocused,
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,

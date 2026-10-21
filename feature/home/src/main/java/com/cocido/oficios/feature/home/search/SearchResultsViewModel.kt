@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
@@ -62,6 +63,8 @@ class SearchResultsViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var barrioSearchJob: Job? = null
     private var queryDebounceJob: Job? = null
+    private var pendingTrackOnSuccess = true
+    private var trackedKey: String? = null
 
     init {
         loadInitial()
@@ -79,7 +82,6 @@ class SearchResultsViewModel @Inject constructor(
             SearchResultsEvent.ClearFilters -> clearFilters()
             is SearchResultsEvent.QueryChanged -> onQueryChanged(event.query)
             SearchResultsEvent.QuerySubmitted -> onQuerySubmitted()
-            SearchResultsEvent.VoiceSearch -> emitEffect(SearchResultsEffect.ShowComingSoon)
             is SearchResultsEvent.WorkerViewProfile -> {
                 emitEffect(SearchResultsEffect.NavigateToWorker(event.worker.id))
             }
@@ -90,6 +92,8 @@ class SearchResultsViewModel @Inject constructor(
             is SearchResultsEvent.FilterRubroSelected -> onFilterRubroSelected(event.rubro)
             is SearchResultsEvent.FilterSubRubroSelected -> onFilterSubRubroSelected(event.subRubro)
             is SearchResultsEvent.FilterBarrioQueryChanged -> onBarrioQueryChanged(event.query)
+            SearchResultsEvent.FilterBarrioFocused ->
+                onBarrioQueryChanged(_filterSheetState.value.barrioQuery, preserveSelection = true)
             is SearchResultsEvent.FilterBarrioSelected -> onBarrioSelected(event.barrio)
             is SearchResultsEvent.FilterModalitySelected -> {
                 _filterSheetState.update { it.copy(selectedModality = event.modality) }
@@ -105,6 +109,7 @@ class SearchResultsViewModel @Inject constructor(
         _searchQuery.value = query
         activeFilters = activeFilters.copy(query = query.takeIf { it.isNotBlank() })
         activeFilters.persistTo(savedStateHandle)
+        pendingTrackOnSuccess = false
         queryDebounceJob?.cancel()
         queryDebounceJob = viewModelScope.launch {
             delay(QUERY_DEBOUNCE_MS)
@@ -118,17 +123,7 @@ class SearchResultsViewModel @Inject constructor(
         _searchQuery.value = trimmed
         activeFilters = activeFilters.copy(query = trimmed.takeIf { it.isNotBlank() })
         activeFilters.persistTo(savedStateHandle)
-        if (trimmed.isNotEmpty()) {
-            viewModelScope.launch {
-                trackRecentSearchUseCase(
-                    RecentSearchEntry(
-                        type = RecentSearchType.QUERY,
-                        id = trimmed.hashCode().toLong(),
-                        label = trimmed,
-                    ),
-                )
-            }
-        }
+        pendingTrackOnSuccess = true
         refresh()
     }
 
@@ -199,10 +194,14 @@ class SearchResultsViewModel @Inject constructor(
                             )
                         }
                     } else {
-                        _uiState.update {
-                            if (result.data.items.isEmpty()) {
+                        if (result.data.items.isEmpty()) {
+                            pendingTrackOnSuccess = false
+                            _uiState.update {
                                 SearchResultsUiState.Empty(activeFilters, chips)
-                            } else {
+                            }
+                        } else {
+                            maybeTrackSuccessfulSearch()
+                            _uiState.update {
                                 SearchResultsUiState.Success(
                                     workers = result.data.items,
                                     activeFilters = activeFilters,
@@ -309,6 +308,7 @@ class SearchResultsViewModel @Inject constructor(
         )
         activeFilters.persistTo(savedStateHandle)
         _filterSheetState.update { it.copy(visible = false) }
+        pendingTrackOnSuccess = true
         refresh()
     }
 
@@ -367,27 +367,36 @@ class SearchResultsViewModel @Inject constructor(
         }
     }
 
-    private fun onBarrioQueryChanged(query: String) {
-        _filterSheetState.update { it.copy(barrioQuery = query, barrioSuggestions = emptyList()) }
-        barrioSearchJob?.cancel()
-        if (query.length < 2) return
-        barrioSearchJob = viewModelScope.launch {
-            when (val result = searchBarriosUseCase(query)) {
-                is AppResult.Success -> {
-                    _filterSheetState.update { it.copy(barrioSuggestions = result.data) }
-                }
-                is AppResult.Error -> Unit
-            }
+    private fun onBarrioQueryChanged(query: String, preserveSelection: Boolean = false) {
+        _filterSheetState.update {
+            it.copy(
+                barrioQuery = query,
+                selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
+                selectedBarrioLabel = if (preserveSelection) it.selectedBarrioLabel else null,
+                isSearchingBarrios = true,
+            )
         }
+        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
+            previous = barrioSearchJob,
+            query = query,
+            searchBarrios = searchBarriosUseCase,
+            onResult = { options ->
+                _filterSheetState.update {
+                    it.copy(isSearchingBarrios = false, barrioSuggestions = options)
+                }
+            },
+        )
     }
 
     private fun onBarrioSelected(barrio: CatalogOption) {
+        barrioSearchJob?.cancel()
         _filterSheetState.update {
             it.copy(
                 barrioQuery = barrio.label,
                 selectedBarrioId = barrio.id,
                 selectedBarrioLabel = barrio.label,
                 barrioSuggestions = emptyList(),
+                isSearchingBarrios = false,
             )
         }
     }
@@ -436,6 +445,50 @@ class SearchResultsViewModel @Inject constructor(
         filters.query?.takeIf { it.isNotBlank() }?.let { add(FilterChip(FilterChipType.QUERY, it)) }
     }
 
+    private fun maybeTrackSuccessfulSearch() {
+        if (!pendingTrackOnSuccess) return
+        pendingTrackOnSuccess = false
+        val entry = recentEntryForActiveFilters() ?: return
+        val key = listOf(
+            entry.type.name,
+            entry.id.toString(),
+            entry.label,
+        ).joinToString("|")
+        if (key == trackedKey) return
+        trackedKey = key
+        viewModelScope.launch { trackRecentSearchUseCase(entry) }
+    }
+
+    private fun recentEntryForActiveFilters(): RecentSearchEntry? {
+        val query = activeFilters.query?.trim().orEmpty()
+        val rubroId = activeFilters.rubroId
+        val rubroLabel = activeFilters.rubroLabel?.trim().orEmpty()
+        val subRubroId = activeFilters.subRubroId
+        val subRubroLabel = activeFilters.subRubroLabel?.trim().orEmpty()
+        return when {
+            subRubroId != null && subRubroLabel.isNotEmpty() -> RecentSearchEntry(
+                type = RecentSearchType.SUBRUBRO,
+                id = subRubroId,
+                label = subRubroLabel,
+                categoryId = activeFilters.categoryId,
+                rubroId = rubroId,
+            )
+            rubroId != null && rubroLabel.isNotEmpty() -> RecentSearchEntry(
+                type = RecentSearchType.RUBRO,
+                id = rubroId,
+                label = rubroLabel,
+                categoryId = activeFilters.categoryId,
+                rubroId = rubroId,
+            )
+            query.isNotEmpty() -> RecentSearchEntry(
+                type = RecentSearchType.QUERY,
+                id = query.hashCode().toLong(),
+                label = query,
+            )
+            else -> null
+        }
+    }
+
     private fun emitEffect(effect: SearchResultsEffect) {
         viewModelScope.launch { _effects.send(effect) }
     }
@@ -475,6 +528,7 @@ data class FilterSheetUiState(
     val selectedSubRubroLabel: String? = null,
     val barrioQuery: String = "",
     val barrioSuggestions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val selectedBarrioLabel: String? = null,
     val selectedModality: com.cocido.oficios.domain.model.AttentionModality? = null,
@@ -510,13 +564,13 @@ sealed interface SearchResultsEvent {
     data object ClearFilters : SearchResultsEvent
     data class QueryChanged(val query: String) : SearchResultsEvent
     data object QuerySubmitted : SearchResultsEvent
-    data object VoiceSearch : SearchResultsEvent
     data class WorkerViewProfile(val worker: WorkerSummary) : SearchResultsEvent
     data class WorkerContact(val worker: WorkerSummary) : SearchResultsEvent
     data class FilterCategorySelected(val category: CatalogOption) : SearchResultsEvent
     data class FilterRubroSelected(val rubro: CatalogOption) : SearchResultsEvent
     data class FilterSubRubroSelected(val subRubro: CatalogOption) : SearchResultsEvent
     data class FilterBarrioQueryChanged(val query: String) : SearchResultsEvent
+    data object FilterBarrioFocused : SearchResultsEvent
     data class FilterBarrioSelected(val barrio: CatalogOption) : SearchResultsEvent
     data class FilterModalitySelected(
         val modality: com.cocido.oficios.domain.model.AttentionModality?,
@@ -529,6 +583,5 @@ sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect
     data class NavigateToWorker(val workerId: Long) : SearchResultsEffect
     data class NavigateToHire(val workerId: Long) : SearchResultsEffect
-    data object ShowComingSoon : SearchResultsEffect
     data class ShowMessage(val message: String) : SearchResultsEffect
 }

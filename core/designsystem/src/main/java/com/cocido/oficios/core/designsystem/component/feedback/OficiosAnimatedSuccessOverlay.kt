@@ -156,7 +156,7 @@ private fun OficiosAnimatedSuccessOverlayPreview() {
     OficiosTheme {
         OficiosAnimatedSuccessOverlay(
             title = "¡Perfil confirmado!",
-            description = "Ya podés empezar a recibir pedidos.",
+            description = "Ya puede empezar a recibir pedidos.",
         )
     }
 }

@@ -18,6 +18,8 @@ Push notifications no funcionarán en dispositivo hasta que DevOps provea `googl
 - **No hay crash**: la app detecta el stub y desactiva registro de token
 - Cuando se reemplace el stub por config real, push funcionará sin cambios de código
 
+Checklist de producción: [BK-09_FIREBASE_PRODUCTION.md](BK-09_FIREBASE_PRODUCTION.md).
+
 ## Producción — checklist DevOps
 
 1. Crear proyecto Firebase **Oficios Formosa** y app Android `com.cocido.oficios`.

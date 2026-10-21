@@ -20,10 +20,18 @@ class FakeAuthRepository(
     ),
     var registerClientResult: AppResult<UserSession> = loginResult,
     var registerProviderResult: AppResult<UserSession> = loginResult,
+    var lastClientRequest: RegisterClientRequest? = null,
+    var lastProviderRequest: RegisterProviderRequest? = null,
 ) : AuthRepository {
     override suspend fun login(email: String, password: String) = loginResult
-    override suspend fun registerClient(request: RegisterClientRequest) = registerClientResult
-    override suspend fun registerProvider(request: RegisterProviderRequest) = registerProviderResult
+    override suspend fun registerClient(request: RegisterClientRequest): AppResult<UserSession> {
+        lastClientRequest = request
+        return registerClientResult
+    }
+    override suspend fun registerProvider(request: RegisterProviderRequest): AppResult<UserSession> {
+        lastProviderRequest = request
+        return registerProviderResult
+    }
     override suspend fun refreshToken(refreshToken: String) = AppResult.Error(AppError.Unknown())
     override suspend fun getCurrentUser() = AppResult.Error(AppError.Unknown())
     override suspend fun logout() = AppResult.Success(Unit)

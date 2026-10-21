@@ -20,7 +20,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 fun OficiosBrandRow(
     modifier: Modifier = Modifier,
     iconWidth: Dp = OficiosComponentSize.authLogoIconWidthCompact,
-    iconHeight: Dp = iconWidth * (270f / 165f),
+    iconHeight: Dp = iconWidth * (736f / 403f),
     wordmarkHeight: Dp = OficiosComponentSize.authWordmarkHeight,
     wordmarkWidth: Dp? = null,
     spacing: Dp = OficiosSpacing.sm,

@@ -31,6 +31,7 @@ data class ClientDataUiState(
     val barrioQuery: String = "",
     val barrioId: Long? = null,
     val barrioSuggestions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val street: String = "",
     val number: String = "",
     val floor: String = "",
@@ -60,7 +61,9 @@ sealed interface ClientDataEvent {
     data object SaveContact : ClientDataEvent
     data class AddressNameChanged(val value: String) : ClientDataEvent
     data class BarrioQueryChanged(val value: String) : ClientDataEvent
+    data object BarrioFocused : ClientDataEvent
     data class BarrioSelected(val option: CatalogOption) : ClientDataEvent
+    data object BarrioSuggestionsDismissed : ClientDataEvent
     data class StreetChanged(val value: String) : ClientDataEvent
     data class NumberChanged(val value: String) : ClientDataEvent
     data class FloorChanged(val value: String) : ClientDataEvent

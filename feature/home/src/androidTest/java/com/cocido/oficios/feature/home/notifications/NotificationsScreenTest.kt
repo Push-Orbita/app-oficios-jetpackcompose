@@ -57,7 +57,7 @@ class NotificationsScreenTest {
                                 id = 1L,
                                 type = "NUEVA_SOLICITUD",
                                 title = "Nuevo pedido",
-                                body = "Tenés una solicitud pendiente",
+                                body = "Tiene una solicitud pendiente",
                                 createdAtLabel = "2 sep 2026, 12:00",
                                 isRead = false,
                                 entityType = "SOLICITUD",

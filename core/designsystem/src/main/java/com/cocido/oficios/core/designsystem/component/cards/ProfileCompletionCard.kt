@@ -44,7 +44,7 @@ fun ProfileCompletionCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Completá tu perfil",
+                    text = "Complete su perfil",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

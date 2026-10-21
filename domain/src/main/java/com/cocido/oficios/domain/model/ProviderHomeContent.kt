@@ -9,7 +9,18 @@ data class ProviderHomeContent(
     val benefits: List<ProviderBenefit> = emptyList(),
     val hasActiveBooking: Boolean = false,
     val upcomingOrders: List<ServiceOrderListItem> = emptyList(),
-)
+    val profilePhotoUrl: String? = null,
+    val hasAgendaConfigured: Boolean = false,
+    val hasGalleryPhotos: Boolean = false,
+    val hasCommercialLocal: Boolean = false,
+    val hasCertificate: Boolean = false,
+) {
+    val headerSubtitle: String?
+        get() = if (isVerified) primarySpecialtyLabel else null
+
+    val showProfileCompletion: Boolean
+        get() = profileCompletionPercent < 100
+}
 
 data class ProviderBenefit(
     val title: String,

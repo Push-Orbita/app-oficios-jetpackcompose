@@ -32,7 +32,7 @@ interface CatalogApi {
 
     @GET("barrios/search")
     suspend fun searchBarrios(
-        @Query("q") query: String,
+        @Query("q") query: String? = null,
         @Query("pageSize") pageSize: Int = 20,
         @Query("pageNumber") pageNumber: Int = 1,
     ): PaginatedResponseDto<BarrioDto>

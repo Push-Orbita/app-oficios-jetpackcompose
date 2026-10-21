@@ -16,12 +16,13 @@ enum class OficiosBrandScale {
     Splash,
 }
 
-private const val LogoAspectHeightOverWidth = 270f / 165f
+/** Figma isotipo plano `666:2` (403×736). */
+private const val LogoAspectHeightOverWidth = 736f / 403f
 
 /**
- * Bloque de marca vertical: ícono (casco) + wordmark "Oficios Formosa".
- * Se componen por separado para que el casco no quede achicado por el
- * wordmark ancho del drawable combinado `ic_oficios_logotipo_title`.
+ * Bloque de marca vertical: isotipo plano (casco azul + pin blanco) y
+ * wordmark "Oficios Formosa". El lockup combinado vive en
+ * `ic_oficios_logotipo_title` (Figma `583:39`) para [OficiosLogoVariant.WithTitle].
  */
 @Composable
 fun OficiosBrandBlock(

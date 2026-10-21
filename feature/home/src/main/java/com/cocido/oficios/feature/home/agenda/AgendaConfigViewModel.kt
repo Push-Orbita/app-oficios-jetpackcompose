@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.WorkHoursSchedule
 import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.GetMySubRubrosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,6 +45,28 @@ class AgendaConfigViewModel @Inject constructor(
             is AgendaConfigEvent.IntervalChanged -> updateSuccess {
                 it.copy(intervalInput = event.value.filter(Char::isDigit))
             }
+            is AgendaConfigEvent.DayToggled -> updateSuccess {
+                val next = if (event.dayKey in it.selectedDays) it.selectedDays - event.dayKey
+                else it.selectedDays + event.dayKey
+                it.copy(selectedDays = next)
+            }
+            is AgendaConfigEvent.HourToggled -> updateSuccess {
+                it.copy(selectedHours = WorkHoursSchedule.toggleHour(it.selectedHours, event.hour))
+            }
+            is AgendaConfigEvent.DivisionSelected -> updateSuccess {
+                it.copy(durationInput = event.minutes.toString(), hasAttemptedSubmit = false)
+            }
+            is AgendaConfigEvent.OficioToggled -> updateSuccess {
+                val next = if (event.subRubroId in it.selectedSubRubroIds) {
+                    it.selectedSubRubroIds - event.subRubroId
+                } else {
+                    it.selectedSubRubroIds + event.subRubroId
+                }
+                it.copy(
+                    selectedSubRubroIds = next,
+                    selectedSubRubroId = next.lastOrNull() ?: it.selectedSubRubroId,
+                )
+            }
             AgendaConfigEvent.Save -> save()
             is AgendaConfigEvent.RequestDeleteSession -> updateSuccess {
                 it.copy(sessionPendingDeleteId = event.sessionId)
@@ -61,7 +84,11 @@ class AgendaConfigViewModel @Inject constructor(
                     val options = result.data.filter { it.requiresTurns }
                     val firstId = options.firstOrNull()?.id
                     _uiState.update {
-                        AgendaConfigUiState.Success(subRubroOptions = options, selectedSubRubroId = firstId)
+                        AgendaConfigUiState.Success(
+                            subRubroOptions = options,
+                            selectedSubRubroId = firstId,
+                            selectedSubRubroIds = firstId?.let { setOf(it) }.orEmpty(),
+                        )
                     }
                     if (firstId != null) loadSessions(firstId)
                 }
@@ -93,25 +120,45 @@ class AgendaConfigViewModel @Inject constructor(
             updateSuccess { it.copy(hasAttemptedSubmit = true) }
             return
         }
-        val subRubroId = state.selectedSubRubroId ?: return
+        val targets = state.selectedSubRubroIds.ifEmpty {
+            listOfNotNull(state.selectedSubRubroId)
+        }
+        if (targets.isEmpty() || state.selectedDays.isEmpty() || state.selectedHours.isEmpty()) {
+            updateSuccess { it.copy(hasAttemptedSubmit = true) }
+            return
+        }
         val duration = state.durationInput.toInt()
         val interval = state.intervalInput.toIntOrNull()
 
         viewModelScope.launch {
             updateSuccess { it.copy(isSaving = true) }
-            val result = agendaUseCases.saveSession(
-                SaveAgendaSessionParams(subRubroId = subRubroId, durationMinutes = duration, intervalMinutes = interval),
-            )
-            when (result) {
-                is AppResult.Success -> {
-                    updateSuccess { it.copy(isSaving = false, hasAttemptedSubmit = false) }
-                    emitEffect(AgendaConfigEffect.ShowMessage("Configuración guardada"))
-                    loadSessions(subRubroId)
+            var lastError: String? = null
+            for (subRubroId in targets) {
+                val existing = agendaUseCases.getSessionsForSubRubro(subRubroId)
+                if (existing is AppResult.Success) {
+                    existing.data.forEach { session ->
+                        agendaUseCases.deleteSession(session.id)
+                    }
                 }
-                is AppResult.Error -> {
-                    updateSuccess { it.copy(isSaving = false) }
-                    emitEffect(AgendaConfigEffect.ShowMessage(result.error.userMessage()))
+                val result = agendaUseCases.saveSession(
+                    SaveAgendaSessionParams(
+                        subRubroId = subRubroId,
+                        durationMinutes = duration,
+                        intervalMinutes = interval,
+                    ),
+                )
+                if (result is AppResult.Error) {
+                    lastError = result.error.userMessage()
+                    break
                 }
+            }
+            if (lastError == null) {
+                updateSuccess { it.copy(isSaving = false, hasAttemptedSubmit = false) }
+                emitEffect(AgendaConfigEffect.ShowMessage("Configuración guardada"))
+                state.selectedSubRubroId?.let { loadSessions(it) }
+            } else {
+                updateSuccess { it.copy(isSaving = false) }
+                emitEffect(AgendaConfigEffect.ShowMessage(lastError))
             }
         }
     }

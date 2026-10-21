@@ -1,10 +1,13 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenuItem
@@ -20,11 +23,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.R
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
+import com.cocido.oficios.core.designsystem.theme.OficiosElevation
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+
+internal const val OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG = "oficios_autocomplete_menu"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,21 +51,46 @@ fun <T> OficiosAutocompleteField(
     enabled: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
+    isLoading: Boolean = false,
+    noResultsText: String? = null,
+    onFocused: () -> Unit = {},
     onSuggestionsDismissed: () -> Unit = {},
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var userExpanded by remember { mutableStateOf(false) }
+    var searchSession by remember { mutableStateOf(false) }
+    val resolvedNoResults = noResultsText ?: stringResource(R.string.ds_autocomplete_no_results)
 
-    LaunchedEffect(suggestions) {
-        expanded = suggestions.isNotEmpty()
+    LaunchedEffect(isLoading, suggestions) {
+        if (isLoading) searchSession = true
+        if (isLoading || suggestions.isNotEmpty()) {
+            userExpanded = true
+        }
+    }
+
+    val showNoResults = searchSession &&
+        !isLoading &&
+        suggestions.isEmpty() &&
+        userExpanded
+    val hasMenuContent = isLoading || suggestions.isNotEmpty() || showNoResults
+    val menuExpanded = hasMenuContent && enabled
+
+    fun dismissMenu() {
+        userExpanded = false
+        searchSession = false
+        onSuggestionsDismissed()
     }
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { isExpanded ->
-            expanded = isExpanded
-            if (!isExpanded) onSuggestionsDismissed()
+        expanded = menuExpanded,
+        onExpandedChange = { requested ->
+            if (requested) {
+                userExpanded = true
+                onFocused()
+            } else {
+                dismissMenu()
+            }
         },
         modifier = modifier.fillMaxWidth(),
     ) {
@@ -71,6 +107,12 @@ fun <T> OficiosAutocompleteField(
                 .menuAnchor(MenuAnchorType.PrimaryEditable, enabled),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
+            onFocusChange = { focused ->
+                if (focused) {
+                    userExpanded = true
+                    onFocused()
+                }
+            },
             trailingContent = {
                 Icon(
                     imageVector = Icons.Outlined.Search,
@@ -80,30 +122,79 @@ fun <T> OficiosAutocompleteField(
             },
         )
         ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = {
-                expanded = false
-                onSuggestionsDismissed()
-            },
-            modifier = Modifier.heightIn(max = 240.dp),
+            expanded = menuExpanded,
+            onDismissRequest = { dismissMenu() },
+            modifier = Modifier
+                .testTag(OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG)
+                .heightIn(max = 240.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = OficiosElevation.sm,
+            shadowElevation = OficiosElevation.md,
         ) {
-            suggestions.forEach { option ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = suggestionLabel(option),
-                            style = MaterialTheme.typography.bodyLarge,
+            when {
+                isLoading -> {
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                            ) {
+                                OficiosProgress(
+                                    modifier = Modifier.size(18.dp),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = stringResource(R.string.ds_autocomplete_loading),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                            }
+                        },
+                        onClick = {},
+                        enabled = false,
+                        contentPadding = PaddingValues(
+                            horizontal = OficiosSpacing.md,
+                            vertical = OficiosSpacing.xs,
+                        ),
+                    )
+                }
+                suggestions.isEmpty() -> {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = resolvedNoResults,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        onClick = {},
+                        enabled = false,
+                        contentPadding = PaddingValues(
+                            horizontal = OficiosSpacing.md,
+                            vertical = OficiosSpacing.xs,
+                        ),
+                    )
+                }
+                else -> {
+                    suggestions.forEach { option ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = suggestionLabel(option),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                            },
+                            onClick = {
+                                onSuggestionSelected(option)
+                                userExpanded = false
+                                searchSession = false
+                            },
+                            contentPadding = PaddingValues(
+                                horizontal = OficiosSpacing.md,
+                                vertical = OficiosSpacing.xs,
+                            ),
                         )
-                    },
-                    onClick = {
-                        onSuggestionSelected(option)
-                        expanded = false
-                    },
-                    contentPadding = PaddingValues(
-                        horizontal = OficiosSpacing.md,
-                        vertical = OficiosSpacing.xs,
-                    ),
-                )
+                    }
+                }
             }
         }
     }
@@ -120,7 +211,7 @@ private fun AutocompleteFieldPreview() {
             onSuggestionSelected = {},
             suggestionLabel = { it },
             label = "Barrio",
-            placeholder = "Buscá tu barrio",
+            placeholder = "Busque y seleccione el barrio",
         )
     }
 }

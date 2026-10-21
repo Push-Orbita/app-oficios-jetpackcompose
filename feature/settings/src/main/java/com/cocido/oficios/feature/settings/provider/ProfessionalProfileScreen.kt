@@ -2,42 +2,55 @@ package com.cocido.oficios.feature.settings.provider
 
 import com.cocido.oficios.feature.settings.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.cards.DashedAddTile
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
-import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
-import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
+import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.domain.model.ProviderPaymentMethods
 
 @Composable
 fun ProfessionalProfileScreen(
     uiState: ProfessionalProfileUiState,
     onEvent: (ProfessionalProfileEvent) -> Unit,
 ) {
-    OficiosScaffold(
-        topBar = { OficiosBackTopBar(title = stringResource(R.string.professional_profile_title), onBack = { onEvent(ProfessionalProfileEvent.Back) }) },
-    ) { padding ->
+    OficiosScaffold { padding ->
         OficiosStateContent(
             targetState = uiState,
             modifier = Modifier.padding(padding),
@@ -70,64 +83,181 @@ private fun ProfessionalProfileForm(
     state: ProfessionalProfileUiState,
     onEvent: (ProfessionalProfileEvent) -> Unit,
 ) {
+    val fieldShape = RoundedCornerShape(OficiosRadius.sm)
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
-            .widthIn(max = OficiosComponentSize.contentMaxWidth),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+            .padding(OficiosSpacing.OficiosScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
+    ) {
+        OficiosScreenTitle(
+            title = stringResource(R.string.professional_profile_title),
+            onNavigateBack = { onEvent(ProfessionalProfileEvent.Back) },
+        )
+        Text(
+            text = stringResource(R.string.professional_profile_oficios),
+            style = MaterialTheme.typography.titleMedium,
+            color = OficiosColorWhite,
+        )
+        ReadOnlyField(value = state.oficiosLabel, shape = fieldShape)
+        Text(
+            text = stringResource(R.string.professional_profile_specialized),
+            style = MaterialTheme.typography.titleMedium,
+            color = OficiosColorWhite,
+        )
+        ReadOnlyField(value = state.specializedLabel, shape = fieldShape, minLines = 3)
+        Text(
+            text = stringResource(R.string.professional_profile_only_can),
+            style = MaterialTheme.typography.bodyLarge,
+            color = OficiosColorSecondaryTextFigma,
+        )
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            OficiosButton(
+                text = stringResource(R.string.professional_profile_edit_rubro),
+                onClick = { onEvent(ProfessionalProfileEvent.EditRubro) },
+                variant = OficiosButtonVariant.Primary,
+                leadingIcon = ImageVector.vectorResource(OficiosIcons.Pencil),
+            )
+        }
+        Text(
+            text = stringResource(R.string.professional_profile_works),
+            style = MaterialTheme.typography.headlineMedium,
+            color = OficiosColorWhite,
+        )
+        MediaRow(
+            items = state.gallery.map { it.id to it.imageUrl },
+            addLabel = stringResource(R.string.professional_profile_add),
+            onAdd = { onEvent(ProfessionalProfileEvent.AddWork) },
+        )
+        Text(
+            text = stringResource(R.string.professional_profile_certificates),
+            style = MaterialTheme.typography.headlineMedium,
+            color = OficiosColorWhite,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+            state.certificates.take(2).forEach { cert ->
+                CertificateThumb(
+                    item = cert,
+                    modifier = Modifier.size(OficiosComponentSize.profileMediaTile),
+                )
+            }
+            DashedAddTile(
+                label = stringResource(R.string.professional_profile_add),
+                onClick = { onEvent(ProfessionalProfileEvent.AddCertificate) },
+            )
+        }
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            OficiosButton(
+                text = stringResource(R.string.professional_profile_delete_account),
+                onClick = { onEvent(ProfessionalProfileEvent.DeleteAccount) },
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Small,
+                leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ReadOnlyField(
+    value: String,
+    shape: RoundedCornerShape,
+    minLines: Int = 1,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(OficiosColorOutlineFill)
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
     ) {
         Text(
-            text = stringResource(R.string.professional_profile_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        OficiosTextField(
-            value = state.description,
-            onValueChange = { onEvent(ProfessionalProfileEvent.DescriptionChanged(it)) },
-            label = stringResource(R.string.professional_profile_description),
-            placeholder = stringResource(R.string.professional_profile_description_hint),
-            singleLine = false,
-        )
-        OficiosTextField(
-            value = state.experience,
-            onValueChange = { onEvent(ProfessionalProfileEvent.ExperienceChanged(it)) },
-            label = stringResource(R.string.professional_profile_experience),
-            placeholder = stringResource(R.string.professional_profile_experience_hint),
-            singleLine = false,
-        )
-        Text(
-            text = stringResource(R.string.professional_profile_payments),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        PaymentOption(stringResource(R.string.professional_profile_cash), ProviderPaymentMethods.EFECTIVO, state, onEvent)
-        PaymentOption(stringResource(R.string.professional_profile_transfer), ProviderPaymentMethods.TRANSFERENCIA, state, onEvent)
-        PaymentOption(stringResource(R.string.professional_profile_mercadopago), ProviderPaymentMethods.MERCADOPAGO, state, onEvent)
-        state.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = stringResource(R.string.professional_profile_save),
-            onClick = { onEvent(ProfessionalProfileEvent.Save) },
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-            loading = state.isSaving,
-            enabled = !state.isSaving,
-            modifier = Modifier.fillMaxWidth(),
+            text = value.ifBlank { "—" },
+            style = MaterialTheme.typography.bodyLarge,
+            color = OficiosColorWhite,
+            minLines = minLines,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
 
 @Composable
-private fun PaymentOption(
-    label: String,
-    method: String,
-    uiState: ProfessionalProfileUiState,
-    onEvent: (ProfessionalProfileEvent) -> Unit,
+private fun MediaRow(
+    items: List<Pair<Long, String?>>,
+    addLabel: String,
+    onAdd: () -> Unit,
 ) {
-    OficiosCheckbox(
-        checked = method in uiState.paymentMethods,
-        onCheckedChange = { onEvent(ProfessionalProfileEvent.PaymentToggled(method, it)) },
-        label = label,
-    )
+    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+        items.take(2).forEach { (_, url) ->
+            val shape = RoundedCornerShape(OficiosRadius.lg)
+            Box(
+                modifier = Modifier
+                    .size(OficiosComponentSize.profileMediaTile)
+                    .clip(shape)
+                    .background(OficiosColorOutlineFill),
+            ) {
+                if (!url.isNullOrBlank()) {
+                    AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
+        }
+        DashedAddTile(label = addLabel, onClick = onAdd)
+    }
+}
+
+@Composable
+private fun CertificateThumb(
+    item: ProfileCertificateUi,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(OficiosRadius.lg)
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(OficiosColorOutlineFill),
+    ) {
+        if (!item.fileUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = item.fileUrl,
+                contentDescription = item.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(OficiosColorAction.copy(alpha = 0.92f))
+                .padding(horizontal = OficiosSpacing.xs, vertical = OficiosSpacing.xxs),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+        ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(
+                    if (item.validated) OficiosIcons.CircleCheck else OficiosIcons.CircleDashed,
+                ),
+                contentDescription = null,
+                tint = OficiosColorWhite,
+                modifier = Modifier.size(OficiosComponentSize.iconSm),
+            )
+            Text(
+                text = stringResource(
+                    if (item.validated) {
+                        R.string.professional_profile_validated
+                    } else {
+                        R.string.professional_profile_pending
+                    },
+                ),
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorWhite,
+            )
+        }
+    }
 }

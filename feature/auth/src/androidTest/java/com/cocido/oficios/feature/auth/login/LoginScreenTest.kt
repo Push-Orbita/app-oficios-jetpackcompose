@@ -74,4 +74,18 @@ class LoginScreenTest {
 
         composeTestRule.onNodeWithText("¿Olvidó su contraseña?").assertIsNotEnabled()
     }
+
+    @Test
+    fun loginScreen_unauthorizedShowsGenericBanner() {
+        composeTestRule.setContent {
+            OficiosTheme {
+                LoginScreen(
+                    uiState = LoginUiState(bannerError = "Los datos de sesión no coinciden"),
+                    onEvent = {},
+                )
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Los datos de sesión no coinciden").assertIsDisplayed()
+    }
 }

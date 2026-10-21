@@ -138,7 +138,7 @@ private fun DialogPreview() {
     OficiosTheme {
         OficiosDialog(
             title = "Confirmar acción",
-            message = "¿Estás seguro de que querés continuar con esta operación?",
+            message = "¿Está seguro de que quiere continuar con esta operación?",
             confirmLabel = "Confirmar",
             onConfirm = {},
             onDismiss = {},

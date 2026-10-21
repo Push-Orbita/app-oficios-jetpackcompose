@@ -244,7 +244,7 @@ private fun CertificateEditor(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(stringResource(R.string.portfolio_certificate_hint), style = MaterialTheme.typography.bodyMedium)

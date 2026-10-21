@@ -28,10 +28,54 @@ object OficiosComponentSize {
     val avatarLg = 96.dp
     val avatarSettings = 72.dp
     val ratingIcon = 36.dp
-    val categoryCardSize = 112.dp
+    val categoryCardSize = 118.dp
+    /** Figma 259:293 — tiles Beneficios / hitos de perfil 118.67. */
+    val homeBenefitTile = 118.dp
+    /** Figma 259:303 — barra de progreso de perfil. */
+    val profileProgressHeight = 40.dp
+    /** Figma 259:498 — barra HOY. */
+    val agendaTodayBarWidth = 24.dp
+    /** Figma 259:502 — barra lateral de turno. */
+    val agendaDefaultBarWidth = 16.dp
+    /** Figma 224:1013 — Recientes: título + gap 10 + cards 118. */
+    val homeRecentsSectionMinHeight = 184.dp
+    /** Compensa el capital-top de D-DIN vs DIN Pro (título rel 155). */
+    val homeRecentsAfterSearchExtra = 6.dp
+    /** Gap título Recientes → cards para dejar las cards en rel 199. */
+    val homeRecentsTitleToCards = 13.dp
+    /** Caps del label 20dp bajo el top de la card (includeFontPadding ≈ 6). */
+    val homeRecentCardLabelTop = 14.dp
+    /** Espacio óptico recents→soporte para dejar la card en y≈373. */
+    val homeSupportAfterRecentsExtra = 23.dp
+    /** Resultados 40:322: fila logo+título. 107 de Figma + 5 para el buscador en y=195. */
+    val searchResultsHeaderMinHeight = 112.dp
+    /** Gap buscador → primera WorkerCard (243 → 259). */
+    val searchResultsListTop = 16.dp
+    val searchResultsLogoOffsetX = 3.dp
+    val searchResultsLogoOffsetY = (-3).dp
+    val workerCardMinHeight = 184.dp
+    val workerCardTextTopInset = 4.dp
+    val workerCardNameToRating = 7.dp
+    val workerCardHeaderToSpecialty = 11.dp
+    val workerCardSpecialtyToActions = 18.dp
+    /** Ficha 40:559: slide de galería 376×376 (440 − 32 − 32). */
+    val workerGallerySize = 376.dp
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f
     val agendaCell = 48.dp
+    /** Figma calendario: celda de día 32×32. */
+    val calendarDayCell = 32.dp
+    /** Figma chip de hora h32. */
+    val hourChipHeight = 32.dp
+    /** Figma resumen Solicitud: mapa 376×248 r16. */
+    val mapCardHeight = 248.dp
+    /** Icon-box 40 (p8 + icono 24). */
+    val iconBox = 40.dp
+    /** Editar Perfil 231:15 — thumbs galería/certificado + Añadir. */
+    val profileMediaTile = 118.dp
+    /** Calendario general 239:475 — chip de día. */
+    val agendaDayChipWidth = 40.dp
+    val agendaDayChipHeight = 32.dp
     val listRowMinHeight = 56.dp
     val skeletonBlockMd = 160.dp
     val skeletonBlockLg = 240.dp
@@ -42,7 +86,7 @@ object OficiosComponentSize {
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    /** Splash 16:2: casco+pin ~164×268dp. */
+    /** Splash: isotipo plano Figma `666:2` a 164dp de ancho (alto = ancho × 736/403). */
     val authLogoIconWidthSplash = 164.dp
     /**
      * Gap layout logo→wordmark. El drawable aporta ~6dp de aire; 23dp deja
@@ -52,7 +96,7 @@ object OficiosComponentSize {
     val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
     val authWordmarkHeightSplash = 48.dp
-    /** Login 356:49: logo 122×201.75. */
+    /** Login: alto del isotipo compacto (Fit; el drawable es 403×736). */
     val authLogoIconHeightCompact = 202.dp
     /** Login 356:49: gap logo→wordmark 13dp (wordmark visual y=327). */
     val authLoginLogoWordmarkGap = 13.dp

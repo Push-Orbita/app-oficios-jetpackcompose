@@ -14,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun ServicesRoute(
     onNavigateBack: () -> Unit,
     onNavigateToAdd: () -> Unit,
+    onNavigateToEdit: (Long) -> Unit,
     onShowMessage: (String) -> Unit,
     viewModel: ServicesViewModel = hiltViewModel(),
 ) {
@@ -29,6 +30,7 @@ fun ServicesRoute(
             when (effect) {
                 ServicesEffect.NavigateBack -> onNavigateBack()
                 ServicesEffect.NavigateToAdd -> onNavigateToAdd()
+                is ServicesEffect.NavigateToEdit -> onNavigateToEdit(effect.serviceId)
                 is ServicesEffect.ShowMessage -> onShowMessage(effect.message)
             }
         }

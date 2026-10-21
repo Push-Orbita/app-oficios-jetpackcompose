@@ -78,7 +78,7 @@ fun DateTimePickerButton(
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("Elegí un horario") },
+            title = { Text("Seleccione un horario") },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
                 OficiosDialogActions(

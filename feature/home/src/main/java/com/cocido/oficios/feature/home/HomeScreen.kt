@@ -15,19 +15,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.cocido.oficios.core.designsystem.component.cards.OficiosActionCard
+import com.cocido.oficios.core.designsystem.component.cards.OficiosSupportCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.intent.isSupportPhoneConfigured
 import com.cocido.oficios.domain.model.ClientHomeContent
 import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeHeader
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
-import com.cocido.oficios.feature.home.components.HomeFeaturedWorkersSection
-import com.cocido.oficios.feature.home.components.HomeRecentSearchesSection
+import com.cocido.oficios.feature.home.components.HomeRecentRubrosSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +41,7 @@ fun HomeScreen(
     onEvent: (HomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    showFavorites: Boolean? = null,
 ) {
     OficiosScaffold(
         modifier = modifier,
@@ -46,6 +49,7 @@ fun HomeScreen(
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
                 onTabSelected = onTabSelected,
+                showFavorites = showFavorites,
             )
         },
     ) { paddingValues ->
@@ -102,13 +106,14 @@ private fun HomeSuccessContent(
     modifier: Modifier = Modifier,
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    val supportAvailable = isSupportPhoneConfigured()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+            .padding(OficiosSpacing.OficiosScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         ClientHomeHeader(
             userName = content.userDisplayName,
@@ -120,28 +125,33 @@ private fun HomeSuccessContent(
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { searchQuery = it },
-            onSearch = { onEvent(HomeEvent.SearchSubmitted(searchQuery)) },
+            onSearch = { onEvent(HomeEvent.SearchSubmitted(it)) },
             placeholder = stringResource(R.string.home_search_hint),
         )
-        OficiosActionCard(
-            title = stringResource(R.string.home_my_orders_title),
-            description = stringResource(R.string.home_my_orders_description),
-            primaryActionLabel = stringResource(R.string.home_my_orders_cta),
-            onPrimaryAction = { onEvent(HomeEvent.OpenMyOrders) },
-        )
-        if (content.featuredWorkers.isNotEmpty()) {
-            HomeFeaturedWorkersSection(
-                workers = content.featuredWorkers,
-                onViewProfile = { onEvent(HomeEvent.WorkerViewProfile(it.id)) },
-                onContact = { onEvent(HomeEvent.WorkerContact(it.id)) },
-                onSeeAll = { onEvent(HomeEvent.SeeAllWorkers) },
-            )
-        }
         if (content.recentSearches.isNotEmpty()) {
-            HomeRecentSearchesSection(
+            HomeRecentRubrosSection(
                 searches = content.recentSearches,
                 onSearchClick = { onEvent(HomeEvent.RecentSearchSelected(it)) },
+                onSeeAllClick = { onEvent(HomeEvent.SeeAllCategories) },
+            )
+        } else {
+            HomeCategoriesGrid(
+                categories = content.categories,
+                onCategoryClick = { onEvent(HomeEvent.CategorySelected(it)) },
+                showSeeAll = true,
+                onSeeAllClick = { onEvent(HomeEvent.SeeAllCategories) },
+                lazy = false,
             )
         }
+        OficiosSupportCard(
+            message = stringResource(
+                if (supportAvailable) R.string.help_support_message else R.string.help_support_unavailable,
+            ),
+            contactLabel = stringResource(R.string.home_support_contact),
+            onContactClick = { onEvent(HomeEvent.ContactSupport) },
+            enabled = supportAvailable,
+            minHeight = OficiosComponentSize.authRoleSupportCardMinHeight,
+            modifier = Modifier.padding(top = OficiosComponentSize.homeSupportAfterRecentsExtra),
+        )
     }
 }

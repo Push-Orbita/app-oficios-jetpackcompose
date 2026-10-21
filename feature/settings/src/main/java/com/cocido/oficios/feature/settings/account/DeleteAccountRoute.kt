@@ -110,7 +110,7 @@ private fun DeleteAccountGraceContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(OficiosSpacing.lg)
+            .padding(horizontal = OficiosSpacing.lg)
             .widthIn(max = OficiosComponentSize.contentMaxWidth)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -151,7 +151,7 @@ private fun DeleteAccountForm(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(OficiosSpacing.lg)
+            .padding(horizontal = OficiosSpacing.lg)
             .widthIn(max = OficiosComponentSize.contentMaxWidth)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),

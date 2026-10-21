@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -56,8 +56,22 @@ class ClientDataViewModel @Inject constructor(
             ClientDataEvent.SaveContact -> saveContact()
             is ClientDataEvent.AddressNameChanged -> update { it.copy(addressName = event.value) }
             is ClientDataEvent.BarrioQueryChanged -> searchBarrio(event.value)
-            is ClientDataEvent.BarrioSelected -> update {
-                it.copy(barrioId = event.option.id, barrioQuery = event.option.label, barrioSuggestions = emptyList())
+            ClientDataEvent.BarrioFocused ->
+                searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
+            is ClientDataEvent.BarrioSelected -> {
+                barrioSearchJob?.cancel()
+                update {
+                    it.copy(
+                        barrioId = event.option.id,
+                        barrioQuery = event.option.label,
+                        barrioSuggestions = emptyList(),
+                        isSearchingBarrios = false,
+                    )
+                }
+            }
+            ClientDataEvent.BarrioSuggestionsDismissed -> {
+                barrioSearchJob?.cancel()
+                update { it.copy(barrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
             is ClientDataEvent.StreetChanged -> update { it.copy(street = event.value) }
             is ClientDataEvent.NumberChanged -> update { it.copy(number = event.value) }
@@ -73,7 +87,7 @@ class ClientDataViewModel @Inject constructor(
             }
             ClientDataEvent.UseCurrentLocation -> useCurrentLocation()
             ClientDataEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Para usar tu ubicación, permití el acceso cuando Android te lo solicite. También podés marcar el punto manualmente.")
+                it.copy(errorMessage = "Para usar su ubicación, permita el acceso cuando Android se lo solicite. También puede marcar el punto manualmente.")
             }
             is ClientDataEvent.AddressFavoriteChanged -> update { it.copy(addressFavorite = event.value) }
             ClientDataEvent.SaveDomicilio -> saveDomicilio()
@@ -167,10 +181,10 @@ class ClientDataViewModel @Inject constructor(
         val state = _uiState.value
         val phone = AuthValidators.normalizeArgentinePhone(state.contactPhone)
         val error = when {
-            state.contactName.isBlank() -> "Ingresá un nombre para identificar este contacto."
-            phone.length != 11 || !phone.startsWith("9") -> "Ingresá el celular con el 9 de móvil, sin +54."
+            state.contactName.isBlank() -> "Ingrese un nombre para identificar este contacto."
+            phone.length != 11 || !phone.startsWith("9") -> "Ingrese el celular con el 9 de móvil, sin +54."
             state.contactEmail.isNotBlank() && AuthValidators.validateEmail(state.contactEmail.trim()) != null ->
-                "Ingresá un correo válido o dejalo vacío."
+                "Ingrese un correo válido o déjelo vacío."
             else -> null
         }
         if (error != null) {
@@ -228,9 +242,9 @@ class ClientDataViewModel @Inject constructor(
         val barrioId = state.barrioId
         val personaId = state.personaId
         val error = when {
-            barrioId == null -> "Seleccioná un barrio de la lista."
-            state.street.isBlank() -> "Ingresá la calle."
-            state.number.isBlank() -> "Ingresá la altura."
+            barrioId == null -> "Seleccione un barrio de la lista."
+            state.street.isBlank() -> "Ingrese la calle."
+            state.number.isBlank() -> "Ingrese la altura."
             state.editingId == null && personaId == null -> "No pudimos identificar a qué cuenta pertenece el domicilio."
             else -> null
         }
@@ -286,20 +300,23 @@ class ClientDataViewModel @Inject constructor(
         }
     }
 
-    private fun searchBarrio(query: String) {
-        update { it.copy(barrioQuery = query, barrioId = null, errorMessage = null) }
-        barrioSearchJob?.cancel()
-        if (query.trim().length < 2) {
-            update { it.copy(barrioSuggestions = emptyList()) }
-            return
+    private fun searchBarrio(query: String, preserveSelection: Boolean = false) {
+        update {
+            it.copy(
+                barrioQuery = query,
+                barrioId = if (preserveSelection) it.barrioId else null,
+                isSearchingBarrios = true,
+                errorMessage = null,
+            )
         }
-        barrioSearchJob = viewModelScope.launch {
-            delay(250)
-            when (val result = searchBarriosUseCase(query.trim())) {
-                is AppResult.Success -> update { it.copy(barrioSuggestions = result.data) }
-                is AppResult.Error -> update { it.copy(barrioSuggestions = emptyList()) }
-            }
-        }
+        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
+            previous = barrioSearchJob,
+            query = query,
+            searchBarrios = searchBarriosUseCase,
+            onResult = { options ->
+                update { it.copy(isSearchingBarrios = false, barrioSuggestions = options) }
+            },
+        )
     }
 
     private fun useCurrentLocation() {

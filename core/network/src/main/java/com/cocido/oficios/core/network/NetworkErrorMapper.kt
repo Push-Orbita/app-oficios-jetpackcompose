@@ -41,7 +41,7 @@ private fun HttpException.toHttpAppError(): AppError {
 
     return when (code()) {
         400, 422 -> AppError.Validation(
-            message = message.ifBlank { "Revisá los datos ingresados" },
+            message = message.ifBlank { "Revise los datos ingresados" },
             fieldErrors = parseFieldErrors(body),
             backendCode = backendCode,
         )
@@ -62,12 +62,12 @@ private fun HttpException.toHttpAppError(): AppError {
             backendCode = backendCode,
         )
         429 -> AppError.Network(
-            message = message.ifBlank { "Esperá un momento e intentá de nuevo." },
+            message = message.ifBlank { "Espere un momento e intente de nuevo." },
             code = code(),
             backendCode = backendCode,
         )
         in 500..599 -> AppError.Network(
-            message = "Error del servidor. Intentá más tarde.",
+            message = "Error del servidor. Intente más tarde.",
             code = code(),
             backendCode = backendCode,
         )
@@ -148,31 +148,31 @@ private val uselessErrorMessages = setOf(
 )
 
 private val knownBackendMessages = mapOf(
-    "COMPLETION_CODE_REQUIRED" to "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
-    "COMPLETION_CODE_INVALID" to "Ese código no es correcto o ya cambió. Pedile al cliente el que ve ahora en su app.",
+    "COMPLETION_CODE_REQUIRED" to "Ingrese el código de 6 dígitos que ve el cliente en el pedido.",
+    "COMPLETION_CODE_INVALID" to "Ese código no es correcto o ya cambió. Pídale al cliente el que ve ahora en su app.",
     "COMPLETION_CODE_EXPIRED" to "Ese código venció. La app del cliente ya muestra uno nuevo: pedile el actual.",
-    "COMPLETION_CODE_LOCKED" to "Hay demasiados intentos. Esperá un momento e intentá de nuevo.",
+    "COMPLETION_CODE_LOCKED" to "Hay demasiados intentos. Espere un momento e intente de nuevo.",
     "BOOKING_INVALID_STATE" to "Todavía no se puede terminar este pedido.",
-    "REPORT_ALREADY_OPEN" to "Ya denunciaste este perfil. Vamos a revisarlo.",
-    "REPORT_REASON_INVALID" to "Elegí un motivo de la lista.",
-    "REPORT_DESCRIPTION_INVALID" to "Contanos qué pasó (entre 20 y 2000 caracteres).",
-    "REPORT_RATE_LIMITED" to "Enviaste varias denuncias seguidas. Esperá un momento.",
-    "ACCOUNT_DELETION_CONFIRMATION_INVALID" to "Escribí ELIMINAR para confirmar la baja.",
+    "REPORT_ALREADY_OPEN" to "Ya denunció este perfil. Vamos a revisarlo.",
+    "REPORT_REASON_INVALID" to "Seleccione un motivo de la lista.",
+    "REPORT_DESCRIPTION_INVALID" to "Cuéntenos qué pasó (entre 20 y 2000 caracteres).",
+    "REPORT_RATE_LIMITED" to "Envió varias denuncias seguidas. Espere un momento.",
+    "ACCOUNT_DELETION_CONFIRMATION_INVALID" to "Escriba ELIMINAR para confirmar la baja.",
     "AUTH_RECENT_LOGIN_REQUIRED" to "La contraseña no es correcta.",
-    "ACCOUNT_HAS_ACTIVE_BOOKINGS" to "Terminá o cancelá tus trabajos activos antes de eliminar la cuenta.",
+    "ACCOUNT_HAS_ACTIVE_BOOKINGS" to "Termine o cancele sus trabajos activos antes de eliminar la cuenta.",
     "ACCOUNT_DELETION_ALREADY_REQUESTED" to "Ya hay una solicitud de baja en curso.",
-    "ACCOUNT_UNDER_ADMIN_REVIEW" to "Tu cuenta está en revisión. No se puede eliminar por ahora.",
-    "AGENDA_SLOT_ALREADY_RESERVED" to "Ese turno ya no está disponible. Elegí otro horario.",
+    "ACCOUNT_UNDER_ADMIN_REVIEW" to "Su cuenta está en revisión. No se puede eliminar por ahora.",
+    "AGENDA_SLOT_ALREADY_RESERVED" to "Ese turno ya no está disponible. Elija otro horario.",
     "AGENDA_SLOT_NOT_AVAILABLE" to "Ese horario ya no se puede reservar.",
-    "COMPLETION_CODE_RATE_LIMITED" to "Esperá un momento para reenviar el código.",
-    "DB02" to "El servicio no está disponible en este momento. Intentá más tarde.",
-    "SE01" to "El servicio no está disponible en este momento. Intentá más tarde.",
+    "COMPLETION_CODE_RATE_LIMITED" to "Espere un momento para reenviar el código.",
+    "DB02" to "El servicio no está disponible en este momento. Intente más tarde.",
+    "SE01" to "El servicio no está disponible en este momento. Intente más tarde.",
 )
 
 private fun messageForBackendCode(code: String?, parsed: String?): String? {
     knownBackendMessages[code]?.let { return it }
     if (code?.startsWith("DB") == true || code?.startsWith("SE") == true) {
-        return "El servicio no está disponible en este momento. Intentá más tarde."
+        return "El servicio no está disponible en este momento. Intente más tarde."
     }
     knownBackendMessages.entries.firstOrNull { parsed?.contains(it.key) == true }?.let { return it.value }
     return parsed

@@ -30,8 +30,12 @@ class CatalogRepositoryImpl @Inject constructor(
         }
 
     override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> {
-        if (query.isBlank()) return AppResult.Success(emptyList())
-        return catalogRemoteDataSource.fetchBarrios(query).map { barrios ->
+        val trimmed = query.trim()
+        val pageSize = if (trimmed.isEmpty()) 100 else 20
+        return catalogRemoteDataSource.fetchBarrios(
+            query = trimmed.ifEmpty { null },
+            pageSize = pageSize,
+        ).map { barrios ->
             barrios.map { it.toCatalogOption() }
         }
     }

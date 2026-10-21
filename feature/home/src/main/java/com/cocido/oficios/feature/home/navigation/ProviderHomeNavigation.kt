@@ -9,7 +9,9 @@ import com.cocido.oficios.feature.home.providerhome.ProviderHomeRoute
 fun NavGraphBuilder.providerHomeScreen(
     navController: NavHostController,
     onNavigateToSettings: () -> Unit,
-    onNavigateToCompleteProfile: () -> Unit,
+    onNavigateToGallery: () -> Unit,
+    onNavigateToCommercialLocal: () -> Unit,
+    onNavigateToCertificate: () -> Unit,
     onShowMessage: (String) -> Unit,
 ) {
     navigation(
@@ -22,7 +24,9 @@ fun NavGraphBuilder.providerHomeScreen(
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
-                onNavigateToCompleteProfile = onNavigateToCompleteProfile,
+                onNavigateToGallery = onNavigateToGallery,
+                onNavigateToCommercialLocal = onNavigateToCommercialLocal,
+                onNavigateToCertificate = onNavigateToCertificate,
                 onNavigateToOrdersList = {
                     navController.openClientTab(
                         com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS,
@@ -31,6 +35,7 @@ fun NavGraphBuilder.providerHomeScreen(
                 },
                 onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
                 onNavigateToAgenda = { navController.navigate(AgendaDestination.list) },
+                onNavigateToAgendaConfig = { navController.navigate(AgendaDestination.config) },
                 onShowMessage = onShowMessage,
             )
         }

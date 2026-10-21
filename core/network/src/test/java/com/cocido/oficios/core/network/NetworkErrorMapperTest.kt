@@ -2,13 +2,18 @@ package com.cocido.oficios.core.network
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.core.network.test.NetworkTestFactory
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeoutException
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import retrofit2.HttpException
+import retrofit2.Response
 
 class NetworkErrorMapperTest {
 
@@ -124,5 +129,46 @@ class NetworkErrorMapperTest {
             assertTrue(throwable::class.java.simpleName, error is AppError.Network)
             assertTrue(error.userMessage().isNotBlank())
         }
+    }
+
+    @Test
+    fun `http 401 maps to Unauthorized`() {
+        val error = httpError(401, NetworkTestFactory.loadFixture("errors/error_401.json"))
+            .toNetworkAppError()
+        assertTrue(error is AppError.Unauthorized)
+    }
+
+    @Test
+    fun `http 403 maps to Forbidden`() {
+        val body = """{"statusCode":403,"message":"Forbidden","error":"Forbidden"}"""
+        assertTrue(httpError(403, body).toNetworkAppError() is AppError.Forbidden)
+    }
+
+    @Test
+    fun `http 404 maps to NotFound`() {
+        val error = httpError(404, NetworkTestFactory.loadFixture("errors/error_404.json"))
+            .toNetworkAppError()
+        assertTrue(error is AppError.NotFound)
+    }
+
+    @Test
+    fun `http 400 maps to Validation`() {
+        val error = httpError(400, NetworkTestFactory.loadFixture("errors/error_400.json"))
+            .toNetworkAppError()
+        assertTrue(error is AppError.Validation)
+    }
+
+    @Test
+    fun `http 500 maps to Network with code 500`() {
+        val error = httpError(500, NetworkTestFactory.loadFixture("errors/error_500.json"))
+            .toNetworkAppError()
+        assertTrue(error is AppError.Network)
+        assertEquals(500, (error as AppError.Network).code)
+        assertEquals("Error del servidor. Intente más tarde.", error.message)
+    }
+
+    private fun httpError(code: Int, body: String): HttpException {
+        val responseBody = body.toResponseBody("application/json".toMediaType())
+        return HttpException(Response.error<Unit>(code, responseBody))
     }
 }

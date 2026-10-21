@@ -91,7 +91,7 @@ private fun PersonalDataForm(
             .fillMaxSize()
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
+            .padding(horizontal = OficiosSpacing.md)
             .widthIn(max = OficiosComponentSize.contentMaxWidth),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -13,6 +13,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.core.ui.intent.dispatchSpokenSearch
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import com.cocido.oficios.feature.home.FakeRecentSearchRepository
@@ -62,6 +63,25 @@ class SearchResultsViewModelTest {
 
         assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
         assertEquals("plomero", viewModel.searchQuery.value)
+    }
+
+    @Test
+    fun `spoken query fills field and submits search`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val spoken = "  electricista "
+        assertTrue(
+            dispatchSpokenSearch(
+                spoken = spoken,
+                onQueryChange = { viewModel.onEvent(SearchResultsEvent.QueryChanged(it)) },
+                onSearch = { viewModel.onEvent(SearchResultsEvent.QuerySubmitted) },
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals("electricista", viewModel.searchQuery.value)
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
     }
 
     @Test
@@ -116,6 +136,28 @@ class SearchResultsViewModelTest {
         assertTrue(viewModel.uiState.value is SearchResultsUiState.Error)
     }
 
+    @Test
+    fun `non empty first page tracks rubro`() = runTest(testDispatcher) {
+        val recents = FakeRecentSearchRepository()
+        createViewModel(recents = recents)
+        advanceUntilIdle()
+        assertEquals(1, recents.tracked.size)
+        assertEquals("Plomería", recents.tracked.single().label)
+    }
+
+    @Test
+    fun `empty first page does not track`() = runTest(testDispatcher) {
+        val recents = FakeRecentSearchRepository()
+        createViewModel(
+            searchResult = AppResult.Success(
+                PagedWorkers(items = emptyList(), pageNumber = 1, totalPages = 1, hasMore = false),
+            ),
+            recents = recents,
+        )
+        advanceUntilIdle()
+        assertTrue(recents.tracked.isEmpty())
+    }
+
     private fun createViewModel(
         searchResult: AppResult<PagedWorkers> = AppResult.Success(
             PagedWorkers(
@@ -135,6 +177,7 @@ class SearchResultsViewModelTest {
                 hasMore = false,
             ),
         ),
+        recents: FakeRecentSearchRepository = FakeRecentSearchRepository(),
     ): SearchResultsViewModel {
         val repository = object : WorkerSearchRepository {
             override suspend fun searchWorkers(
@@ -162,7 +205,7 @@ class SearchResultsViewModelTest {
         return SearchResultsViewModel(
             savedStateHandle = savedStateHandle,
             searchWorkersUseCase = SearchWorkersUseCase(repository),
-            trackRecentSearchUseCase = TrackRecentSearchUseCase(FakeRecentSearchRepository()),
+            trackRecentSearchUseCase = TrackRecentSearchUseCase(recents),
             getCategoriesUseCase = GetCategoriesUseCase(catalogRepository),
             getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(catalogRepository),
             getSubRubrosByRubroUseCase = GetSubRubrosByRubroUseCase(catalogRepository),

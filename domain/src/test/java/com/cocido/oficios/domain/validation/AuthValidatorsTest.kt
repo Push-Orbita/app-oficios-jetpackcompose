@@ -34,4 +34,16 @@ class AuthValidatorsTest {
     fun `normalizeArgentinePhone strips non-digit separators`() {
         assertEquals("93705219109", AuthValidators.normalizeArgentinePhone("+54 9 3705 219109"))
     }
+
+    @Test
+    fun `validateName accepts compound given names`() {
+        assertEquals(null, AuthValidators.validateName("Matias Federico", "nombres"))
+        assertEquals(null, AuthValidators.validateName("Britez", "apellido"))
+    }
+
+    @Test
+    fun `validateName rejects blank names`() {
+        assertEquals("Los nombres son obligatorios", AuthValidators.validateName("  ", "nombres"))
+        assertEquals("El apellido es obligatorio", AuthValidators.validateName("", "apellido"))
+    }
 }

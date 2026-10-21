@@ -5,9 +5,10 @@ import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 
 @Composable
@@ -36,8 +37,8 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
-    val comingSoon = stringResource(R.string.home_coming_soon)
     val toastController = LocalOficiosToastController.current
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -56,12 +57,12 @@ fun HomeRoute(
                 is HomeEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is HomeEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 HomeEffect.NavigateToMyOrders -> onNavigateToMyOrders()
+                HomeEffect.ContactSupport -> openSupportPhone(context)
                 HomeEffect.NavigateToSettings -> onNavigateToSettings()
                 HomeEffect.NavigateToFavorites -> onNavigateToFavorites()
                 HomeEffect.NavigateToHelp -> onNavigateToHelp()
                 HomeEffect.NavigateToNotifications -> onNavigateToNotifications()
                 is HomeEffect.ShowMessage -> toastController.showError(effect.message)
-                HomeEffect.ShowComingSoon -> onShowMessage(comingSoon)
             }
         }
     }
@@ -70,7 +71,7 @@ fun HomeRoute(
         onNavigateToOrders = onNavigateToMyOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,
-        onVisible = viewModel::refreshUnreadCount,
+        onVisible = viewModel::onVisible,
     ) { selectedTab, onTabSelected ->
         HomeScreen(
             uiState = uiState,

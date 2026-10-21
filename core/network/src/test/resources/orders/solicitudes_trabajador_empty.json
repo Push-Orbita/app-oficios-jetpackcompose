@@ -1,0 +1,15 @@
+{
+  "data": {
+    "trabajador": {
+      "id": 5,
+      "estado": "VALIDADO"
+    },
+    "solicitudes": []
+  },
+  "metadata": {
+    "count": 0,
+    "pageSize": 20,
+    "pageNumber": 1,
+    "totalPages": 0
+  }
+}

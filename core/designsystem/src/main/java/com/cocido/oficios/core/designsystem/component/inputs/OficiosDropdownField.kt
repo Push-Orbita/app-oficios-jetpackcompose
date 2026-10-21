@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.theme.OficiosElevation
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +39,9 @@ fun OficiosDropdownField(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { if (enabled) expanded = it },
+        onExpandedChange = { requested ->
+            if (enabled) expanded = requested && options.isNotEmpty()
+        },
         modifier = modifier.fillMaxWidth(),
     ) {
         OficiosTextField(
@@ -64,8 +67,11 @@ fun OficiosDropdownField(
             },
         )
         ExposedDropdownMenu(
-            expanded = expanded,
+            expanded = expanded && options.isNotEmpty(),
             onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = OficiosElevation.sm,
+            shadowElevation = OficiosElevation.md,
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -90,7 +96,7 @@ private fun DropdownFieldPreview() {
                 options = listOf("Construcción", "Mantenimiento", "Bienestar"),
                 onOptionSelected = {},
                 label = "Rubro",
-                placeholder = "Seleccioná un rubro",
+                placeholder = "Seleccione un rubro",
             )
         }
     }

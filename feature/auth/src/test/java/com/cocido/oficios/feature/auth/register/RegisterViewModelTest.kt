@@ -15,6 +15,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -34,14 +35,14 @@ class RegisterViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel() = RegisterViewModel(
-        RegisterClientUseCase(FakeAuthRepository()),
-        RegisterProviderUseCase(FakeAuthRepository()),
-    )
+    private fun createViewModel(repository: FakeAuthRepository = FakeAuthRepository()) = RegisterViewModel(
+        RegisterClientUseCase(repository),
+        RegisterProviderUseCase(repository),
+    ) to repository
 
     @Test
     fun `password mismatch blocks submit`() {
-        val viewModel = createViewModel()
+        val (viewModel, _) = createViewModel()
         viewModel.setMode(RegisterMode.CLIENT)
         fillValidClientForm(viewModel)
         viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("different"))
@@ -50,7 +51,7 @@ class RegisterViewModelTest {
 
     @Test
     fun `invalid email blocks submit`() {
-        val viewModel = createViewModel()
+        val (viewModel, _) = createViewModel()
         viewModel.setMode(RegisterMode.CLIENT)
         viewModel.onEvent(RegisterFormEvent.EmailChanged("invalid"))
         viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
@@ -61,7 +62,7 @@ class RegisterViewModelTest {
 
     @Test
     fun `client registration success`() = runTest(dispatcher) {
-        val viewModel = createViewModel()
+        val (viewModel, _) = createViewModel()
         viewModel.setMode(RegisterMode.CLIENT)
         fillValidClientForm(viewModel)
         viewModel.onEvent(RegisterFormEvent.Submit)
@@ -71,9 +72,10 @@ class RegisterViewModelTest {
 
     @Test
     fun `submit on invalid form reveals field errors`() {
-        val viewModel = createViewModel()
+        val (viewModel, _) = createViewModel()
         viewModel.setMode(RegisterMode.CLIENT)
-        viewModel.onEvent(RegisterFormEvent.FullNameChanged("asdasd"))
+        viewModel.onEvent(RegisterFormEvent.FirstNameChanged(""))
+        viewModel.onEvent(RegisterFormEvent.LastNameChanged(""))
         viewModel.onEvent(RegisterFormEvent.DocumentChanged("12312"))
         viewModel.onEvent(RegisterFormEvent.EmailChanged("user@test.com"))
         viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
@@ -87,16 +89,47 @@ class RegisterViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state.hasAttemptedSubmit)
-        assertNotNull(state.fullNameError)
+        assertNotNull(state.firstNameError)
+        assertNotNull(state.lastNameError)
         assertNotNull(state.documentError)
-        assertEquals("Ingrese nombre y apellido", state.fullNameError)
+        assertEquals("Los nombres son obligatorios", state.firstNameError)
+        assertEquals("El apellido es obligatorio", state.lastNameError)
         assertEquals("Ingrese un DNI válido", state.documentError)
         assertFalse(state.isLoading)
     }
 
     @Test
+    fun `client registration sends compound names without splitting`() = runTest(dispatcher) {
+        val (viewModel, repository) = createViewModel()
+        viewModel.setMode(RegisterMode.CLIENT)
+        fillValidClientForm(viewModel, firstName = "Matias Federico", lastName = "Britez")
+        viewModel.onEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+
+        val request = repository.lastClientRequest
+        assertNotNull(request)
+        assertEquals("Matias Federico", request!!.firstName)
+        assertEquals("Britez", request.lastName)
+        assertNull(repository.lastProviderRequest)
+    }
+
+    @Test
+    fun `provider registration sends compound names without splitting`() = runTest(dispatcher) {
+        val (viewModel, repository) = createViewModel()
+        viewModel.setMode(RegisterMode.PROVIDER)
+        fillValidClientForm(viewModel, firstName = "Matias Federico", lastName = "Britez")
+        viewModel.onEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+
+        val request = repository.lastProviderRequest
+        assertNotNull(request)
+        assertEquals("Matias Federico", request!!.firstName)
+        assertEquals("Britez", request.lastName)
+    }
+
+    @Test
     fun `provider registration requires document`() {
-        val viewModel = createViewModel()
+        val (viewModel, _) = createViewModel()
         viewModel.setMode(RegisterMode.PROVIDER)
         fillValidClientForm(viewModel)
         viewModel.onEvent(RegisterFormEvent.DocumentChanged(""))
@@ -105,7 +138,7 @@ class RegisterViewModelTest {
 
     @Test
     fun `provider registration success navigates to trade setup, not onboarding`() = runTest(dispatcher) {
-        val viewModel = createViewModel()
+        val (viewModel, _) = createViewModel()
         val effects = mutableListOf<RegisterEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
@@ -120,8 +153,13 @@ class RegisterViewModelTest {
         job.cancel()
     }
 
-    private fun fillValidClientForm(viewModel: RegisterViewModel) {
-        viewModel.onEvent(RegisterFormEvent.FullNameChanged("Juan Pérez"))
+    private fun fillValidClientForm(
+        viewModel: RegisterViewModel,
+        firstName: String = "Juan",
+        lastName: String = "Pérez",
+    ) {
+        viewModel.onEvent(RegisterFormEvent.FirstNameChanged(firstName))
+        viewModel.onEvent(RegisterFormEvent.LastNameChanged(lastName))
         viewModel.onEvent(RegisterFormEvent.DocumentChanged("12345678"))
         viewModel.onEvent(RegisterFormEvent.EmailChanged("user@test.com"))
         viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
