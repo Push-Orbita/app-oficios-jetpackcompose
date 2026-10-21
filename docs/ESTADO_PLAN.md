@@ -32,7 +32,7 @@ PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 
 | Pantalla | Nodo | PR | Diff / notas | Adaptación |
 |---|---|---|---|---|
-| Home cliente | `25:95` | #11 | Recientes caps 155, cards 199; QA r1 vs PNG | Recientes en DataStore (no hay endpoint) |
+| Home cliente | `25:95` | #21 | Recientes sin "Ver todos"; QA `docs/qa-1a1/home-cliente.png` ~9.6% | Recientes DataStore; placeholder usted; nav 4 tabs |
 | Oficios | `25:258` | #11 | Grilla + ilustraciones locales | BK-10: assets locales |
 | Rubros | `35:2` | #11 | Grilla | — |
 | Resultados | `40:309` | #11 | Header, aviso 3/10 min, buscador | BK-12, BK-14 (aviso estático) |
@@ -88,7 +88,7 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 | Pantalla | Nodo | Diff pixel | Commit | Notas |
 |---|---|---|---|---|
 | Home trabajador | `259:254` | ~32% (nav acordada + fuente) | (este PR) | Beneficios bold, perfil 40 dp + hitos dashed, Agenda lista HOY, sin calendario/AHORA |
-| Home cliente | `25:95` | pendiente | | |
+| Home cliente | `25:95` | ~9.6% (nav acordada, placeholder usted, datos reales) | (este PR) | Recientes sin "Ver todos"; 3 cards r16 |
 | Detalle pedido | `198:697` | pendiente | | |
 | Ficha trabajador | `40:559` | pendiente | | |
 | Solicitud/reserva | `455:27` | pendiente | | |

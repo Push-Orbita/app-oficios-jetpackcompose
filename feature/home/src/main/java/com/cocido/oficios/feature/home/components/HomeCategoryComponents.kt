@@ -150,25 +150,11 @@ fun HomeRecentRubrosSection(
             .heightIn(min = OficiosComponentSize.homeRecentsSectionMinHeight),
         verticalArrangement = Arrangement.spacedBy(OficiosComponentSize.homeRecentsTitleToCards),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.home_recent_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            Text(
-                text = stringResource(R.string.home_categories_see_all),
-                style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorOutlineFill,
-                modifier = Modifier
-                    .semantics { role = Role.Button }
-                    .clickable(onClick = onSeeAllClick),
-            )
-        }
+        Text(
+            text = stringResource(R.string.home_recent_title),
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
