@@ -6,14 +6,18 @@ import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.ServiceOrder
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.arrangedFor
 import com.cocido.oficios.domain.model.withArrivedTracking
+import java.time.ZonedDateTime
 import kotlin.math.pow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OrdersListGroupingTest {
+
+    private val nowBeforeSlots = ZonedDateTime.of(2026, 9, 20, 8, 0, 0, 0, DisplayDateTime.ARGENTINA)
 
     @Test
     fun `activos quedan primero por fecha y el historial al reves`() {
@@ -23,8 +27,8 @@ class OrdersListGroupingTest {
             item(3, ServiceRequestStatus.PENDING, null, "2026-09-26T10:00:00Z"),
             item(4, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
         )
-        assertEquals(listOf(3L, 1L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
-        assertEquals(listOf(4L, 2L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
+        assertEquals(listOf(3L, 1L), items.arrangedFor(OrdersListFilter.ACTIVE, nowBeforeSlots).map { it.id })
+        assertEquals(listOf(4L, 2L), items.arrangedFor(OrdersListFilter.HISTORY, nowBeforeSlots).map { it.id })
     }
 
     @Test
@@ -37,8 +41,8 @@ class OrdersListGroupingTest {
             item(17, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
             item(18, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
         )
-        assertEquals(listOf(6L, 15L, 11L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
-        assertEquals(listOf(17L, 18L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
+        assertEquals(listOf(6L, 15L, 11L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, nowBeforeSlots).map { it.id })
+        assertEquals(listOf(17L, 18L), items.arrangedFor(OrdersListFilter.HISTORY, nowBeforeSlots).map { it.id })
     }
 
     @Test

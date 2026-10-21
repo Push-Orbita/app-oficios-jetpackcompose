@@ -3,8 +3,10 @@ package com.cocido.oficios.core.data.mapper
 import com.cocido.oficios.core.network.api.orders.dto.BookingSimpleDto
 import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
 import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.arrangedFor
+import java.time.ZonedDateTime
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -33,8 +35,9 @@ class OrderStatusMappingTest {
             solicitud(17, "CANCELADA", "CANCELADA"),
         ).map { it.toListItem(isWorkerViewing = true) }
 
-        assertEquals(listOf(6L, 15L, 11L, 9L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
-        assertEquals(listOf(18L, 17L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
+        val now = ZonedDateTime.of(2026, 9, 1, 8, 0, 0, 0, DisplayDateTime.ARGENTINA)
+        assertEquals(listOf(6L, 15L, 11L, 9L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, now).map { it.id })
+        assertEquals(listOf(18L, 17L), items.arrangedFor(OrdersListFilter.HISTORY, now).map { it.id })
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 11L }.bookingStatus)
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 15L }.bookingStatus)
     }

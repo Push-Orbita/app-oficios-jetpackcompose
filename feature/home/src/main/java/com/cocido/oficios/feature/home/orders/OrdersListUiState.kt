@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.home.orders
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.arrangedFor
+import java.time.ZonedDateTime
 
 sealed interface OrdersListUiState {
     data object Loading : OrdersListUiState
@@ -15,7 +16,8 @@ sealed interface OrdersListUiState {
         val filter: OrdersListFilter = OrdersListFilter.ACTIVE,
         val isRefreshing: Boolean = false,
     ) : OrdersListUiState {
-        val visibleOrders: List<ServiceOrderListItem> get() = orders.arrangedFor(filter)
+        fun visibleOrders(now: ZonedDateTime): List<ServiceOrderListItem> =
+            orders.arrangedFor(filter, now)
     }
 }
 

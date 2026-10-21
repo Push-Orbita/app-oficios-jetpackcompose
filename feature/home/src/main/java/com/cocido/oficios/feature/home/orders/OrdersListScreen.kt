@@ -178,10 +178,11 @@ private fun OrdersListSuccess(
         ) {
             OficiosStateContent(
                 targetState = state,
-                contentKey = { it.visibleOrders.isEmpty() },
+                contentKey = { it.visibleOrders(now).isEmpty() },
                 label = "OrdersListEmptyTransition",
             ) { current ->
-                if (current.visibleOrders.isEmpty()) {
+                val visibleOrders = current.visibleOrders(now)
+                if (visibleOrders.isEmpty()) {
                     val history = current.filter == OrdersListFilter.HISTORY
                     RefreshablePlaceholder {
                         OficiosEmptyState(
@@ -193,8 +194,8 @@ private fun OrdersListSuccess(
                         )
                     }
                 } else {
-                    val groups = groupAgendaAppointments(current.visibleOrders, today)
-                    val undated = current.visibleOrders.filter { it.scheduledDate() == null }
+                    val groups = groupAgendaAppointments(visibleOrders, today)
+                    val undated = visibleOrders.filter { it.scheduledDate() == null }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = OficiosSpacing.OficiosScreenPadding,

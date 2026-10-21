@@ -149,6 +149,7 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 | BK-17 | Puntaje único vs calidad+puntualidad | 2 filas de estrellas | — |
 | BK-18 | Endpoint de beneficios | Copy estático | — |
 | BK-19 | % numérico + flags galería/local/cert | Home trabajador calcula 0/33/66/100 | ver abajo |
+| BK-20 | Auto-expirar PENDIENTE/CONFIRMADA al pasar el slot | App mueve a Historial por fecha; el estado del API no cambia | [BK-20-vencimiento-pedidos.md](backend-requests/BK-20-vencimiento-pedidos.md) |
 
 ### Decisión Home trabajador (Matías, 21/10/2026)
 
