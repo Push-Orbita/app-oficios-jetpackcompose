@@ -3,6 +3,7 @@ package com.cocido.oficios.core.designsystem.a11y
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -13,6 +14,7 @@ import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
+import com.cocido.oficios.core.designsystem.component.cards.OficiosSupportCard
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import androidx.compose.material.icons.Icons
@@ -190,6 +192,27 @@ class OficiosButtonA11yTest {
         val widthDp = node.size.width / node.layoutInfo.density.density
         assertTrue("Password eye height=${heightDp}dp", heightDp >= 48f)
         assertTrue("Password eye width=${widthDp}dp", widthDp >= 48f)
+    }
+
+    @Test
+    fun supportCardHelpBadgeTouchIs48WithoutInflatingVisual() {
+        composeRule.setContent {
+            OficiosTheme {
+                OficiosSupportCard(
+                    message = "Para cualquier consulta o duda de asistencia, contáctenos a nuestra línea de atención",
+                    contactLabel = "Contactar",
+                    onContactClick = {},
+                )
+            }
+        }
+        val node = composeRule.onNodeWithContentDescription("Ayuda").fetchSemanticsNode()
+        val density = node.layoutInfo.density.density
+        val heightDp = node.size.height / density
+        val widthDp = node.size.width / density
+        assertTrue("Help badge touch height=${heightDp}dp", heightDp >= 48f)
+        assertTrue("Help badge touch width=${widthDp}dp", widthDp >= 48f)
+        composeRule.onNodeWithText("Contactar").assertIsDisplayed()
+        composeRule.onNodeWithText("?").assertIsDisplayed()
     }
 
     @Test

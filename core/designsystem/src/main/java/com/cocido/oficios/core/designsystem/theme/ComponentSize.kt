@@ -140,11 +140,14 @@ object OficiosComponentSize {
     val authRegisterTermsToDivider = 16.dp
     val authRegisterDividerToPrompt = 16.dp
     val authRegisterTermsCheckboxToText = 8.dp
-    val authSupportBadgeWidth = 31.dp
+    /** Figma 25:143 / 356:97 — pestaña "?" 33×36. */
+    val authSupportBadgeWidth = 33.dp
     val authSupportBadgeHeight = 36.dp
     val authSupportBadgeSize = authSupportBadgeWidth
+    /** Cuánto asoma la pestaña por encima de la card (y=-18 en el frame). */
     val authSupportBadgeOffsetY = 18.dp
-    val authSupportBadgeOffsetX = 15.dp
+    /** Cuánto asoma por la derecha (x≈16 en 376). */
+    val authSupportBadgeOffsetX = 16.dp
     /** Login/rol soporte: Figma 20dp arriba y 20dp abajo; el texto se centra. */
     val authSupportCardPaddingTop = 20.dp
     val authSupportCardPaddingBottom = 20.dp
