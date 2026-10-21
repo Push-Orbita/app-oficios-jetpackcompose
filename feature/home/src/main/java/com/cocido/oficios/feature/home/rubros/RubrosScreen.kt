@@ -61,7 +61,7 @@ fun RubrosScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         OficiosErrorState(
-                            title = stringResource(R.string.home_error_title),
+                            title = stringResource(R.string.home_rubros_error_title),
                             description = state.message,
                             onRetry = { onEvent(RubrosEvent.Retry) },
                             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),

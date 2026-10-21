@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandBlock
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandScale
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -43,7 +45,7 @@ fun SplashScreen(
                     }
                     is SplashUiState.Error -> {
                         OficiosErrorState(
-                            title = "No se pudo iniciar",
+                            title = stringResource(R.string.splash_error_title),
                             description = state.message,
                             onRetry = onRetry,
                             modifier = Modifier.align(Alignment.Center),

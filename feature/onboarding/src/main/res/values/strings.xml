@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="onboarding_client_error_title">No pudimos cargar su perfil</string>
+    <string name="onboarding_provider_error_title">No pudimos cargar su perfil profesional</string>
+    <string name="onboarding_status_error_title">No pudimos cargar el estado de su perfil</string>
+    <string name="onboarding_gate_error_title">No pudimos continuar</string>
+    <string name="onboarding_gate_go_login">Ir a iniciar sesión</string>
     <string name="onboarding_client_title">Complete su perfil</string>
     <string name="onboarding_client_subtitle">Necesita estos datos para contratar servicios</string>
     <string name="onboarding_provider_title">Configure su perfil profesional</string>

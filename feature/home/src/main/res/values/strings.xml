@@ -3,6 +3,10 @@
     <string name="home_loading">Cargando inicio…</string>
     <string name="home_retry">Reintentar</string>
     <string name="home_error_title">No pudimos cargar el inicio</string>
+    <string name="home_search_error_title">No pudimos completar la búsqueda</string>
+    <string name="home_provider_error_title">No pudimos cargar su inicio</string>
+    <string name="home_categories_error_title">No pudimos cargar los oficios</string>
+    <string name="home_rubros_error_title">No pudimos cargar los rubros</string>
     <string name="home_search_hint">¿Qué oficio está buscando?</string>
     <string name="home_my_orders_title">Mis pedidos</string>
     <string name="home_my_orders_description">Revise el estado de los servicios que solicitó.</string>

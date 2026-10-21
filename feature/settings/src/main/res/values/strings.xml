@@ -48,7 +48,7 @@
     <string name="client_data_edit_contact">Editar contacto</string>
     <string name="client_data_new_address">Nuevo domicilio</string>
     <string name="client_data_edit_address">Editar domicilio</string>
-    <string name="client_data_load_error">No pudimos cargar sus datos</string>
+    <string name="client_data_load_error">No pudimos cargar sus contactos y domicilios</string>
     <string name="client_data_delete_title">Eliminar %1$s</string>
     <string name="client_data_delete_message">Esta acción puede dejar su perfil incompleto. Los pedidos existentes conservarán sus datos históricos.</string>
     <string name="client_data_delete_confirm">Eliminar</string>
@@ -96,7 +96,7 @@
     <string name="client_data_primary_address_toggle">Usar como domicilio principal</string>
     <string name="client_data_save_address">Guardar domicilio</string>
     <string name="personal_data_title">Datos personales</string>
-    <string name="personal_data_load_error">No pudimos cargar sus datos</string>
+    <string name="personal_data_load_error">No pudimos cargar sus datos personales</string>
     <string name="personal_data_intro">Mantenga sus datos actualizados para que su cuenta sea fácil de reconocer.</string>
     <string name="personal_data_change_photo">Cambiar foto</string>
     <string name="personal_data_remove_photo">Quitar</string>

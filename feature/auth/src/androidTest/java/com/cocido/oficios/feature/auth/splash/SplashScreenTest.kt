@@ -38,7 +38,7 @@ class SplashScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("No se pudo iniciar").assertIsDisplayed()
+        composeTestRule.onNodeWithText("No pudimos iniciar").assertIsDisplayed()
         composeTestRule.onNodeWithText("No pudimos conectarnos").assertIsDisplayed()
         composeTestRule.onNodeWithText("Reintentar").assertIsDisplayed()
     }

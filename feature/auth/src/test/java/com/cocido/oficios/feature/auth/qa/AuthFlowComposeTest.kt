@@ -44,7 +44,7 @@ class AuthFlowComposeTest {
                 SplashScreen(uiState = SplashUiState.Error("Sin conexión"), onRetry = {})
             }
         }
-        composeRule.onNodeWithText("No se pudo iniciar").assertIsDisplayed()
+        composeRule.onNodeWithText("No pudimos iniciar").assertIsDisplayed()
         composeRule.onNodeWithText("Reintentar").assertIsDisplayed()
     }
 

@@ -124,7 +124,7 @@ fun SearchResultsScreen(
                         }
                         is SearchResultsUiState.Error -> {
                             OficiosErrorState(
-                                title = stringResource(R.string.home_error_title),
+                                title = stringResource(R.string.home_search_error_title),
                                 description = state.message,
                                 onRetry = { onEvent(SearchResultsEvent.Retry) },
                                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),

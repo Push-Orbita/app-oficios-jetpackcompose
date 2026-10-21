@@ -60,7 +60,7 @@ fun CategoriesScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         OficiosErrorState(
-                            title = stringResource(R.string.home_error_title),
+                            title = stringResource(R.string.home_categories_error_title),
                             description = state.message,
                             onRetry = { onEvent(CategoriesEvent.Retry) },
                             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
