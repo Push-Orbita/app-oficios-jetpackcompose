@@ -1,10 +1,12 @@
 package com.cocido.oficios.feature.settings.provider
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
+import com.cocido.oficios.feature.settings.navigation.SettingsDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.async
@@ -18,8 +20,12 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class PortfolioViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val accountUseCases: AccountUseCases,
 ) : ViewModel() {
+    private val openCertificateOnStart =
+        savedStateHandle.get<String>("focus") == SettingsDestination.FOCUS_CERTIFICATE
+    private var didOpenCertificateOnStart = false
     private val _uiState = MutableStateFlow(PortfolioUiState())
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<PortfolioEffect>(Channel.BUFFERED)
@@ -67,6 +73,10 @@ class PortfolioViewModel @Inject constructor(
                 gallery = (galleryResult as AppResult.Success).data,
                 errorMessage = null,
             )
+        }
+        if (openCertificateOnStart && !didOpenCertificateOnStart) {
+            didOpenCertificateOnStart = true
+            editCertificate()
         }
     }
 

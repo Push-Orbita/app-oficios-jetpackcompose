@@ -126,7 +126,10 @@ private fun ProviderHomeSuccessContent(
                 hasGallery = content.hasGalleryPhotos,
                 hasLocal = content.hasCommercialLocal,
                 hasCertificate = content.hasCertificate,
-                onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
+                onGalleryClick = { onEvent(ProviderHomeEvent.GalleryTileClicked) },
+                onLocalClick = { onEvent(ProviderHomeEvent.CommercialLocalTileClicked) },
+                onCertificateClick = { onEvent(ProviderHomeEvent.CertificateTileClicked) },
+                onCompleteProfileLink = { onEvent(ProviderHomeEvent.CompleteProfileLinkClicked) },
             )
         }
 
@@ -191,7 +194,10 @@ private fun ProviderProfileCompletionSection(
     hasGallery: Boolean,
     hasLocal: Boolean,
     hasCertificate: Boolean,
-    onCompleteProfile: () -> Unit,
+    onGalleryClick: () -> Unit,
+    onLocalClick: () -> Unit,
+    onCertificateClick: () -> Unit,
+    onCompleteProfileLink: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -211,19 +217,19 @@ private fun ProviderProfileCompletionSection(
             ProfileMilestoneTile(
                 label = stringResource(R.string.provider_home_tile_gallery),
                 done = hasGallery,
-                onClick = onCompleteProfile,
+                onClick = onGalleryClick,
                 modifier = Modifier.weight(1f),
             )
             ProfileMilestoneTile(
                 label = stringResource(R.string.provider_home_tile_local),
                 done = hasLocal,
-                onClick = onCompleteProfile,
+                onClick = onLocalClick,
                 modifier = Modifier.weight(1f),
             )
             ProfileMilestoneTile(
                 label = stringResource(R.string.provider_home_tile_certificate),
                 done = hasCertificate,
-                onClick = onCompleteProfile,
+                onClick = onCertificateClick,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -237,7 +243,7 @@ private fun ProviderProfileCompletionSection(
                 style = MaterialTheme.typography.bodyLarge,
                 color = OficiosColorWhite,
                 textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable(onClick = onCompleteProfile),
+                modifier = Modifier.clickable(onClick = onCompleteProfileLink),
             )
         }
     }

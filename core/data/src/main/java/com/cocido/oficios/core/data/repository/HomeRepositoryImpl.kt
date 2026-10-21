@@ -9,7 +9,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ProviderHomeTiles
 import com.cocido.oficios.domain.model.ProviderProfileStatus
-import com.cocido.oficios.domain.model.inferProviderHomeTiles
+import com.cocido.oficios.domain.model.resolveProviderHomeTiles
 import com.cocido.oficios.domain.model.nowInArgentina
 import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.model.RecentSearchEntry
@@ -139,28 +139,19 @@ class HomeRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Galería y certificados salen de `GET perfil` (listas reales). Local comercial se
-     * infiere de `servesAtLocal` en subrubros. Si el perfil no carga, se cae a
-     * `faltantes` de `estado-perfil` (no hay % numérico ni flags dedicados).
+     * Galería y certificados salen de `GET perfil` (listas reales). Local comercial:
+     * `lugarLocal` en subrubros o `domicilios` con calle. Si el perfil no carga, se
+     * cae a `faltantes` de `estado-perfil` (no hay % numérico ni flags dedicados).
      */
     private fun resolveProfileTiles(
         status: ProviderProfileStatus,
         missingItems: List<String>,
         profile: AccountProfile?,
-    ): ProviderHomeTiles {
-        val inferred = inferProviderHomeTiles(
-            missingSteps = status.missingSteps + missingItems,
-            isProfileComplete = status.isProfileComplete,
-        )
-        val details = profile?.providerDetails ?: return inferred
-        return ProviderHomeTiles(
-            gallery = details.gallery.isNotEmpty(),
-            local = details.services.any { service ->
-                service.subServices.any { it.servesAtLocal }
-            },
-            certificate = details.certificates.isNotEmpty(),
-        )
-    }
+    ): ProviderHomeTiles = resolveProviderHomeTiles(
+        details = profile?.providerDetails,
+        missingSteps = status.missingSteps + missingItems,
+        isProfileComplete = status.isProfileComplete,
+    )
 
     override suspend fun getCategories(): AppResult<List<HomeCategoryItem>> {
         return withContext(dispatcherProvider.io) {

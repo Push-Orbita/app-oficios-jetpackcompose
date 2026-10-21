@@ -16,7 +16,9 @@ import java.time.Clock
 import java.time.ZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -91,6 +93,92 @@ class ProviderHomeViewModelTest {
     }
 
     @Test
+    fun `gallery tile navigates to portfolio not onboarding checklist`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(percent = 66)
+        advanceUntilIdle()
+        val effects = collectEffects(viewModel) {
+            viewModel.onEvent(ProviderHomeEvent.GalleryTileClicked)
+        }
+        assertEquals(listOf(ProviderHomeEffect.NavigateToGallery), effects)
+    }
+
+    @Test
+    fun `local tile navigates to commercial local editor`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(
+            content = providerHome(66).copy(
+                hasGalleryPhotos = true,
+                hasCommercialLocal = false,
+                hasCertificate = true,
+            ),
+        )
+        advanceUntilIdle()
+        val effects = collectEffects(viewModel) {
+            viewModel.onEvent(ProviderHomeEvent.CommercialLocalTileClicked)
+        }
+        assertEquals(listOf(ProviderHomeEffect.NavigateToCommercialLocal), effects)
+    }
+
+    @Test
+    fun `certificate tile navigates to add certificate`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(percent = 66)
+        advanceUntilIdle()
+        val effects = collectEffects(viewModel) {
+            viewModel.onEvent(ProviderHomeEvent.CertificateTileClicked)
+        }
+        assertEquals(listOf(ProviderHomeEffect.NavigateToCertificate), effects)
+    }
+
+    @Test
+    fun `completar perfil link opens first incomplete tile`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(
+            content = providerHome(66).copy(
+                hasGalleryPhotos = true,
+                hasCommercialLocal = false,
+                hasCertificate = true,
+            ),
+        )
+        advanceUntilIdle()
+        val effects = collectEffects(viewModel) {
+            viewModel.onEvent(ProviderHomeEvent.CompleteProfileLinkClicked)
+        }
+        assertEquals(listOf(ProviderHomeEffect.NavigateToCommercialLocal), effects)
+    }
+
+    @Test
+    fun `returning to home silently refetches profile completion`() = runTest(testDispatcher) {
+        val repository = FakeHomeRepository(
+            providerHomeResult = AppResult.Success(
+                providerHome(66).copy(
+                    hasGalleryPhotos = true,
+                    hasCommercialLocal = false,
+                    hasCertificate = true,
+                ),
+            ),
+        )
+        val viewModel = createViewModel(repository = repository)
+        advanceUntilIdle()
+        assertEquals(66, successContent(viewModel).profileCompletionPercent)
+        assertEquals(1, repository.providerHomeLoads)
+
+        repository.providerHomeResult = AppResult.Success(
+            providerHome(100).copy(
+                hasGalleryPhotos = true,
+                hasCommercialLocal = true,
+                hasCertificate = true,
+            ),
+        )
+        viewModel.onVisible()
+        advanceUntilIdle()
+
+        val content = successContent(viewModel)
+        assertEquals(2, repository.providerHomeLoads)
+        assertEquals(100, content.profileCompletionPercent)
+        assertTrue(content.hasCommercialLocal)
+        assertFalse(content.showProfileCompletion)
+        assertFalse((viewModel.uiState.value as ProviderHomeUiState.Success).isRefreshing)
+    }
+
+    @Test
     fun `today and future stay sorted ascending`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             percent = 100,
@@ -111,15 +199,29 @@ class ProviderHomeViewModelTest {
         return (state as ProviderHomeUiState.Success).content
     }
 
+    private fun TestScope.collectEffects(
+        viewModel: ProviderHomeViewModel,
+        block: () -> Unit,
+    ): List<ProviderHomeEffect> {
+        val effects = mutableListOf<ProviderHomeEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+        block()
+        advanceUntilIdle()
+        job.cancel()
+        return effects
+    }
+
     private fun createViewModel(
-        percent: Int,
+        percent: Int = 0,
         upcoming: List<ServiceOrderListItem> = emptyList(),
         clock: Clock = fixedClock(),
+        content: ProviderHomeContent? = null,
+        repository: FakeHomeRepository? = null,
     ) = ProviderHomeViewModel(
         getProviderHomeUseCase = GetProviderHomeUseCase(
-            FakeHomeRepository(
+            repository ?: FakeHomeRepository(
                 providerHomeResult = AppResult.Success(
-                    providerHome(percent).copy(upcomingOrders = upcoming),
+                    (content ?: providerHome(percent)).copy(upcomingOrders = upcoming),
                 ),
             ),
         ),

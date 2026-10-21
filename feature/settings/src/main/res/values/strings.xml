@@ -230,4 +230,11 @@
     <string name="services_day_saturday">Sábado</string>
     <string name="services_day_sunday">Domingo</string>
     <string name="services_day_range">%1$s a %2$s</string>
+    <string name="commercial_local_title">Local comercial</string>
+    <string name="commercial_local_load_error">No pudimos cargar su local comercial</string>
+    <string name="commercial_local_missing_service_title">Primero publique un servicio</string>
+    <string name="commercial_local_missing_service_description">El local comercial se guarda junto al oficio. Agregue un servicio y después complete la dirección.</string>
+    <string name="commercial_local_add_service">Agregar servicio</string>
+    <string name="commercial_local_street">Calle</string>
+    <string name="commercial_local_save">Guardar</string>
 </resources>
