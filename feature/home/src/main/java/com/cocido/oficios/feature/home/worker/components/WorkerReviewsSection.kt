@@ -29,6 +29,7 @@ fun WorkerReviewsSection(
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (!isLoadingReviews && reviews.isEmpty()) return
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
