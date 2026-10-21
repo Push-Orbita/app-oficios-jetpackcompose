@@ -27,6 +27,7 @@ import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -199,9 +200,7 @@ class OficiosTextFieldLabelClipTest {
             ).fetchSemanticsNode()
             val fieldTop = borderNode.positionInRoot.y
             val labelTop = labelNode.positionInRoot.y
-            val textTop = labelTop + layout.getLineTop(0)
             val textBottom = labelTop + layout.getLineBottom(0)
-            val lineHeight = textBottom - textTop
 
             assertTrue("${case.tag}: overflow vertical en layout", !layout.didOverflowHeight)
             val textWidth = (0 until layout.lineCount).maxOf { layout.getLineRight(it) }
@@ -213,18 +212,14 @@ class OficiosTextFieldLabelClipTest {
                 "${case.tag}: alto del nodo menor que el layout (${labelNode.size.height} < ${layout.size.height})",
                 labelNode.size.height.toFloat() >= layout.size.height,
             )
+            val minGapPx = with(composeTestRule.density) { OficiosSpacing.s10.toPx() * 0.8f }
             assertTrue(
-                "${case.tag}: el texto del label no sobresale por arriba del borde (textTop=$textTop, fieldTop=$fieldTop)",
-                textTop < fieldTop - lineHeight * 0.15f,
+                "${case.tag}: el label queda recortado por el borde (textBottom=$textBottom, fieldTop=$fieldTop)",
+                textBottom + minGapPx <= fieldTop + 1f,
             )
             assertTrue(
-                "${case.tag}: mitad superior del label fuera del borde (labelTop=$labelTop, fieldTop=$fieldTop)",
-                labelTop + labelNode.size.height / 2f <= fieldTop + 1f,
-            )
-            val visibleAboveBorder = fieldTop - labelTop
-            assertTrue(
-                "${case.tag}: label visible incompleto arriba del borde ($visibleAboveBorder < ${lineHeight * 0.35f})",
-                visibleAboveBorder >= lineHeight * 0.35f,
+                "${case.tag}: el label no está completo arriba del campo (labelTop=$labelTop, fieldTop=$fieldTop)",
+                labelTop + labelNode.size.height <= fieldTop + 1f,
             )
 
             if (case.checkValueOverlap && case.valueForOverlap != null) {

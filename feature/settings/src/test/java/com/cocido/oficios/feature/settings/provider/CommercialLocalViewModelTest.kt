@@ -117,6 +117,30 @@ class CommercialLocalViewModelTest {
     }
 
     @Test
+    fun `focus with empty query lists barrios from API`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.BarrioQueryChanged(""))
+        viewModel.onEvent(CommercialLocalEvent.BarrioFocused)
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertFalse(state.isSearchingBarrios)
+        assertEquals(listOf("Centro"), state.barrioOptions.map { it.label })
+    }
+
+    @Test
+    fun `focus keeps selected barrio`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.BarrioFocused)
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals(7L, state.selectedBarrioId)
+        assertEquals("Centro", state.barrioQuery)
+        assertEquals(listOf("Centro"), state.barrioOptions.map { it.label })
+    }
+
+    @Test
     fun `submit without map keeps form and does not call API`() = runTest(testDispatcher) {
         val accounts = FakeCommercialAccountRepository()
         val viewModel = createViewModel(accounts)

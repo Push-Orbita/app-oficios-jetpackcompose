@@ -133,6 +133,8 @@ fun RegisterTradeScreen(
                             suggestionLabel = { it.label },
                             label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
                             placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
+                            isLoading = uiState.isSearchingBarrios,
+                            onFocused = { onEvent(RegisterTradeEvent.NeighborhoodFocused) },
                             onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
                         )
                     }

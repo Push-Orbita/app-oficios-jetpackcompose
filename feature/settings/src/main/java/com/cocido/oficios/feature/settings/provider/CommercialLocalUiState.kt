@@ -10,6 +10,7 @@ data class CommercialLocalUiState(
     val loadFailed: Boolean = false,
     val barrioQuery: String = "",
     val barrioOptions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val calle: String = "",
     val latitud: Double? = null,
@@ -25,6 +26,7 @@ sealed interface CommercialLocalEvent {
     data object Back : CommercialLocalEvent
     data object AddService : CommercialLocalEvent
     data class BarrioQueryChanged(val value: String) : CommercialLocalEvent
+    data object BarrioFocused : CommercialLocalEvent
     data class BarrioSelected(val option: CatalogOption) : CommercialLocalEvent
     data object BarrioSuggestionsDismissed : CommercialLocalEvent
     data class CalleChanged(val value: String) : CommercialLocalEvent

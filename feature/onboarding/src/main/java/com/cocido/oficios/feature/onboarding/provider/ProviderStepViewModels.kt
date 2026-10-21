@@ -18,6 +18,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.GetProviderDocumentoUseCase
 import com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase
@@ -33,7 +34,6 @@ import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -538,6 +538,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
 data class ProviderLocalUiState(
     val barrioQuery: String = "",
     val barrioOptions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val calle: String = "",
     val numero: String = "",
@@ -582,27 +583,43 @@ class ProviderLocalViewModel @Inject constructor(
         }
     }
 
-    fun onBarrioQueryChanged(query: String) {
-        _uiState.update { it.copy(barrioQuery = query, selectedBarrioId = null) }
-        searchJob?.cancel()
-        if (query.length < 2) return
-        searchJob = viewModelScope.launch {
-            delay(300)
-            when (val result = searchBarriosUseCase(query)) {
-                is AppResult.Success -> _uiState.update { it.copy(barrioOptions = result.data) }
-                is AppResult.Error -> Unit
-            }
+    fun onBarrioQueryChanged(query: String) = searchBarrio(query, preserveSelection = false)
+
+    fun onBarrioFocused() = searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
+
+    private fun searchBarrio(query: String, preserveSelection: Boolean) {
+        _uiState.update {
+            it.copy(
+                barrioQuery = query,
+                selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
+                isSearchingBarrios = true,
+            )
         }
+        searchJob = viewModelScope.launchDebouncedBarrioSearch(
+            previous = searchJob,
+            query = query,
+            searchBarrios = searchBarriosUseCase,
+            onResult = { options ->
+                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
+            },
+        )
     }
 
     fun onBarrioSelected(option: CatalogOption) {
+        searchJob?.cancel()
         _uiState.update {
-            it.copy(barrioQuery = option.label, selectedBarrioId = option.id, barrioOptions = emptyList())
+            it.copy(
+                barrioQuery = option.label,
+                selectedBarrioId = option.id,
+                barrioOptions = emptyList(),
+                isSearchingBarrios = false,
+            )
         }
     }
 
     fun dismissBarrioSuggestions() {
-        _uiState.update { it.copy(barrioOptions = emptyList()) }
+        searchJob?.cancel()
+        _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 
     fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }

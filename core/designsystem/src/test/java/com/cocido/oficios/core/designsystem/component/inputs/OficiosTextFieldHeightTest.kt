@@ -49,7 +49,7 @@ class OficiosTextFieldHeightTest {
         FieldCase("vacio_con_label") {
             OficiosTextField(value = "", onValueChange = {}, label = "Correo", modifier = Modifier.fillMaxWidth())
         },
-        FieldCase("label_flotante") {
+        FieldCase("con_label") {
             OficiosTextField(value = "usuario@mail.com", onValueChange = {}, label = "Correo", modifier = Modifier.fillMaxWidth())
         },
         FieldCase("correo_largo") {

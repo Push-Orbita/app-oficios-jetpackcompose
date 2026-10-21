@@ -104,6 +104,8 @@ private fun CommercialLocalForm(
             suggestionLabel = { it.label },
             label = stringResource(R.string.services_neighborhood),
             placeholder = stringResource(R.string.services_neighborhood_hint),
+            isLoading = state.isSearchingBarrios,
+            onFocused = { onEvent(CommercialLocalEvent.BarrioFocused) },
             onSuggestionsDismissed = { onEvent(CommercialLocalEvent.BarrioSuggestionsDismissed) },
         )
         OficiosTextField(
