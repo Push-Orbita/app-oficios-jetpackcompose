@@ -45,6 +45,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
+/** Editar Perfil — no está en Flujos; fuente Rediseño `231:15`. */
 @Composable
 fun ProfessionalProfileScreen(
     uiState: ProfessionalProfileUiState,
