@@ -74,7 +74,7 @@ fun HomeRoute(
         onNavigateToOrders = onNavigateToMyOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,
-        onVisible = viewModel::refreshUnreadCount,
+        onVisible = viewModel::onVisible,
     ) { selectedTab, onTabSelected ->
         HomeScreen(
             uiState = uiState,

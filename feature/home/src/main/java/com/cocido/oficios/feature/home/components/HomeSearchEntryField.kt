@@ -18,6 +18,7 @@ fun HomeSearchEntryField(
     onFilterClick: (() -> Unit)? = null,
     filterContentDescription: String? = null,
     activeFilterCount: Int = 0,
+    placeholderMaxLines: Int = 1,
     showMic: Boolean = true,
 ) {
     OficiosSearchField(
@@ -30,6 +31,7 @@ fun HomeSearchEntryField(
         onFilterClick = onFilterClick,
         filterContentDescription = filterContentDescription,
         activeFilterCount = activeFilterCount,
+        placeholderMaxLines = placeholderMaxLines,
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
     )
 }

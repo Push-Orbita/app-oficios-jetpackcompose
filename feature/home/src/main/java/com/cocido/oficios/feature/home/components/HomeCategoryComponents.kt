@@ -25,22 +25,33 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
+import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.CatalogOption
@@ -114,10 +125,12 @@ fun HomeRecentSearchesSection(
     searches: List<RecentSearchEntry>,
     onSearchClick: (RecentSearchEntry) -> Unit,
     modifier: Modifier = Modifier,
+    onSeeAllClick: () -> Unit = {},
 ) {
     HomeRecentRubrosSection(
         searches = searches,
         onSearchClick = onSearchClick,
+        onSeeAllClick = onSeeAllClick,
         modifier = modifier,
     )
 }
@@ -127,7 +140,9 @@ fun HomeRecentRubrosSection(
     searches: List<RecentSearchEntry>,
     onSearchClick: (RecentSearchEntry) -> Unit,
     modifier: Modifier = Modifier,
+    onSeeAllClick: () -> Unit = {},
 ) {
+    val fontScale = LocalConfiguration.current.fontScale
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -135,16 +150,37 @@ fun HomeRecentRubrosSection(
             .heightIn(min = OficiosComponentSize.homeRecentsSectionMinHeight),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
     ) {
-        Text(
-            text = stringResource(R.string.home_recent_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.home_recent_title),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = stringResource(R.string.home_categories_see_all),
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorOutlineFill,
+                modifier = Modifier
+                    .semantics { role = Role.Button }
+                    .clickable(onClick = onSeeAllClick),
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
         ) {
             searches.take(3).forEach { entry ->
+                val cardHeightModifier = if (fontScale >= 1.3f) {
+                    Modifier.heightIn(min = OficiosComponentSize.categoryCardSize)
+                } else {
+                    Modifier
+                        .heightIn(min = OficiosComponentSize.categoryCardSize)
+                        .height(OficiosComponentSize.categoryCardSize)
+                }
                 HomeCategoryCard(
                     title = entry.label,
                     icon = CategoryIconResolver.iconFor(entry.id, entry.label),
@@ -153,8 +189,7 @@ fun HomeRecentRubrosSection(
                     compact = true,
                     modifier = Modifier
                         .weight(1f)
-                        .heightIn(min = OficiosComponentSize.categoryCardSize)
-                        .height(OficiosComponentSize.categoryCardSize),
+                        .then(cardHeightModifier),
                 )
             }
         }
@@ -336,6 +371,16 @@ fun HomeCategoryCard(
     } else {
         OficiosComponentSize.authRoleCardMinHeight
     }
+    val cardPadding = if (compact) {
+        PaddingValues(
+            start = OficiosSpacing.md,
+            end = OficiosSpacing.md,
+            top = OficiosComponentSize.homeRecentCardLabelTop,
+            bottom = OficiosSpacing.md,
+        )
+    } else {
+        PaddingValues(OficiosSpacing.md)
+    }
 
     Column(
         modifier = modifier
@@ -348,20 +393,14 @@ fun HomeCategoryCard(
             )
             .semantics(mergeDescendants = true) { contentDescription = title }
             .clickable(onClick = onClick)
-            .padding(OficiosSpacing.md),
+            .padding(cardPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        Text(
-            text = title,
+        AutoshrinkCategoryLabel(
+            title = title,
             style = titleStyle,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 20.dp),
+            compact = compact,
         )
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -375,6 +414,43 @@ fun HomeCategoryCard(
             )
         }
     }
+}
+
+@Composable
+private fun AutoshrinkCategoryLabel(
+    title: String,
+    style: androidx.compose.ui.text.TextStyle,
+    compact: Boolean,
+) {
+    val fontScale = LocalConfiguration.current.fontScale
+    val allowsWordWrap = title.trim().contains(' ')
+    val maxLines = if (allowsWordWrap) 2 else 1
+    val minSize = if (compact) 10.sp else 12.sp
+    var fontSize by remember(title, fontScale, compact) { mutableStateOf(style.fontSize) }
+    Text(
+        text = title,
+        style = style.copy(
+            fontSize = fontSize,
+            lineBreak = LineBreak.Simple,
+            hyphens = Hyphens.None,
+        ),
+        color = MaterialTheme.colorScheme.onBackground,
+        textAlign = TextAlign.Center,
+        maxLines = maxLines,
+        softWrap = allowsWordWrap,
+        overflow = TextOverflow.Clip,
+        onTextLayout = { result ->
+            val overflowed = result.hasVisualOverflow ||
+                result.lineCount > maxLines ||
+                (result.lineCount > 0 && result.getLineEnd(0, visibleEnd = true) < title.length && !allowsWordWrap)
+            if (overflowed && fontSize > minSize) {
+                fontSize = (fontSize.value - 1f).coerceAtLeast(minSize.value).sp
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 20.dp),
+    )
 }
 
 @Composable

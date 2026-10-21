@@ -11,7 +11,9 @@ import com.cocido.oficios.domain.repository.RecentSearchRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -26,10 +28,13 @@ class RecentSearchDataStore @Inject constructor(
 ) : RecentSearchRepository {
 
     override suspend fun getRecents(): List<RecentSearchEntry> {
-        val raw = context.recentSearchDataStore.data.first()[ENTRIES_KEY] ?: return emptyList()
-        return runCatching {
-            json.decodeFromString<List<RecentSearchEntry>>(raw)
-        }.getOrDefault(emptyList())
+        return decode(context.recentSearchDataStore.data.first()[ENTRIES_KEY])
+    }
+
+    override fun observeRecents(): Flow<List<RecentSearchEntry>> {
+        return context.recentSearchDataStore.data.map { preferences ->
+            decode(preferences[ENTRIES_KEY])
+        }
     }
 
     override suspend fun track(entry: RecentSearchEntry) {
@@ -39,6 +44,13 @@ class RecentSearchDataStore @Inject constructor(
         context.recentSearchDataStore.edit { preferences ->
             preferences[ENTRIES_KEY] = json.encodeToString(updated.take(MAX_RECENTS))
         }
+    }
+
+    private fun decode(raw: String?): List<RecentSearchEntry> {
+        if (raw.isNullOrBlank()) return emptyList()
+        return runCatching {
+            json.decodeFromString<List<RecentSearchEntry>>(raw)
+        }.getOrDefault(emptyList())
     }
 
     private companion object {

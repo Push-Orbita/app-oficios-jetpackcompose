@@ -1,54 +1,73 @@
 package com.cocido.oficios.feature.home.search
 
+import java.text.Normalizer
+
 /**
  * Plural y singular de rubros para copy de resultados (Figma 40:334 / 40:336).
- * La API no envía plural; si el nombre no está en el mapa se aplica una regla simple.
+ * Prod envía nombres de oficio (plomería, electricidad), no el gentilicio.
+ * Sin match: título y hint neutros — no pluralizar a ciegas ("Plomerías").
  */
 object RubroDisplayNames {
 
     fun pluralTitle(rubroLabel: String?): String {
-        val plural = pluralize(rubroLabel?.trim().orEmpty().ifBlank { "Trabajadores" })
-        return "$plural de Oficios Formosa"
+        val mapped = resolve(rubroLabel)
+        return "${mapped?.first ?: FALLBACK_PLURAL} de Oficios Formosa"
     }
 
     fun searchHint(rubroLabel: String?): String {
-        val singular = singularize(rubroLabel?.trim().orEmpty().ifBlank { "oficio" }).lowercase()
-        return "¿Busca algún $singular en específico?"
-    }
-
-    fun pluralize(label: String): String {
-        val key = label.lowercase()
-        mapped[key]?.let { return it.first.replaceFirstChar { c -> c.titlecase() } }
-        mapped.entries.firstOrNull { key.contains(it.key) }?.let {
-            return it.value.first.replaceFirstChar { c -> c.titlecase() }
-        }
-        val capitalized = label.replaceFirstChar { it.titlecase() }
-        return when {
-            capitalized.endsWith("s", ignoreCase = true) -> capitalized
-            capitalized.endsWith("z", ignoreCase = true) -> capitalized + "es"
-            capitalized.endsWith("ón", ignoreCase = true) -> capitalized.dropLast(2) + "ones"
-            capitalized.endsWith("l", ignoreCase = true) -> capitalized + "es"
-            else -> capitalized + "s"
+        val mapped = resolve(rubroLabel)
+        return if (mapped != null) {
+            "¿Busca algún ${mapped.second}?"
+        } else {
+            FALLBACK_HINT
         }
     }
 
-    fun singularize(label: String): String {
-        val key = label.lowercase()
-        mapped[key]?.let { return it.second }
-        mapped.entries.firstOrNull { key.contains(it.key) }?.let { return it.value.second }
-        return label.ifBlank { "oficio" }
+    fun pluralize(label: String): String = resolve(label)?.first ?: FALLBACK_PLURAL
+
+    fun singularize(label: String): String = resolve(label)?.second ?: FALLBACK_SINGULAR
+
+    internal fun resolve(rubroLabel: String?): Pair<String, String>? {
+        val key = normalize(rubroLabel)
+        if (key.isEmpty()) return null
+        mapped[key]?.let { return it }
+        return mapped.entries.firstOrNull { key.contains(it.key) || it.key.contains(key) }?.value
     }
+
+    internal fun normalize(value: String?): String {
+        val trimmed = value?.trim().orEmpty()
+        if (trimmed.isEmpty()) return ""
+        val decomposed = Normalizer.normalize(trimmed.lowercase(), Normalizer.Form.NFD)
+        return ACCENT_MARKS.replace(decomposed, "")
+    }
+
+    private val ACCENT_MARKS = "\\p{M}+".toRegex()
+
+    private const val FALLBACK_PLURAL = "Trabajadores"
+    private const val FALLBACK_SINGULAR = "alguien"
+    private const val FALLBACK_HINT = "¿Busca a alguien en específico?"
 
     private val mapped = mapOf(
-        "albañil" to ("Albañiles" to "albañil"),
-        "albañiles" to ("Albañiles" to "albañil"),
+        "plomeria" to ("Plomeros" to "plomero"),
         "plomero" to ("Plomeros" to "plomero"),
-        "cerrajero" to ("Cerrajeros" to "cerrajero"),
-        "instalador" to ("Instaladores" to "instalador"),
-        "pintor" to ("Pintores" to "pintor"),
-        "carpintero" to ("Carpinteros" to "carpintero"),
-        "gasista" to ("Gasistas" to "gasista"),
+        "plomeros" to ("Plomeros" to "plomero"),
+        "electricidad" to ("Electricistas" to "electricista"),
         "electricista" to ("Electricistas" to "electricista"),
-        "ingeniero" to ("Ingenieros" to "ingeniero"),
+        "electricistas" to ("Electricistas" to "electricista"),
+        "pintura" to ("Pintores" to "pintor"),
+        "pintor" to ("Pintores" to "pintor"),
+        "pintores" to ("Pintores" to "pintor"),
+        "albanileria" to ("Albañiles" to "albañil"),
+        "albanil" to ("Albañiles" to "albañil"),
+        "albaniles" to ("Albañiles" to "albañil"),
+        "carpinteria" to ("Carpinteros" to "carpintero"),
+        "carpintero" to ("Carpinteros" to "carpintero"),
+        "carpinteros" to ("Carpinteros" to "carpintero"),
+        "cerrajeria" to ("Cerrajeros" to "cerrajero"),
+        "cerrajero" to ("Cerrajeros" to "cerrajero"),
+        "cerrajeros" to ("Cerrajeros" to "cerrajero"),
+        "gas" to ("Gasistas" to "gasista"),
+        "gasista" to ("Gasistas" to "gasista"),
+        "gasistas" to ("Gasistas" to "gasista"),
     )
 }
