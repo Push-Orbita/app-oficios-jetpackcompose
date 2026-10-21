@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.network
 
+import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.core.network.test.NetworkTestFactory
@@ -185,8 +186,46 @@ class NetworkErrorMapperTest {
         assertEquals("Error del servidor. Intente más tarde.", error.message)
     }
 
-    private fun httpError(code: Int, body: String): HttpException {
-        val responseBody = body.toResponseBody("application/json".toMediaType())
+    @Test
+    fun `http 413 nginx html maps to payload too large never error de red`() {
+        val body = """
+            <html>
+            <head><title>413 Request Entity Too Large</title></head>
+            <body>
+            <center><h1>413 Request Entity Too Large</h1></center>
+            <hr><center>nginx/1.24.0</center>
+            </body>
+            </html>
+        """.trimIndent()
+        val error = httpError(413, body, "text/html").toNetworkAppError()
+        assertTrue(error is AppError.Network)
+        assertEquals(413, (error as AppError.Network).code)
+        assertEquals(ImageUploadContract.PAYLOAD_TOO_LARGE_MESSAGE, error.message)
+        assertEquals(ImageUploadContract.PAYLOAD_TOO_LARGE_MESSAGE, error.userMessage())
+        assertTrue("Error de red" !in error.userMessage())
+        assertTrue(looksLikeHtmlErrorBody(body))
+    }
+
+    @Test
+    fun `http 400 html maps to payload too large`() {
+        val body = "<html><head><title>400</title></head><body>nginx</body></html>"
+        val error = httpError(400, body, "text/html").toNetworkAppError()
+        assertEquals(ImageUploadContract.PAYLOAD_TOO_LARGE_MESSAGE, error.message)
+        assertTrue(error is AppError.Network)
+        assertTrue("Error de red" !in error.userMessage())
+    }
+
+    @Test
+    fun `http 418 empty body never says error de red`() {
+        val error = httpError(418, "", "text/plain").toNetworkAppError()
+        assertTrue(error is AppError.Network)
+        assertEquals(418, (error as AppError.Network).code)
+        assertTrue("Error de red" !in error.message)
+        assertTrue("Error de red" !in error.userMessage())
+    }
+
+    private fun httpError(code: Int, body: String, mediaType: String = "application/json"): HttpException {
+        val responseBody = body.toResponseBody(mediaType.toMediaType())
         return HttpException(Response.error<Unit>(code, responseBody))
     }
 }

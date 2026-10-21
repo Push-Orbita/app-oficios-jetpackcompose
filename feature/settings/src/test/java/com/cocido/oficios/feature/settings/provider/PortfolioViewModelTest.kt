@@ -64,6 +64,38 @@ class PortfolioViewModelTest {
     }
 
     @Test
+    fun `canSaveCertificate requires name and file on create`() {
+        val empty = PortfolioUiState(isLoading = false)
+        assertFalse(empty.canSaveCertificate)
+        assertFalse(empty.copy(certificateName = "Matrícula").canSaveCertificate)
+        assertTrue(
+            empty.copy(certificateName = "Matrícula municipal", certificateFilePath = "/tmp/a.jpg")
+                .canSaveCertificate,
+        )
+        assertTrue(empty.copy(certificateName = "Matrícula municipal", editingCertificateId = 9L).canSaveCertificate)
+        assertFalse(
+            empty.copy(
+                certificateName = "Matrícula municipal",
+                certificateFilePath = "/tmp/a.jpg",
+                isSaving = true,
+            ).canSaveCertificate,
+        )
+    }
+
+    @Test
+    fun `save certificate without file keeps editor and shows inline error`() = runTest(testDispatcher) {
+        val viewModel = portfolioViewModel("")
+        advanceUntilIdle()
+        viewModel.onEvent(PortfolioEvent.AddCertificate)
+        viewModel.onEvent(PortfolioEvent.CertificateNameChanged("Matrícula municipal"))
+        viewModel.onEvent(PortfolioEvent.SaveCertificate)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.certificateEditorVisible)
+        assertEquals("Seleccione el archivo del certificado.", viewModel.uiState.value.errorMessage)
+        assertFalse(viewModel.uiState.value.canSaveCertificate)
+    }
+
+    @Test
     fun `successful gallery delete removes the photo from ui`() = runTest(testDispatcher) {
         val accounts = FakePortfolioAccountRepository(
             gallery = listOf(

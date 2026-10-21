@@ -5,69 +5,129 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import com.cocido.oficios.core.common.contract.ImageUploadContract
+import java.io.ByteArrayOutputStream
 import java.io.File
 
-private const val MAX_EDGE_PX = 2048
-private const val JPEG_QUALITY = 85
-
+/**
+ * Recodifica SIEMPRE a JPEG ≤ [ImageUploadContract.MAX_EDGE_PX] y
+ * [ImageUploadContract.TARGET_MAX_BYTES]. Un copy crudo de JPG/PNG/WEBP
+ * (el camino anterior) era lo que disparaba el 413 de nginx.
+ */
 fun resolveUriToFilePath(
     context: Context,
     uri: Uri,
     filePrefix: String = "imagen",
 ): String? = runCatching {
-    val declaredMime = context.contentResolver.getType(uri)
-    val header = context.contentResolver.openInputStream(uri)?.use { stream ->
-        val buffer = ByteArray(16)
-        val read = stream.read(buffer)
-        if (read <= 0) ByteArray(0) else buffer.copyOf(read)
-    } ?: ByteArray(0)
-    val mime = ImageUploadContract.mimeFromMagicBytes(header)
-        ?: ImageUploadContract.normalizeMime(declaredMime)
-    val extension = mime?.let(ImageUploadContract::extensionForMime)
-
-    if (extension != null) {
-        copyUriToCacheFile(context, uri, filePrefix, extension)
-    } else {
-        convertUriToJpegFile(context, uri, filePrefix)
-    }
+    compressUriToJpegFile(context, uri, filePrefix)
 }.getOrNull()
 
-private fun copyUriToCacheFile(
+fun compressImageFilePath(
+    context: Context,
+    path: String,
+    filePrefix: String = "imagen",
+): String? = runCatching {
+    val file = File(path)
+    require(file.exists() && file.length() > 0L) { "empty image" }
+    val bitmap = decodeScaledBitmap(file) ?: error("Cannot decode image")
+    writeCompressedJpeg(context, bitmap, filePrefix)
+}.getOrNull()
+
+internal fun compressUriToJpegFile(
     context: Context,
     uri: Uri,
     filePrefix: String,
-    extension: String,
 ): String {
-    val inputStream = context.contentResolver.openInputStream(uri)
-        ?: error("Cannot open uri")
-    val tempFile = File.createTempFile("${filePrefix}_", ".$extension", context.cacheDir)
-    tempFile.outputStream().use { output -> inputStream.use { it.copyTo(output) } }
-    return tempFile.absolutePath
+    val bitmap = decodeScaledBitmap(context, uri) ?: error("Cannot decode image")
+    return writeCompressedJpeg(context, bitmap, filePrefix)
 }
 
-private fun convertUriToJpegFile(context: Context, uri: Uri, filePrefix: String): String {
-    val original = context.contentResolver.openInputStream(uri)?.use { stream ->
-        BitmapFactory.decodeStream(stream, null, BitmapFactory.Options().apply { inJustDecodeBounds = false })
-    } ?: error("Cannot decode image")
-    val bitmap = scaleDown(original)
-    val tempFile = File.createTempFile("${filePrefix}_", ".jpg", context.cacheDir)
-    tempFile.outputStream().use { output ->
-        if (!bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, output)) {
-            error("Cannot compress image")
-        }
+private fun decodeScaledBitmap(context: Context, uri: Uri): Bitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    context.contentResolver.openInputStream(uri)?.use { input ->
+        BitmapFactory.decodeStream(input, null, bounds)
+    } ?: return null
+    val decode = BitmapFactory.Options().apply {
+        inSampleSize = sampleSizeFor(bounds.outWidth, bounds.outHeight)
     }
-    if (bitmap !== original) original.recycle()
-    return tempFile.absolutePath
+    return context.contentResolver.openInputStream(uri)?.use { input ->
+        BitmapFactory.decodeStream(input, null, decode)
+    }?.let(::scaleDown)
 }
 
-private fun scaleDown(source: Bitmap): Bitmap {
+private fun decodeScaledBitmap(file: File): Bitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(file.absolutePath, bounds)
+    val decode = BitmapFactory.Options().apply {
+        inSampleSize = sampleSizeFor(bounds.outWidth, bounds.outHeight)
+    }
+    return BitmapFactory.decodeFile(file.absolutePath, decode)?.let(::scaleDown)
+}
+
+private fun sampleSizeFor(width: Int, height: Int): Int {
+    val longest = maxOf(width, height).coerceAtLeast(1)
+    if (longest <= ImageUploadContract.MAX_EDGE_PX) return 1
+    var sample = 1
+    while (longest / sample > ImageUploadContract.MAX_EDGE_PX * 2) {
+        sample *= 2
+    }
+    return sample
+}
+
+private fun scaleDown(source: Bitmap, maxEdge: Int = ImageUploadContract.MAX_EDGE_PX): Bitmap {
     val longest = maxOf(source.width, source.height)
-    if (longest <= MAX_EDGE_PX) return source
-    val scale = MAX_EDGE_PX.toFloat() / longest
-    return Bitmap.createScaledBitmap(
+    if (longest <= maxEdge) return source
+    val scale = maxEdge.toFloat() / longest
+    val scaled = Bitmap.createScaledBitmap(
         source,
         (source.width * scale).toInt().coerceAtLeast(1),
         (source.height * scale).toInt().coerceAtLeast(1),
         true,
     )
+    if (scaled !== source) source.recycle()
+    return scaled
+}
+
+private fun writeCompressedJpeg(context: Context, bitmap: Bitmap, filePrefix: String): String {
+    val bytes = try {
+        encodeUnderTarget(bitmap)
+    } finally {
+        if (!bitmap.isRecycled) bitmap.recycle()
+    }
+    val tempFile = File.createTempFile("${filePrefix}_", ".jpg", context.cacheDir)
+    tempFile.outputStream().use { it.write(bytes) }
+    return tempFile.absolutePath
+}
+
+internal fun encodeUnderTarget(bitmap: Bitmap): ByteArray {
+    var current = bitmap
+    var produced: ByteArray? = null
+    while (true) {
+        for (quality in ImageUploadContract.jpegQualityLadder()) {
+            val out = ByteArrayOutputStream()
+            if (!current.compress(Bitmap.CompressFormat.JPEG, quality, out)) {
+                error("Cannot compress image")
+            }
+            produced = out.toByteArray()
+            if (!ImageUploadContract.exceedsImageTarget(produced.size.toLong())) {
+                recycleIfNotOriginal(current, bitmap)
+                return produced
+            }
+        }
+        val longest = maxOf(current.width, current.height)
+        if (longest <= 320) break
+        val next = scaleDown(current, (longest * 3 / 4).coerceAtLeast(320))
+        if (next === current) break
+        recycleIfNotOriginal(current, bitmap)
+        current = next
+    }
+    val last = produced
+        ?: ByteArrayOutputStream().also { stream ->
+            current.compress(Bitmap.CompressFormat.JPEG, ImageUploadContract.MIN_JPEG_QUALITY, stream)
+        }.toByteArray()
+    recycleIfNotOriginal(current, bitmap)
+    return last
+}
+
+private fun recycleIfNotOriginal(current: Bitmap, original: Bitmap) {
+    if (current !== original && !current.isRecycled) current.recycle()
 }

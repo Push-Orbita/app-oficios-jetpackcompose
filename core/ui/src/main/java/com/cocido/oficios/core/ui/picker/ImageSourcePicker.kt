@@ -25,8 +25,11 @@ import androidx.core.content.ContextCompat
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.common.contract.ImageUploadContract
+import com.cocido.oficios.core.ui.file.compressImageFilePath
 import com.cocido.oficios.core.ui.file.createCameraImageCapture
 import com.cocido.oficios.core.ui.file.resolveUriToFilePath
+import java.io.File
 
 class ImageSourcePickerState internal constructor(
     val requestImage: () -> Unit,
@@ -52,8 +55,18 @@ fun rememberImageSourcePicker(
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        onImageSelected(if (success) pendingCameraPath else null)
+        val rawPath = pendingCameraPath
         pendingCameraPath = null
+        if (!success || rawPath == null) {
+            onImageSelected(null)
+            return@rememberLauncherForActivityResult
+        }
+        val compressed = compressImageFilePath(context, rawPath, filePrefix)
+        val fallback = rawPath.takeIf { path ->
+            val file = File(path)
+            file.exists() && !ImageUploadContract.exceedsImageTarget(file.length())
+        }
+        onImageSelected(compressed ?: fallback)
     }
 
     fun launchCamera() {

@@ -98,4 +98,21 @@ class ExceptionMapperTest {
             error.userMessage(),
         )
     }
+
+    @Test
+    fun `http 413 never surfaces as error de red`() {
+        val error = AppError.Network(message = "HTTP 413 Request Entity Too Large", code = 413)
+        assertEquals(
+            "El archivo es demasiado pesado. Pruebe con uno más liviano.",
+            error.userMessage(),
+        )
+        assertTrue("Error de red" !in error.userMessage())
+    }
+
+    @Test
+    fun `http response with blank network copy is not error de red`() {
+        val error = AppError.Network(message = "Error de red", code = 502)
+        assertEquals("No pudimos completar la solicitud. Intente de nuevo.", error.userMessage())
+        assertTrue("Error de red" !in error.userMessage())
+    }
 }

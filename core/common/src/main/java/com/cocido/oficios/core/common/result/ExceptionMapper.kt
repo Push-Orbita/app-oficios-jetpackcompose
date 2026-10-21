@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.common.result
 
+import com.cocido.oficios.core.common.contract.ImageUploadContract
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -29,9 +30,25 @@ fun Throwable.toAppError(): AppError {
 }
 
 fun AppError.userMessage(): String = when (this) {
-    is AppError.Network -> message.toProfessionalMessage(
-        fallback = "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
-    )
+    is AppError.Network -> when {
+        code == 413 || message.isPayloadTooLargeCopy() -> ImageUploadContract.PAYLOAD_TOO_LARGE_MESSAGE
+        code != null -> {
+            val professional = message.toProfessionalMessage(
+                fallback = "No pudimos completar la solicitud. Intente de nuevo.",
+            )
+            if (professional.equals("Error de red", ignoreCase = true) ||
+                professional.equals("Network error", ignoreCase = true) ||
+                professional.startsWith("No pudimos conectarnos")
+            ) {
+                "No pudimos completar la solicitud. Intente de nuevo."
+            } else {
+                professional
+            }
+        }
+        else -> message.toProfessionalMessage(
+            fallback = "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+        )
+    }
     is AppError.Validation -> {
         val fromFields = fieldErrors.values.firstOrNull { value ->
             value.isNotBlank() && !value.containsTechnicalDetail()
@@ -63,7 +80,7 @@ private fun String.toProfessionalMessage(fallback: String): String {
     }
     if (normalized.containsTechnicalDetail()) return fallback
     return when (normalized.lowercase()) {
-        "network error", "no internet connection" ->
+        "network error", "no internet connection", "error de red" ->
             "No pudimos conectarnos. Revise su conexión e intente nuevamente."
         "request timed out" -> "La conexión tardó demasiado. Intente nuevamente."
         "secure connection could not be established" ->
@@ -75,6 +92,15 @@ private fun String.toProfessionalMessage(fallback: String): String {
 private fun String.containsTechnicalDetail(): Boolean {
     val value = lowercase()
     return technicalMessagePatterns.any(value::contains)
+}
+
+private fun String.isPayloadTooLargeCopy(): Boolean {
+    val value = lowercase()
+    return value.contains("413") ||
+        value.contains("entity too large") ||
+        value.contains("payload too large") ||
+        value.contains("request entity too large") ||
+        value.contains("demasiado pesado")
 }
 
 private fun String.isInfrastructureFailure(): Boolean {

@@ -67,4 +67,21 @@ class ImageUploadContractTest {
         assertTrue(name.endsWith("_2.png"))
         assertTrue("dni_" !in name)
     }
+
+    @Test
+    fun `certificate copy names the real upload limit not 10 MB`() {
+        assertTrue("10 MB" !in ImageUploadContract.CERTIFICATE_FORMATS_HINT)
+        assertTrue("900 KB" in ImageUploadContract.CERTIFICATE_FORMATS_HINT)
+        assertTrue("1 MB" in ImageUploadContract.CERTIFICATE_FORMATS_HINT)
+    }
+
+    @Test
+    fun `pdf magic and size helpers`() {
+        assertTrue(ImageUploadContract.isPdfMagic("%PDF-1.4".toByteArray()))
+        assertTrue(ImageUploadContract.exceedsPdfLimit(ImageUploadContract.PDF_MAX_BYTES + 1))
+        assertTrue(!ImageUploadContract.exceedsPdfLimit(ImageUploadContract.PDF_MAX_BYTES))
+        assertTrue(ImageUploadContract.exceedsImageTarget(ImageUploadContract.TARGET_MAX_BYTES + 1))
+        assertTrue(!ImageUploadContract.exceedsImageTarget(ImageUploadContract.TARGET_MAX_BYTES))
+        assertEquals("900 KB", ImageUploadContract.formatByteSize(900L * 1024L))
+    }
 }

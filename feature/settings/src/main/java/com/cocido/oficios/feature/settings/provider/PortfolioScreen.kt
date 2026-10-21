@@ -2,13 +2,16 @@ package com.cocido.oficios.feature.settings.provider
 
 import com.cocido.oficios.feature.settings.R
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -25,11 +28,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.border.dashedBorder
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -44,10 +54,13 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkCertificateItem
+import java.io.File
 
 @Composable
 fun PortfolioScreen(
@@ -253,16 +266,29 @@ private fun CertificateEditor(
             onValueChange = { onEvent(PortfolioEvent.CertificateNameChanged(it)) },
             label = stringResource(R.string.portfolio_certificate_name),
             placeholder = stringResource(R.string.portfolio_certificate_name_hint),
+            enabled = !state.isSaving,
         )
-        OficiosButton(
-            text = if (state.certificateFilePath == null) stringResource(R.string.portfolio_select_file) else stringResource(R.string.portfolio_file_selected),
-            onClick = onPickCertificateFile,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Outlined,
-            leadingIcon = Icons.Outlined.AttachFile,
-        )
+        val selectedPath = state.certificateFilePath
+        if (selectedPath == null) {
+            CertificateDropZone(
+                enabled = !state.isSaving,
+                onClick = onPickCertificateFile,
+            )
+        } else {
+            CertificateFilePreview(
+                path = selectedPath,
+                displayName = state.certificateFileName,
+                enabled = !state.isSaving,
+                onChange = onPickCertificateFile,
+                onRemove = { onEvent(PortfolioEvent.CertificateFileCleared) },
+            )
+        }
         Text(
-            if (state.editingCertificateId != null && state.certificateFilePath == null) stringResource(R.string.portfolio_keep_file) else stringResource(R.string.portfolio_file_formats),
+            if (state.editingCertificateId != null && state.certificateFilePath == null) {
+                stringResource(R.string.portfolio_keep_file)
+            } else {
+                stringResource(R.string.portfolio_file_formats)
+            },
             style = MaterialTheme.typography.bodySmall,
             color = OficiosColorSecondaryText,
         )
@@ -274,7 +300,109 @@ private fun CertificateEditor(
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,
             loading = state.isSaving,
-            enabled = !state.isSaving,
+            enabled = state.canSaveCertificate,
+        )
+    }
+}
+
+@Composable
+private fun CertificateDropZone(
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(OficiosRadius.lg)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .dashedBorder(OficiosColorOutlineFill, OficiosRadius.lg)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.AttachFile,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(OficiosComponentSize.iconLg),
+        )
+        Text(
+            text = stringResource(R.string.portfolio_drop_zone),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(R.string.portfolio_file_formats),
+            style = MaterialTheme.typography.bodySmall,
+            color = OficiosColorSecondaryText,
+        )
+    }
+}
+
+@Composable
+private fun CertificateFilePreview(
+    path: String,
+    displayName: String?,
+    enabled: Boolean,
+    onChange: () -> Unit,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val file = File(path)
+    val isPdf = file.extension.equals("pdf", ignoreCase = true)
+    val label = displayName?.takeIf { it.isNotBlank() } ?: file.name
+    OficiosCard(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        ) {
+            if (isPdf) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.ScrollText),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(OficiosComponentSize.iconLg),
+                )
+            } else {
+                AsyncImage(
+                    model = file,
+                    contentDescription = label,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(OficiosRadius.sm)),
+                )
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = ImageUploadContract.formatByteSize(file.length()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OficiosColorSecondaryText,
+                )
+            }
+            IconButton(enabled = enabled, onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = stringResource(R.string.portfolio_remove_file),
+                )
+            }
+        }
+        OficiosButton(
+            text = stringResource(R.string.portfolio_change_file),
+            onClick = onChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = OficiosSpacing.sm),
+            variant = OficiosButtonVariant.Outlined,
+            enabled = enabled,
         )
     }
 }

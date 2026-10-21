@@ -10,6 +10,40 @@ import java.io.File
 object ImageUploadContract {
     const val ACCEPTED_FORMATS_LABEL = "JPG, PNG, WEBP, GIF"
     const val GENERIC_IMAGE_MIME = "image/*"
+    /** Lado máximo antes de subir (certificado, galería, perfil). */
+    const val MAX_EDGE_PX = 2048
+    const val JPEG_QUALITY = 80
+    const val MIN_JPEG_QUALITY = 45
+    /** Tope real frente a nginx (~1 MB). No prometemos 10 MB. */
+    const val TARGET_MAX_BYTES = 900L * 1024L
+    const val PDF_MAX_BYTES = 1L * 1024L * 1024L
+    const val PAYLOAD_TOO_LARGE_MESSAGE =
+        "El archivo es demasiado pesado. Pruebe con uno más liviano."
+    const val PDF_TOO_LARGE_MESSAGE =
+        "El PDF supera 1 MB. Pruebe con un archivo más liviano."
+    const val CERTIFICATE_FORMATS_HINT =
+        "Imágenes JPG, PNG o WEBP (menos de 900 KB). PDF hasta 1 MB."
+
+    fun jpegQualityLadder(): List<Int> = listOf(JPEG_QUALITY, 70, 60, 50, MIN_JPEG_QUALITY)
+
+    fun exceedsImageTarget(sizeBytes: Long): Boolean = sizeBytes > TARGET_MAX_BYTES
+
+    fun exceedsPdfLimit(sizeBytes: Long): Boolean = sizeBytes > PDF_MAX_BYTES
+
+    fun isPdfMagic(bytes: ByteArray): Boolean =
+        bytes.size >= 4 &&
+            bytes[0] == '%'.code.toByte() &&
+            bytes[1] == 'P'.code.toByte() &&
+            bytes[2] == 'D'.code.toByte() &&
+            bytes[3] == 'F'.code.toByte()
+
+    fun formatByteSize(sizeBytes: Long): String {
+        if (sizeBytes < 1024L) return "$sizeBytes B"
+        val kb = sizeBytes / 1024L
+        if (kb < 1024L) return "$kb KB"
+        val tenths = (sizeBytes * 10) / (1024L * 1024L)
+        return "${tenths / 10}.${tenths % 10} MB"
+    }
 
     val ACCEPTED_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "gif")
 

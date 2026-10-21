@@ -9,7 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cocido.oficios.core.ui.file.resolveCertificateUriToFilePath
+import com.cocido.oficios.core.ui.file.CertificateFilePick
+import com.cocido.oficios.core.ui.file.pickCertificateFile
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 
 @Composable
@@ -30,9 +31,12 @@ fun PortfolioRoute(
     )
     val certificatePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
-        val path = resolveCertificateUriToFilePath(context, uri)
-        if (path == null) onShowMessage("Seleccione un PDF o una imagen de hasta 10 MB.")
-        else viewModel.onEvent(PortfolioEvent.CertificateFileSelected(path))
+        when (val pick = pickCertificateFile(context, uri)) {
+            is CertificateFilePick.Ready -> viewModel.onEvent(
+                PortfolioEvent.CertificateFileSelected(pick.path, pick.displayName),
+            )
+            is CertificateFilePick.Rejected -> onShowMessage(pick.message)
+        }
     }
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->

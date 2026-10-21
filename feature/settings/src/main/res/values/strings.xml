@@ -147,7 +147,10 @@
     <string name="portfolio_select_file">Seleccionar archivo</string>
     <string name="portfolio_file_selected">Archivo seleccionado</string>
     <string name="portfolio_keep_file">Si no elige otro archivo, se conservará el actual.</string>
-    <string name="portfolio_file_formats">Formatos admitidos: PDF, JPG, PNG o WEBP. Máximo 10 MB.</string>
+    <string name="portfolio_file_formats">Imágenes JPG, PNG o WEBP (menos de 900 KB). PDF hasta 1 MB.</string>
+    <string name="portfolio_drop_zone">Toque para elegir PDF o imagen</string>
+    <string name="portfolio_change_file">Cambiar archivo</string>
+    <string name="portfolio_remove_file">Quitar archivo</string>
     <string name="portfolio_save">Guardar certificado</string>
     <string name="change_password_title">Cambiar contraseña</string>
     <string name="change_password_load_error">No pudimos validar su cuenta</string>
