@@ -28,15 +28,26 @@ object OficiosComponentSize {
     val avatarLg = 96.dp
     val avatarSettings = 72.dp
     val ratingIcon = 36.dp
-    val categoryCardSize = 112.dp
-    /** Figma 224:1013 — bloque Recientes hug 175 (título 36 + gap 10 + cards 112). */
-    val homeRecentsSectionMinHeight = 175.dp
-    /** Compensa el capital-top de D-DIN vs DIN Pro (Figma recientes y=155). */
-    val homeRecentsAfterSearchExtra = 6.dp
-    /** Espacio óptico recents→soporte para dejar la card en y≈350. */
-    val homeSupportAfterRecentsExtra = 9.dp
+    val categoryCardSize = 118.dp
+    /** Figma 224:1013 — Recientes: título + gap 10 + cards 118. */
+    val homeRecentsSectionMinHeight = 184.dp
+    /** Compensa el capital-top de D-DIN vs DIN Pro (cards rel 199). */
+    val homeRecentsAfterSearchExtra = 9.dp
+    /** Caps del label 20dp bajo el top de la card (includeFontPadding ≈ 6). */
+    val homeRecentCardLabelTop = 14.dp
+    /** Espacio óptico recents→soporte para dejar la card en y≈373. */
+    val homeSupportAfterRecentsExtra = 20.dp
     /** Resultados 40:322: fila logo+título. 107 de Figma + 5 para el buscador en y=195. */
     val searchResultsHeaderMinHeight = 112.dp
+    /** Gap buscador → primera WorkerCard (243 → 259). */
+    val searchResultsListTop = 16.dp
+    val searchResultsLogoOffsetX = 3.dp
+    val searchResultsLogoOffsetY = (-3).dp
+    val workerCardMinHeight = 184.dp
+    val workerCardTextTopInset = 4.dp
+    val workerCardNameToRating = 7.dp
+    val workerCardHeaderToSpecialty = 11.dp
+    val workerCardSpecialtyToActions = 18.dp
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f
     val agendaCell = 48.dp
