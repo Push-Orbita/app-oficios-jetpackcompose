@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,8 +31,11 @@ import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.cards.OrderStatus
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -86,6 +91,40 @@ fun OficiosChip(
                 color = contentColor,
             )
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// OficiosSegmentChip — filtro de pantalla (Mis pedidos / Notificaciones)
+// Figma: h~36, px-16 py-8, r8, seleccionado fill #006DEF, sin ícono.
+// ---------------------------------------------------------------------------
+
+@Composable
+fun OficiosSegmentChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val haptics = rememberOficiosHaptics()
+    val shape = RoundedCornerShape(OficiosRadius.sm)
+    Box(
+        modifier = modifier
+            .defaultMinSize(minHeight = OficiosComponentSize.buttonHeightSmall)
+            .clip(shape)
+            .background(if (selected) OficiosColorAction else Color.Transparent)
+            .clickable {
+                haptics.tick()
+                onClick()
+            }
+            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = OficiosColorWhite,
+        )
     }
 }
 
@@ -202,6 +241,10 @@ private fun ChipsPreview() {
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
         ) {
             OficiosChip(label = "Chip base")
+            Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
+                OficiosSegmentChip(label = "Todas", selected = true, onClick = {})
+                OficiosSegmentChip(label = "No leídas", selected = false, onClick = {})
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                 OficiosFilterChip(label = "Activo", selected = true, onToggle = {})
                 OficiosFilterChip(label = "Inactivo", selected = false, onToggle = {})

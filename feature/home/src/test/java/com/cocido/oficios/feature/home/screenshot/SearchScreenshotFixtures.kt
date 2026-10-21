@@ -62,6 +62,9 @@ import com.cocido.oficios.feature.home.orders.CreateOrderScreen
 import com.cocido.oficios.feature.home.orders.CreateOrderUiState
 import com.cocido.oficios.feature.home.orders.OrdersListScreen
 import com.cocido.oficios.feature.home.orders.OrdersListUiState
+import com.cocido.oficios.domain.model.NotificationItem
+import com.cocido.oficios.feature.home.notifications.NotificationsScreen
+import com.cocido.oficios.feature.home.notifications.NotificationsUiState
 import java.io.File
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import java.time.LocalDate
@@ -518,6 +521,67 @@ private fun providerHomeOrder(
     rubroLabel = rubro,
     scheduledSortKey = sortKey,
 )
+
+@Composable
+internal fun SearchScreenshotNotifications(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        NotificationsScreen(
+            uiState = NotificationsUiState(
+                items = listOf(
+                    NotificationItem(
+                        id = 1,
+                        type = "NUEVA_SOLICITUD",
+                        title = "Nueva solicitud de servicio",
+                        body = "Un cliente ha solicitado un servicio.",
+                        createdAtLabel = "Hace 20 h",
+                        isRead = false,
+                        entityType = "SOLICITUD",
+                        entityId = 11,
+                        deepLink = "orders/11",
+                    ),
+                    NotificationItem(
+                        id = 2,
+                        type = "SOLICITUD_CANCELADA",
+                        title = "Solicitud cancelada",
+                        body = "El cliente canceló la solicitud de servicio.",
+                        createdAtLabel = "Hace 20 h",
+                        isRead = false,
+                        entityType = "SOLICITUD",
+                        entityId = 12,
+                        deepLink = "orders/12",
+                    ),
+                    NotificationItem(
+                        id = 3,
+                        type = "NUEVA_SOLICITUD",
+                        title = "Nueva solicitud de servicio",
+                        body = "Un cliente ha solicitado un servicio.",
+                        createdAtLabel = "Hace 20 h",
+                        isRead = true,
+                        entityType = "SOLICITUD",
+                        entityId = 13,
+                        deepLink = "orders/13",
+                    ),
+                    NotificationItem(
+                        id = 4,
+                        type = "NUEVA_SOLICITUD",
+                        title = "Nueva solicitud de servicio",
+                        body = "Un cliente ha solicitado un servicio.",
+                        createdAtLabel = "29 sept 2026",
+                        isRead = false,
+                        entityType = "SOLICITUD",
+                        entityId = 14,
+                        deepLink = "orders/14",
+                    ),
+                ),
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+        )
+    }
+}
 
 @Composable
 internal fun SearchScreenshotFrame(

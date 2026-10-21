@@ -1,7 +1,5 @@
 package com.cocido.oficios.feature.home.orders
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -24,10 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
+import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
@@ -35,10 +32,7 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
-import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.AgendaAppointmentTag
@@ -295,30 +289,15 @@ private fun OrdersFilterRow(selected: OrdersListFilter, onSelected: (OrdersListF
             .padding(horizontal = OficiosSpacing.xl, vertical = OficiosSpacing.xs),
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
-        FilterChip(stringResource(R.string.orders_filter_active), selected == OrdersListFilter.ACTIVE) {
-            onSelected(OrdersListFilter.ACTIVE)
-        }
-        FilterChip(stringResource(R.string.orders_filter_history), selected == OrdersListFilter.HISTORY) {
-            onSelected(OrdersListFilter.HISTORY)
-        }
-    }
-}
-
-@Composable
-private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(OficiosRadius.sm)
-    Box(
-        modifier = Modifier
-            .clip(shape)
-            .background(if (selected) OficiosColorAction else OficiosColorOutlineFill.copy(alpha = 0f))
-            .clickable(onClick = onClick)
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (selected) OficiosColorWhite else OficiosColorWhite,
+        OficiosSegmentChip(
+            label = stringResource(R.string.orders_filter_active),
+            selected = selected == OrdersListFilter.ACTIVE,
+            onClick = { onSelected(OrdersListFilter.ACTIVE) },
+        )
+        OficiosSegmentChip(
+            label = stringResource(R.string.orders_filter_history),
+            selected = selected == OrdersListFilter.HISTORY,
+            onClick = { onSelected(OrdersListFilter.HISTORY) },
         )
     }
 }
