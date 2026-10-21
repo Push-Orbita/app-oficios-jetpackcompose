@@ -35,16 +35,38 @@ import com.cocido.oficios.feature.home.rubros.RubrosUiState
 import com.cocido.oficios.feature.home.search.SearchResultsScreen
 import com.cocido.oficios.feature.home.search.SearchResultsUiState
 import com.cocido.oficios.feature.home.search.FilterSheetUiState
+import com.cocido.oficios.feature.home.orders.OrderDetailScreen
+import com.cocido.oficios.feature.home.orders.OrderDetailUiState
 import com.cocido.oficios.feature.home.providerhome.ProviderHomeScreen
 import com.cocido.oficios.feature.home.providerhome.ProviderHomeUiState
+import com.cocido.oficios.domain.model.ServiceOrder
+import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.feature.home.worker.WorkerProfileScreen
 import com.cocido.oficios.feature.home.worker.previewState
+import com.cocido.oficios.domain.model.AgendaSlot
+import com.cocido.oficios.domain.model.AgendaSlotStatus
 import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.ClientContacto
+import com.cocido.oficios.domain.model.ClientDomicilio
+import com.cocido.oficios.domain.model.CounterOffer
+import com.cocido.oficios.domain.model.CounterOfferStatus
 import com.cocido.oficios.domain.model.ProviderHomeContent
+import com.cocido.oficios.domain.model.ProviderSubRubroOption
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.model.WorkerSubRubroOption
+import com.cocido.oficios.domain.model.WorkHoursSchedule
+import com.cocido.oficios.feature.home.agenda.AgendaConfigScreen
+import com.cocido.oficios.feature.home.agenda.AgendaConfigUiState
+import com.cocido.oficios.feature.home.orders.CreateOrderScreen
+import com.cocido.oficios.feature.home.orders.CreateOrderUiState
+import com.cocido.oficios.feature.home.orders.OrdersListScreen
+import com.cocido.oficios.feature.home.orders.OrdersListUiState
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.YearMonth
 import org.junit.Assume
 
 internal object SearchScreenshotChrome {
@@ -202,7 +224,7 @@ internal fun SearchScreenshotFicha(
 ) {
     SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
         WorkerProfileScreen(
-            uiState = previewState(withGallery = true, withReviews = true),
+            uiState = previewState(withGallery = true, withReviews = false),
             onEvent = {},
             showFavorites = true,
         )
@@ -257,6 +279,181 @@ internal fun SearchScreenshotProviderHome(
             onEvent = {},
             onTabSelected = {},
             today = ProviderHomeScreenshotToday,
+        )
+    }
+}
+
+@Composable
+internal fun SearchScreenshotOrderDetail(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        OrderDetailScreen(
+            uiState = OrderDetailUiState.Success(
+                order = ServiceOrder(
+                    id = 1,
+                    clientName = "Mariano Montellano",
+                    workerName = "Emanuel Molina",
+                    workerId = 9,
+                    rubroLabel = "Albañilería",
+                    subRubroLabel = "revoque de pared",
+                    status = ServiceRequestStatus.ACCEPTED,
+                    description = "Serv. de Albañilería, revoque de pared.",
+                    addressLabel = "Juan José Silva 3800, Mz 52, Casa 4",
+                    addressLatitude = -26.1775,
+                    addressLongitude = -58.1781,
+                    contactName = "Mariano Montellano",
+                    contactPhone = "3704123456",
+                    scheduledLabel = "4 de marzo, 15:30hs",
+                    bookingStatus = BookingStatus.CONFIRMED,
+                    bookingId = 11,
+                    pendingCounterOffer = CounterOffer(
+                        id = 1,
+                        proposedLabel = "4 de marzo, 15:30hs",
+                        proposedPrice = 50_000.0,
+                        status = CounterOfferStatus.PENDING,
+                    ),
+                ),
+                viewerRole = UserRole.PROVIDER,
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+        )
+    }
+}
+
+@Composable
+internal fun SearchScreenshotCreateOrder(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    val today = LocalDate.of(2026, 3, 4)
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        CreateOrderScreen(
+            uiState = CreateOrderUiState.Success(
+                workerName = "Emanuel Molina",
+                workerVerified = true,
+                workerRating = 5f,
+                workerReviewCount = 1,
+                specialtyLabel = "Albañilería",
+                subRubroOptions = listOf(WorkerSubRubroOption(1, "Albañilería")),
+                selectedSubRubroId = 1,
+                domicilios = listOf(
+                    ClientDomicilio(
+                        id = 1,
+                        barrioId = 1,
+                        barrioName = "Centro",
+                        nombre = null,
+                        calle = "Juan José Silva",
+                        numero = "3800",
+                        casaTorre = null,
+                        departamento = null,
+                        piso = null,
+                        favorito = true,
+                    ),
+                ),
+                contactos = listOf(
+                    ClientContacto(1, "Mariano", "3704123456", true, null, true),
+                ),
+                selectedDomicilioId = 1,
+                selectedContactoId = 1,
+                workDayKeys = WorkHoursSchedule.WEEK_DAYS.toSet() - "DOMINGO" - "SABADO",
+                hasAgenda = true,
+                visibleMonth = YearMonth.of(2026, 3),
+                selectedDate = today,
+                selectedHour = LocalTime.of(9, 0),
+                availableSlots = listOf(8, 9, 10, 11, 16, 17, 18, 19).map { hour ->
+                    AgendaSlot(
+                        id = hour.toLong(),
+                        subRubroId = 1,
+                        subRubroLabel = "Albañilería",
+                        start = LocalDateTime.of(2026, 3, 4, hour, 0),
+                        end = LocalDateTime.of(2026, 3, 4, hour + 1, 0),
+                        status = AgendaSlotStatus.DISPONIBLE,
+                        autoAcceptance = true,
+                    )
+                } + AgendaSlot(
+                    id = 60,
+                    subRubroId = 1,
+                    subRubroLabel = "Albañilería",
+                    start = LocalDateTime.of(2026, 3, 6, 10, 0),
+                    end = LocalDateTime.of(2026, 3, 6, 11, 0),
+                    status = AgendaSlotStatus.DISPONIBLE,
+                    autoAcceptance = true,
+                ),
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+            showFavorites = true,
+            today = today,
+        )
+    }
+}
+
+@Composable
+internal fun SearchScreenshotAgendaConfig(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        AgendaConfigScreen(
+            uiState = AgendaConfigUiState.Success(
+                subRubroOptions = listOf(
+                    ProviderSubRubroOption(
+                        id = 1,
+                        subRubroLabel = "Albañilería",
+                        rubroLabel = "Construcción",
+                        requiresTurns = true,
+                    ),
+                ),
+                selectedSubRubroId = 1,
+                selectedSubRubroIds = setOf(1),
+                durationInput = "60",
+                selectedDays = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
+                selectedHours = setOf(8, 9, 10, 11, 16, 17, 18, 19, 20, 21),
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+        )
+    }
+}
+
+@Composable
+internal fun SearchScreenshotOrdersList(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        OrdersListScreen(
+            uiState = OrdersListUiState.Success(
+                orders = listOf(
+                    providerHomeOrder(
+                        id = 1,
+                        rubro = "Albañilería",
+                        address = "Juan José Silva 3800, Mz 52, Casa 4",
+                        sortKey = "2026-03-04T13:30:00",
+                    ),
+                    providerHomeOrder(
+                        id = 2,
+                        rubro = "Albañilería",
+                        address = "Av. Nestor Kirchner 6435",
+                        sortKey = "2026-03-06T18:30:00",
+                    ),
+                    providerHomeOrder(
+                        id = 3,
+                        rubro = "Plomeria",
+                        address = "Maipú 745",
+                        sortKey = "2026-03-17T09:30:00",
+                    ),
+                ),
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+            showBackNavigation = false,
+            onTabSelected = {},
+            today = LocalDate.of(2026, 3, 4),
+            showFavorites = true,
         )
     }
 }

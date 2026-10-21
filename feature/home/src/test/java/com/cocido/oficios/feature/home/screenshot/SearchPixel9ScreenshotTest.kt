@@ -76,4 +76,32 @@ class SearchPixel9ScreenshotTest {
         composeRule.onNodeWithText("ver agenda completa").performScrollTo()
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun orderDetail() {
+        assumeGoldenOrRecording(javaClass, "orderDetail")
+        composeRule.setContent { SearchScreenshotOrderDetail(status, nav) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun createOrder() {
+        assumeGoldenOrRecording(javaClass, "createOrder")
+        composeRule.setContent { SearchScreenshotCreateOrder(status, nav) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun agendaConfig() {
+        assumeGoldenOrRecording(javaClass, "agendaConfig")
+        composeRule.setContent { SearchScreenshotAgendaConfig(status, nav) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun ordersList() {
+        assumeGoldenOrRecording(javaClass, "ordersList")
+        composeRule.setContent { SearchScreenshotOrdersList(status, nav) }
+        composeRule.onRoot().captureRoboImage()
+    }
 }
