@@ -342,7 +342,7 @@ private fun scaleDown(source: Bitmap, maxEdge: Int = ImageUploadContract.MAX_EDG
     return scaled
 }
 
-private fun writeCompressedJpeg(context: Context, bitmap: Bitmap, filePrefix: String): String {
+internal fun writeCompressedJpeg(context: Context, bitmap: Bitmap, filePrefix: String): String {
     val bytes = try {
         encodeUnderTarget(bitmap)
     } finally {

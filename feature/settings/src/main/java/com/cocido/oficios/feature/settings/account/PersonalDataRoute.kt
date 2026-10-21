@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 
 @Composable
@@ -22,6 +23,7 @@ fun PersonalDataRoute(
         onImageSelected = { path -> path?.let { viewModel.onEvent(PersonalDataEvent.PhotoSelected(it)) } },
         onPickError = onShowMessage,
         filePrefix = "perfil",
+        cropMode = ImageCropMode.Profile,
     )
     LaunchedEffect(Unit) {
         viewModel.effects.collect { effect ->

@@ -55,6 +55,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
+import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.core.ui.map.OficiosLocationPicker
@@ -342,6 +343,7 @@ fun ProviderDniStepScreen(
         onImageSelected = onFrontImage,
         onPickError = onPickError,
         filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
     val backPicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -351,6 +353,7 @@ fun ProviderDniStepScreen(
         onImageSelected = onBackImage,
         onPickError = onPickError,
         filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
 
     OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
@@ -435,6 +438,7 @@ fun ProviderSelfieStepScreen(
         onImageSelected = onImageSelected,
         onPickError = onPickError,
         filePrefix = "selfie",
+        cropMode = ImageCropMode.Profile,
     )
 
     OnboardingStepScaffold(
@@ -835,6 +839,7 @@ fun ProviderIdentityStepScreen(
         onImageSelected = onFrontImageSelected,
         onPickError = onPickError,
         filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
     val backImagePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -844,6 +849,7 @@ fun ProviderIdentityStepScreen(
         onImageSelected = onBackImageSelected,
         onPickError = onPickError,
         filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
     val selfieImagePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -853,6 +859,7 @@ fun ProviderIdentityStepScreen(
         onImageSelected = onSelfieImageSelected,
         onPickError = onPickError,
         filePrefix = "selfie",
+        cropMode = ImageCropMode.Profile,
     )
     val certificatePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -862,6 +869,7 @@ fun ProviderIdentityStepScreen(
         onImageSelected = onCertificateSelected,
         onPickError = onPickError,
         filePrefix = "certificado",
+        cropMode = ImageCropMode.Certificate,
     )
 
     OnboardingStepScaffold(
