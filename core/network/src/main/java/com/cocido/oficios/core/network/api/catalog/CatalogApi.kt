@@ -18,14 +18,14 @@ interface CatalogApi {
 
     @GET("rubros/search")
     suspend fun searchRubros(
-        @Query("categoriaId") categoriaId: Long,
+        @Query("categoriaId") categoriaId: Long? = null,
         @Query("pageSize") pageSize: Int = 100,
         @Query("pageNumber") pageNumber: Int = 1,
     ): PaginatedResponseDto<RubroDto>
 
     @GET("sub-rubros/search")
     suspend fun searchSubRubros(
-        @Query("rubroId") rubroId: Long,
+        @Query("rubroId") rubroId: Long? = null,
         @Query("pageSize") pageSize: Int = 100,
         @Query("pageNumber") pageNumber: Int = 1,
     ): PaginatedResponseDto<SubRubroDto>

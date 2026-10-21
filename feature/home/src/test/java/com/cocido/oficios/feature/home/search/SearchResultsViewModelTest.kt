@@ -204,7 +204,7 @@ class SearchResultsViewModelTest {
         )
         return SearchResultsViewModel(
             savedStateHandle = savedStateHandle,
-            searchWorkersUseCase = SearchWorkersUseCase(repository),
+            searchWorkersUseCase = SearchWorkersUseCase(repository, catalogRepository),
             trackRecentSearchUseCase = TrackRecentSearchUseCase(recents),
             getCategoriesUseCase = GetCategoriesUseCase(catalogRepository),
             getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(catalogRepository),

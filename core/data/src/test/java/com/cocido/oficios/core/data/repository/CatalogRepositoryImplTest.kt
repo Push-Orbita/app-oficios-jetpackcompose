@@ -115,4 +115,34 @@ class CatalogRepositoryImplTest {
         val request = server.takeRequest()
         assertEquals("/barrios/search?pageSize=100&pageNumber=1", request.path)
     }
+
+    @Test
+    fun `getAllRubros lists without categoriaId`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """
+                    {
+                      "data": [
+                        { "id": 1, "nombre": "Plomería" },
+                        { "id": 2, "nombre": "Electricista" }
+                      ],
+                      "metadata": { "count": 2, "pageSize": 100, "pageNumber": 1, "totalPages": 1 }
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        val result = repository.getAllRubros()
+
+        assertTrue(result is AppResult.Success)
+        result as AppResult.Success
+        assertEquals(listOf("Plomería", "Electricista"), result.data.map { it.label })
+        assertEquals("/rubros/search?pageSize=100&pageNumber=1", server.takeRequest().path)
+
+        val cached = repository.getAllRubros()
+        assertTrue(cached is AppResult.Success)
+        assertEquals(0, server.requestCount - 1)
+    }
 }

@@ -14,6 +14,12 @@ class CatalogRepositoryImpl @Inject constructor(
     private val catalogRemoteDataSource: CatalogRemoteDataSource,
 ) : CatalogRepository {
 
+    @Volatile
+    private var cachedRubros: List<CatalogOption>? = null
+
+    @Volatile
+    private var cachedSubRubros: List<CatalogOption>? = null
+
     override suspend fun getCategories(): AppResult<List<CatalogOption>> =
         catalogRemoteDataSource.fetchCategories().map { categories ->
             categories.map { it.toCatalogOption() }
@@ -28,6 +34,20 @@ class CatalogRepositoryImpl @Inject constructor(
         catalogRemoteDataSource.fetchSubRubros(rubroId).map { subRubros ->
             subRubros.map { it.toCatalogOption() }
         }
+
+    override suspend fun getAllRubros(): AppResult<List<CatalogOption>> {
+        cachedRubros?.let { return AppResult.Success(it) }
+        return catalogRemoteDataSource.fetchAllRubros().map { rubros ->
+            rubros.map { it.toCatalogOption() }.also { cachedRubros = it }
+        }
+    }
+
+    override suspend fun getAllSubRubros(): AppResult<List<CatalogOption>> {
+        cachedSubRubros?.let { return AppResult.Success(it) }
+        return catalogRemoteDataSource.fetchAllSubRubros().map { subRubros ->
+            subRubros.map { it.toCatalogOption() }.also { cachedSubRubros = it }
+        }
+    }
 
     override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> {
         val trimmed = query.trim()
