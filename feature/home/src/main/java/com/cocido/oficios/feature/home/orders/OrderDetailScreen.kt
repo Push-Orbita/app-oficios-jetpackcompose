@@ -101,7 +101,9 @@ import com.cocido.oficios.core.ui.map.OficiosTrackingMap
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.UserRole
+import com.cocido.oficios.domain.model.destinationPoint
 import com.cocido.oficios.domain.model.displayPrice
+import com.cocido.oficios.domain.model.enRouteWorkerPoint
 
 /** Detalle de pedido — Flujos `613:572` Confirmado, `613:637` Pendiente, `613:982` Terminar. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -207,26 +209,37 @@ private fun OrderDetailContent(
             Text(reason, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
         }
 
-        val addressLatitude = order.addressLatitude
-        val addressLongitude = order.addressLongitude
-        if (canShowPrivateDetails && addressLatitude != null && addressLongitude != null) {
-            OficiosTrackingMap(
-                destinationLatitude = addressLatitude,
-                destinationLongitude = addressLongitude,
-                workerLatitude = if (!isWorker) state.tracking?.location?.latitude else null,
-                workerLongitude = if (!isWorker) state.tracking?.location?.longitude else null,
-                onMapClick = { openOrderMap(context, addressLatitude, addressLongitude, order.addressLabel) },
-                mapContentDescription = stringResource(R.string.orders_open_map),
-                addressLabel = order.addressLabel,
-                openInMapsLabel = stringResource(R.string.orders_open_in_maps),
-                unavailableDescription = stringResource(R.string.orders_map_unavailable),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(OficiosComponentSize.mapCardHeight)
-                    .clip(RoundedCornerShape(OficiosRadius.lg)),
-            )
-            if (!isWorker && order.bookingStatus == BookingStatus.EN_ROUTE && state.tracking == null) {
-                InfoText(stringResource(R.string.orders_tracking_waiting))
+        OrderProgress(status = order.status, bookingStatus = order.bookingStatus)
+
+        val destination = order.destinationPoint()
+        val workerPoint = if (!isWorker) order.enRouteWorkerPoint(state.tracking) else null
+        if (canShowPrivateDetails) {
+            if (destination != null) {
+                OficiosTrackingMap(
+                    destinationLatitude = destination.latitude,
+                    destinationLongitude = destination.longitude,
+                    workerLatitude = workerPoint?.latitude,
+                    workerLongitude = workerPoint?.longitude,
+                    onMapClick = {
+                        openOrderMap(context, destination.latitude, destination.longitude, order.addressLabel)
+                    },
+                    mapContentDescription = stringResource(R.string.orders_open_map),
+                    addressLabel = order.addressLabel,
+                    openInMapsLabel = stringResource(R.string.orders_open_in_maps),
+                    unavailableDescription = stringResource(R.string.orders_map_unavailable),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(OficiosComponentSize.mapCardHeight)
+                        .clip(RoundedCornerShape(OficiosRadius.lg)),
+                )
+                if (!isWorker && order.bookingStatus == BookingStatus.EN_ROUTE && state.tracking == null) {
+                    InfoText(stringResource(R.string.orders_tracking_waiting))
+                }
+            } else {
+                OrderMapPlaceholder(
+                    address = order.addressLabel,
+                    message = stringResource(R.string.orders_map_missing_location),
+                )
             }
         }
 
@@ -280,8 +293,8 @@ private fun OrderDetailContent(
         if (order.status == ServiceRequestStatus.PENDING) {
             order.cancellationDeadlineLabel?.takeIf { it.isNotBlank() }?.let { deadline ->
                 OrderDetailLabeledRow(
-                    icon = OficiosIcons.Clock,
-                    label = stringResource(R.string.orders_cancel_deadline, deadline),
+                    icon = OficiosIcons.ClockCheck,
+                    label = stringResource(R.string.orders_field_cancel_deadline),
                     value = deadline,
                 )
             }
@@ -796,6 +809,45 @@ private fun SectionTitle(text: String) {
 @Composable
 private fun InfoText(text: String) {
     Text(text = text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+}
+
+@Composable
+private fun OrderMapPlaceholder(
+    address: String,
+    message: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(OficiosComponentSize.mapCardHeight)
+            .clip(RoundedCornerShape(OficiosRadius.lg))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Place,
+            contentDescription = stringResource(R.string.orders_map_unavailable),
+            tint = OficiosColorWhite,
+            modifier = Modifier.size(OficiosComponentSize.iconLg),
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
+        if (address.isNotBlank()) {
+            Text(
+                text = address,
+                style = MaterialTheme.typography.bodyMedium,
+                color = OficiosColorTextSecondaryAccessible,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
 }
 
 @Composable
