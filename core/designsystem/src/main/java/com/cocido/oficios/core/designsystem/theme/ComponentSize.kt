@@ -31,12 +31,14 @@ object OficiosComponentSize {
     val categoryCardSize = 118.dp
     /** Figma 224:1013 — Recientes: título + gap 10 + cards 118. */
     val homeRecentsSectionMinHeight = 184.dp
-    /** Compensa el capital-top de D-DIN vs DIN Pro (cards rel 199). */
-    val homeRecentsAfterSearchExtra = 9.dp
+    /** Compensa el capital-top de D-DIN vs DIN Pro (título rel 155). */
+    val homeRecentsAfterSearchExtra = 6.dp
+    /** Gap título Recientes → cards para dejar las cards en rel 199. */
+    val homeRecentsTitleToCards = 13.dp
     /** Caps del label 20dp bajo el top de la card (includeFontPadding ≈ 6). */
     val homeRecentCardLabelTop = 14.dp
     /** Espacio óptico recents→soporte para dejar la card en y≈373. */
-    val homeSupportAfterRecentsExtra = 20.dp
+    val homeSupportAfterRecentsExtra = 23.dp
     /** Resultados 40:322: fila logo+título. 107 de Figma + 5 para el buscador en y=195. */
     val searchResultsHeaderMinHeight = 112.dp
     /** Gap buscador → primera WorkerCard (243 → 259). */
