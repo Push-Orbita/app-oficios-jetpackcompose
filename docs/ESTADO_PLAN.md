@@ -44,7 +44,7 @@ PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 | Home trabajador | `191:11` + lista `259:534` | #21 | Agenda **dentro de Inicio**. QA incompleto `docs/qa-1a1/home-trabajador.png` **15.6%** vs `191:11`. Completo `home-trabajador-completo.png` **33.5%** vs `259:534` (Figma sin Beneficios + 5 tabs). Sin tab Agenda. | Nav acordada; Completa Tu Perfil solo &lt;100%; % BK-19 |
 | Calendario general | `239:475` | #21 | Pills + división + grilla + oficio. QA `docs/qa-1a1/agenda.png` ~28.5% | Editar `sesion` = delete+recreate (BK-02/03); CTA Guardar (Figma no lo muestra) |
 | Agenda completa | `210:106` | #16 | — | `diasLaborales` por día en alta |
-| Editar Perfil | `231:15` | #21 | Oficios/galería/certs/Darme De Baja 1:1. QA `docs/qa-1a1/perfil.png` ~28.8% | PATCH limitado (BK-01); tab Perfil = Ajustes |
+| Editar Perfil | `231:15` | #21 | Oficios/galería/certs/Darme De Baja 1:1. QA `docs/qa-1a1/perfil.png` ~28.8%. Ajustes: 1 fila (no 3 hermanas) | PATCH limitado (BK-01); tab Perfil = Ajustes; servicios/galería anidados |
 | Elegí Rubro | `526:903` | #17 | Grilla 2 col. | Título Figma en voseo |
 | Elegí tu categoría | `526:1026` | #18 | Grilla 2 col. | Checkboxes (API multi), no radios; título Figma |
 | Forgot / Settings / Pedidos / Notif / Favoritos / Ayuda | — | #19 | Lenguaje DS + usted + `OficiosScreenPadding` | Sin baseline Figma |
@@ -78,6 +78,16 @@ El casco amarillo (`#F8AE1A`, nodo `12:101`) no se usa. Marca vigente exportada 
 | `logo_oficios.png` | outline | Fixture e2e (ya no es el amarillo) |
 
 `OficiosColorBrandMark` = `#006AF0`. El acento UI `#F8AE1A` (`OficiosColorAccent`) no pinta el logo. `ic_casco` del rol sigue blanco.
+
+### Fix en #21 — Perfil trabajador: una sola entrada Editar Perfil
+
+Matías: las 3 filas de Ajustes (Presentación profesional / Servicios que ofrece / Galería y certificados) se sentían redundantes.
+
+**Hallazgo:** sí había duplicación. “Presentación profesional” no editaba descripción/experiencia/cobro (el subtítulo mentía): abría `ProfessionalProfileScreen` (Figma `231:15`), que ya muestra oficios, Trabajos realizados, Certificado(s) y Darme De Baja. Servicios y galería también estaban como hermanos en Ajustes, además de anidados desde Editar Rubro / Añadir.
+
+**Figma:** `231:15` es **una sola** pantalla Editar Perfil (oficios + especializado + CTA Editar Rubro o Especialidad + galería + certificados + Darme De Baja). Frames previos `224` / `230` también agrupan foto/descripción/oficios/galería/certs en un scroll; no hay 3 filas hermanas. Ajustes en Figma es el 5.º tab; en la app el tab Perfil = Ajustes.
+
+**Cambio:** Ajustes del trabajador queda **una** fila “Editar Perfil” (subtítulo: oficios, trabajos realizados y certificados). Servicios y portfolio siguen como destinos anidados (Editar Rubro / Añadir), no como entradas de Ajustes. Descripción/experiencia siguen en onboarding; medios de cobro en el wizard de servicio. Cada dato se edita en un solo lugar.
 
 ### Fix en #21 — Editar servicio + padding TopAppBar
 

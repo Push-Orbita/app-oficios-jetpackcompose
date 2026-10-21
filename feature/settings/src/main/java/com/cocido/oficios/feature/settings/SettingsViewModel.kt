@@ -41,8 +41,6 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.OpenPersonalData -> emitEffect(SettingsEffect.NavigateToPersonalData)
             SettingsEvent.OpenClientData -> emitEffect(SettingsEffect.NavigateToClientData)
             SettingsEvent.OpenProfessionalData -> emitEffect(SettingsEffect.NavigateToProfessionalData)
-            SettingsEvent.OpenServices -> emitEffect(SettingsEffect.NavigateToServices)
-            SettingsEvent.OpenPortfolio -> emitEffect(SettingsEffect.NavigateToPortfolio)
             SettingsEvent.OpenChangePassword -> emitEffect(SettingsEffect.NavigateToChangePassword)
             SettingsEvent.OpenDeleteAccount -> emitEffect(SettingsEffect.NavigateToDeleteAccount)
             SettingsEvent.OpenTerms -> emitEffect(SettingsEffect.NavigateToTerms)
