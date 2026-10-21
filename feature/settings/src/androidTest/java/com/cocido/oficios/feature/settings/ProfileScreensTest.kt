@@ -103,7 +103,7 @@ class ProfileScreensTest {
             }
         }
         composeRule.onNodeWithText("Servicio principal").assertIsDisplayed()
-        composeRule.onNodeWithText("El servicio principal se conserva para proteger su perfil y sus pedidos activos.").assertIsDisplayed()
+        composeRule.onNodeWithText("El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar especialidades, modalidad y horarios.").assertIsDisplayed()
     }
 
     @Test

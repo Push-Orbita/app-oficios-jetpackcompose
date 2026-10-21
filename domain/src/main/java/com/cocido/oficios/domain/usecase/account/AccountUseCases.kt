@@ -39,6 +39,11 @@ class AccountUseCases @Inject constructor(
         repository.updateProviderProfessionalInfo(request)
     suspend fun addService(request: ProviderRubroFullRequest) = repository.addProviderService(request)
     suspend fun deleteService(id: Long) = repository.deleteProviderService(id)
+    suspend fun replaceService(
+        existingId: Long,
+        isPrimary: Boolean,
+        request: ProviderRubroFullRequest,
+    ) = repository.replaceProviderService(existingId, isPrimary, request)
 
     suspend fun getCertificates() = repository.getCertificates()
     suspend fun uploadCertificate(name: String, filePath: String) =

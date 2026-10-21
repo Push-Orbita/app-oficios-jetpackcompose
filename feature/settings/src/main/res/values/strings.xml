@@ -176,7 +176,13 @@
     <string name="services_at_local">En local</string>
     <string name="services_with_turns">Con turnos</string>
     <string name="services_modality_unknown">Modalidad sin informar</string>
-    <string name="services_primary_locked">El servicio principal se conserva para proteger su perfil y sus pedidos activos.</string>
+    <string name="services_primary_locked">El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar especialidades, modalidad y horarios.</string>
+    <string name="services_tap_to_edit">Toque para editar especialidades, modalidad y horarios.</string>
+    <string name="services_edit_title">Editar servicio</string>
+    <string name="services_edit_trade_title">Especialidades</string>
+    <string name="services_edit_trade_hint">El oficio queda fijo. Puede actualizar las especialidades que ofrece.</string>
+    <string name="services_primary_rubro_locked">Rubro principal: no se puede cambiar.</string>
+    <string name="services_save_changes">Guardar cambios</string>
     <string name="services_delete_action">Eliminar %1$s</string>
     <string name="services_add_title">Agregar servicio</string>
     <string name="services_form_error">No pudimos preparar el formulario</string>
