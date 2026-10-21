@@ -1,6 +1,8 @@
 package com.cocido.oficios.core.designsystem.component.badges
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
@@ -21,10 +24,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -66,6 +72,34 @@ fun OficiosBadge(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             color = contentColor,
+        )
+    }
+}
+
+// ---------------------------------------------------------------------------
+// OficiosRoleChip — etiqueta chica de rol (Cliente / Trabajador) sobre navy.
+// Texto blanco y negrita para contraste AA; fill outline de tarjeta.
+// ---------------------------------------------------------------------------
+
+@Composable
+fun OficiosRoleChip(
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(OficiosRadius.xs)
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(OficiosColorOutlineFill)
+            .border(BorderStroke(1.dp, OficiosColorWhite.copy(alpha = 0.35f)), shape)
+            .padding(horizontal = OficiosSpacing.xs, vertical = OficiosSpacing.xxxs),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = OficiosColorWhite,
+            maxLines = 1,
         )
     }
 }
@@ -129,6 +163,8 @@ private fun BadgesPreview() {
         ) {
             OficiosBadge(label = "3")
             OficiosBadge(label = "Nuevo", containerColor = MaterialTheme.colorScheme.tertiary, contentColor = MaterialTheme.colorScheme.background)
+            OficiosRoleChip(label = "Cliente")
+            OficiosRoleChip(label = "Trabajador")
             OficiosNotificationBadge(count = 12) {
                 Icon(
                     imageVector = Icons.Default.Notifications,

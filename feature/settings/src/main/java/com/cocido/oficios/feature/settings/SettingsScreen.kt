@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.core.designsystem.component.badges.OficiosRoleChip
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -52,9 +53,11 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorWarning
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 
 @Composable
@@ -144,60 +147,7 @@ private fun SettingsContent(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         item {
-            OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OficiosAvatar(
-                        name = displayName,
-                        imageUrl = user.profilePhotoUrl,
-                        size = OficiosComponentSize.avatarSettings,
-                        showBorder = true,
-                    )
-                    Spacer(Modifier.width(OficiosSpacing.md))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = displayName,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            text = user.email,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = OficiosColorSecondaryText,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                        ) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(
-                                    if (user.emailVerified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert
-                                ),
-                                contentDescription = null,
-                                tint = if (user.emailVerified) OficiosColorSuccess else OficiosColorSecondaryText,
-                                modifier = Modifier.size(OficiosComponentSize.iconSm),
-                            )
-                            Text(
-                                text = stringResource(
-                                    if (user.emailVerified) R.string.settings_verified_email else R.string.settings_pending_email,
-                                ),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = OficiosColorSecondaryText,
-                            )
-                        }
-                        Text(
-                            text = stringResource(
-                                if (user.role == UserRole.PROVIDER) R.string.settings_provider_role else R.string.settings_client_role,
-                            ),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
-            }
+            SettingsProfileCard(user = user, displayName = displayName)
         }
 
         item { SettingsSectionTitle(stringResource(R.string.settings_profile_section)) }
@@ -279,6 +229,78 @@ private fun SettingsContent(
             )
         }
         item { Spacer(Modifier.size(OficiosSpacing.xl)) }
+    }
+}
+
+@Composable
+private fun SettingsProfileCard(
+    user: User,
+    displayName: String,
+) {
+    val roleLabel = stringResource(
+        if (user.role == UserRole.PROVIDER) R.string.settings_provider_role else R.string.settings_client_role,
+    )
+    val verified = user.emailVerified
+    val statusColor = if (verified) OficiosColorSuccessText else OficiosColorWarning
+    OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        ) {
+            OficiosAvatar(
+                name = displayName,
+                imageUrl = user.profilePhotoUrl,
+                size = OficiosComponentSize.avatarSettings,
+                showBorder = true,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                ) {
+                    Text(
+                        text = displayName,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    OficiosRoleChip(label = roleLabel)
+                }
+                Text(
+                    text = user.email,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OficiosColorSecondaryText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(
+                            if (verified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert,
+                        ),
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(OficiosComponentSize.iconSm),
+                    )
+                    Text(
+                        text = stringResource(
+                            if (verified) R.string.settings_verified_email else R.string.settings_pending_email,
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = statusColor,
+                    )
+                }
+            }
+        }
     }
 }
 

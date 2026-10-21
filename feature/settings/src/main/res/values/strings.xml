@@ -39,7 +39,7 @@
     <string name="settings_delete_account_cancel">Cancelar la baja</string>
     <string name="settings_verified_email">Correo verificado</string>
     <string name="settings_pending_email">Correo pendiente de verificación</string>
-    <string name="settings_provider_role">Trabajador de oficio</string>
+    <string name="settings_provider_role">Trabajador</string>
     <string name="settings_client_role">Cliente</string>
     <string name="settings_load_error_title">No pudimos cargar su cuenta</string>
     <string name="settings_loading">Cargando su cuenta…</string>
