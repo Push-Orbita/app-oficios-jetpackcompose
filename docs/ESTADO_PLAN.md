@@ -24,7 +24,7 @@ Cada uno declara `Requires PR #N` y está stacked sobre el anterior. No mergear 
 | PR-11 Categoría | [#18](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/18) | `cursor/elegi-categoria-ee07` | draft | Grilla 2 col. en registro/onboarding |
 | PR-13 Copy / app-only | [#19](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/19) | `cursor/copy-usted-app-ee07` | draft | Usted fuera de auth; padding 32/16/32/32 |
 | PR-12 Push | [#20](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/20) | `cursor/push-firebase-config-ee07` | draft | FCM detrás de `FIREBASE_ENABLED`; docs BK-09 |
-| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | Este documento |
+| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | ESTADO_PLAN + fix Nombres/Apellido sin split |
 
 PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 
@@ -57,6 +57,10 @@ Pixel-diff &lt;2 % (Roborazzi P9 vs PNG) salvo D-DIN, datos reales y adaptacione
 Decisión 20/10/2026: **usted** (como Figma). Auth ya estaba (#10). PR-13 pasa el resto.
 
 Títulos Figma que se conservan en voseo (adaptación): **Completá tu Solicitud**, **Elegí Rubro**, **Elegí tu categoría**.
+
+### Fix en #21 — Nombres y Apellido
+
+Registro cliente/trabajador y Datos personales usan dos campos (**Nombres**, **Apellido**), copy en usted, validación no vacío. Se envían tal cual a `nombres`/`apellido` (SwaggerSignup / PersonaDTO / UpdateUsuario). Se borró `splitFullName` (el primer espacio partía “Matias Federico Britez”).
 
 Bottom nav: Inicio / Mis pedidos / Favoritos (oculto para trabajador) / Perfil (`home_tab_ajustes`). Ayuda vive en Ajustes.
 
@@ -91,5 +95,5 @@ Bottom nav: Inicio / Mis pedidos / Favoritos (oculto para trabajador) / Perfil (
 ## QA
 
 - Roborazzi 440 + Pixel 9 en el buscador (#11).
-- Unit: motivo de cancelación, polling, mapeo `WorkHoursSchedule`, `FIREBASE_ENABLED=false` con stub.
+- Unit: motivo de cancelación, polling, mapeo `WorkHoursSchedule`, `FIREBASE_ENABLED=false` con stub, mapeo `nombres`/`apellido` sin split.
 - Push de dispositivo: bloqueado por BK-09. Matriz en `docs/qa/PUSH_NOTIFICATION_MATRIX.md`.

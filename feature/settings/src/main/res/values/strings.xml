@@ -104,7 +104,7 @@
     <string name="personal_data_intro">Mantenga sus datos actualizados para que su cuenta sea fácil de reconocer.</string>
     <string name="personal_data_change_photo">Cambiar foto</string>
     <string name="personal_data_remove_photo">Quitar</string>
-    <string name="personal_data_first_name">Nombre</string>
+    <string name="personal_data_first_name">Nombres</string>
     <string name="personal_data_last_name">Apellido</string>
     <string name="personal_data_email">Correo electrónico</string>
     <string name="personal_data_email_hint">Si lo cambia, es posible que deba volver a verificarlo.</string>
