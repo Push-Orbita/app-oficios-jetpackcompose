@@ -53,6 +53,7 @@ import com.cocido.oficios.domain.model.WorkHoursSchedule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EventBusy
 
+/** Calendario general — fuente de verdad Flujos `526:494`. */
 @Composable
 fun AgendaConfigScreen(
     uiState: AgendaConfigUiState,
