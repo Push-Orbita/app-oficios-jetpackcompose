@@ -143,6 +143,9 @@
     <string name="provider_home_configure_agenda">Configurar Agenda</string>
     <string name="provider_home_agenda_title">Agenda</string>
     <string name="provider_home_view_full_agenda">ver agenda completa</string>
+    <string name="provider_home_agenda_empty_day">No hay pedidos este día.</string>
+    <string name="agenda_bookings_empty_title">Todavía no tiene pedidos en la agenda</string>
+    <string name="agenda_bookings_empty_description">Cuando acepte un trabajo con fecha, va a verlo marcado en el día.</string>
     <string name="provider_home_previous_month">Mes anterior</string>
     <string name="provider_home_next_month">Mes siguiente</string>
     <string name="provider_home_upcoming_shifts_title">Próximos turnos</string>

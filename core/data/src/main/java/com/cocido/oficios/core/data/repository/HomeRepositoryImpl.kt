@@ -119,14 +119,9 @@ class HomeRepositoryImpl @Inject constructor(
     private suspend fun loadUpcomingWorkerOrders(): List<com.cocido.oficios.domain.model.ServiceOrderListItem> {
         return when (val result = orderRepository.getWorkerOrders()) {
             is AppResult.Success -> upcomingAgendaAppointments(
-                orders = result.data.filter {
-                    it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.PENDING ||
-                        it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.COUNTER_OFFER ||
-                        (it.status == com.cocido.oficios.domain.model.ServiceRequestStatus.ACCEPTED &&
-                            it.bookingStatus != com.cocido.oficios.domain.model.BookingStatus.FINISHED)
-                },
+                orders = result.data,
                 now = nowInArgentina(clock),
-            ).take(UPCOMING_ORDERS_PREVIEW_SIZE)
+            )
             is AppResult.Error -> emptyList()
         }
     }
@@ -186,6 +181,5 @@ class HomeRepositoryImpl @Inject constructor(
 
     private companion object {
         const val RECENT_RUBROS_LIMIT = 3
-        const val UPCOMING_ORDERS_PREVIEW_SIZE = 20
     }
 }

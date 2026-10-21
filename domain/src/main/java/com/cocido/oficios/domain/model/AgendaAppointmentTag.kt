@@ -2,8 +2,11 @@ package com.cocido.oficios.domain.model
 
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import java.time.Clock
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.math.abs
 
 /** Etiqueta de card en Agenda. Nunca se infiere solo por estado de booking. */
 enum class AgendaAppointmentTag {
@@ -43,19 +46,50 @@ fun ServiceOrderListItem.agendaTag(now: ZonedDateTime): AgendaAppointmentTag {
     return if (inSlot || inProgressToday) AgendaAppointmentTag.NOW else AgendaAppointmentTag.TODAY
 }
 
-/** Agenda del Inicio: solo hoy en adelante, orden ascendente. Sin fecha no entra. */
+/**
+ * Agenda del trabajador (home y agenda completa): pedidos con fecha que siguen
+ * activos. Incluye EN_CAMINO / EN_CURSO aunque el día ya haya pasado — el trabajo
+ * no se cerró. No incluye historial ni ítems sin fecha.
+ */
 fun upcomingAgendaAppointments(
     orders: List<ServiceOrderListItem>,
     now: ZonedDateTime,
 ): List<ServiceOrderListItem> {
-    val today = now.toLocalDate()
     return orders
         .filter { item ->
-            val date = item.scheduledDate() ?: return@filter false
-            !date.isBefore(today)
+            item.scheduledDate() != null && !item.isHistoryOrder(now)
         }
         .sortedWith(
             compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
                 .thenBy { it.id },
         )
+}
+
+/** Día inicial del calendario: hoy si tiene pedidos; si no, el más cercano. */
+fun defaultAgendaSelectedDate(
+    orders: List<ServiceOrderListItem>,
+    today: LocalDate,
+): LocalDate = defaultAgendaSelectedDate(
+    dates = orders.mapNotNull { it.scheduledDate() }.toSet(),
+    today = today,
+)
+
+fun defaultAgendaSelectedDate(
+    dates: Set<LocalDate>,
+    today: LocalDate,
+): LocalDate {
+    if (today in dates) return today
+    return dates.minByOrNull { abs(it.toEpochDay() - today.toEpochDay()) } ?: today
+}
+
+fun defaultAgendaDateInMonth(
+    dates: Set<LocalDate>,
+    month: YearMonth,
+    today: LocalDate,
+    fallbackDay: Int,
+): LocalDate {
+    if (YearMonth.from(today) == month) return today
+    val inMonth = dates.filter { YearMonth.from(it) == month }
+    return inMonth.minByOrNull { abs(it.toEpochDay() - today.toEpochDay()) }
+        ?: month.atDay(fallbackDay.coerceIn(1, month.lengthOfMonth()))
 }

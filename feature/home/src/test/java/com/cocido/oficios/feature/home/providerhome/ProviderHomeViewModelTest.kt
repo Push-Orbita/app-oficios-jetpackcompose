@@ -76,7 +76,7 @@ class ProviderHomeViewModelTest {
     }
 
     @Test
-    fun `past unclosed bookings are dropped from home agenda`() = runTest(testDispatcher) {
+    fun `past unclosed bookings stay on the home agenda`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             percent = 100,
             upcoming = listOf(
@@ -84,12 +84,13 @@ class ProviderHomeViewModelTest {
                 agendaOrder(2, "2026-09-29T07:00:00", BookingStatus.IN_PROGRESS),
                 agendaOrder(3, "2026-10-05T12:00:00", BookingStatus.IN_PROGRESS),
                 agendaOrder(4, "2026-10-22T09:00:00", BookingStatus.CONFIRMED),
+                agendaOrder(5, "2026-09-20T09:00:00", BookingStatus.CONFIRMED),
             ),
         )
         advanceUntilIdle()
 
         val content = successContent(viewModel)
-        assertEquals(listOf(4L), content.upcomingOrders.map { it.id })
+        assertEquals(listOf(1L, 2L, 3L, 4L), content.upcomingOrders.map { it.id })
     }
 
     @Test
