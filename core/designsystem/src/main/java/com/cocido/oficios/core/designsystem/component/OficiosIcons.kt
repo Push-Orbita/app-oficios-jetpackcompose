@@ -38,6 +38,7 @@ object OficiosIcons {
     @DrawableRes val X = R.drawable.ic_lucide_x
     @DrawableRes val Search = R.drawable.ic_lucide_search
     @DrawableRes val Mic = R.drawable.ic_lucide_mic
+    @DrawableRes val SlidersHorizontal = R.drawable.ic_lucide_sliders_horizontal
     
     // Usuarios y perfiles
     @DrawableRes val User = R.drawable.ic_lucide_user

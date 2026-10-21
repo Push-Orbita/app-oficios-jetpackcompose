@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_search_voice">Buscar por voz</string>
+    <string name="ds_search_action">Buscar</string>
+    <string name="ds_search_filters">Filtros</string>
+    <string name="ds_worker_verified">Perfil verificado</string>
+    <string name="ds_worker_no_rating">Sin calificación</string>
+    <string name="ds_worker_rating">Calificación %1$.1f de 5</string>
+</resources>

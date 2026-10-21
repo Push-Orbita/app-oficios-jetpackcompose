@@ -29,6 +29,14 @@ object OficiosComponentSize {
     val avatarSettings = 72.dp
     val ratingIcon = 36.dp
     val categoryCardSize = 112.dp
+    /** Figma 224:1013 — bloque Recientes hug 175 (título 36 + gap 10 + cards 112). */
+    val homeRecentsSectionMinHeight = 175.dp
+    /** Compensa el capital-top de D-DIN vs DIN Pro (Figma recientes y=155). */
+    val homeRecentsAfterSearchExtra = 6.dp
+    /** Espacio óptico recents→soporte para dejar la card en y≈350. */
+    val homeSupportAfterRecentsExtra = 9.dp
+    /** Resultados 40:322: fila logo+título. 107 de Figma + 5 para el buscador en y=195. */
+    val searchResultsHeaderMinHeight = 112.dp
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f
     val agendaCell = 48.dp
