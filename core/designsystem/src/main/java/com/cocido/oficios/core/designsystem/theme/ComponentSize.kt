@@ -71,6 +71,11 @@ object OficiosComponentSize {
     val mapCardHeight = 248.dp
     /** Icon-box 40 (p8 + icono 24). */
     val iconBox = 40.dp
+    /** Editar Perfil 231:15 — thumbs galería/certificado + Añadir. */
+    val profileMediaTile = 118.dp
+    /** Calendario general 239:475 — chip de día. */
+    val agendaDayChipWidth = 40.dp
+    val agendaDayChipHeight = 32.dp
     val listRowMinHeight = 56.dp
     val skeletonBlockMd = 160.dp
     val skeletonBlockLg = 240.dp

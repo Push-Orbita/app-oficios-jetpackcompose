@@ -185,6 +185,7 @@
     <string name="worker_report_submit">Enviar denuncia</string>
 
     <string name="orders_title">Mis pedidos</string>
+    <string name="orders_undated_group">Sin fecha</string>
     <string name="orders_loading">Cargando pedidos…</string>
     <string name="orders_error_title">No pudimos cargar sus pedidos</string>
     <string name="orders_refresh_error">No pudimos actualizar sus pedidos</string>
@@ -270,6 +271,13 @@
     <string name="orders_date">Fecha y hora</string>
     <string name="orders_address">Dirección</string>
     <string name="orders_contact">Contacto</string>
+    <string name="orders_field_detail">Detalle:</string>
+    <string name="orders_field_address">Dirección:</string>
+    <string name="orders_field_client">Cliente:</string>
+    <string name="orders_field_worker">Trabajador:</string>
+    <string name="orders_field_time">Tiempo de visita:</string>
+    <string name="orders_field_amount">Monto:</string>
+    <string name="orders_payment_cash">Efectivo</string>
     <string name="orders_description">Descripción</string>
     <string name="orders_service">Servicio</string>
     <string name="orders_type">Tipo</string>
@@ -282,7 +290,7 @@
     <string name="orders_new_price">Nuevo precio: $%1$s</string>
     <string name="orders_waiting_counteroffer">Esperando respuesta del cliente a su contrapropuesta</string>
     <string name="orders_counteroffer_error">No pudimos cargar el detalle de la contrapropuesta. Vuelva a intentar más tarde.</string>
-    <string name="orders_on_the_way">Estoy en camino</string>
+    <string name="orders_on_the_way">Estoy En Camino</string>
     <string name="orders_marked_on_the_way">Marcó que está en camino</string>
     <string name="orders_mark_arrival">Marcar llegada</string>
     <string name="orders_finish">Terminar pedido</string>
@@ -349,11 +357,17 @@
     <string name="agenda_booking">Reserva #%1$s</string>
     <string name="agenda_edit_action">Editar disponibilidad</string>
     <string name="agenda_delete_action">Eliminar disponibilidad</string>
-    <string name="agenda_config_title">Calendario general</string>
+    <string name="agenda_config_title">Calendario General</string>
     <string name="agenda_config_days_title">Días de Atención</string>
     <string name="agenda_config_division_title">División de Horarios</string>
     <string name="agenda_config_hours_title">Horario de Atención</string>
     <string name="agenda_config_by_trade_title">Calendario Por Oficio</string>
+    <string name="agenda_config_division_30">30 minutos</string>
+    <string name="agenda_config_division_60">1 hora</string>
+    <string name="agenda_config_division_120">2 horas</string>
+    <string name="agenda_config_hours_hint">Podés marcar hasta 12 horas en un mismo día</string>
+    <string name="agenda_config_applies_note">El calendario aplica para todos los oficios que agregas, para cambiar sobre un oficio en específico podés hacerlo acá abajo.</string>
+    <string name="agenda_config_general_subtitle">Calendario General</string>
     <string name="agenda_config_loading">Cargando configuración…</string>
     <string name="agenda_config_error">No pudimos cargar su configuración</string>
     <string name="agenda_config_empty_title">Todavía no tiene especialidades con agenda</string>
