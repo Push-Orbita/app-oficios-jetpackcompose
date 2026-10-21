@@ -73,7 +73,7 @@ fun ProviderAgendaSection(
         ) {
             Text(
                 text = stringResource(R.string.provider_home_agenda_title),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
                 maxLines = 2,

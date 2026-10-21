@@ -119,13 +119,26 @@
         <item quantity="other">(%d reseñas)</item>
     </plurals>
     <string name="provider_home_benefits_title">Beneficios</string>
+    <string name="provider_home_benefit_visibility">Más visibilidad frente a clientes de su zona</string>
+    <string name="provider_home_benefit_agenda">Agenda propia para organizar sus turnos</string>
+    <string name="provider_home_benefit_trust">Perfil verificado que genera confianza</string>
+    <string name="provider_home_complete_profile_title">Completa Tu Perfil</string>
+    <string name="provider_home_complete_profile_percent">%1$d%%</string>
+    <string name="provider_home_complete_profile_link">completar perfil</string>
+    <string name="provider_home_tile_gallery">Agrega fotos a su galería</string>
+    <string name="provider_home_tile_local">Agrega su local comercial</string>
+    <string name="provider_home_tile_certificate">Agrega un certificado</string>
+    <string name="provider_home_pending_validation">Pendiente de validación</string>
+    <string name="provider_home_calendar_title">Calendario</string>
+    <string name="provider_home_calendar_setup_body">Configure su calendario para que los clientes puedan reservar turnos con usted.</string>
+    <string name="provider_home_configure_agenda">Configurar Agenda</string>
     <string name="provider_home_agenda_title">Agenda</string>
-    <string name="provider_home_view_full_agenda">Ver agenda completa</string>
+    <string name="provider_home_view_full_agenda">ver agenda completa</string>
     <string name="provider_home_previous_month">Mes anterior</string>
     <string name="provider_home_next_month">Mes siguiente</string>
     <string name="provider_home_upcoming_shifts_title">Próximos turnos</string>
-    <string name="provider_home_upcoming_shifts_empty_title">Todavía no tenés turnos agendados</string>
-    <string name="provider_home_upcoming_shifts_empty_description">Configurá tu agenda para que los clientes puedan reservar turnos con vos.</string>
+    <string name="provider_home_upcoming_shifts_empty_title">Todavía no tiene turnos agendados</string>
+    <string name="provider_home_upcoming_shifts_empty_description">Configure su agenda para que los clientes puedan reservar turnos con usted.</string>
     <string name="provider_home_active_booking_label">AHORA · %1$s con %2$s</string>
 
     <string name="help_title">Ayuda</string>
