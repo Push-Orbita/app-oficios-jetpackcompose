@@ -26,7 +26,7 @@ class CatalogRemoteDataSource @Inject constructor(
         catalogApi.searchSubRubros(rubroId = rubroId).data
     }
 
-    suspend fun fetchBarrios(query: String): AppResult<List<BarrioDto>> = safeApiCall {
-        catalogApi.searchBarrios(query = query).data
+    suspend fun fetchBarrios(query: String?, pageSize: Int = 20): AppResult<List<BarrioDto>> = safeApiCall {
+        catalogApi.searchBarrios(query = query, pageSize = pageSize).data
     }
 }

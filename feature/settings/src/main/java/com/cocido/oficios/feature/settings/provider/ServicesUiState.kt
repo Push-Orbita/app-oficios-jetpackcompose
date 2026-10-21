@@ -48,6 +48,7 @@ data class AddServiceUiState(
     val localBarrioQuery: String = "",
     val localBarrioId: Long? = null,
     val localBarrioSuggestions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val localStreet: String = "",
     val localLatitude: Double? = null,
     val localLongitude: Double? = null,
@@ -79,7 +80,9 @@ sealed interface AddServiceEvent {
     data class RequiresTurnsChanged(val checked: Boolean) : AddServiceEvent
     data class LocalNameChanged(val value: String) : AddServiceEvent
     data class LocalBarrioChanged(val value: String) : AddServiceEvent
+    data object LocalBarrioFocused : AddServiceEvent
     data class LocalBarrioSelected(val option: CatalogOption) : AddServiceEvent
+    data object LocalBarrioSuggestionsDismissed : AddServiceEvent
     data class LocalStreetChanged(val value: String) : AddServiceEvent
     data class LocalMapLocationSelected(val latitude: Double, val longitude: Double) : AddServiceEvent
     data object UseCurrentLocation : AddServiceEvent

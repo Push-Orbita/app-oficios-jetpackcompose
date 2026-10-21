@@ -132,6 +132,7 @@ fun ClientContactDomicilioStepScreen(
     onCountrySelected: (PhoneCountryOption) -> Unit,
     onEmailChanged: (String) -> Unit,
     onBarrioQueryChanged: (String) -> Unit,
+    onBarrioFocused: () -> Unit = {},
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
@@ -195,6 +196,8 @@ fun ClientContactDomicilioStepScreen(
             suggestionLabel = { it.label },
             label = stringResource(R.string.onboarding_step_barrio_label),
             placeholder = stringResource(R.string.onboarding_step_barrio_hint),
+            isLoading = uiState.isSearchingBarrios,
+            onFocused = onBarrioFocused,
             onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
         OficiosTextField(
@@ -240,6 +243,7 @@ fun ClientContactDomicilioStepScreen(
 fun ClientDomicilioStepScreen(
     uiState: ClientDomicilioUiState,
     onBarrioQueryChanged: (String) -> Unit,
+    onBarrioFocused: () -> Unit = {},
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
@@ -264,6 +268,8 @@ fun ClientDomicilioStepScreen(
             suggestionLabel = { it.label },
             label = stringResource(R.string.onboarding_step_barrio_label),
             placeholder = stringResource(R.string.onboarding_step_barrio_hint),
+            isLoading = uiState.isSearchingBarrios,
+            onFocused = onBarrioFocused,
             onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
         OficiosTextField(
@@ -741,6 +747,7 @@ private fun AvailabilitySection(
 fun ProviderLocalStepScreen(
     uiState: ProviderLocalUiState,
     onBarrioQueryChanged: (String) -> Unit,
+    onBarrioFocused: () -> Unit = {},
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
@@ -764,6 +771,8 @@ fun ProviderLocalStepScreen(
             suggestionLabel = { it.label },
             label = stringResource(R.string.onboarding_step_barrio_label),
             placeholder = stringResource(R.string.onboarding_step_barrio_hint),
+            isLoading = uiState.isSearchingBarrios,
+            onFocused = onBarrioFocused,
             onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
         OficiosTextField(value = uiState.calle, onValueChange = onCalleChanged, label = stringResource(R.string.onboarding_step_calle_label))

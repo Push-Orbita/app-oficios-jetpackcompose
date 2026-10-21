@@ -16,12 +16,12 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -132,8 +132,22 @@ class AddServiceViewModel @Inject constructor(
             is AddServiceEvent.RequiresTurnsChanged -> update { it.copy(requiresTurns = event.checked) }
             is AddServiceEvent.LocalNameChanged -> update { it.copy(localName = event.value) }
             is AddServiceEvent.LocalBarrioChanged -> searchBarrio(event.value)
-            is AddServiceEvent.LocalBarrioSelected -> update {
-                it.copy(localBarrioId = event.option.id, localBarrioQuery = event.option.label, localBarrioSuggestions = emptyList())
+            AddServiceEvent.LocalBarrioFocused ->
+                searchBarrio(_uiState.value.localBarrioQuery, preserveSelection = true)
+            is AddServiceEvent.LocalBarrioSelected -> {
+                barrioSearchJob?.cancel()
+                update {
+                    it.copy(
+                        localBarrioId = event.option.id,
+                        localBarrioQuery = event.option.label,
+                        localBarrioSuggestions = emptyList(),
+                        isSearchingBarrios = false,
+                    )
+                }
+            }
+            AddServiceEvent.LocalBarrioSuggestionsDismissed -> {
+                barrioSearchJob?.cancel()
+                update { it.copy(localBarrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
             is AddServiceEvent.LocalStreetChanged -> update { it.copy(localStreet = event.value) }
             is AddServiceEvent.LocalMapLocationSelected -> update {
@@ -263,17 +277,23 @@ class AddServiceViewModel @Inject constructor(
         }
     }
 
-    private fun searchBarrio(query: String) {
-        update { it.copy(localBarrioQuery = query, localBarrioId = null, errorMessage = null) }
-        barrioSearchJob?.cancel()
-        if (query.trim().length < 2) return update { it.copy(localBarrioSuggestions = emptyList()) }
-        barrioSearchJob = viewModelScope.launch {
-            delay(250)
-            when (val result = searchBarrios(query.trim())) {
-                is AppResult.Success -> update { it.copy(localBarrioSuggestions = result.data) }
-                is AppResult.Error -> update { it.copy(localBarrioSuggestions = emptyList()) }
-            }
+    private fun searchBarrio(query: String, preserveSelection: Boolean = false) {
+        update {
+            it.copy(
+                localBarrioQuery = query,
+                localBarrioId = if (preserveSelection) it.localBarrioId else null,
+                isSearchingBarrios = true,
+                errorMessage = null,
+            )
         }
+        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
+            previous = barrioSearchJob,
+            query = query,
+            searchBarrios = searchBarrios,
+            onResult = { options ->
+                update { it.copy(isSearchingBarrios = false, localBarrioSuggestions = options) }
+            },
+        )
     }
 
     private fun useCurrentLocation() {

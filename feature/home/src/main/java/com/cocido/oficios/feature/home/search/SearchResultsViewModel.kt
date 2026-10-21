@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
@@ -92,6 +93,8 @@ class SearchResultsViewModel @Inject constructor(
             is SearchResultsEvent.FilterRubroSelected -> onFilterRubroSelected(event.rubro)
             is SearchResultsEvent.FilterSubRubroSelected -> onFilterSubRubroSelected(event.subRubro)
             is SearchResultsEvent.FilterBarrioQueryChanged -> onBarrioQueryChanged(event.query)
+            SearchResultsEvent.FilterBarrioFocused ->
+                onBarrioQueryChanged(_filterSheetState.value.barrioQuery, preserveSelection = true)
             is SearchResultsEvent.FilterBarrioSelected -> onBarrioSelected(event.barrio)
             is SearchResultsEvent.FilterModalitySelected -> {
                 _filterSheetState.update { it.copy(selectedModality = event.modality) }
@@ -365,27 +368,36 @@ class SearchResultsViewModel @Inject constructor(
         }
     }
 
-    private fun onBarrioQueryChanged(query: String) {
-        _filterSheetState.update { it.copy(barrioQuery = query, barrioSuggestions = emptyList()) }
-        barrioSearchJob?.cancel()
-        if (query.length < 2) return
-        barrioSearchJob = viewModelScope.launch {
-            when (val result = searchBarriosUseCase(query)) {
-                is AppResult.Success -> {
-                    _filterSheetState.update { it.copy(barrioSuggestions = result.data) }
-                }
-                is AppResult.Error -> Unit
-            }
+    private fun onBarrioQueryChanged(query: String, preserveSelection: Boolean = false) {
+        _filterSheetState.update {
+            it.copy(
+                barrioQuery = query,
+                selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
+                selectedBarrioLabel = if (preserveSelection) it.selectedBarrioLabel else null,
+                isSearchingBarrios = true,
+            )
         }
+        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
+            previous = barrioSearchJob,
+            query = query,
+            searchBarrios = searchBarriosUseCase,
+            onResult = { options ->
+                _filterSheetState.update {
+                    it.copy(isSearchingBarrios = false, barrioSuggestions = options)
+                }
+            },
+        )
     }
 
     private fun onBarrioSelected(barrio: CatalogOption) {
+        barrioSearchJob?.cancel()
         _filterSheetState.update {
             it.copy(
                 barrioQuery = barrio.label,
                 selectedBarrioId = barrio.id,
                 selectedBarrioLabel = barrio.label,
                 barrioSuggestions = emptyList(),
+                isSearchingBarrios = false,
             )
         }
     }
@@ -517,6 +529,7 @@ data class FilterSheetUiState(
     val selectedSubRubroLabel: String? = null,
     val barrioQuery: String = "",
     val barrioSuggestions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val selectedBarrioLabel: String? = null,
     val selectedModality: com.cocido.oficios.domain.model.AttentionModality? = null,
@@ -559,6 +572,7 @@ sealed interface SearchResultsEvent {
     data class FilterRubroSelected(val rubro: CatalogOption) : SearchResultsEvent
     data class FilterSubRubroSelected(val subRubro: CatalogOption) : SearchResultsEvent
     data class FilterBarrioQueryChanged(val query: String) : SearchResultsEvent
+    data object FilterBarrioFocused : SearchResultsEvent
     data class FilterBarrioSelected(val barrio: CatalogOption) : SearchResultsEvent
     data class FilterModalitySelected(
         val modality: com.cocido.oficios.domain.model.AttentionModality?,

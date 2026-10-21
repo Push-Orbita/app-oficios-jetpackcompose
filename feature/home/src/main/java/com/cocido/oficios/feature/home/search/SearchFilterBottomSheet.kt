@@ -115,6 +115,8 @@ fun SearchFilterBottomSheet(
                 suggestionLabel = { it.label },
                 label = stringResource(R.string.home_filter_zone),
                 placeholder = stringResource(R.string.home_filter_zone_hint),
+                isLoading = state.isSearchingBarrios,
+                onFocused = { onEvent(SearchResultsEvent.FilterBarrioFocused) },
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {

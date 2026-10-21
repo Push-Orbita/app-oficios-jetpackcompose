@@ -15,6 +15,7 @@ sealed interface RegisterTradeEvent {
     data class OtherSpecializationChanged(val value: String) : RegisterTradeEvent
     data class ExperienceRangeChanged(val value: String) : RegisterTradeEvent
     data class NeighborhoodQueryChanged(val value: String) : RegisterTradeEvent
+    data object NeighborhoodFocused : RegisterTradeEvent
     data class NeighborhoodSelected(val option: CatalogOption) : RegisterTradeEvent
     data object NeighborhoodSuggestionsDismissed : RegisterTradeEvent
     data class TimeSlotFromChanged(val index: Int, val value: String) : RegisterTradeEvent
@@ -45,6 +46,7 @@ data class RegisterTradeUiState(
     val selectedExperienceRange: String = "",
     val neighborhoodQuery: String = "",
     val neighborhoodOptions: List<CatalogOption> = emptyList(),
+    val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val selectedPaymentMethods: Set<String> = emptySet(),
     val timeSlots: List<RegisterTradeTimeSlot> = listOf(RegisterTradeTimeSlot()),

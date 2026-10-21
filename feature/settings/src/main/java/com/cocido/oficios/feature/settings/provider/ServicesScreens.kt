@@ -350,6 +350,9 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             suggestionLabel = { it.label },
             label = stringResource(R.string.services_neighborhood),
             placeholder = stringResource(R.string.services_neighborhood_hint),
+            isLoading = state.isSearchingBarrios,
+            onFocused = { onEvent(AddServiceEvent.LocalBarrioFocused) },
+            onSuggestionsDismissed = { onEvent(AddServiceEvent.LocalBarrioSuggestionsDismissed) },
         )
         OficiosTextField(state.localStreet, { onEvent(AddServiceEvent.LocalStreetChanged(it)) }, stringResource(R.string.services_street))
         OficiosLocationPicker(

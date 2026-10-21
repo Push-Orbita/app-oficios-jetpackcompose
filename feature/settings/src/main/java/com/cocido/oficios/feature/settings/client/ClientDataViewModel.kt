@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -56,8 +56,22 @@ class ClientDataViewModel @Inject constructor(
             ClientDataEvent.SaveContact -> saveContact()
             is ClientDataEvent.AddressNameChanged -> update { it.copy(addressName = event.value) }
             is ClientDataEvent.BarrioQueryChanged -> searchBarrio(event.value)
-            is ClientDataEvent.BarrioSelected -> update {
-                it.copy(barrioId = event.option.id, barrioQuery = event.option.label, barrioSuggestions = emptyList())
+            ClientDataEvent.BarrioFocused ->
+                searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
+            is ClientDataEvent.BarrioSelected -> {
+                barrioSearchJob?.cancel()
+                update {
+                    it.copy(
+                        barrioId = event.option.id,
+                        barrioQuery = event.option.label,
+                        barrioSuggestions = emptyList(),
+                        isSearchingBarrios = false,
+                    )
+                }
+            }
+            ClientDataEvent.BarrioSuggestionsDismissed -> {
+                barrioSearchJob?.cancel()
+                update { it.copy(barrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
             is ClientDataEvent.StreetChanged -> update { it.copy(street = event.value) }
             is ClientDataEvent.NumberChanged -> update { it.copy(number = event.value) }
@@ -286,20 +300,23 @@ class ClientDataViewModel @Inject constructor(
         }
     }
 
-    private fun searchBarrio(query: String) {
-        update { it.copy(barrioQuery = query, barrioId = null, errorMessage = null) }
-        barrioSearchJob?.cancel()
-        if (query.trim().length < 2) {
-            update { it.copy(barrioSuggestions = emptyList()) }
-            return
+    private fun searchBarrio(query: String, preserveSelection: Boolean = false) {
+        update {
+            it.copy(
+                barrioQuery = query,
+                barrioId = if (preserveSelection) it.barrioId else null,
+                isSearchingBarrios = true,
+                errorMessage = null,
+            )
         }
-        barrioSearchJob = viewModelScope.launch {
-            delay(250)
-            when (val result = searchBarriosUseCase(query.trim())) {
-                is AppResult.Success -> update { it.copy(barrioSuggestions = result.data) }
-                is AppResult.Error -> update { it.copy(barrioSuggestions = emptyList()) }
-            }
-        }
+        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
+            previous = barrioSearchJob,
+            query = query,
+            searchBarrios = searchBarriosUseCase,
+            onResult = { options ->
+                update { it.copy(isSearchingBarrios = false, barrioSuggestions = options) }
+            },
+        )
     }
 
     private fun useCurrentLocation() {
