@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.network.test
 
+import com.cocido.oficios.core.network.api.account.WorkGalleryApi
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.catalog.CatalogApi
@@ -12,6 +13,7 @@ import com.cocido.oficios.core.network.api.search.WorkerSearchApi
 import com.cocido.oficios.core.network.api.social.FavoritesApi
 import com.cocido.oficios.core.network.api.worker.WorkerProfileApi
 import com.cocido.oficios.core.network.api.worker.WorkerReviewsApi
+import com.cocido.oficios.core.network.UnitResponseConverterFactory
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import kotlinx.serialization.json.Json
@@ -38,6 +40,7 @@ object NetworkTestFactory {
         return Retrofit.Builder()
             .baseUrl(server.url("/"))
             .client(client)
+            .addConverterFactory(UnitResponseConverterFactory)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
@@ -77,6 +80,9 @@ object NetworkTestFactory {
 
     fun createAgendaApi(server: MockWebServer, timeoutMs: Long = 10_000): AgendaApi =
         createRetrofit(server, timeoutMs).create(AgendaApi::class.java)
+
+    fun createWorkGalleryApi(server: MockWebServer, timeoutMs: Long = 10_000): WorkGalleryApi =
+        createRetrofit(server, timeoutMs).create(WorkGalleryApi::class.java)
 
     fun loadFixture(path: String): String =
         checkNotNull(javaClass.classLoader?.getResourceAsStream(path)) {

@@ -3,6 +3,7 @@ package com.cocido.oficios.core.data.test
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.profile.ClientProfileApi
 import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
+import com.cocido.oficios.core.network.UnitResponseConverterFactory
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -36,6 +37,7 @@ internal object NetworkTestHelper {
         Retrofit.Builder()
             .baseUrl(server.url("/"))
             .client(OkHttpClient.Builder().build())
+            .addConverterFactory(UnitResponseConverterFactory)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
 }

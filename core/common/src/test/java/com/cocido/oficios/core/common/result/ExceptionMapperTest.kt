@@ -34,6 +34,19 @@ class ExceptionMapperTest {
     }
 
     @Test
+    fun `validation fieldErrors surface the first useful message`() {
+        val error = AppError.Validation(
+            message = "Datos de entrada no válidos.",
+            fieldErrors = mapOf("fotos" to "Formato no válido. Aceptados: JPG, PNG, WEBP, GIF"),
+            backendCode = "VA01",
+        )
+        assertEquals(
+            "Formato no válido. Aceptados: JPG, PNG, WEBP, GIF",
+            error.userMessage(),
+        )
+    }
+
+    @Test
     fun `unknown error hides technical message`() {
         val error = RuntimeException("Internal boom").toAppError()
 

@@ -32,9 +32,14 @@ fun AppError.userMessage(): String = when (this) {
     is AppError.Network -> message.toProfessionalMessage(
         fallback = "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
     )
-    is AppError.Validation -> message.toProfessionalMessage(
-        fallback = "No pudimos guardar los cambios. Revise los datos e intente nuevamente.",
-    )
+    is AppError.Validation -> {
+        val fromFields = fieldErrors.values.firstOrNull { value ->
+            value.isNotBlank() && !value.containsTechnicalDetail()
+        }
+        (fromFields ?: message).toProfessionalMessage(
+            fallback = "No pudimos guardar los cambios. Revise los datos e intente nuevamente.",
+        )
+    }
     is AppError.Unauthorized -> message.toProfessionalMessage(
         fallback = "Su sesión venció. Vuelva a ingresar para continuar.",
     )

@@ -175,7 +175,15 @@ class AccountRepositoryImpl @Inject constructor(
     override suspend fun uploadGallery(filePaths: List<String>) =
         galleryRemote.upload(filePaths).map { items -> items.map { it.toDomainItem() } }
 
-    override suspend fun deleteGalleryItem(id: Long) = galleryRemote.delete(id).map { Unit }
+    override suspend fun deleteGalleryItem(id: Long): AppResult<Unit> {
+        return when (val deleted = galleryRemote.delete(id)) {
+            is AppResult.Error -> deleted
+            is AppResult.Success -> {
+                providerRemote.getProviderProfile()
+                AppResult.Success(Unit)
+            }
+        }
+    }
 
     override suspend fun getCurrentDeletionRequest(): AppResult<AccountDeletionRequest?> =
         when (val result = accountRemote.getCurrentDeletionRequest()) {

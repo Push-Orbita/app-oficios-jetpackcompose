@@ -143,6 +143,9 @@ class PortfolioViewModel @Inject constructor(
             }
             when (result) {
                 is AppResult.Success -> {
+                    if (target is PortfolioDeleteTarget.Gallery) {
+                        update { it.copy(gallery = it.gallery.filterNot { item -> item.id == target.id }) }
+                    }
                     load()
                     emit(PortfolioEffect.ShowMessage("Elemento eliminado."))
                 }

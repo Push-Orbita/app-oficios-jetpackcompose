@@ -338,6 +338,7 @@ fun ProviderDniStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onFrontImage,
+        filePrefix = "dni",
     )
     val backPicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -345,6 +346,7 @@ fun ProviderDniStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onBackImage,
+        filePrefix = "dni",
     )
 
     OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
@@ -426,6 +428,7 @@ fun ProviderSelfieStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onImageSelected,
+        filePrefix = "selfie",
     )
 
     OnboardingStepScaffold(
@@ -814,6 +817,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onFrontImageSelected,
+        filePrefix = "dni",
     )
     val backImagePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -821,6 +825,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onBackImageSelected,
+        filePrefix = "dni",
     )
     val selfieImagePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -828,6 +833,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onSelfieImageSelected,
+        filePrefix = "selfie",
     )
     val certificatePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -835,6 +841,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onCertificateSelected,
+        filePrefix = "certificado",
     )
 
     OnboardingStepScaffold(

@@ -40,6 +40,7 @@ fun rememberImageSourcePicker(
     galleryLabel: String,
     cancelLabel: String,
     onImageSelected: (String?) -> Unit,
+    filePrefix: String = "imagen",
 ): ImageSourcePickerState {
     val context = LocalContext.current
     var showSheet by remember { mutableStateOf(false) }
@@ -47,7 +48,7 @@ fun rememberImageSourcePicker(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        onImageSelected(uri?.let { resolveUriToFilePath(context, it) })
+        onImageSelected(uri?.let { resolveUriToFilePath(context, it, filePrefix) })
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->

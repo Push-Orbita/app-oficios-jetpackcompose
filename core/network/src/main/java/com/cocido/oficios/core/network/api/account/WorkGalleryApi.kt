@@ -23,6 +23,7 @@ interface WorkGalleryApi {
     @POST("galeria-trabajo/subir-fotos")
     suspend fun upload(@Part photos: List<MultipartBody.Part>): List<WorkGalleryDto>
 
+    /** OpenAPI 200 "Foto eliminada" sin body: Unit ignora vacío o texto plano. */
     @DELETE("galeria-trabajo/{id}")
-    suspend fun delete(@Path("id") id: Long): JsonElement
+    suspend fun delete(@Path("id") id: Long)
 }

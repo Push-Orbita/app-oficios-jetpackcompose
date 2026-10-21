@@ -159,6 +159,24 @@ class NetworkErrorMapperTest {
     }
 
     @Test
+    fun `va01 generic message becomes a useful photo format hint`() {
+        val body = """{"code":"VA01","message":"Datos de entrada no válidos."}"""
+        val error = httpError(400, body).toNetworkAppError()
+        assertTrue(error is AppError.Validation)
+        assertEquals(
+            "El archivo no es un JPG, PNG, WEBP o GIF válido. Elija otra foto.",
+            error.message,
+        )
+    }
+
+    @Test
+    fun `va01 keeps specific backend message`() {
+        val body = """{"code":"VA01","message":"No es su galería"}"""
+        val error = httpError(400, body).toNetworkAppError()
+        assertEquals("No es su galería", error.message)
+    }
+
+    @Test
     fun `http 500 maps to Network with code 500`() {
         val error = httpError(500, NetworkTestFactory.loadFixture("errors/error_500.json"))
             .toNetworkAppError()

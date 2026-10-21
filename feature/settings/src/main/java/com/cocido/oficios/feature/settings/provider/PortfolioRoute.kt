@@ -26,6 +26,7 @@ fun PortfolioRoute(
         galleryLabel = "Elegir de la galería",
         cancelLabel = "Cancelar",
         onImageSelected = { path -> path?.let { viewModel.onEvent(PortfolioEvent.GallerySelected(it)) } },
+        filePrefix = "galeria",
     )
     val certificatePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult

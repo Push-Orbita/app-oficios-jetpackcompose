@@ -38,5 +38,5 @@ interface WorkCertificateApi {
     ): CertificadoTrabajoDto
 
     @DELETE("certificado-trabajo/{id}")
-    suspend fun deleteCertificate(@Path("id") id: Long): JsonElement
+    suspend fun deleteCertificate(@Path("id") id: Long)
 }
