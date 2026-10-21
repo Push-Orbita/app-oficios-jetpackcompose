@@ -54,6 +54,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
+import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.UserRole
@@ -178,7 +179,7 @@ private fun SettingsContent(
                                     if (user.emailVerified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert
                                 ),
                                 contentDescription = null,
-                                tint = if (user.emailVerified) MaterialTheme.colorScheme.tertiary else OficiosColorSecondaryText,
+                                tint = if (user.emailVerified) OficiosColorSuccess else OficiosColorSecondaryText,
                                 modifier = Modifier.size(OficiosComponentSize.iconSm),
                             )
                             Text(

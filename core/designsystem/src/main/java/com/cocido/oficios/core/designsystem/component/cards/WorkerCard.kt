@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.R
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -101,12 +102,7 @@ fun WorkerCard(
                             modifier = Modifier.weight(1f, fill = false),
                         )
                         if (isVerified) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(OficiosIcons.ShieldCheck),
-                                contentDescription = verifiedCd,
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(OficiosComponentSize.iconMd),
-                            )
+                            OficiosVerifiedBadge(contentDescription = verifiedCd)
                         }
                     }
                     if (rating != null) {
