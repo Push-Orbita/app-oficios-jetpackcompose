@@ -5,6 +5,14 @@ data class AccountProfile(
     val providerDetails: ProviderAccountDetails? = null,
 )
 
+data class ProviderCommercialLocal(
+    val id: Long? = null,
+    val barrioId: Long? = null,
+    val barrioName: String? = null,
+    val street: String? = null,
+    val name: String? = null,
+)
+
 data class ProviderAccountDetails(
     val workerId: Long,
     val status: String,
@@ -15,7 +23,12 @@ data class ProviderAccountDetails(
     val services: List<ManagedProviderService>,
     val gallery: List<WorkGalleryItem>,
     val certificates: List<WorkCertificateItem>,
-)
+    val commercialLocal: ProviderCommercialLocal? = null,
+) {
+    val hasCommercialLocal: Boolean
+        get() = services.any { service -> service.subServices.any { it.servesAtLocal } } ||
+            !commercialLocal?.street.isNullOrBlank()
+}
 
 data class ManagedProviderService(
     val id: Long,
@@ -59,6 +72,28 @@ fun ManagedWorkSchedule.expandedDays(): List<String> {
     } else {
         WEEK_DAYS.subList(start, WEEK_DAYS.size) + WEEK_DAYS.subList(0, end + 1)
     }
+}
+
+fun ManagedProviderService.toRubroFullRequest(
+    paymentMethods: List<String>,
+    servesAtLocal: Boolean = subServices.any { it.servesAtLocal },
+    domicilioLocal: ProviderLocalDomicilioRequest? = null,
+): ProviderRubroFullRequest {
+    val workDays = workSchedule.flatMap { it.expandedDays() }.distinct()
+    val timeSlots = workSchedule
+        .flatMap { schedule -> schedule.ranges.map { RegisterTradeTimeSlotDraft(it.from, it.to) } }
+        .distinct()
+    return ProviderRubroFullRequest(
+        rubroId = rubroId,
+        subRubroIds = subServices.map { it.catalogSubRubroId }.filter { it > 0L },
+        servesAtClientHome = subServices.any { it.servesAtClientHome },
+        servesAtLocal = servesAtLocal,
+        workDays = workDays.ifEmpty { listOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES") },
+        timeSlots = timeSlots.ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
+        requiresTurns = subServices.any { it.requiresTurns },
+        domicilioLocal = domicilioLocal,
+        paymentMethods = paymentMethods,
+    )
 }
 
 data class UpdateAccountProfileRequest(

@@ -6,12 +6,14 @@ import com.cocido.oficios.domain.model.AccountDeletionRequest
 import com.cocido.oficios.domain.model.AccountDeletionStatus
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
 import com.cocido.oficios.core.network.api.profile.dto.CertificadoTrabajoDto
+import com.cocido.oficios.core.network.api.profile.dto.ProviderDomicilioDto
 import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ManagedProviderSubService
 import com.cocido.oficios.domain.model.ManagedTimeRange
 import com.cocido.oficios.domain.model.ManagedWorkSchedule
 import com.cocido.oficios.domain.model.ProviderAccountDetails
+import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.WorkCertificateItem
 import com.cocido.oficios.domain.model.WorkGalleryItem
 
@@ -25,7 +27,19 @@ fun TrabajadorOficioPerfilMeDto.toAccountDetails() = ProviderAccountDetails(
     services = rubros.map { it.toManagedService() },
     gallery = galeriaTrabajos.map { it.toDomainItem() },
     certificates = certificados.map { it.toDomainItem() },
+    commercialLocal = domicilios.toCommercialLocal(),
 )
+
+private fun List<ProviderDomicilioDto>.toCommercialLocal(): ProviderCommercialLocal? {
+    val dto = firstOrNull { !it.calle.isNullOrBlank() } ?: firstOrNull() ?: return null
+    return ProviderCommercialLocal(
+        id = dto.id,
+        barrioId = dto.barrioId ?: dto.barrio?.id,
+        barrioName = dto.barrio?.nombre,
+        street = dto.calle,
+        name = dto.nombre,
+    )
+}
 
 private fun TrabajadorOficioRubroFullDto.toManagedService() = ManagedProviderService(
     id = id,

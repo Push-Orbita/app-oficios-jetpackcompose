@@ -15,7 +15,9 @@ fun ProviderHomeRoute(
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onNavigateToCompleteProfile: () -> Unit,
+    onNavigateToGallery: () -> Unit,
+    onNavigateToCommercialLocal: () -> Unit,
+    onNavigateToCertificate: () -> Unit,
     onNavigateToOrdersList: () -> Unit,
     onNavigateToOrderDetail: (Long) -> Unit,
     onNavigateToAgenda: () -> Unit,
@@ -32,7 +34,9 @@ fun ProviderHomeRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 ProviderHomeEffect.NavigateToSettings -> onNavigateToSettings()
-                ProviderHomeEffect.NavigateToCompleteProfile -> onNavigateToCompleteProfile()
+                ProviderHomeEffect.NavigateToGallery -> onNavigateToGallery()
+                ProviderHomeEffect.NavigateToCommercialLocal -> onNavigateToCommercialLocal()
+                ProviderHomeEffect.NavigateToCertificate -> onNavigateToCertificate()
                 ProviderHomeEffect.NavigateToOrdersList -> onNavigateToOrdersList()
                 ProviderHomeEffect.NavigateToAgenda -> onNavigateToAgenda()
                 ProviderHomeEffect.NavigateToAgendaConfig -> onNavigateToAgendaConfig()
@@ -49,7 +53,7 @@ fun ProviderHomeRoute(
         onNavigateToOrders = onNavigateToOrdersList,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,
-        onVisible = viewModel::refreshUnreadCount,
+        onVisible = viewModel::onVisible,
     ) { selectedTab, onTabSelected ->
         ProviderHomeScreen(
             uiState = uiState,

@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+
 class ProviderHomeProfileTilesTest {
 
     @Test
@@ -53,8 +54,84 @@ class ProviderHomeProfileTilesTest {
     fun `completion percent is thirds of the three tiles`() {
         assertEquals(0, ProviderHomeTiles(gallery = false, local = false, certificate = false).completionPercent)
         assertEquals(33, ProviderHomeTiles(gallery = true, local = false, certificate = false).completionPercent)
+        assertEquals(66, ProviderHomeTiles(gallery = true, local = false, certificate = true).completionPercent)
         assertEquals(66, ProviderHomeTiles(gallery = true, local = true, certificate = false).completionPercent)
         assertEquals(100, ProviderHomeTiles(gallery = true, local = true, certificate = true).completionPercent)
+    }
+
+    @Test
+    fun `first incomplete target follows gallery then local then certificate`() {
+        assertEquals(
+            ProviderProfileCompletionTarget.GALLERY,
+            ProviderHomeTiles(gallery = false, local = false, certificate = false).firstIncompleteTarget(),
+        )
+        assertEquals(
+            ProviderProfileCompletionTarget.COMMERCIAL_LOCAL,
+            ProviderHomeTiles(gallery = true, local = false, certificate = true).firstIncompleteTarget(),
+        )
+        assertEquals(
+            ProviderProfileCompletionTarget.CERTIFICATE,
+            ProviderHomeTiles(gallery = true, local = true, certificate = false).firstIncompleteTarget(),
+        )
+        assertEquals(
+            null,
+            ProviderHomeTiles(gallery = true, local = true, certificate = true).firstIncompleteTarget(),
+        )
+    }
+
+    @Test
+    fun `resolve tiles uses gallery certificates and local from perfil`() {
+        val details = ProviderAccountDetails(
+            workerId = 1,
+            status = "VALIDADO",
+            document = null,
+            description = null,
+            experience = null,
+            paymentMethods = emptyList(),
+            services = listOf(
+                ManagedProviderService(
+                    id = 11,
+                    rubroId = 2,
+                    rubroName = "Plomería",
+                    isPrimary = true,
+                    subServices = listOf(
+                        ManagedProviderSubService(1, 21, "Caños", true, false, false),
+                    ),
+                    workSchedule = emptyList(),
+                ),
+            ),
+            gallery = listOf(WorkGalleryItem(1, "https://example.com/a.jpg")),
+            certificates = listOf(WorkCertificateItem(1, "Matrícula", null)),
+            commercialLocal = null,
+        )
+        val tiles = resolveProviderHomeTiles(
+            details = details,
+            missingSteps = listOf("local"),
+            isProfileComplete = false,
+        )
+        assertTrue(tiles.gallery)
+        assertFalse(tiles.local)
+        assertTrue(tiles.certificate)
+        assertEquals(66, tiles.completionPercent)
+    }
+
+    @Test
+    fun `local tile is done when GET perfil has a commercial street`() {
+        val details = ProviderAccountDetails(
+            workerId = 1,
+            status = "VALIDADO",
+            document = null,
+            description = null,
+            experience = null,
+            paymentMethods = emptyList(),
+            services = emptyList(),
+            gallery = emptyList(),
+            certificates = emptyList(),
+            commercialLocal = ProviderCommercialLocal(barrioId = 7, barrioName = "Centro", street = "San Martín 123"),
+        )
+        assertTrue(details.hasCommercialLocal)
+        val tiles = resolveProviderHomeTiles(details, missingSteps = emptyList(), isProfileComplete = false)
+        assertTrue(tiles.local)
     }
 
     @Test

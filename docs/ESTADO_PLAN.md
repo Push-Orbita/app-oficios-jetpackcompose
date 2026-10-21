@@ -156,7 +156,7 @@ Figma tiene 3 frames inconsistentes: `191:11` (Beneficios + Completa Tu Perfil 8
 
 1. **Agenda vive en Inicio.** Header (avatar, nombre, shield-check verde, rubros, campana) → Beneficios → Completa Tu Perfil (solo si &lt;100%) → calendario mensual + lista por fecha (card AHORA blanca, HOY con etiqueta vertical, chevron) → `ver agenda completa`.
 2. **No hay tab Agenda** en la bottom nav del trabajador. Nav acordada: Inicio · Mis pedidos · Perfil. Favoritos oculto. Ayuda en Ajustes/Perfil. `AgendaDestination.list` solo desde el link.
-3. **Completa Tu Perfil** desaparece entera al 100%. Check si el hito está hecho, círculo punteado si falta.
+3. **Completa Tu Perfil** desaparece entera al 100%. Check si el hito está hecho, círculo punteado si falta. Cada tile abre el editor real (galería → portfolio; certificado → editor de certificado; local → formulario barrio/calle/mapa). **Nunca** `PROVIDER_CHECKLIST` / «¡Perfil confirmado!» desde Inicio. Al volver, Inicio re-fetcha el perfil en silencio.
 
 ### API: qué se puede calcular y qué no (BK-19)
 
@@ -164,14 +164,16 @@ Figma tiene 3 frames inconsistentes: `191:11` (Beneficios + Completa Tu Perfil 8
 
 | Hito Figma | Fuente real | Limitación |
 |---|---|---|
-| Galería | `GET perfil` → `providerDetails.gallery.isNotEmpty()` | — |
-| Certificado | `GET perfil` → `providerDetails.certificates.isNotEmpty()` | BK-11: no hay badge Validado/Pendiente admin |
-| Local comercial | heurística `services.subServices.any { servesAtLocal }` | **No hay entidad "local comercial"** en la API |
-| % barra | `(hitos hechos × 100) / 3` → 0 / 33 / 66 / 100 | Figma mockea **80%**; ese valor no sale de la API |
+| Galería | `GET perfil` → `galeriaTrabajos` / `providerDetails.gallery.isNotEmpty()` | — |
+| Certificado | `GET perfil` → `certificados` / `providerDetails.certificates.isNotEmpty()` | BK-11: no hay badge Validado/Pendiente admin |
+| Local comercial | `lugarLocal` en subrubros **o** `GET perfil.domicilios` con `calle` | No hay entidad «local comercial». Write: `POST /trabajador-oficio-rubro/full` (`lugarLocal` + `domicilioLocal`) vía `replaceService` (BK-01 DELETE+POST). `ProviderDomicilioDto` no trae lat/lng: el mapa no se prefilla |
+| % barra | `(hitos hechos × 100) / 3` → 0 / 33 / 66 / 100 | **66% = 2 de 3** (captura: galería + certificado; local sin tildar). Figma mockea **80%**; ese valor no sale de la API |
 | Fallback | si `GET perfil` falla: `inferProviderHomeTiles(faltantes)` | Match por texto (`galer`/`foto`, `local`/`comercio`, `certific`) |
-| `perfilCompleto == true` | los 3 hitos se marcan hechos (100%) | El flag no distingue cuál faltaba |
+| `perfilCompleto == true` | solo en el fallback: los 3 hitos se marcan hechos | Si el perfil carga, mandan las listas reales |
 
-AHORA = `BookingStatus.IN_PROGRESS`. HOY = fecha del turno = hoy. Beneficios siguen copy estático (BK-18).
+Figma (Rediseño/Flujos): «Agrega tu local comercial» existe solo como tile de Inicio (`191:11`, `259:254`, `259:17`, Flujos `356:18`). **No hay frame de edición post-onboarding.** El formulario reutiliza el paso onboarding «Local comercial» (barrio, calle, mapa) alineado a OpenAPI `CreateDomicilioLocalRequestDto`.
+
+AHORA = hoy + slot o `IN_PROGRESS` de hoy. HOY = fecha del turno = hoy (no AHORA). Beneficios siguen copy estático (BK-18).
 
 ## Reglas que se mantuvieron
 

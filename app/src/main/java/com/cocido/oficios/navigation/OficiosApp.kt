@@ -169,10 +169,14 @@ fun AppNavHost(
             onNavigateToSettings = {
                 navController.openClientTab(ClientHomeTab.AJUSTES, SettingsDestination.route)
             },
-            onNavigateToCompleteProfile = {
-                navController.navigate(OnboardingDestination.PROVIDER_CHECKLIST) {
-                    launchSingleTop = true
-                }
+            onNavigateToGallery = {
+                navController.navigate(SettingsDestination.portfolio())
+            },
+            onNavigateToCommercialLocal = {
+                navController.navigate(SettingsDestination.commercialLocal)
+            },
+            onNavigateToCertificate = {
+                navController.navigate(SettingsDestination.portfolio(SettingsDestination.FOCUS_CERTIFICATE))
             },
             onShowMessage = showMessage,
         )
