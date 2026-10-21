@@ -37,7 +37,7 @@ import java.time.YearMonth
 import java.time.ZonedDateTime
 
 /**
- * Agenda en Inicio trabajador — Figma `191:11` + `259:534`.
+ * Agenda en Inicio trabajador — Flujos `526:667` (bloque Agenda) + `526:31` (home).
  * Calendario mensual (días con turno marcados) + lista por fecha (AHORA / HOY).
  */
 @Composable
