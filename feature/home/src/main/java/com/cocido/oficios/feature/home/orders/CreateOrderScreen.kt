@@ -58,6 +58,7 @@ import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.feature.home.worker.components.WorkerFiveStarRow
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -72,6 +73,7 @@ fun CreateOrderScreen(
     selectedTab: ClientHomeTab = ClientHomeTab.INICIO,
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = true,
+    today: LocalDate = LocalDate.now(),
 ) {
     val hasUnsavedChanges = uiState is CreateOrderUiState.Success &&
         (uiState.description.isNotBlank() || uiState.selectedDate != null)
@@ -125,6 +127,7 @@ fun CreateOrderScreen(
                         state = state,
                         onEvent = onEvent,
                         onNavigateBack = handleBack,
+                        today = today,
                     )
                 }
             }
@@ -137,9 +140,9 @@ private fun CreateOrderForm(
     state: CreateOrderUiState.Success,
     onEvent: (CreateOrderEvent) -> Unit,
     onNavigateBack: () -> Unit,
+    today: LocalDate,
     modifier: Modifier = Modifier,
 ) {
-    val today = LocalDate.now()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -158,7 +161,7 @@ private fun CreateOrderForm(
             WorkerMiniCard(state)
         }
 
-        if (state.subRubroOptions.size > 1) {
+        if (!state.hasAgenda && state.subRubroOptions.size > 1) {
             OficiosDropdownField(
                 value = state.subRubroOptions.firstOrNull { it.id == state.selectedSubRubroId }?.name.orEmpty(),
                 options = state.subRubroOptions.map { it.name },
@@ -186,20 +189,22 @@ private fun CreateOrderForm(
             )
         }
 
-        if (state.domicilios.isEmpty() || state.contactos.isEmpty()) {
-            OficiosInlineAlert(message = stringResource(R.string.create_order_profile_required))
-        } else {
-            Text(
-                text = stringResource(R.string.create_order_location),
-                style = MaterialTheme.typography.titleMedium,
-                color = OficiosColorWhite,
-            )
-            LocationRadioList(
-                domicilios = state.domicilios,
-                selectedId = state.selectedDomicilioId,
-                onSelected = { onEvent(CreateOrderEvent.DomicilioSelected(it)) },
-                onAdd = { onEvent(CreateOrderEvent.AddLocation) },
-            )
+        if (!state.hasAgenda) {
+            if (state.domicilios.isEmpty() || state.contactos.isEmpty()) {
+                OficiosInlineAlert(message = stringResource(R.string.create_order_profile_required))
+            } else {
+                Text(
+                    text = stringResource(R.string.create_order_location),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = OficiosColorWhite,
+                )
+                LocationRadioList(
+                    domicilios = state.domicilios,
+                    selectedId = state.selectedDomicilioId,
+                    onSelected = { onEvent(CreateOrderEvent.DomicilioSelected(it)) },
+                    onAdd = { onEvent(CreateOrderEvent.AddLocation) },
+                )
+            }
         }
 
         Text(
@@ -216,6 +221,11 @@ private fun CreateOrderForm(
             onDateSelected = { onEvent(CreateOrderEvent.DateSelected(it)) },
             isDateEnabled = { date ->
                 CreateOrderSchedule.isDateEnabled(date, today, state.workDayKeys)
+            },
+            isDateHighlighted = { date ->
+                state.hasAgenda && state.availableSlots.any { slot ->
+                    slot.start.toLocalDate() == date
+                }
             },
         )
 
@@ -260,18 +270,6 @@ private fun CreateOrderForm(
                 text = stringResource(R.string.create_order_pick_slot),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
-            )
-        }
-
-        if (state.hasAgenda) {
-            OficiosTextField(
-                value = state.description,
-                onValueChange = { onEvent(CreateOrderEvent.DescriptionChanged(it)) },
-                label = stringResource(R.string.create_order_description),
-                placeholder = stringResource(R.string.create_order_description_hint),
-                singleLine = false,
-                minLines = 2,
-                maxLines = 4,
             )
         }
 
@@ -358,7 +356,7 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
             OficiosAvatar(
                 name = state.workerName,
                 imageUrl = state.workerAvatarUrl,
-                size = OficiosComponentSize.avatarSm,
+                size = OficiosComponentSize.avatarMd,
                 showBorder = true,
                 circular = false,
             )
@@ -381,18 +379,14 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
                         )
                     }
                 }
-                state.workerRating?.let { rating ->
-                    Text(
-                        text = stringResource(
-                            R.string.create_order_worker_rating,
-                            rating,
-                            state.workerReviewCount ?: 0,
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OficiosColorSecondaryTextFigma,
-                    )
-                }
+                WorkerFiveStarRow(rating = state.workerRating)
             }
+            Icon(
+                imageVector = ImageVector.vectorResource(OficiosIcons.Heart),
+                contentDescription = null,
+                tint = OficiosColorWhite,
+                modifier = Modifier.size(OficiosComponentSize.iconMd),
+            )
         }
     }
 }

@@ -175,7 +175,7 @@ private fun LabeledValue(label: String, value: String) {
 }
 
 @Composable
-internal fun WorkerFiveStarRow(rating: Float?) {
+fun WorkerFiveStarRow(rating: Float?) {
     val ratingCd = if (rating != null) {
         stringResource(DsR.string.ds_worker_rating, rating)
     } else {
