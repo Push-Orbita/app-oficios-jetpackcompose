@@ -49,6 +49,8 @@ enum class HourChipState {
     Available,
     Selected,
     Unavailable,
+    /** Visible y clickable, sin relleno — horas apagadas en Calendario General. */
+    Idle,
 }
 
 private val WEEK_START = DayOfWeek.SUNDAY
@@ -62,6 +64,7 @@ fun OficiosMonthCalendar(
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
     isDateEnabled: (LocalDate) -> Boolean = { true },
+    isDateHighlighted: (LocalDate) -> Boolean = { false },
 ) {
     val locale = Locale.forLanguageTag("es-AR")
     val firstOfMonth = month.atDay(1)
@@ -118,7 +121,9 @@ fun OficiosMonthCalendar(
                 }
             }
         }
-        cells.chunked(7).forEach { week ->
+        cells.chunked(7)
+            .filter { week -> week.any { date -> date.month == month.month } }
+            .forEach { week ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,6 +135,7 @@ fun OficiosMonthCalendar(
                     DayCell(
                         day = date.dayOfMonth,
                         selected = selected,
+                        highlighted = inMonth && isDateHighlighted(date),
                         enabled = enabled,
                         inMonth = inMonth,
                         onClick = { onDateSelected(date) },
@@ -205,12 +211,14 @@ private fun MonthNavButton(
 private fun DayCell(
     day: Int,
     selected: Boolean,
+    highlighted: Boolean,
     enabled: Boolean,
     inMonth: Boolean,
     onClick: () -> Unit,
 ) {
     val textColor = when {
         selected -> OficiosColorBackground
+        highlighted -> OficiosColorWhite
         !inMonth || !enabled -> if (!inMonth) OficiosColorOutlineFill else OficiosColorDisabledText
         else -> OficiosColorWhite
     }
@@ -219,13 +227,23 @@ private fun DayCell(
         modifier = Modifier
             .size(OficiosComponentSize.calendarDayCell)
             .clip(CircleShape)
-            .then(if (selected) Modifier.background(OficiosColorWhite) else Modifier)
+            .then(
+                when {
+                    selected -> Modifier.background(OficiosColorWhite)
+                    highlighted -> Modifier.background(OficiosColorAction)
+                    else -> Modifier
+                },
+            )
             .then(if (clickable) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = day.toString(),
-            style = if (selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyLarge,
+            style = if (selected || highlighted) {
+                MaterialTheme.typography.titleMedium
+            } else {
+                MaterialTheme.typography.bodyLarge
+            },
             color = textColor,
             textAlign = TextAlign.Center,
         )
@@ -242,7 +260,9 @@ private fun HourChip(
     val (bg, fg) = when (state) {
         HourChipState.Selected -> OficiosColorWhite to OficiosColorBackground
         HourChipState.Available -> OficiosColorAction to OficiosColorWhite
-        HourChipState.Unavailable -> OficiosColorOutlineFill.copy(alpha = 0f) to OficiosColorOutlineFill
+        HourChipState.Unavailable,
+        HourChipState.Idle,
+        -> OficiosColorOutlineFill.copy(alpha = 0f) to OficiosColorOutlineFill
     }
     Box(
         modifier = modifier
