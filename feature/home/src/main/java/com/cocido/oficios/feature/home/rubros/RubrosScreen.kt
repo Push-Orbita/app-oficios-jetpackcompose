@@ -112,8 +112,7 @@ private fun RubrosContent(
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { searchQuery = it },
-            onSearch = { onEvent(RubrosEvent.SearchSubmitted(searchQuery)) },
-            onMicClick = { onEvent(RubrosEvent.VoiceSearch) },
+            onSearch = { onEvent(RubrosEvent.SearchSubmitted(it)) },
             placeholder = stringResource(R.string.home_search_hint),
         )
         HomeRubrosGrid(

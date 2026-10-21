@@ -234,8 +234,10 @@ private fun SearchResultsHeader(
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
-            onSearch = { onEvent(SearchResultsEvent.QuerySubmitted) },
-            onMicClick = { onEvent(SearchResultsEvent.VoiceSearch) },
+            onSearch = { spoken ->
+                onEvent(SearchResultsEvent.QueryChanged(spoken))
+                onEvent(SearchResultsEvent.QuerySubmitted)
+            },
             onFilterClick = { onEvent(SearchResultsEvent.OpenFilters) },
             filterContentDescription = if (activeFilterCount > 0) {
                 stringResource(R.string.home_search_filters_with_count, activeFilterCount)

@@ -111,8 +111,7 @@ private fun CategoriesContent(
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { searchQuery = it },
-            onSearch = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
-            onMicClick = { onEvent(CategoriesEvent.SearchSubmitted(searchQuery)) },
+            onSearch = { onEvent(CategoriesEvent.SearchSubmitted(it)) },
             placeholder = stringResource(R.string.home_search_hint),
         )
         HomeCategoriesGrid(
