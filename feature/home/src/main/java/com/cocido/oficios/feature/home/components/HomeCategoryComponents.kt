@@ -148,7 +148,7 @@ fun HomeRecentRubrosSection(
             .fillMaxWidth()
             .padding(top = OficiosComponentSize.homeRecentsAfterSearchExtra)
             .heightIn(min = OficiosComponentSize.homeRecentsSectionMinHeight),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
+        verticalArrangement = Arrangement.spacedBy(OficiosComponentSize.homeRecentsTitleToCards),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
