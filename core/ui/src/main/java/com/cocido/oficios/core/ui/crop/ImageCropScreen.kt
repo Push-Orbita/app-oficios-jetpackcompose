@@ -2,14 +2,23 @@ package com.cocido.oficios.core.ui.crop
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +30,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -35,26 +45,34 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.rememberOficiosIcon
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
+import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.R
+import kotlin.math.roundToInt
 
 @Composable
 fun ImageCropScreen(
     sourcePath: String,
     mode: ImageCropMode,
-    onConfirm: (transform: ImageCropTransform, viewportWidth: Float, viewportHeight: Float) -> Unit,
+    onConfirm: (transform: ImageCropTransform) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,10 +90,19 @@ fun ImageCropScreen(
     var scale by remember { mutableFloatStateOf(1f) }
     var panX by remember { mutableFloatStateOf(0f) }
     var panY by remember { mutableFloatStateOf(0f) }
+    var crop by remember {
+        mutableStateOf(initialCropRect(sourceBitmap.width, sourceBitmap.height, mode.defaultAspect()))
+    }
+    var draggingHandle by remember { mutableStateOf<CropHandle?>(null) }
     var viewport by remember { mutableStateOf(IntSize.Zero) }
     val imageBitmap = remember(sourceBitmap) { sourceBitmap.asImageBitmap() }
+    val density = LocalDensity.current
+    val touchRadius = with(density) { OficiosComponentSize.minTouchTarget.toPx() }
+    val paddingPx = with(density) { OficiosSpacing.md.toPx() }
     val cropAreaDescription = stringResource(R.string.image_crop_area_cd)
     val photoDescription = stringResource(R.string.image_crop_photo_cd)
+
+    fun rotatedBounds() = rotatedSize(sourceBitmap.width, sourceBitmap.height, rotation)
 
     fun currentTransform() = ImageCropTransform(
         rotationDegrees = rotation,
@@ -83,15 +110,16 @@ fun ImageCropScreen(
         panX = panX,
         panY = panY,
         aspect = aspect,
+        crop = crop,
     )
 
-    fun clampCurrentPan(size: IntSize = viewport) {
-        if (size.width == 0 || size.height == 0) return
-        val crop = cropWindow(size.width.toFloat(), size.height.toFloat(), aspect)
-        val (rw, rh) = rotatedSize(sourceBitmap.width, sourceBitmap.height, rotation)
-        val clamped = clampPan(panX, panY, rw, rh, crop, scale)
-        panX = clamped.first
-        panY = clamped.second
+    fun resetCropToAspect(nextAspect: ImageCropAspect, nextRotation: Int = rotation) {
+        aspect = nextAspect
+        rotation = nextRotation
+        scale = 1f
+        panX = 0f
+        panY = 0f
+        crop = cropAfterRotation(sourceBitmap.width, sourceBitmap.height, nextRotation, nextAspect)
     }
 
     OficiosScaffold(
@@ -110,59 +138,38 @@ fun ImageCropScreen(
                     .padding(bottom = OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             ) {
-                if (mode.allowsFreeAspect()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                        OficiosSegmentChip(
-                            label = stringResource(R.string.image_crop_ratio_4_3),
-                            selected = aspect == ImageCropAspect.Gallery43,
-                            onClick = {
-                                aspect = ImageCropAspect.Gallery43
-                                panX = 0f
-                                panY = 0f
-                                clampCurrentPan()
-                            },
-                        )
-                        OficiosSegmentChip(
-                            label = stringResource(R.string.image_crop_free),
-                            selected = aspect == ImageCropAspect.Free,
-                            onClick = {
-                                aspect = ImageCropAspect.Free
-                                panX = 0f
-                                panY = 0f
-                                clampCurrentPan()
-                            },
-                        )
-                    }
-                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
                 ) {
-                    OficiosButton(
-                        text = stringResource(R.string.image_crop_reset),
+                    CropToolButton(
+                        icon = OficiosIcons.RotateCw,
+                        label = stringResource(R.string.image_crop_rotate),
                         onClick = {
-                            rotation = 0
-                            scale = 1f
-                            panX = 0f
-                            panY = 0f
-                            aspect = mode.defaultAspect()
+                            resetCropToAspect(aspect, rotateClockwise(rotation))
                         },
                         modifier = Modifier.weight(1f),
-                        variant = OficiosButtonVariant.Outlined,
-                        size = OficiosButtonSize.Small,
                     )
-                    OficiosButton(
-                        text = stringResource(R.string.image_crop_rotate),
-                        onClick = {
-                            rotation = rotateClockwise(rotation)
-                            panX = 0f
-                            panY = 0f
-                            clampCurrentPan()
-                        },
+                    CropToolButton(
+                        icon = OficiosIcons.RefreshCw,
+                        label = stringResource(R.string.image_crop_reset),
+                        onClick = { resetCropToAspect(mode.defaultAspect(), 0) },
                         modifier = Modifier.weight(1f),
-                        variant = OficiosButtonVariant.Outlined,
-                        size = OficiosButtonSize.Small,
                     )
+                    if (mode.allowsFreeAspect()) {
+                        CropToolButton(
+                            label = stringResource(R.string.image_crop_ratio_4_3),
+                            selected = aspect == ImageCropAspect.Gallery43,
+                            onClick = { resetCropToAspect(ImageCropAspect.Gallery43) },
+                            modifier = Modifier.weight(1f),
+                        )
+                        CropToolButton(
+                            label = stringResource(R.string.image_crop_free),
+                            selected = aspect == ImageCropAspect.Free,
+                            onClick = { resetCropToAspect(ImageCropAspect.Free) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -177,13 +184,7 @@ fun ImageCropScreen(
                     )
                     OficiosButton(
                         text = stringResource(R.string.image_crop_use),
-                        onClick = {
-                            onConfirm(
-                                currentTransform(),
-                                viewport.width.toFloat(),
-                                viewport.height.toFloat(),
-                            )
-                        },
+                        onClick = { onConfirm(currentTransform()) },
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Primary,
                         size = OficiosButtonSize.Small,
@@ -209,42 +210,116 @@ fun ImageCropScreen(
                     .weight(1f)
                     .fillMaxWidth()
                     .semantics { contentDescription = cropAreaDescription }
-                    .onSizeChanged {
-                        viewport = it
-                        clampCurrentPan(it)
-                    }
+                    .onSizeChanged { viewport = it }
                     .pointerInput(aspect, rotation) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            scale = clampScale(scale * zoom)
-                            panX += pan.x
-                            panY += pan.y
-                            clampCurrentPan()
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val (rw, rh) = rotatedBounds()
+                            val layout = fittedImageLayout(
+                                viewportWidth = size.width.toFloat(),
+                                viewportHeight = size.height.toFloat(),
+                                rotatedWidth = rw,
+                                rotatedHeight = rh,
+                                userScale = scale,
+                                panX = panX,
+                                panY = panY,
+                                padding = paddingPx,
+                            )
+                            val handle = hitCropHandle(
+                                screenX = down.position.x,
+                                screenY = down.position.y,
+                                crop = crop,
+                                layout = layout,
+                                touchRadius = touchRadius,
+                            )
+                            if (handle != null) {
+                                draggingHandle = handle
+                                val minSize = maxOf(
+                                    cropMinSize(rw, rh),
+                                    (touchRadius / layout.drawScale).roundToInt(),
+                                )
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull() ?: break
+                                    if (!change.pressed) break
+                                    val latestLayout = fittedImageLayout(
+                                        viewportWidth = size.width.toFloat(),
+                                        viewportHeight = size.height.toFloat(),
+                                        rotatedWidth = rw,
+                                        rotatedHeight = rh,
+                                        userScale = scale,
+                                        panX = panX,
+                                        panY = panY,
+                                        padding = paddingPx,
+                                    )
+                                    crop = resizeCrop(
+                                        crop = crop,
+                                        handle = handle,
+                                        pointerImageX = screenToImageX(change.position.x, latestLayout),
+                                        pointerImageY = screenToImageY(change.position.y, latestLayout),
+                                        imageWidth = rw,
+                                        imageHeight = rh,
+                                        aspect = aspect,
+                                        minSize = minSize,
+                                    )
+                                    change.consume()
+                                }
+                                draggingHandle = null
+                            } else {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val pressed = event.changes.filter { it.pressed }
+                                    if (pressed.isEmpty()) break
+                                    val zoomChange = event.calculateZoom()
+                                    val panChange = event.calculatePan()
+                                    if (pressed.size >= 2 || zoomChange != 1f) {
+                                        scale = clampUserScale(scale * zoomChange)
+                                        panX += panChange.x
+                                        panY += panChange.y
+                                    } else {
+                                        val imageX = screenToImageX(pressed[0].position.x, layout)
+                                        val imageY = screenToImageY(pressed[0].position.y, layout)
+                                        if (crop.contains(imageX, imageY)) {
+                                            val (currentRw, currentRh) = rotatedBounds()
+                                            crop = moveCrop(
+                                                crop = crop,
+                                                deltaX = panChange.x / layout.drawScale,
+                                                deltaY = panChange.y / layout.drawScale,
+                                                imageWidth = currentRw,
+                                                imageHeight = currentRh,
+                                            )
+                                        } else {
+                                            panX += panChange.x
+                                            panY += panChange.y
+                                        }
+                                    }
+                                    pressed.forEach { it.consume() }
+                                }
+                            }
                         }
                     },
             ) {
                 val vp = IntSize(constraints.maxWidth, constraints.maxHeight)
                 if (vp.width == 0 || vp.height == 0) return@BoxWithConstraints
-                val crop = cropWindow(vp.width.toFloat(), vp.height.toFloat(), aspect)
-                val (rotatedW, rotatedH) = rotatedSize(sourceBitmap.width, sourceBitmap.height, rotation)
-                val (clampedX, clampedY) = clampPan(panX, panY, rotatedW, rotatedH, crop, scale)
-                val drawScale = coverScale(
-                    rotatedW,
-                    rotatedH,
-                    crop.width.toFloat(),
-                    crop.height.toFloat(),
-                ) * clampScale(scale)
-                val displayedW = rotatedW * drawScale
-                val displayedH = rotatedH * drawScale
-                val imgLeft = (crop.left + crop.right) / 2f - displayedW / 2f + clampedX
-                val imgTop = (crop.top + crop.bottom) / 2f - displayedH / 2f + clampedY
+                val (rotatedW, rotatedH) = rotatedBounds()
+                val layout = fittedImageLayout(
+                    viewportWidth = vp.width.toFloat(),
+                    viewportHeight = vp.height.toFloat(),
+                    rotatedWidth = rotatedW,
+                    rotatedHeight = rotatedH,
+                    userScale = scale,
+                    panX = panX,
+                    panY = panY,
+                    padding = paddingPx,
+                )
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()
                         .semantics { contentDescription = photoDescription },
                 ) {
-                    translate(imgLeft + displayedW / 2f, imgTop + displayedH / 2f) {
+                    translate(layout.left + layout.width / 2f, layout.top + layout.height / 2f) {
                         rotate(rotation.toFloat(), pivot = Offset.Zero) {
-                            scale(drawScale, pivot = Offset.Zero) {
+                            scale(layout.drawScale, pivot = Offset.Zero) {
                                 drawImage(
                                     image = imageBitmap,
                                     topLeft = Offset(
@@ -258,8 +333,15 @@ fun ImageCropScreen(
                 }
                 CropOverlay(
                     crop = crop,
+                    layout = layout,
                     circular = mode.circularMask() && aspect == ImageCropAspect.Square,
+                    showGrid = draggingHandle != null,
                     modifier = Modifier.fillMaxSize(),
+                )
+                CropHandleMarkers(
+                    crop = crop,
+                    layout = layout,
+                    touchPx = touchRadius,
                 )
             }
         }
@@ -267,19 +349,64 @@ fun ImageCropScreen(
 }
 
 @Composable
+private fun CropToolButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: Int? = null,
+    selected: Boolean = false,
+) {
+    val container = if (selected) OficiosColorAction else Color.Transparent
+    OficiosTouchTarget(
+        onClick = onClick,
+        modifier = modifier,
+        accessibilityText = label,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(container, RoundedCornerShape(8.dp))
+                .padding(vertical = OficiosSpacing.xs),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = rememberOficiosIcon(icon),
+                    contentDescription = null,
+                    tint = OficiosColorWhite,
+                    modifier = Modifier.size(OficiosComponentSize.iconMd),
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = OficiosColorWhite,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+@Composable
 private fun CropOverlay(
     crop: PixelRect,
+    layout: FittedImageLayout,
     circular: Boolean,
+    showGrid: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Canvas(
         modifier = modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
     ) {
         drawRect(Color.Black.copy(alpha = 0.55f))
-        val left = crop.left.toFloat()
-        val top = crop.top.toFloat()
-        val width = crop.width.toFloat()
-        val height = crop.height.toFloat()
+        val left = imageToScreenX(crop.left.toFloat(), layout)
+        val top = imageToScreenY(crop.top.toFloat(), layout)
+        val right = imageToScreenX(crop.right.toFloat(), layout)
+        val bottom = imageToScreenY(crop.bottom.toFloat(), layout)
+        val width = (right - left).coerceAtLeast(1f)
+        val height = (bottom - top).coerceAtLeast(1f)
         if (circular) {
             drawCircle(
                 color = Color.Transparent,
@@ -307,5 +434,94 @@ private fun CropOverlay(
                 style = Stroke(width = 2.dp.toPx()),
             )
         }
+        if (showGrid) {
+            val thirdX = width / 3f
+            val thirdY = height / 3f
+            val grid = OficiosColorWhite.copy(alpha = 0.7f)
+            val stroke = Stroke(width = 1.dp.toPx())
+            drawLine(grid, Offset(left + thirdX, top), Offset(left + thirdX, bottom), strokeWidth = stroke.width)
+            drawLine(grid, Offset(left + thirdX * 2, top), Offset(left + thirdX * 2, bottom), strokeWidth = stroke.width)
+            drawLine(grid, Offset(left, top + thirdY), Offset(right, top + thirdY), strokeWidth = stroke.width)
+            drawLine(grid, Offset(left, top + thirdY * 2), Offset(right, top + thirdY * 2), strokeWidth = stroke.width)
+        }
+        val handle = 12.dp.toPx()
+        val edge = 18.dp.toPx()
+        val edgeThick = 4.dp.toPx()
+        val cx = left + width / 2f
+        val cy = top + height / 2f
+        fun corner(x: Float, y: Float) {
+            drawRect(
+                color = OficiosColorWhite,
+                topLeft = Offset(x - handle / 2f, y - handle / 2f),
+                size = Size(handle, handle),
+            )
+        }
+        fun edgeH(x: Float, y: Float) {
+            drawRect(
+                color = OficiosColorWhite,
+                topLeft = Offset(x - edge / 2f, y - edgeThick / 2f),
+                size = Size(edge, edgeThick),
+            )
+        }
+        fun edgeV(x: Float, y: Float) {
+            drawRect(
+                color = OficiosColorWhite,
+                topLeft = Offset(x - edgeThick / 2f, y - edge / 2f),
+                size = Size(edgeThick, edge),
+            )
+        }
+        corner(left, top)
+        corner(right, top)
+        corner(left, bottom)
+        corner(right, bottom)
+        edgeH(cx, top)
+        edgeH(cx, bottom)
+        edgeV(left, cy)
+        edgeV(right, cy)
+    }
+}
+
+@Composable
+private fun CropHandleMarkers(
+    crop: PixelRect,
+    layout: FittedImageLayout,
+    touchPx: Float,
+) {
+    val left = imageToScreenX(crop.left.toFloat(), layout)
+    val top = imageToScreenY(crop.top.toFloat(), layout)
+    val right = imageToScreenX(crop.right.toFloat(), layout)
+    val bottom = imageToScreenY(crop.bottom.toFloat(), layout)
+    val cx = (left + right) / 2f
+    val cy = (top + bottom) / 2f
+    val descriptions = mapOf(
+        CropHandle.TopLeft to stringResource(R.string.image_crop_handle_top_left),
+        CropHandle.TopRight to stringResource(R.string.image_crop_handle_top_right),
+        CropHandle.BottomLeft to stringResource(R.string.image_crop_handle_bottom_left),
+        CropHandle.BottomRight to stringResource(R.string.image_crop_handle_bottom_right),
+        CropHandle.Top to stringResource(R.string.image_crop_handle_top),
+        CropHandle.Bottom to stringResource(R.string.image_crop_handle_bottom),
+        CropHandle.Left to stringResource(R.string.image_crop_handle_left),
+        CropHandle.Right to stringResource(R.string.image_crop_handle_right),
+    )
+    val points = listOf(
+        CropHandle.TopLeft to Offset(left, top),
+        CropHandle.TopRight to Offset(right, top),
+        CropHandle.BottomLeft to Offset(left, bottom),
+        CropHandle.BottomRight to Offset(right, bottom),
+        CropHandle.Top to Offset(cx, top),
+        CropHandle.Bottom to Offset(cx, bottom),
+        CropHandle.Left to Offset(left, cy),
+        CropHandle.Right to Offset(right, cy),
+    )
+    val half = touchPx / 2f
+    points.forEach { (handle, point) ->
+        Box(
+            modifier = Modifier
+                .offset {
+                    IntOffset((point.x - half).roundToInt(), (point.y - half).roundToInt())
+                }
+                .size(with(LocalDensity.current) { touchPx.toDp() })
+                .semantics { contentDescription = descriptions.getValue(handle) },
+        )
     }
 }

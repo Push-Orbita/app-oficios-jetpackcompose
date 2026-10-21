@@ -68,14 +68,12 @@ fun rememberImageCropper(): ImageCropperState {
                     pending.onCancel()
                     request = null
                 },
-                onConfirm = { transform, viewportW, viewportH ->
+                onConfirm = { transform ->
                     runCatching {
                         applyImageCrop(
                             context = context,
                             sourcePath = pending.sourcePath,
                             transform = transform,
-                            viewportWidth = viewportW,
-                            viewportHeight = viewportH,
                             filePrefix = pending.filePrefix,
                         )
                     }.onSuccess { path ->

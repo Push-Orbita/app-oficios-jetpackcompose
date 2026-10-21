@@ -36,13 +36,11 @@ fun applyImageCrop(
     context: Context,
     sourcePath: String,
     transform: ImageCropTransform,
-    viewportWidth: Float,
-    viewportHeight: Float,
     filePrefix: String,
 ): String {
     val original = BitmapFactory.decodeFile(sourcePath)
         ?: throw ClientValidationException(ImageUploadContract.IMAGE_READ_FAILED_MESSAGE)
-    val crop = bitmapCropRect(original.width, original.height, transform, viewportWidth, viewportHeight)
+    val crop = bitmapCropRect(original.width, original.height, transform)
     val rotated = rotateSoftware(original, transform.rotationDegrees)
     if (rotated !== original && !original.isRecycled) original.recycle()
     val safe = PixelRect(

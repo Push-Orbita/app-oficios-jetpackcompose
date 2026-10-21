@@ -2,6 +2,7 @@ package com.cocido.oficios.core.ui.crop
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -24,80 +25,186 @@ class ImageCropMathTest {
     }
 
     @Test
-    fun `square crop window is centered 1 to 1`() {
-        val window = cropWindow(400f, 800f, ImageCropAspect.Square, insetFraction = 0.1f)
-        assertEquals(window.width, window.height)
-        val centerX = (window.left + window.right) / 2
-        assertEquals(200, centerX)
+    fun `initial free crop is the full 16 by 9 image`() {
+        val crop = initialCropRect(1920, 1080, ImageCropAspect.Free)
+        assertEquals(0, crop.left)
+        assertEquals(0, crop.top)
+        assertEquals(1920, crop.right)
+        assertEquals(1080, crop.bottom)
+        val applied = bitmapCropRect(
+            imageWidth = 1920,
+            imageHeight = 1080,
+            transform = ImageCropTransform(aspect = ImageCropAspect.Free),
+        )
+        assertEquals(crop, applied)
     }
 
     @Test
-    fun `gallery 4 3 window keeps ratio`() {
-        val window = cropWindow(400f, 400f, ImageCropAspect.Gallery43, insetFraction = 0f)
-        val ratio = window.width.toFloat() / window.height
+    fun `initial free crop is the full 9 by 16 image`() {
+        val crop = initialCropRect(1080, 1920, ImageCropAspect.Free)
+        assertEquals(0, crop.left)
+        assertEquals(0, crop.top)
+        assertEquals(1080, crop.right)
+        assertEquals(1920, crop.bottom)
+    }
+
+    @Test
+    fun `square start is the largest centered square inside a 16 by 9 image`() {
+        val crop = initialCropRect(1600, 900, ImageCropAspect.Square)
+        assertEquals(crop.width, crop.height)
+        assertEquals(900, crop.width)
+        assertEquals(350, crop.left)
+        assertEquals(0, crop.top)
+        assertEquals(1250, crop.right)
+        assertEquals(900, crop.bottom)
+    }
+
+    @Test
+    fun `gallery 4 3 start is the largest centered 4 3 inside the image`() {
+        val crop = initialCropRect(1600, 900, ImageCropAspect.Gallery43)
+        val ratio = crop.width.toFloat() / crop.height
         assertEquals(4f / 3f, ratio, 0.02f)
+        assertEquals(0, crop.top)
+        assertEquals(900, crop.bottom)
+        assertTrue(crop.left >= 0)
+        assertTrue(crop.right <= 1600)
     }
 
     @Test
-    fun `identity transform on covering image crops the full rotated bitmap`() {
-        val transform = ImageCropTransform(aspect = ImageCropAspect.Free)
-        val crop = bitmapCropRect(
+    fun `resize right handle clamps to the image edge`() {
+        val start = initialCropRect(400, 300, ImageCropAspect.Free)
+        val shrunk = resizeCrop(
+            crop = start,
+            handle = CropHandle.Right,
+            pointerImageX = 250f,
+            pointerImageY = 150f,
             imageWidth = 400,
             imageHeight = 300,
-            transform = transform,
-            viewportWidth = 400f,
-            viewportHeight = 300f,
+            aspect = ImageCropAspect.Free,
+            minSize = 40,
         )
-        assertEquals(0, crop.left)
-        assertEquals(0, crop.top)
-        assertEquals(400, crop.right)
-        assertEquals(300, crop.bottom)
-    }
-
-    @Test
-    fun `rotation 90 maps crop into swapped dimensions`() {
-        val transform = ImageCropTransform(rotationDegrees = 90, aspect = ImageCropAspect.Free)
-        val crop = bitmapCropRect(
+        assertEquals(0, shrunk.left)
+        assertEquals(250, shrunk.right)
+        val overflow = resizeCrop(
+            crop = shrunk,
+            handle = CropHandle.Right,
+            pointerImageX = 900f,
+            pointerImageY = 150f,
             imageWidth = 400,
-            imageHeight = 200,
-            transform = transform,
-            viewportWidth = 200f,
-            viewportHeight = 400f,
+            imageHeight = 300,
+            aspect = ImageCropAspect.Free,
+            minSize = 40,
         )
-        assertEquals(200, crop.width)
-        assertEquals(400, crop.height)
-        assertEquals(0, crop.left)
-        assertEquals(0, crop.top)
+        assertEquals(400, overflow.right)
+        assertEquals(0, overflow.left)
+        assertTrue(overflow.top >= 0)
+        assertTrue(overflow.bottom <= 300)
     }
 
     @Test
-    fun `pinch scale 2 on square still stays inside the bitmap`() {
-        val transform = ImageCropTransform(scale = 2f, aspect = ImageCropAspect.Square)
-        val crop = bitmapCropRect(
+    fun `resize left handle clamps to zero and min size`() {
+        val start = PixelRect(0, 0, 400, 300)
+        val moved = resizeCrop(
+            crop = start,
+            handle = CropHandle.Left,
+            pointerImageX = -80f,
+            pointerImageY = 10f,
+            imageWidth = 400,
+            imageHeight = 300,
+            aspect = ImageCropAspect.Free,
+            minSize = 48,
+        )
+        assertEquals(0, moved.left)
+        val tight = resizeCrop(
+            crop = start,
+            handle = CropHandle.Left,
+            pointerImageX = 390f,
+            pointerImageY = 10f,
+            imageWidth = 400,
+            imageHeight = 300,
+            aspect = ImageCropAspect.Free,
+            minSize = 48,
+        )
+        assertEquals(352, tight.left)
+        assertEquals(400, tight.right)
+        assertEquals(48, tight.width)
+    }
+
+    @Test
+    fun `rotation recalculates free crop to the full rotated image`() {
+        val landscape = cropAfterRotation(1600, 900, 0, ImageCropAspect.Free)
+        assertEquals(1600, landscape.width)
+        assertEquals(900, landscape.height)
+        val portrait = cropAfterRotation(1600, 900, 90, ImageCropAspect.Free)
+        assertEquals(0, portrait.left)
+        assertEquals(0, portrait.top)
+        assertEquals(900, portrait.right)
+        assertEquals(1600, portrait.bottom)
+        val applied = bitmapCropRect(
+            imageWidth = 1600,
+            imageHeight = 900,
+            transform = ImageCropTransform(rotationDegrees = 90, aspect = ImageCropAspect.Free),
+        )
+        assertEquals(portrait, applied)
+    }
+
+    @Test
+    fun `locked square resize keeps ratio and stays inside`() {
+        val start = initialCropRect(400, 400, ImageCropAspect.Square)
+        val resized = resizeCrop(
+            crop = start,
+            handle = CropHandle.BottomRight,
+            pointerImageX = 200f,
+            pointerImageY = 180f,
             imageWidth = 400,
             imageHeight = 400,
-            transform = transform,
-            viewportWidth = 400f,
-            viewportHeight = 400f,
+            aspect = ImageCropAspect.Square,
+            minSize = 40,
         )
-        assertTrue(crop.left >= 0)
-        assertTrue(crop.top >= 0)
-        assertTrue(crop.right <= 400)
-        assertTrue(crop.bottom <= 400)
-        assertTrue(crop.width < 400)
-        assertTrue(crop.height < 400)
-        assertEquals(crop.width, crop.height)
+        assertEquals(resized.width, resized.height)
+        assertTrue(resized.left >= 0)
+        assertTrue(resized.top >= 0)
+        assertTrue(resized.right <= 400)
+        assertTrue(resized.bottom <= 400)
+        assertTrue(resized.width < 400)
     }
 
     @Test
-    fun `pan right reveals the left of the image`() {
-        val base = ImageCropTransform(scale = 2f, aspect = ImageCropAspect.Square)
-        val centered = bitmapCropRect(400, 400, base, 400f, 400f)
-        val panned = bitmapCropRect(400, 400, base.copy(panX = 80f), 400f, 400f)
-        assertTrue(panned.left < centered.left)
-        assertTrue(panned.left >= 0)
-        assertTrue(panned.right <= 400)
-        assertEquals(panned.width, panned.height)
+    fun `fit layout at scale 1 shows the whole landscape image`() {
+        val layout = fittedImageLayout(
+            viewportWidth = 400f,
+            viewportHeight = 800f,
+            rotatedWidth = 1600,
+            rotatedHeight = 900,
+            userScale = 1f,
+            panX = 80f,
+            panY = 80f,
+            padding = 16f,
+        )
+        val imageRatio = 1600f / 900f
+        val displayedRatio = layout.width / layout.height
+        assertEquals(imageRatio, displayedRatio, 0.01f)
+        assertTrue(layout.width <= 400f - 31f)
+        assertTrue(layout.height < 800f)
+        assertEquals((400f - layout.width) / 2f, layout.left, 0.5f)
+    }
+
+    @Test
+    fun `handle hit prefers a corner inside the touch radius`() {
+        val crop = PixelRect(0, 0, 100, 50)
+        val layout = FittedImageLayout(drawScale = 2f, left = 10f, top = 20f, width = 200f, height = 100f)
+        val handle = hitCropHandle(
+            screenX = 10f,
+            screenY = 20f,
+            crop = crop,
+            layout = layout,
+            touchRadius = 48f,
+        )
+        assertEquals(CropHandle.TopLeft, handle)
+        val miss = hitCropHandle(1000f, 1000f, crop, layout, 48f)
+        assertEquals(null, miss)
+        val right = hitCropHandle(210f, 70f, crop, layout, 48f)
+        assertNotNull(right)
     }
 
     @Test

@@ -82,6 +82,8 @@ object OficiosIcons {
     // Edición y acciones
     @DrawableRes val Pencil = R.drawable.ic_lucide_pencil
     @DrawableRes val Redo = R.drawable.ic_lucide_redo
+    @DrawableRes val RotateCw = R.drawable.ic_lucide_rotate_cw
+    @DrawableRes val RefreshCw = R.drawable.ic_lucide_refresh_cw
     @DrawableRes val Eye = R.drawable.ic_lucide_eye
     @DrawableRes val EyeClosed = R.drawable.ic_lucide_eye_closed
     

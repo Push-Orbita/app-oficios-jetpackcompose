@@ -29,8 +29,6 @@ class ImageCropApplierTest {
             context = context,
             sourcePath = source.absolutePath,
             transform = ImageCropTransform(rotationDegrees = 90, aspect = ImageCropAspect.Square),
-            viewportWidth = 400f,
-            viewportHeight = 400f,
             filePrefix = "crop",
         )
         val out = File(path)
@@ -62,8 +60,6 @@ class ImageCropApplierTest {
             context = context,
             sourcePath = source.absolutePath,
             transform = ImageCropTransform(rotationDegrees = 90, aspect = ImageCropAspect.Free),
-            viewportWidth = 80f,
-            viewportHeight = 120f,
             filePrefix = "rotate",
         )
         val cropped = BitmapFactory.decodeFile(path)
