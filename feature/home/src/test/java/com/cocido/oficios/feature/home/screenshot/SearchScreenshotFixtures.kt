@@ -57,14 +57,14 @@ private val screenshotCategories = listOf(
 )
 
 private val screenshotRubros = listOf(
-    CatalogOption(11, "Plomero"),
-    CatalogOption(12, "Albañil"),
-    CatalogOption(13, "Cerrajero"),
-    CatalogOption(14, "Instalador"),
-    CatalogOption(15, "Pintor"),
-    CatalogOption(16, "Carpintero"),
-    CatalogOption(17, "Gasista"),
-    CatalogOption(18, "Electricista"),
+    CatalogOption(11, "Plomería"),
+    CatalogOption(12, "Electricidad"),
+    CatalogOption(13, "Pintura"),
+    CatalogOption(14, "Cerrajería"),
+    CatalogOption(15, "Carpintería"),
+    CatalogOption(16, "Albañilería"),
+    CatalogOption(17, "Gas"),
+    CatalogOption(18, "Instalación"),
 )
 
 private val screenshotWorkers = listOf(
@@ -114,9 +114,9 @@ internal fun SearchScreenshotHome(
                         emptyList()
                     } else {
                         listOf(
-                            RecentSearchEntry(RecentSearchType.RUBRO, 12, "Albañil", rubroId = 12),
-                            RecentSearchEntry(RecentSearchType.RUBRO, 13, "Cerrajero", rubroId = 13),
-                            RecentSearchEntry(RecentSearchType.RUBRO, 14, "Instalador", rubroId = 14),
+                            RecentSearchEntry(RecentSearchType.RUBRO, 12, "Plomería", rubroId = 12),
+                            RecentSearchEntry(RecentSearchType.RUBRO, 13, "Electricidad", rubroId = 13),
+                            RecentSearchEntry(RecentSearchType.RUBRO, 14, "Pintura", rubroId = 14),
                         )
                     },
                     categories = screenshotCategories,
@@ -173,7 +173,7 @@ internal fun SearchScreenshotResults(
         SearchResultsScreen(
             uiState = SearchResultsUiState.Success(
                 workers = screenshotWorkers,
-                activeFilters = WorkerSearchFilters(rubroId = 12, rubroLabel = "Albañil"),
+                activeFilters = WorkerSearchFilters(rubroId = 12, rubroLabel = "Plomería"),
                 filterChips = emptyList(),
                 isLoadingPage = false,
                 endReached = true,

@@ -10,8 +10,6 @@ import com.cocido.oficios.domain.model.NotificationPage
 import com.cocido.oficios.domain.repository.NotificationsRepository
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
-import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
-import com.cocido.oficios.feature.home.FakeRecentSearchRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -81,7 +79,6 @@ class RubrosViewModelTest {
                 ),
             ),
             getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(catalogRepository),
-            trackRecentSearchUseCase = TrackRecentSearchUseCase(FakeRecentSearchRepository()),
             getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(object : NotificationsRepository {
                 override fun cachedUnreadCount(): Int? = 0
                 override suspend fun registerDeviceToken(fcmToken: String, deviceId: String?) = AppResult.Success(Unit)

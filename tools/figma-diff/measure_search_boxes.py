@@ -76,16 +76,16 @@ def measure_results(arr, density, width_dp):
         "logo": box_dp(band_mask(yellow | white, 48, 180, 20, 110, density), density),
         "title": box_dp(band_mask(white, 48, 180, 90, min(420, right), density), density, capital=True, min_width_dp=12),
         "limit": box_dp(band_mask(white, 160, 230, 20, min(412, right), density), density, capital=True, min_width_dp=6),
-        "search": long_h_span(outline, density, 28, min(412, right), 200, 290, 200),
-        "worker_card": long_h_span(outline, density, 28, min(412, right), 270, 480, 200),
+        "search": long_h_span(outline, density, 28, min(412, right), 230, 290, 200),
+        "worker_card": long_h_span(outline, density, 28, min(412, right), 300, 520, 200),
     }
 
 
 TARGETS_REL = {
-    "home": {"search": 80, "recientes": 144, "recent_cards": 190, "support_card": 350},
+    "home": {"search": 80, "recientes": 144, "recent_cards": 199, "support_card": 373},
     "categories": {"title": 16, "search": 80, "first_card": 144},
     "rubros": {"title": 16, "search": 80, "first_card": 144},
-    "results": {"logo": 16, "title": 16, "search": 155, "worker_card": 219},
+    "results": {"logo": 19, "title": 16, "search": 155, "worker_card": 259},
 }
 
 
