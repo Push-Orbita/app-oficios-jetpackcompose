@@ -327,6 +327,7 @@ fun ProviderDniStepScreen(
     onFrontImage: (String?) -> Unit,
     onBackImage: (String?) -> Unit,
     onSubmit: () -> Unit,
+    onPickError: (String) -> Unit = {},
 ) {
     val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
     val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
@@ -339,6 +340,7 @@ fun ProviderDniStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onFrontImage,
+        onPickError = onPickError,
         filePrefix = "dni",
     )
     val backPicker = rememberImageSourcePicker(
@@ -347,6 +349,7 @@ fun ProviderDniStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onBackImage,
+        onPickError = onPickError,
         filePrefix = "dni",
     )
 
@@ -417,6 +420,7 @@ fun ProviderSelfieStepScreen(
     uiState: ProviderSelfieUiState,
     onImageSelected: (String?) -> Unit,
     onSubmit: () -> Unit,
+    onPickError: (String) -> Unit = {},
 ) {
     val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
     val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
@@ -429,6 +433,7 @@ fun ProviderSelfieStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onImageSelected,
+        onPickError = onPickError,
         filePrefix = "selfie",
     )
 
@@ -813,6 +818,7 @@ fun ProviderIdentityStepScreen(
     onSelfieImageSelected: (String?) -> Unit,
     onCertificateNameChanged: (String) -> Unit,
     onCertificateSelected: (String?) -> Unit,
+    onPickError: (String) -> Unit = {},
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -827,6 +833,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onFrontImageSelected,
+        onPickError = onPickError,
         filePrefix = "dni",
     )
     val backImagePicker = rememberImageSourcePicker(
@@ -835,6 +842,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onBackImageSelected,
+        onPickError = onPickError,
         filePrefix = "dni",
     )
     val selfieImagePicker = rememberImageSourcePicker(
@@ -843,6 +851,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onSelfieImageSelected,
+        onPickError = onPickError,
         filePrefix = "selfie",
     )
     val certificatePicker = rememberImageSourcePicker(
@@ -851,6 +860,7 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onCertificateSelected,
+        onPickError = onPickError,
         filePrefix = "certificado",
     )
 

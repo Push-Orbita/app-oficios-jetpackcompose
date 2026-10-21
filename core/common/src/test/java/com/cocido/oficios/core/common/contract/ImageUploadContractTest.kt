@@ -84,4 +84,24 @@ class ImageUploadContractTest {
         assertTrue(!ImageUploadContract.exceedsImageTarget(ImageUploadContract.TARGET_MAX_BYTES))
         assertEquals("900 KB", ImageUploadContract.formatByteSize(900L * 1024L))
     }
+
+    @Test
+    fun `technical decode errors never reach the user copy`() {
+        assertEquals(
+            ImageUploadContract.IMAGE_READ_FAILED_MESSAGE,
+            ImageUploadContract.userFacingFileFailure(IllegalStateException("Cannot decode image")),
+        )
+        assertEquals(
+            ImageUploadContract.IMAGE_READ_FAILED_MESSAGE,
+            ImageUploadContract.userFacingFileFailure(IllegalStateException("Cannot compress image")),
+        )
+        assertEquals(
+            ImageUploadContract.PDF_TOO_LARGE_MESSAGE,
+            ImageUploadContract.userFacingFileFailure(
+                com.cocido.oficios.core.common.result.ClientValidationException(
+                    ImageUploadContract.PDF_TOO_LARGE_MESSAGE,
+                ),
+            ),
+        )
+    }
 }

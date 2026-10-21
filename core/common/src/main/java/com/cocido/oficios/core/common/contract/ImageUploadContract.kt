@@ -23,6 +23,8 @@ object ImageUploadContract {
         "El PDF supera 1 MB. Pruebe con un archivo más liviano."
     const val CERTIFICATE_FORMATS_HINT =
         "Imágenes JPG, PNG o WEBP (menos de 900 KB). PDF hasta 1 MB."
+    const val IMAGE_READ_FAILED_MESSAGE =
+        "No se pudo leer la imagen. Pruebe con otra."
 
     fun jpegQualityLadder(): List<Int> = listOf(JPEG_QUALITY, 70, 60, 50, MIN_JPEG_QUALITY)
 
@@ -36,6 +38,23 @@ object ImageUploadContract {
             bytes[1] == 'P'.code.toByte() &&
             bytes[2] == 'D'.code.toByte() &&
             bytes[3] == 'F'.code.toByte()
+
+    fun userFacingFileFailure(throwable: Throwable): String {
+        val raw = throwable.message?.trim().orEmpty()
+        if (raw == IMAGE_READ_FAILED_MESSAGE ||
+            raw == PDF_TOO_LARGE_MESSAGE ||
+            raw == PAYLOAD_TOO_LARGE_MESSAGE
+        ) {
+            return raw
+        }
+        if (raw.startsWith("El certificado") ||
+            raw.startsWith("El PDF") ||
+            raw.startsWith("No se pudo")
+        ) {
+            return raw
+        }
+        return IMAGE_READ_FAILED_MESSAGE
+    }
 
     fun formatByteSize(sizeBytes: Long): String {
         if (sizeBytes < 1024L) return "$sizeBytes B"

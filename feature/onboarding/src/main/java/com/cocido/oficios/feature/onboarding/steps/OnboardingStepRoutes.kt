@@ -111,6 +111,7 @@ fun ProviderDniRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onFrontImage = viewModel::onFrontImage,
         onBackImage = viewModel::onBackImage,
         onSubmit = viewModel::submit,
+        onPickError = viewModel::onPickError,
     )
 }
 
@@ -125,6 +126,7 @@ fun ProviderSelfieRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         uiState = uiState,
         onImageSelected = viewModel::onImageSelected,
         onSubmit = viewModel::submit,
+        onPickError = viewModel::onPickError,
     )
 }
 

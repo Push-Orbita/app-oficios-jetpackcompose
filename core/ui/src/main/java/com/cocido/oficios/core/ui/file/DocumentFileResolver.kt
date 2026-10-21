@@ -58,10 +58,7 @@ fun pickCertificateFile(context: Context, uri: Uri): CertificateFilePick = runCa
         else -> CertificateFilePick.Rejected("El certificado debe ser PDF, JPG, PNG o WEBP.")
     }
 }.getOrElse { throwable ->
-    CertificateFilePick.Rejected(
-        throwable.message?.takeIf { it.isNotBlank() }
-            ?: "No se pudo leer el archivo. Pruebe con un PDF de hasta 1 MB o una imagen más liviana.",
-    )
+    CertificateFilePick.Rejected(ImageUploadContract.userFacingFileFailure(throwable))
 }
 
 /** @deprecated Prefer [pickCertificateFile] para mostrar el motivo del rechazo. */

@@ -126,6 +126,8 @@ class ProviderDniViewModel @Inject constructor(
     fun onCertificateNameChanged(value: String) = _uiState.update { it.copy(certificateName = value, error = null) }
     fun onCertificateSelected(path: String?) = _uiState.update { it.copy(certificatePath = path, error = null) }
 
+    fun onPickError(message: String) = _uiState.update { it.copy(error = message) }
+
     fun submit() {
         val state = _uiState.value
         val documento = state.documento.trim()

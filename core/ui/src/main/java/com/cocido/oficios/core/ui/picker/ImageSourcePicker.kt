@@ -29,7 +29,6 @@ import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.ui.file.compressImageFilePath
 import com.cocido.oficios.core.ui.file.createCameraImageCapture
 import com.cocido.oficios.core.ui.file.resolveUriToFilePath
-import java.io.File
 
 class ImageSourcePickerState internal constructor(
     val requestImage: () -> Unit,
@@ -43,6 +42,7 @@ fun rememberImageSourcePicker(
     galleryLabel: String,
     cancelLabel: String,
     onImageSelected: (String?) -> Unit,
+    onPickError: (String) -> Unit = {},
     filePrefix: String = "imagen",
 ): ImageSourcePickerState {
     val context = LocalContext.current
@@ -51,7 +51,17 @@ fun rememberImageSourcePicker(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        onImageSelected(uri?.let { resolveUriToFilePath(context, it, filePrefix) })
+        if (uri == null) {
+            onImageSelected(null)
+            return@rememberLauncherForActivityResult
+        }
+        val path = resolveUriToFilePath(context, uri, filePrefix)
+        if (path == null) {
+            onPickError(ImageUploadContract.IMAGE_READ_FAILED_MESSAGE)
+            onImageSelected(null)
+        } else {
+            onImageSelected(path)
+        }
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -62,11 +72,12 @@ fun rememberImageSourcePicker(
             return@rememberLauncherForActivityResult
         }
         val compressed = compressImageFilePath(context, rawPath, filePrefix)
-        val fallback = rawPath.takeIf { path ->
-            val file = File(path)
-            file.exists() && !ImageUploadContract.exceedsImageTarget(file.length())
+        if (compressed == null) {
+            onPickError(ImageUploadContract.IMAGE_READ_FAILED_MESSAGE)
+            onImageSelected(null)
+        } else {
+            onImageSelected(compressed)
         }
-        onImageSelected(compressed ?: fallback)
     }
 
     fun launchCamera() {

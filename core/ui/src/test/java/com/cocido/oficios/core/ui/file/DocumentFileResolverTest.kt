@@ -33,6 +33,23 @@ class DocumentFileResolverTest {
     }
 
     @Test
+    fun `png certificate via uri is compressed never cannot decode`() {
+        val context = RuntimeEnvironment.getApplication()
+        val bitmap = android.graphics.Bitmap.createBitmap(64, 64, android.graphics.Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(android.graphics.Color.TRANSPARENT)
+        bitmap.setPixel(0, 0, android.graphics.Color.GREEN)
+        val png = File(context.cacheDir, "cert.png")
+        png.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+        bitmap.recycle()
+        val pick = pickCertificateFile(context, Uri.fromFile(png))
+        assertTrue(pick is CertificateFilePick.Ready)
+        val ready = pick as CertificateFilePick.Ready
+        assertTrue(!ready.isPdf)
+        assertTrue(ready.sizeBytes <= ImageUploadContract.TARGET_MAX_BYTES)
+        assertTrue("Cannot" !in ready.displayName)
+    }
+
+    @Test
     fun `small pdf is accepted`() {
         val context = RuntimeEnvironment.getApplication()
         val file = File(context.cacheDir, "ok.pdf").apply {

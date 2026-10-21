@@ -20,6 +20,7 @@ fun PersonalDataRoute(
         galleryLabel = "Elegir de la galería",
         cancelLabel = "Cancelar",
         onImageSelected = { path -> path?.let { viewModel.onEvent(PersonalDataEvent.PhotoSelected(it)) } },
+        onPickError = onShowMessage,
         filePrefix = "perfil",
     )
     LaunchedEffect(Unit) {
