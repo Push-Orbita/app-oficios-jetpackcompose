@@ -99,7 +99,9 @@ object OficiosIcons {
     @DrawableRes val Casco = R.drawable.ic_casco
     @DrawableRes val Lupa = R.drawable.ic_lupa
     @DrawableRes val LogotipoTitle = R.drawable.ic_oficios_logotipo_title
+    @DrawableRes val LogotipoTitleOutline = R.drawable.ic_oficios_logotipo_title_outline
     @DrawableRes val Logotipo = R.drawable.ic_oficios_logotipo
+    @DrawableRes val LogotipoOutline = R.drawable.ic_oficios_logotipo_outline
 }
 
 /**

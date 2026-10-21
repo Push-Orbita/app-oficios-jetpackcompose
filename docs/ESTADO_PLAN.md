@@ -24,7 +24,7 @@ Cada uno declara `Requires PR #N` y está stacked sobre el anterior. No mergear 
 | PR-11 Categoría | [#18](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/18) | `cursor/elegi-categoria-ee07` | draft | Grilla 2 col. en registro/onboarding |
 | PR-13 Copy / app-only | [#19](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/19) | `cursor/copy-usted-app-ee07` | draft | Usted fuera de auth; padding 32/16/32/32 |
 | PR-12 Push | [#20](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/20) | `cursor/push-firebase-config-ee07` | draft | FCM detrás de `FIREBASE_ENABLED`; docs BK-09 |
-| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | ESTADO_PLAN + fix Nombres/Apellido sin split |
+| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | ESTADO_PLAN + Nombres/Apellido + logo Figma (casco azul) |
 
 PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 
@@ -61,6 +61,23 @@ Títulos Figma que se conservan en voseo (adaptación): **Completá tu Solicitud
 ### Fix en #21 — Nombres y Apellido
 
 Registro cliente/trabajador y Datos personales usan dos campos (**Nombres**, **Apellido**), copy en usted, validación no vacío. Se envían tal cual a `nombres`/`apellido` (SwaggerSignup / PersonaDTO / UpdateUsuario). Se borró `splitFullName` (el primer espacio partía “Matias Federico Britez”).
+
+### Fix en #21 — Logo Figma (casco azul)
+
+El casco amarillo (`#F8AE1A`, nodo `12:101`) no se usa. Marca vigente exportada como vector desde Figma Thumbnail:
+
+| Asset | Nodo | Uso |
+|---|---|---|
+| `ic_oficios_logotipo` | `666:2` plano | Splash, login, resultados, BrandBlock |
+| `ic_oficios_logotipo_outline` | `736:40` contorno navy | Launcher adaptive (safe zone 66dp) |
+| `ic_oficios_logotipo_title` | `583:39` plano + wordmark | `OficiosLogoVariant.WithTitle` |
+| `ic_oficios_logotipo_title_outline` | `736:72` contorno + wordmark | Variante de lockup |
+| `ic_launcher_foreground` / monochrome | outline en 108dp | Adaptive + Android 13 |
+| `ic_stat_oficios` | silueta blanca 24dp | Notificaciones |
+| `ic_launcher-playstore.png` | 512 | Play Store |
+| `logo_oficios.png` | outline | Fixture e2e (ya no es el amarillo) |
+
+`OficiosColorBrandMark` = `#006AF0`. El acento UI `#F8AE1A` (`OficiosColorAccent`) no pinta el logo. `ic_casco` del rol sigue blanco.
 
 Bottom nav: Inicio / Mis pedidos / Favoritos (oculto para trabajador) / Perfil (`home_tab_ajustes`). Ayuda vive en Ajustes.
 

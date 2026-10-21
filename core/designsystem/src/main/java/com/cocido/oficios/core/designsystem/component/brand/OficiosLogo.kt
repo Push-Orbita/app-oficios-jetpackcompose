@@ -17,11 +17,11 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Variantes de marca:
- * - [WithTitle]: drawable combinado (`ic_oficios_logotipo_title`). Uso por defecto en login,
- *   splash y cualquier pantalla con logo + título apilados.
- * - [Icon]: solo el ícono (`ic_oficios_logotipo`). Usar junto a [OficiosFormosaWordmark] cuando
- *   el diseño ubica logo y título en fila horizontal.
+ * Variantes de marca (Figma Thumbnail, casco azul + pin blanco):
+ * - [WithTitle]: lockup plano `ic_oficios_logotipo_title` (nodo `583:39`).
+ * - [Icon]: isotipo plano `ic_oficios_logotipo` (nodo `666:2`). Usar junto a
+ *   [OficiosFormosaWordmark] en fila, o el outline `ic_oficios_logotipo_outline`
+ *   (`736:40`) en launcher sobre fondo de marca.
  */
 enum class OficiosLogoVariant {
     Icon,

@@ -73,7 +73,7 @@ object OficiosComponentSize {
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    /** Splash 16:2: casco+pin ~164×268dp. */
+    /** Splash: isotipo plano Figma `666:2` a 164dp de ancho (alto = ancho × 736/403). */
     val authLogoIconWidthSplash = 164.dp
     /**
      * Gap layout logo→wordmark. El drawable aporta ~6dp de aire; 23dp deja
@@ -83,7 +83,7 @@ object OficiosComponentSize {
     val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
     val authWordmarkHeightSplash = 48.dp
-    /** Login 356:49: logo 122×201.75. */
+    /** Login: alto del isotipo compacto (Fit; el drawable es 403×736). */
     val authLogoIconHeightCompact = 202.dp
     /** Login 356:49: gap logo→wordmark 13dp (wordmark visual y=327). */
     val authLoginLogoWordmarkGap = 13.dp

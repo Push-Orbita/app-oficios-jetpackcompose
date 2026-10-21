@@ -39,9 +39,9 @@ Altura: los frames de CTA miden **36dp** (`210:29` Aceptar, `198:697` Estoy en c
 
 ### Marca
 
-- Logotipo (`12:101` y pantallas de producto) sigue dibujado en dorado `#F8AE1A` dentro de varios frames.
-- El casco azul de la página Thumbnail es el vector `666:2`: fill `#006AF0` (rgb 0, 106, 240) y cuerpo blanco `#FFFFFF`.
-- `ic_casco` del registro de rol queda en blanco: es la variante sobre navy, no el logotipo de marca.
+- Logotipo vigente: casco `#006AF0` + figura pin blanca con aro. Plano `666:2` / lockup `583:39`; contorno navy `736:40` / lockup `736:72`. El casco amarillo `12:101` no se usa.
+- `ic_casco` del registro de rol queda en blanco: es el ícono de rol sobre navy, no el logotipo de marca.
+- Launcher: isotipo con contorno navy sobre `#00358B`, safe zone adaptive 66dp; monochrome Android 13.
 
 ### Esquemas M3
 

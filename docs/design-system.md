@@ -21,7 +21,7 @@ OficiosTheme {
 | `OficiosColorSecondaryText` | `#7F9AC5` | Texto secundario |
 | `OficiosColorAction` | `#006DEF` | CTA azul (jerarquía media) |
 | `OficiosColorWhite` | `#FFFFFF` | Texto y CTA de máxima énfasis |
-| `OficiosColorBrandMark` | `#006AF0` | Casco del logo |
+| `OficiosColorBrandMark` | `#006AF0` | Casco del logo (Figma `666:2`) |
 | `OficiosColorAccent` | `#F8AE1A` | Acento de UI, no el casco |
 | `OficiosSpacing` | 4–64dp | Padding y gaps |
 | `OficiosRadius` | 8 / 16dp | Botones y cards |
