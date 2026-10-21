@@ -9,10 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.cards.OficiosSupportCard
@@ -29,7 +25,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeHeader
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
-import com.cocido.oficios.feature.home.components.HomeRecentRubrosSection
+import com.cocido.oficios.feature.home.components.HomeRecentWorkersSection
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,7 +101,6 @@ private fun HomeSuccessContent(
     onEvent: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var searchQuery by rememberSaveable { mutableStateOf("") }
     val supportAvailable = isSupportPhoneConfigured()
 
     Column(
@@ -123,16 +118,17 @@ private fun HomeSuccessContent(
             onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
         )
         HomeSearchEntryField(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            onSearch = { onEvent(HomeEvent.SearchSubmitted(it)) },
+            query = "",
+            onQueryChange = {},
+            onSearch = { onEvent(HomeEvent.OpenSearch) },
+            onFieldClick = { onEvent(HomeEvent.OpenSearch) },
             placeholder = stringResource(R.string.home_search_hint),
+            showMic = false,
         )
-        if (content.recentSearches.isNotEmpty()) {
-            HomeRecentRubrosSection(
-                searches = content.recentSearches,
-                onSearchClick = { onEvent(HomeEvent.RecentSearchSelected(it)) },
-                onSeeAllClick = { onEvent(HomeEvent.SeeAllCategories) },
+        if (content.featuredWorkers.isNotEmpty()) {
+            HomeRecentWorkersSection(
+                workers = content.featuredWorkers,
+                onWorkerClick = { onEvent(HomeEvent.WorkerViewProfile(it.id)) },
             )
         } else {
             HomeCategoriesGrid(

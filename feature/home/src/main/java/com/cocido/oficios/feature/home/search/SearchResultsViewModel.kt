@@ -8,6 +8,11 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.domain.model.WorkerSummary
+import com.cocido.oficios.domain.model.catalogSuggestions
+import com.cocido.oficios.domain.model.hasSearchCriteria
+import com.cocido.oficios.domain.model.normalizeSearchText
+import com.cocido.oficios.domain.usecase.catalog.GetAllRubrosUseCase
+import com.cocido.oficios.domain.usecase.catalog.GetAllSubRubrosUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
@@ -15,6 +20,9 @@ import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
+import com.cocido.oficios.domain.usecase.search.GetRecentClientWorkersUseCase
+import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
+import com.cocido.oficios.domain.usecase.search.RemoveRecentSearchUseCase
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import com.cocido.oficios.feature.home.common.persistTo
@@ -32,13 +40,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val QUERY_DEBOUNCE_MS = 350L
+private const val QUERY_DEBOUNCE_MS = 300L
 
 @HiltViewModel
 class SearchResultsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val searchWorkersUseCase: SearchWorkersUseCase,
     private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
+    private val observeRecentSearchesUseCase: ObserveRecentSearchesUseCase,
+    private val removeRecentSearchUseCase: RemoveRecentSearchUseCase,
+    private val getRecentClientWorkersUseCase: GetRecentClientWorkersUseCase,
+    private val getAllRubrosUseCase: GetAllRubrosUseCase,
+    private val getAllSubRubrosUseCase: GetAllSubRubrosUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
@@ -65,8 +78,14 @@ class SearchResultsViewModel @Inject constructor(
     private var queryDebounceJob: Job? = null
     private var pendingTrackOnSuccess = true
     private var trackedKey: String? = null
+    private var idleRecents: List<RecentSearchEntry> = emptyList()
+    private var idleWorkers: List<WorkerSummary> = emptyList()
+    private var catalogRubros: List<CatalogOption> = emptyList()
+    private var catalogSubRubros: List<CatalogOption> = emptyList()
 
     init {
+        observeRecents()
+        loadIdleCatalog()
         loadInitial()
     }
 
@@ -102,6 +121,13 @@ class SearchResultsViewModel @Inject constructor(
                 _filterSheetState.update { it.copy(selectedDate = event.date) }
             }
             is SearchResultsEvent.RemoveFilterChip -> removeFilterChip(event.chip)
+            is SearchResultsEvent.SuggestionSelected -> onSuggestionSelected(event.suggestion)
+            is SearchResultsEvent.RecentSearchClicked -> onRecentSearchClicked(event.entry)
+            is SearchResultsEvent.RemoveRecentSearch -> removeRecent(event.entry)
+            is SearchResultsEvent.RubroChipSelected -> onRubroChipSelected(event.rubro)
+            is SearchResultsEvent.RecentWorkerClicked -> {
+                emitEffect(SearchResultsEffect.NavigateToWorker(event.worker.id))
+            }
         }
     }
 
@@ -110,6 +136,15 @@ class SearchResultsViewModel @Inject constructor(
         activeFilters = activeFilters.copy(query = query.takeIf { it.isNotBlank() })
         activeFilters.persistTo(savedStateHandle)
         pendingTrackOnSuccess = false
+        if (!activeFilters.hasSearchCriteria()) {
+            queryDebounceJob?.cancel()
+            publishIdle(suggestions = emptyList())
+            return
+        }
+        val typingWithoutFilters = !activeFilters.copy(query = null).hasSearchCriteria()
+        if (typingWithoutFilters) {
+            publishIdle(suggestions = suggestionsFor(query))
+        }
         queryDebounceJob?.cancel()
         queryDebounceJob = viewModelScope.launch {
             delay(QUERY_DEBOUNCE_MS)
@@ -128,18 +163,31 @@ class SearchResultsViewModel @Inject constructor(
     }
 
     private fun loadInitial() {
+        if (!activeFilters.hasSearchCriteria()) {
+            publishIdle()
+            return
+        }
         currentPage = 0
         endReached = false
         loadPage(page = 1, append = false)
     }
 
     private fun refresh() {
+        if (!activeFilters.hasSearchCriteria()) {
+            loadJob?.cancel()
+            publishIdle(suggestions = suggestionsFor(_searchQuery.value))
+            return
+        }
         currentPage = 0
         endReached = false
         loadPage(page = 1, append = false)
     }
 
     private fun pullToRefresh() {
+        if (!activeFilters.hasSearchCriteria()) {
+            loadIdleCatalog()
+            return
+        }
         currentPage = 0
         endReached = false
         loadPage(page = 1, append = false, refreshing = true)
@@ -163,7 +211,8 @@ class SearchResultsViewModel @Inject constructor(
                             is SearchResultsUiState.Success -> previous.copy(isRefreshing = true)
                             is SearchResultsUiState.Empty -> previous.copy(isRefreshing = true)
                             is SearchResultsUiState.Error -> previous.copy(isRefreshing = true)
-                            SearchResultsUiState.Loading -> SearchResultsUiState.Loading
+                                            SearchResultsUiState.Loading -> SearchResultsUiState.Loading
+                            is SearchResultsUiState.Idle -> previous.copy(isRefreshing = true)
                         }
                     }
                 } else {
@@ -221,11 +270,12 @@ class SearchResultsViewModel @Inject constructor(
                             _uiState.update { current.copy(isLoadingPage = false, isRefreshing = false) }
                         }
                         emitEffect(SearchResultsEffect.ShowMessage(message))
-                    } else if (previous is SearchResultsUiState.Success || previous is SearchResultsUiState.Empty) {
+                    } else if (previous is SearchResultsUiState.Success || previous is SearchResultsUiState.Empty || previous is SearchResultsUiState.Idle) {
                         _uiState.update {
                             when (previous) {
                                 is SearchResultsUiState.Success -> previous.copy(isRefreshing = false)
                                 is SearchResultsUiState.Empty -> previous.copy(isRefreshing = false)
+                                is SearchResultsUiState.Idle -> previous.copy(isRefreshing = false)
                                 else -> previous
                             }
                         }
@@ -243,6 +293,7 @@ class SearchResultsViewModel @Inject constructor(
                             is SearchResultsUiState.Success -> state.copy(isRefreshing = false, isLoadingPage = false)
                             is SearchResultsUiState.Empty -> state.copy(isRefreshing = false)
                             is SearchResultsUiState.Error -> state.copy(isRefreshing = false)
+                            is SearchResultsUiState.Idle -> state.copy(isRefreshing = false)
                             SearchResultsUiState.Loading -> state
                         }
                     }
@@ -429,7 +480,182 @@ class SearchResultsViewModel @Inject constructor(
             FilterChipType.DATE -> activeFilters.copy(fechaDeseada = null)
             FilterChipType.QUERY -> activeFilters.copy(query = null)
         }
+        if (chip.type == FilterChipType.QUERY) {
+            _searchQuery.value = ""
+        }
         activeFilters.persistTo(savedStateHandle)
+        refresh()
+    }
+
+    private fun observeRecents() {
+        viewModelScope.launch {
+            observeRecentSearchesUseCase().collect { recents ->
+                idleRecents = recents
+                if (!activeFilters.hasSearchCriteria()) {
+                    publishIdle(suggestions = suggestionsFor(_searchQuery.value))
+                }
+            }
+        }
+    }
+
+    private fun loadIdleCatalog() {
+        viewModelScope.launch {
+            catalogRubros = when (val result = getAllRubrosUseCase()) {
+                is AppResult.Success -> result.data
+                is AppResult.Error -> catalogRubros
+            }
+            catalogSubRubros = when (val result = getAllSubRubrosUseCase()) {
+                is AppResult.Success -> result.data
+                is AppResult.Error -> catalogSubRubros
+            }
+            idleWorkers = getRecentClientWorkersUseCase()
+            if (!activeFilters.hasSearchCriteria()) {
+                publishIdle(suggestions = suggestionsFor(_searchQuery.value))
+            }
+        }
+    }
+
+    private fun publishIdle(suggestions: List<SearchSuggestion> = emptyList()) {
+        _uiState.update {
+            SearchResultsUiState.Idle(
+                recentSearches = idleRecents,
+                recentWorkers = idleWorkers,
+                rubroChips = catalogRubros,
+                suggestions = suggestions,
+            )
+        }
+    }
+
+    private fun suggestionsFor(query: String): List<SearchSuggestion> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return emptyList()
+        val needle = normalizeSearchText(trimmed)
+        val trades = buildList {
+            addAll(
+                catalogSuggestions(trimmed, catalogSubRubros).map { option ->
+                    SearchSuggestion(
+                        id = "sub-${option.id}",
+                        label = option.label,
+                        subtitle = null,
+                        kind = SearchSuggestionKind.SUBRUBRO,
+                        trade = option,
+                    )
+                },
+            )
+            addAll(
+                catalogSuggestions(trimmed, catalogRubros).map { option ->
+                    SearchSuggestion(
+                        id = "rubro-${option.id}",
+                        label = option.label,
+                        subtitle = null,
+                        kind = SearchSuggestionKind.RUBRO,
+                        trade = option,
+                    )
+                },
+            )
+        }.distinctBy { normalizeSearchText(it.label) }
+        val workers = idleWorkers
+            .filter { normalizeSearchText(it.displayName).contains(needle) }
+            .map { worker ->
+                SearchSuggestion(
+                    id = "worker-${worker.id}",
+                    label = worker.displayName,
+                    subtitle = worker.specialtyLabel,
+                    kind = SearchSuggestionKind.WORKER,
+                    worker = worker,
+                )
+            }
+        return (trades + workers).take(8)
+    }
+
+    private fun onSuggestionSelected(suggestion: SearchSuggestion) {
+        when (suggestion.kind) {
+            SearchSuggestionKind.WORKER -> suggestion.worker?.let { worker ->
+                emitEffect(SearchResultsEffect.NavigateToWorker(worker.id))
+            }
+            SearchSuggestionKind.RUBRO -> suggestion.trade?.let { onRubroChipSelected(it) }
+            SearchSuggestionKind.SUBRUBRO -> suggestion.trade?.let { subRubro ->
+                queryDebounceJob?.cancel()
+                _searchQuery.value = ""
+                activeFilters = activeFilters.copy(
+                    query = null,
+                    subRubroId = subRubro.id,
+                    subRubroLabel = subRubro.label,
+                )
+                activeFilters.persistTo(savedStateHandle)
+                pendingTrackOnSuccess = true
+                refresh()
+            }
+        }
+    }
+
+    private fun onRecentSearchClicked(entry: RecentSearchEntry) {
+        viewModelScope.launch { trackRecentSearchUseCase(entry) }
+        when (entry.type) {
+            RecentSearchType.CATEGORY -> {
+                _searchQuery.value = entry.label
+                activeFilters = activeFilters.copy(query = entry.label)
+                activeFilters.persistTo(savedStateHandle)
+                pendingTrackOnSuccess = true
+                refresh()
+            }
+            RecentSearchType.RUBRO -> {
+                _searchQuery.value = ""
+                activeFilters = activeFilters.copy(
+                    query = null,
+                    rubroId = entry.rubroId ?: entry.id,
+                    rubroLabel = entry.label,
+                    categoryId = entry.categoryId,
+                )
+                activeFilters.persistTo(savedStateHandle)
+                pendingTrackOnSuccess = true
+                refresh()
+            }
+            RecentSearchType.SUBRUBRO -> {
+                _searchQuery.value = ""
+                activeFilters = activeFilters.copy(
+                    query = null,
+                    rubroId = entry.rubroId,
+                    subRubroId = entry.id,
+                    subRubroLabel = entry.label,
+                    categoryId = entry.categoryId,
+                )
+                activeFilters.persistTo(savedStateHandle)
+                pendingTrackOnSuccess = true
+                refresh()
+            }
+            RecentSearchType.QUERY -> {
+                _searchQuery.value = entry.label
+                activeFilters = activeFilters.copy(query = entry.label)
+                activeFilters.persistTo(savedStateHandle)
+                pendingTrackOnSuccess = true
+                refresh()
+            }
+        }
+    }
+
+    private fun removeRecent(entry: RecentSearchEntry) {
+        viewModelScope.launch {
+            removeRecentSearchUseCase(entry)
+            idleRecents = idleRecents.filterNot { it.type == entry.type && it.id == entry.id }
+            if (!activeFilters.hasSearchCriteria()) {
+                publishIdle(suggestions = suggestionsFor(_searchQuery.value))
+            }
+        }
+    }
+
+    private fun onRubroChipSelected(rubro: CatalogOption) {
+        queryDebounceJob?.cancel()
+        _searchQuery.value = ""
+        activeFilters = activeFilters.copy(
+            query = null,
+            rubroId = rubro.id,
+            rubroLabel = rubro.label,
+            subRubroId = null,
+            subRubroLabel = null,
+        )
+        activeFilters.persistTo(savedStateHandle)
+        pendingTrackOnSuccess = true
         refresh()
     }
 
@@ -495,6 +721,13 @@ class SearchResultsViewModel @Inject constructor(
 }
 
 sealed interface SearchResultsUiState {
+    data class Idle(
+        val recentSearches: List<RecentSearchEntry> = emptyList(),
+        val recentWorkers: List<WorkerSummary> = emptyList(),
+        val rubroChips: List<CatalogOption> = emptyList(),
+        val suggestions: List<SearchSuggestion> = emptyList(),
+        val isRefreshing: Boolean = false,
+    ) : SearchResultsUiState
     data object Loading : SearchResultsUiState
     data class Success(
         val workers: List<WorkerSummary>,
@@ -577,7 +810,27 @@ sealed interface SearchResultsEvent {
     ) : SearchResultsEvent
     data class FilterDateChanged(val date: String?) : SearchResultsEvent
     data class RemoveFilterChip(val chip: FilterChip) : SearchResultsEvent
+    data class SuggestionSelected(val suggestion: SearchSuggestion) : SearchResultsEvent
+    data class RecentSearchClicked(val entry: RecentSearchEntry) : SearchResultsEvent
+    data class RemoveRecentSearch(val entry: RecentSearchEntry) : SearchResultsEvent
+    data class RubroChipSelected(val rubro: CatalogOption) : SearchResultsEvent
+    data class RecentWorkerClicked(val worker: WorkerSummary) : SearchResultsEvent
 }
+
+enum class SearchSuggestionKind {
+    RUBRO,
+    SUBRUBRO,
+    WORKER,
+}
+
+data class SearchSuggestion(
+    val id: String,
+    val label: String,
+    val subtitle: String?,
+    val kind: SearchSuggestionKind,
+    val trade: CatalogOption? = null,
+    val worker: WorkerSummary? = null,
+)
 
 sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect

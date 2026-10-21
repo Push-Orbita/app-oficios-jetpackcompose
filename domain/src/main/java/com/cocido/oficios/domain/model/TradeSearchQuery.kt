@@ -17,6 +17,17 @@ fun normalizeSearchText(value: String): String {
 fun matchCatalogByQuery(query: String, options: List<CatalogOption>): CatalogOption? {
     val needle = normalizeSearchText(query)
     if (needle.length < MIN_TRADE_QUERY_LENGTH) return null
+    return catalogSuggestions(query, options, limit = 1).firstOrNull()
+}
+
+/** Sugerencias de rubro/subrubro mientras se escribe (acentos e mayúsculas no cuentan). */
+fun catalogSuggestions(
+    query: String,
+    options: List<CatalogOption>,
+    limit: Int = 6,
+): List<CatalogOption> {
+    val needle = normalizeSearchText(query)
+    if (needle.isEmpty()) return emptyList()
     return options
         .mapNotNull { option ->
             val hay = normalizeSearchText(option.label)
@@ -29,8 +40,10 @@ fun matchCatalogByQuery(query: String, options: List<CatalogOption>): CatalogOpt
             }
             Triple(rank, hay.length, option)
         }
-        .minWithOrNull(compareBy({ it.first }, { it.second }, { it.third.id }))
-        ?.third
+        .sortedWith(compareBy({ it.first }, { it.second }, { it.third.id }))
+        .map { it.third }
+        .distinctBy { it.id }
+        .take(limit)
 }
 
 fun WorkerSearchFilters.withResolvedTrade(

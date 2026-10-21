@@ -23,6 +23,16 @@ data class WorkerSearchFilters(
     val categoryLabel: String? = null,
 )
 
+/** Criterios que el backend realmente acepta en GET trabajador-oficio/search. */
+fun WorkerSearchFilters.hasSearchCriteria(): Boolean =
+    !query.isNullOrBlank() ||
+        rubroId != null ||
+        subRubroId != null ||
+        barrioId != null ||
+        localidadId != null ||
+        modalidadAtencion != null ||
+        !fechaDeseada.isNullOrBlank()
+
 data class WorkerSummary(
     val id: Long,
     val displayName: String,

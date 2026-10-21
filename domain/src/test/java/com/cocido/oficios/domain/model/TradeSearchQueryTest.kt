@@ -57,6 +57,20 @@ class TradeSearchQueryTest {
     }
 
     @Test
+    fun `suggestions include prefix matches under three characters`() {
+        assertEquals(listOf(plomeria), catalogSuggestions("pl", rubros))
+        assertEquals(listOf(canerias), catalogSuggestions("caner", subRubros))
+    }
+
+    @Test
+    fun `hasSearchCriteria ignores category-only filters`() {
+        assertEquals(false, WorkerSearchFilters().hasSearchCriteria())
+        assertEquals(false, WorkerSearchFilters(categoryId = 1, categoryLabel = "Hogar").hasSearchCriteria())
+        assertEquals(true, WorkerSearchFilters(query = "plomero").hasSearchCriteria())
+        assertEquals(true, WorkerSearchFilters(rubroId = 3).hasSearchCriteria())
+    }
+
+    @Test
     fun `existing rubro filter keeps the typed query for name search`() {
         val resolved = WorkerSearchFilters(query = "plom", rubroId = 9).withResolvedTrade(rubros, subRubros)
         assertEquals(9L, resolved.rubroId)

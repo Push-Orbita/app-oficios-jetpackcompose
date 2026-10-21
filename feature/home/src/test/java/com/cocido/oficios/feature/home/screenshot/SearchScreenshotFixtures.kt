@@ -146,14 +146,11 @@ internal fun SearchScreenshotHome(
                     userDisplayName = "Nicolas Ayala",
                     emailVerified = true,
                     profilePhotoUrl = null,
-                    recentSearches = if (emptyRecents) {
+                    recentSearches = emptyList(),
+                    featuredWorkers = if (emptyRecents) {
                         emptyList()
                     } else {
-                        listOf(
-                            RecentSearchEntry(RecentSearchType.RUBRO, 12, "Plomería", rubroId = 12),
-                            RecentSearchEntry(RecentSearchType.RUBRO, 13, "Electricidad", rubroId = 13),
-                            RecentSearchEntry(RecentSearchType.RUBRO, 14, "Pintura", rubroId = 14),
-                        )
+                        screenshotWorkers.take(3)
                     },
                     categories = screenshotCategories,
                 ),

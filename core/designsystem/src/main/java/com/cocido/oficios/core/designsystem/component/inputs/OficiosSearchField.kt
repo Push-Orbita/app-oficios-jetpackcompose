@@ -60,15 +60,18 @@ fun OficiosSearchField(
     placeholderMaxLines: Int = 1,
     enabled: Boolean = true,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    onClick: (() -> Unit)? = null,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
     val iconTint = MaterialTheme.colorScheme.onBackground
 
+    val interactive = onClick == null
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        enabled = enabled,
+        enabled = enabled && interactive,
+        readOnly = !interactive,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = textColor),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         singleLine = true,
@@ -81,6 +84,13 @@ fun OficiosSearchField(
             .border(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 shape = MaterialTheme.shapes.small,
+            )
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                },
             )
             .semantics(mergeDescendants = true) {
                 contentDescription = placeholder

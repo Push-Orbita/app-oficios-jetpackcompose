@@ -89,6 +89,7 @@ data class ServiceOrderListItem(
     val addressLabel: String,
     val rubroLabel: String = "",
     val avatarUrl: String? = null,
+    val isVerified: Boolean = false,
     val workerId: Long = 0L,
     val bookingId: Long? = null,
     val scheduledSortKey: String? = null,
@@ -127,6 +128,46 @@ private fun ServiceOrderListItem.isPendingFirst(): Boolean =
 
 /** Precio a mostrar: contrapropuesta pendiente o la ya aceptada. No hay monto ni medio de pago en el booking. */
 fun ServiceOrder.displayPrice(): Double? = pendingCounterOffer?.proposedPrice ?: acceptedPrice
+
+/** Coordenadas del domicilio del pedido, si el backend mandó un punto válido. */
+fun ServiceOrder.destinationPoint(): GeoPoint? {
+    val latitude = addressLatitude ?: return null
+    val longitude = addressLongitude ?: return null
+    return GeoPoint(latitude, longitude).takeIf { it.isValid }
+}
+
+/**
+ * Pin del trabajador solo en EN_CAMINO: en curso ya llegó al domicilio
+ * y un GPS de emulador no debe tapar la dirección del pedido.
+ */
+fun ServiceOrder.enRouteWorkerPoint(tracking: BookingTracking?): GeoPoint? {
+    if (bookingStatus != BookingStatus.EN_ROUTE) return null
+    return tracking?.location?.takeIf { it.isValid }
+}
+
+/**
+ * Recientes del home cliente: trabajadores a los que ya se les pidió un servicio.
+ * Más reciente primero, un ítem por trabajador, sin ids vacíos.
+ */
+fun List<ServiceOrderListItem>.recentClientWorkers(limit: Int = 8): List<WorkerSummary> {
+    val newestFirst = compareByDescending<ServiceOrderListItem, String?>(nullsLast()) { it.scheduledSortKey }
+        .thenByDescending { it.id }
+    return filter { it.workerId > 0L && it.counterpartName.isNotBlank() }
+        .sortedWith(newestFirst)
+        .distinctBy { it.workerId }
+        .take(limit)
+        .map { item ->
+            WorkerSummary(
+                id = item.workerId,
+                displayName = item.counterpartName,
+                specialtyLabel = item.rubroLabel.ifBlank { item.subRubroLabel },
+                rating = null,
+                avatarUrl = item.avatarUrl,
+                isVerified = item.isVerified,
+                primaryRubroId = null,
+            )
+        }
+}
 
 fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
     if (!trackingStatus.orEmpty().trim().equals("LLEGUE", ignoreCase = true)) return this

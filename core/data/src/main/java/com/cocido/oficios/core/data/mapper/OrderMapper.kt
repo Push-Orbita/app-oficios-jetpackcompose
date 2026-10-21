@@ -150,8 +150,8 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         status = estado.toRequestStatus(),
         description = descripcion.orEmpty(),
         addressLabel = domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre),
-        addressLatitude = domicilio?.latitud,
-        addressLongitude = domicilio?.longitud,
+        addressLatitude = validCoordinate(domicilio?.latitud, domicilio?.longitud)?.first,
+        addressLongitude = validCoordinate(domicilio?.latitud, domicilio?.longitud)?.second,
         contactName = contacto?.nombre.orEmpty(),
         contactPhone = contacto?.telefonoWhatsapp.orEmpty(),
         workerPhone = resolveWorkerPhone(
@@ -238,6 +238,12 @@ private fun unwrapTrackingElement(element: JsonElement): JsonObject? = when (ele
     else -> null
 }
 
+private fun validCoordinate(latitude: Double?, longitude: Double?): Pair<Double, Double>? {
+    val lat = latitude ?: return null
+    val lng = longitude ?: return null
+    return GeoPoint(lat, lng).takeIf { it.isValid }?.let { it.latitude to it.longitude }
+}
+
 private fun JsonObject.withCoordinateAliases(): JsonObject {
     val lat = this["lat"] ?: this["latitude"] ?: this["latitud"] ?: return this
     val lng = this["lng"] ?: this["longitude"] ?: this["longitud"] ?: return this
@@ -273,6 +279,13 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
         },
         rubroLabel = rubro?.nombre.orEmpty(),
         avatarUrl = (if (isWorkerViewing) cliente?.usuario?.fotoPerfil else trabajadorOficio?.usuario?.fotoPerfil).toPhotoUrl(),
+        isVerified = if (isWorkerViewing) {
+            cliente?.estado.equals("VALIDADO", ignoreCase = true) ||
+                cliente?.usuario?.emailVerificado == true
+        } else {
+            trabajadorOficio?.estado.equals("VALIDADO", ignoreCase = true) ||
+                trabajadorOficio?.usuario?.emailVerificado == true
+        },
         workerId = trabajadorOficio?.id ?: 0L,
         bookingId = booking?.id?.takeIf { it != 0L },
         scheduledSortKey = booking?.inicioConfirmado ?: booking?.slotTurno?.inicio,

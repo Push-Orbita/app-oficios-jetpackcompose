@@ -73,10 +73,17 @@ fun SearchResultsScreen(
         is SearchResultsUiState.Success -> uiState.activeFilters
         else -> WorkerSearchFilters()
     }
-    val activeFilterCount = when (uiState) {
-        is SearchResultsUiState.Empty -> uiState.filterChips.count { it.type != FilterChipType.QUERY }
-        is SearchResultsUiState.Success -> uiState.filterChips.count { it.type != FilterChipType.QUERY }
-        else -> 0
+    val filterChips = when (uiState) {
+        is SearchResultsUiState.Empty -> uiState.filterChips
+        is SearchResultsUiState.Success -> uiState.filterChips
+        else -> emptyList()
+    }
+    val activeFilterCount = filterChips.count { it.type != FilterChipType.QUERY }
+    val shouldAutoFocus = searchQuery.isBlank() && filters.rubroId == null && filters.subRubroId == null
+    LaunchedEffect(shouldAutoFocus) {
+        if (shouldAutoFocus) {
+            searchFocusRequester.requestFocus()
+        }
     }
     OficiosScaffold(
         modifier = modifier,
@@ -98,12 +105,16 @@ fun SearchResultsScreen(
                 searchQuery = searchQuery,
                 searchFocusRequester = searchFocusRequester,
                 activeFilterCount = activeFilterCount,
+                showContactLimit = uiState !is SearchResultsUiState.Idle,
+                filterChips = filterChips,
+                resultCount = (uiState as? SearchResultsUiState.Success)?.workers?.size,
                 onEvent = onEvent,
             )
             val isRefreshing = when (uiState) {
                 is SearchResultsUiState.Success -> uiState.isRefreshing
                 is SearchResultsUiState.Empty -> uiState.isRefreshing
                 is SearchResultsUiState.Error -> uiState.isRefreshing
+                is SearchResultsUiState.Idle -> uiState.isRefreshing
                 SearchResultsUiState.Loading -> false
             }
             PullToRefreshBox(
@@ -113,6 +124,13 @@ fun SearchResultsScreen(
             ) {
                 OficiosStateContent(targetState = uiState) { state ->
                     when (state) {
+                        is SearchResultsUiState.Idle -> {
+                            SearchIdleContent(
+                                state = state,
+                                onEvent = onEvent,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
                         SearchResultsUiState.Loading -> {
                             OficiosSkeletonList(
                                 contentDescription = stringResource(R.string.home_search_results_loading),
@@ -184,6 +202,9 @@ private fun SearchResultsHeader(
     searchQuery: String,
     searchFocusRequester: FocusRequester,
     activeFilterCount: Int,
+    showContactLimit: Boolean,
+    filterChips: List<FilterChip>,
+    resultCount: Int?,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
     val rubroLabel = filters.rubroLabel ?: filters.subRubroLabel ?: filters.categoryLabel
@@ -225,12 +246,14 @@ private fun SearchResultsHeader(
                 modifier = Modifier.weight(1f),
             )
         }
-        Text(
+            if (showContactLimit) {
+            Text(
             text = stringResource(R.string.home_search_contact_limit),
             style = MaterialTheme.typography.bodyLarge,
             color = OficiosColorSecondaryText,
             modifier = Modifier.fillMaxWidth(),
         )
+        }
         HomeSearchEntryField(
             query = searchQuery,
             onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
@@ -248,6 +271,11 @@ private fun SearchResultsHeader(
             placeholder = RubroDisplayNames.searchHint(rubroLabel),
             placeholderMaxLines = 2,
             modifier = Modifier.focusRequester(searchFocusRequester),
+        )
+        ActiveSearchFiltersRow(
+            chips = filterChips,
+            resultCount = resultCount,
+            onEvent = onEvent,
         )
     }
 }

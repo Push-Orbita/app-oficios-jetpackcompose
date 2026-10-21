@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.model.ProviderHomeTiles
 import com.cocido.oficios.domain.model.ProviderProfileStatus
 import com.cocido.oficios.domain.model.resolveProviderHomeTiles
 import com.cocido.oficios.domain.model.nowInArgentina
+import com.cocido.oficios.domain.model.recentClientWorkers
 import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.User
@@ -47,11 +48,10 @@ class HomeRepositoryImpl @Inject constructor(
                         is AppResult.Error -> categoriesResult
                         is AppResult.Success -> {
                             val categories = categoriesResult.data.toHomeCategoryItems()
-                            val recent = resolveRecentSearches()
                             AppResult.Success(
                                 userResult.data.toClientHomeContent(
-                                    recentSearches = recent,
                                     categories = categories,
+                                    recentWorkers = loadRecentClientWorkers(),
                                 ),
                             )
                         }
@@ -163,23 +163,27 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun resolveRecentSearches(): List<RecentSearchEntry> {
-        return recentSearchRepository.getRecents().take(RECENT_RUBROS_LIMIT)
+    private suspend fun loadRecentClientWorkers(): List<com.cocido.oficios.domain.model.WorkerSummary> {
+        return when (val result = orderRepository.getClientOrders()) {
+            is AppResult.Success -> result.data.recentClientWorkers(RECENT_WORKERS_LIMIT)
+            is AppResult.Error -> emptyList()
+        }
     }
 
     private fun User.toClientHomeContent(
-        recentSearches: List<RecentSearchEntry>,
         categories: List<HomeCategoryItem>,
+        recentWorkers: List<com.cocido.oficios.domain.model.WorkerSummary>,
     ): ClientHomeContent =
         ClientHomeContent(
             userDisplayName = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" "),
             emailVerified = emailVerified,
             profilePhotoUrl = profilePhotoUrl,
-            recentSearches = recentSearches,
+            recentSearches = emptyList(),
             categories = categories,
+            featuredWorkers = recentWorkers,
         )
 
     private companion object {
-        const val RECENT_RUBROS_LIMIT = 3
+        const val RECENT_WORKERS_LIMIT = 8
     }
 }
