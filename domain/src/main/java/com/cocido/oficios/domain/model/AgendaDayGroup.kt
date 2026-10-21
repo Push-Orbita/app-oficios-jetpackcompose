@@ -41,26 +41,38 @@ fun groupAgendaAppointments(
     orders: List<ServiceOrderListItem>,
     today: LocalDate,
     locale: Locale = Locale.forLanguageTag("es-AR"),
+    newestFirst: Boolean = false,
 ): List<AgendaDayGroup> {
     val grouped = linkedMapOf<LocalDate, MutableList<ServiceOrderListItem>>()
     orders.forEach { item ->
         val date = item.scheduledDate() ?: return@forEach
         grouped.getOrPut(date) { mutableListOf() }.add(item)
     }
-    return grouped.entries
-        .sortedBy { it.key }
-        .map { (date, items) ->
-            val month = date.month.getDisplayName(TextStyle.FULL, locale).lowercase(locale)
-            AgendaDayGroup(
-                date = date,
-                headerLabel = "${date.dayOfMonth} de $month",
-                isToday = date == today,
-                items = items.sortedWith(
-                    compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
-                        .thenBy { it.id },
-                ),
+    val dates = if (newestFirst) {
+        grouped.entries.sortedByDescending { it.key }
+    } else {
+        grouped.entries.sortedBy { it.key }
+    }
+    return dates.map { (date, items) ->
+        val month = date.month.getDisplayName(TextStyle.FULL, locale).lowercase(locale)
+        val sortedItems = if (newestFirst) {
+            items.sortedWith(
+                compareByDescending<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
+                    .thenByDescending { it.id },
+            )
+        } else {
+            items.sortedWith(
+                compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
+                    .thenBy { it.id },
             )
         }
+        AgendaDayGroup(
+            date = date,
+            headerLabel = "${date.dayOfMonth} de $month",
+            isToday = date == today,
+            items = sortedItems,
+        )
+    }
 }
 
 private fun LocalTime.toAgendaClock(): String =

@@ -31,6 +31,19 @@ class AgendaDayGroupTest {
     }
 
     @Test
+    fun `newestFirst puts recent days first`() {
+        val groups = groupAgendaAppointments(
+            orders = listOf(
+                order(1, "Albañilería", "2026-03-04T13:30:00"),
+                order(2, "Albañilería", "2026-03-17T09:30:00"),
+            ),
+            today = today,
+            newestFirst = true,
+        )
+        assertEquals(listOf("17 de marzo", "4 de marzo"), groups.map { it.headerLabel })
+    }
+
+    @Test
     fun `skips items without a scheduled date`() {
         val groups = groupAgendaAppointments(
             orders = listOf(order(1, "Albañilería", scheduledSortKey = null)),
