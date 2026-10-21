@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "id": 101,
+      "type": "ORDER_NEW_REQUEST",
+      "tipo": "NUEVA_SOLICITUD",
+      "title": "Nueva solicitud",
+      "titulo": "Nueva solicitud",
+      "body": "Tenés un pedido pendiente",
+      "cuerpo": "Tenés un pedido pendiente",
+      "createdAt": "2026-10-21T12:00:00.000Z",
+      "readAt": null,
+      "leidoEn": null,
+      "leido": false,
+      "entityType": "SOLICITUD",
+      "entityId": 5,
+      "deepLink": "oficios://orders/5"
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "pageSize": 20,
+    "pageNumber": 1,
+    "totalPages": 1
+  }
+}

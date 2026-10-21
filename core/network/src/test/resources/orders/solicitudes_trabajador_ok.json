@@ -1,0 +1,41 @@
+{
+  "data": {
+    "trabajador": {
+      "id": 5,
+      "estado": "VALIDADO",
+      "documento": "43453547",
+      "usuario": {
+        "id": 7,
+        "email": "worker@example.test",
+        "emailVerificado": true,
+        "persona": { "id": 7, "nombres": "Matias", "apellido": "Britez" },
+        "rolUsuario": { "id": 1, "nombre": "TRABAJADOR_DE_OFICIOS" }
+      }
+    },
+    "solicitudes": [
+      {
+        "id": 8,
+        "estado": "PENDIENTE",
+        "descripcion": "Cambio de canilla",
+        "cliente": {
+          "id": 7,
+          "estado": "ACTIVO",
+          "usuario": {
+            "id": 13,
+            "email": "qa@example.test",
+            "emailVerificado": true,
+            "persona": { "id": 13, "nombres": "QA", "apellido": "Emulator" }
+          }
+        },
+        "rubro": { "id": 1, "nombre": "Plomeria" },
+        "subRubro": { "id": 1, "nombre": "Reparacion de canerias" }
+      }
+    ]
+  },
+  "metadata": {
+    "count": 1,
+    "pageSize": 20,
+    "pageNumber": 1,
+    "totalPages": 1
+  }
+}

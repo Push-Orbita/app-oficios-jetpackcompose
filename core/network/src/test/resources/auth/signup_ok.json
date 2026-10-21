@@ -1,0 +1,20 @@
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.signup",
+  "refresh_token": "refresh-signup-token",
+  "expires_in": "3600",
+  "message": "Cuenta creada. Revise su correo para verificar el email.",
+  "emailSent": true,
+  "usuario": {
+    "id": 44,
+    "email": "nuevo@example.test",
+    "emailVerificado": false,
+    "fotoPerfil": null,
+    "persona": { "id": 44, "nombres": "Matias Federico", "apellido": "Britez" },
+    "rolUsuario": { "id": 2, "nombre": "CLIENTE" }
+  },
+  "cliente": {
+    "id": 21,
+    "estado": "ACTIVO",
+    "documento": "43453548"
+  }
+}
