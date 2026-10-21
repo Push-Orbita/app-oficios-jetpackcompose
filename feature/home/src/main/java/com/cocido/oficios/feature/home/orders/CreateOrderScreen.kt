@@ -49,6 +49,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -241,7 +242,7 @@ private fun CreateOrderForm(
             Text(
                 text = stringResource(R.string.create_order_slots_loading),
                 style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorSecondaryTextFigma,
+                color = OficiosColorTextSecondaryAccessible,
             )
         } else {
             state.slotsErrorMessage?.let { OficiosInlineAlert(message = it) }
@@ -516,7 +517,7 @@ private fun SummaryInfoRow(icon: Int, label: String, value: String) {
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorSecondaryTextFigma,
+                color = OficiosColorTextSecondaryAccessible,
             )
         }
     }

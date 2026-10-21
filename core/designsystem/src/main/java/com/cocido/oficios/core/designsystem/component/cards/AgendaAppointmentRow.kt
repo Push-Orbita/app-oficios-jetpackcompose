@@ -33,7 +33,7 @@ import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -62,7 +62,7 @@ fun AgendaAppointmentRow(
     val sideLabel = if (isNow) nowLabel else todayLabel
     val surface = if (highlighted) OficiosColorWhite else Color.Transparent
     val titleColor = if (highlighted) OficiosColorBackground else OficiosColorWhite
-    val bodyColor = if (highlighted) OficiosColorBackground else OficiosColorSecondaryTextFigma
+    val bodyColor = if (highlighted) OficiosColorBackground else OficiosColorTextSecondaryAccessible
     val chevronColor = if (highlighted) OficiosColorBackground else OficiosColorWhite
     Row(
         modifier = modifier

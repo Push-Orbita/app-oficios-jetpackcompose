@@ -39,7 +39,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTi
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -110,7 +110,7 @@ private fun ProfessionalProfileForm(
         Text(
             text = stringResource(R.string.professional_profile_only_can),
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorSecondaryTextFigma,
+            color = OficiosColorTextSecondaryAccessible,
         )
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             OficiosButton(

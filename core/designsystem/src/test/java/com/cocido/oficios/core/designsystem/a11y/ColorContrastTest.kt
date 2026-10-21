@@ -24,13 +24,17 @@ class ColorContrastTest {
         assertTrue(contrastRatio(SECONDARY, NAVY) >= 4.5)
     }
 
-    @Ignore("QA-FAIL: texto secundario Figma #7F9AC5 sobre navy ~3.9:1 (solo AA grande)")
     @Test
-    fun figmaSecondaryTextOnNavyMeetsAa() {
-        assertTrue(contrastRatio(SECONDARY_FIGMA, NAVY) >= 4.5)
+    fun figmaSecondaryLargeTextOnNavyMeetsLargeAa() {
+        assertTrue(contrastRatio(SECONDARY_FIGMA, NAVY) >= 3.0)
     }
 
-    @Ignore("QA-FAIL: disabled #918E9B sobre blanco no llega a 4.5:1")
+    @Test
+    fun accessibleSecondarySmallTextOnNavyMeetsAa() {
+        assertTrue(contrastRatio(SECONDARY_ACCESSIBLE, NAVY) >= 4.5)
+    }
+
+    @Ignore("QA-FAIL: disabled #918E9B sobre blanco no llega a 4.5:1 — WCAG exime disabled")
     @Test
     fun disabledOnWhiteMeetsAa() {
         assertTrue(contrastRatio(DISABLED, WHITE) >= 4.5)
@@ -42,6 +46,7 @@ class ColorContrastTest {
         const val ACTION = 0xFF006DEF
         const val SECONDARY = 0xFF8EABD4
         const val SECONDARY_FIGMA = 0xFF7F9AC5
+        const val SECONDARY_ACCESSIBLE = 0xFF8EA6CC
         const val DISABLED = 0xFF918E9B
 
         fun contrastRatio(a: Long, b: Long): Double {

@@ -43,7 +43,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTi
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -216,7 +216,7 @@ private fun AgendaConfigContent(
             Text(
                 text = stringResource(R.string.agenda_config_hours_hint),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorSecondaryTextFigma,
+                color = OficiosColorTextSecondaryAccessible,
                 modifier = Modifier.padding(top = OficiosSpacing.xs),
             )
         }
@@ -304,7 +304,7 @@ private fun OficioCalendarRow(
             Text(
                 text = stringResource(R.string.agenda_config_general_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorSecondaryTextFigma,
+                color = OficiosColorTextSecondaryAccessible,
             )
         }
         Icon(

@@ -26,7 +26,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.R as DsR
@@ -115,7 +115,7 @@ fun WorkerProfileHeader(
                 Text(
                     text = about,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorSecondaryTextFigma,
+                    color = OficiosColorTextSecondaryAccessible,
                 )
             }
             if (oficios.isNotEmpty()) {
@@ -167,7 +167,7 @@ private fun LabeledValue(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorSecondaryTextFigma,
+            color = OficiosColorTextSecondaryAccessible,
         )
     }
 }
@@ -183,7 +183,7 @@ fun WorkerFiveStarRow(rating: Float?) {
         Text(
             text = stringResource(DsR.string.ds_worker_no_rating),
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorSecondaryTextFigma,
+            color = OficiosColorTextSecondaryAccessible,
         )
         return
     }

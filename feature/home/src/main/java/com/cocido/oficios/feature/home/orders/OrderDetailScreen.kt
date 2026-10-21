@@ -89,7 +89,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -822,7 +822,7 @@ private fun OrderDetailLabeledRow(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.titleMedium, color = OficiosColorWhite)
-            Text(text = value, style = MaterialTheme.typography.bodyLarge, color = OficiosColorSecondaryTextFigma)
+            Text(text = value, style = MaterialTheme.typography.bodyLarge, color = OficiosColorTextSecondaryAccessible)
         }
         trailing?.let { chip ->
             Row(

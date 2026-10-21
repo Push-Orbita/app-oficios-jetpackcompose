@@ -24,10 +24,14 @@ val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 /** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
 val OficiosColorSecondaryText = Color(0xFF8EABD4)
 
-/** Texto secundario — valor de Figma rgb(127,154,197). Contraste 3.9:1 (AA solo para texto grande).
- * TODO: Decisión pendiente: mantener #8EABD4 (AA 4.7:1) o usar valor Figma 1:1 #7F9AC5 (AA grande).
- * Ver tokens.md §1 y PLAN_COMPLETO_1a1.md bloqueante #2. */
+/** Texto secundario — valor de Figma rgb(127,154,197). Contraste 3.9:1 (AA solo para texto grande / íconos). */
 val OficiosColorSecondaryTextFigma = Color(0xFF7F9AC5)
+
+/**
+ * Texto secundario chico sobre navy (#00358B): el mínimo más claro que #7F9AC5
+ * que llega a 4.5:1 (WCAG AA). Mismo matiz, +blanco ~12 %. No usar en disabled.
+ */
+val OficiosColorTextSecondaryAccessible = Color(0xFF8EA6CC)
 
 /** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)
