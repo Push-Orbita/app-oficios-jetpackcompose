@@ -6,8 +6,8 @@ object AuthValidators {
     private val DNI_REGEX = Regex("^[0-9]{7,11}$")
 
     fun validateEmail(email: String): String? = when {
-        email.isBlank() -> "El email es obligatorio"
-        !EMAIL_REGEX.matches(email) -> "Ingrese un email válido"
+        email.isBlank() -> "El correo es obligatorio"
+        !EMAIL_REGEX.matches(email) -> "Ingrese un correo válido"
         else -> null
     }
 

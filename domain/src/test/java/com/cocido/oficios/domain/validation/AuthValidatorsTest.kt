@@ -46,4 +46,11 @@ class AuthValidatorsTest {
         assertEquals("Los nombres son obligatorios", AuthValidators.validateName("  ", "nombres"))
         assertEquals("El apellido es obligatorio", AuthValidators.validateName("", "apellido"))
     }
+
+    @Test
+    fun `email validation uses Correo copy`() {
+        assertEquals("El correo es obligatorio", AuthValidators.validateEmail(""))
+        assertEquals("Ingrese un correo válido", AuthValidators.validateEmail("no-es-correo"))
+        assertEquals(null, AuthValidators.validateEmail("ana@oficios.test"))
+    }
 }
