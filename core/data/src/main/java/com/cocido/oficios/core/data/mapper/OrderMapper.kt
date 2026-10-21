@@ -162,6 +162,7 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
         bookingType = bookingTypeLabel(booking?.tipo),
         canCancelBooking = booking?.puedeCancelar ?: false,
+        cancellationDeadlineLabel = booking?.fechaLimiteCancelacion.toDisplayDateLabel(),
         pendingCounterOffer = pendingCounterOffer,
         completionCode = booking?.codigoFinalizacion,
         workerAvatarUrl = trabajadorOficio?.usuario?.fotoPerfil.toPhotoUrl(),

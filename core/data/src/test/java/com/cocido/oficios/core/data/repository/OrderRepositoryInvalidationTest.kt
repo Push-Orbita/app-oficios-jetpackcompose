@@ -58,10 +58,33 @@ class OrderRepositoryInvalidationTest {
         assertEquals(1, events.size)
         job.cancel()
     }
+
+    @Test
+    fun `cancelar confirmado sin motivo no llama a la API`() = runTest {
+        val api = FakeOrdersApi()
+        val repository = OrderRepositoryImpl(
+            OrderRemoteDataSource(api),
+            object : DispatcherProvider {
+                override val main: CoroutineDispatcher = Dispatchers.Unconfined
+                override val io: CoroutineDispatcher = Dispatchers.Unconfined
+                override val default: CoroutineDispatcher = Dispatchers.Unconfined
+            },
+        )
+        val blank = repository.cancelConfirmedOrder(8L, "   ")
+        assertTrue(blank is AppResult.Error)
+        assertEquals(0, api.cancelConfirmedCalls)
+
+        val ok = repository.cancelConfirmedOrder(8L, "No voy a poder asistir")
+        assertTrue(ok is AppResult.Success)
+        assertEquals(1, api.cancelConfirmedCalls)
+        assertEquals("No voy a poder asistir", api.lastCancelMotivo)
+    }
 }
 
 private class FakeOrdersApi : OrdersApi {
     var fail = false
+    var cancelConfirmedCalls = 0
+    var lastCancelMotivo: String? = null
     private fun <T> result(value: T): T {
         if (fail) error("fallo")
         return value
@@ -74,7 +97,11 @@ private class FakeOrdersApi : OrdersApi {
     override suspend fun aceptarSolicitud(id: Long) = error("no")
     override suspend fun rechazarSolicitud(id: Long, request: RechazarSolicitudRequestDto) = error("no")
     override suspend fun enviarContrapropuesta(id: Long, request: CreateContrapropuestaRequestDto): JsonElement = error("no")
-    override suspend fun cancelarSolicitudConfirmada(id: Long, request: CancelarSolicitudRequestDto) = error("no")
+    override suspend fun cancelarSolicitudConfirmada(id: Long, request: CancelarSolicitudRequestDto): SolicitudServicioDto {
+        cancelConfirmedCalls++
+        lastCancelMotivo = request.motivoCancelacion
+        return result(SolicitudServicioDto(id = id, estado = "CANCELADA"))
+    }
     override suspend fun cancelarSolicitudPendiente(id: Long, request: UpdateSolicitudEstadoRequestDto) =
         result(SolicitudServicioDto(id = id, estado = "CANCELADA"))
     override suspend fun aceptarContrapropuesta(id: Long): JsonElement = error("no")

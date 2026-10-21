@@ -37,7 +37,7 @@ class OrdersListGroupingTest {
             item(17, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
             item(18, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
         )
-        assertEquals(listOf(5L, 6L, 11L, 15L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
+        assertEquals(listOf(6L, 15L, 11L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
         assertEquals(listOf(17L, 18L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
     }
 

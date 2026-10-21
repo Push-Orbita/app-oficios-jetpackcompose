@@ -47,6 +47,8 @@ data class ServiceOrder(
     val bookingStatus: BookingStatus? = null,
     val bookingType: String? = null,
     val canCancelBooking: Boolean = false,
+    /** `fechaLimiteCancelacion` del booking, ya formateada. */
+    val cancellationDeadlineLabel: String? = null,
     val pendingCounterOffer: CounterOffer? = null,
     val alreadyRated: Boolean = false,
     val qualityScore: Int? = null,
@@ -104,6 +106,9 @@ fun ServiceOrderListItem.isHistoryOrder(): Boolean {
 }
 
 /** LLEGUE en el tracking deja el pedido en la misma UI que EN_CURSO: el código de finalización. */
+private fun ServiceOrderListItem.isPendingFirst(): Boolean =
+    status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER
+
 fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
     if (!trackingStatus.orEmpty().trim().equals("LLEGUE", ignoreCase = true)) return this
     if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return this
@@ -116,7 +121,11 @@ fun List<ServiceOrderListItem>.arrangedFor(filter: OrdersListFilter): List<Servi
         if (filter == OrdersListFilter.HISTORY) item.isHistoryOrder() else !item.isHistoryOrder()
     }
     return if (filter == OrdersListFilter.ACTIVE) {
-        matching.sortedWith(compareBy(nullsLast()) { it.scheduledSortKey })
+        matching.sortedWith(
+            compareBy<ServiceOrderListItem> { !it.isPendingFirst() }
+                .thenByDescending(nullsLast()) { it.scheduledSortKey }
+                .thenByDescending { it.id },
+        )
     } else {
         matching.sortedWith(compareByDescending(nullsLast()) { it.scheduledSortKey })
     }

@@ -33,7 +33,7 @@ data class RechazarSolicitudRequestDto(
 
 @Serializable
 data class CancelarSolicitudRequestDto(
-    val motivoCancelacion: String? = null,
+    val motivoCancelacion: String,
 )
 
 @Serializable
