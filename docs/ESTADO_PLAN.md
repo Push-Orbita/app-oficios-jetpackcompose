@@ -6,7 +6,7 @@ Fuente: plan 1:1 + mapa Figma. File Figma `hhKrcrusbr3h6qJxqYBiTd`. API solo pro
 
 ## Orden de merge (lineal)
 
-`#11 → #12 → #13 → #14 → #15 → #16 → #17 → #18 → #19 → #20 → #21`
+`#11 → #12 → #13 → #14 → #15 → #16 → #17 → #18 → #19 → #20 → #21` (este PR)
 
 Cada uno declara `Requires PR #N` y está stacked sobre el anterior. No mergear #11 ni ningún otro hasta que Matías lo pida.
 
@@ -24,7 +24,7 @@ Cada uno declara `Requires PR #N` y está stacked sobre el anterior. No mergear 
 | PR-11 Categoría | [#18](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/18) | `cursor/elegi-categoria-ee07` | draft | Grilla 2 col. en registro/onboarding |
 | PR-13 Copy / app-only | [#19](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/19) | `cursor/copy-usted-app-ee07` | draft | Usted fuera de auth; padding 32/16/32/32 |
 | PR-12 Push | [#20](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/20) | `cursor/push-firebase-config-ee07` | draft | FCM detrás de `FIREBASE_ENABLED`; docs BK-09 |
-| Cierre | este PR | `cursor/estado-plan-ee07` | draft | Este documento |
+| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | Este documento |
 
 PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 
