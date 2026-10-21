@@ -45,6 +45,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAler
 import com.cocido.oficios.core.designsystem.component.inputs.LocalScrollViewportHeightPx
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
+import com.cocido.oficios.core.designsystem.component.categories.CategoryGridItem
+import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
@@ -563,24 +565,18 @@ fun ProviderRubrosStepScreen(
         canSubmit = uiState.canSubmit,
         onSubmit = onSubmit,
     ) {
-        OficiosDropdownField(
-            value = uiState.categoryOptions.find { it.id == uiState.selectedCategoryId }?.label.orEmpty(),
-            options = uiState.categoryOptions.map { it.label },
-            onOptionSelected = { label ->
-                uiState.categoryOptions.find { it.label == label }?.let { onCategorySelected(it.id) }
-            },
-            label = stringResource(R.string.onboarding_step_rubros_category_label),
-            placeholder = stringResource(R.string.onboarding_step_rubros_select_placeholder),
-        )
-        OficiosDropdownField(
-            value = uiState.tradeOptions.find { it.id == uiState.selectedTradeId }?.label.orEmpty(),
-            options = uiState.tradeOptions.map { it.label },
-            onOptionSelected = { label ->
-                uiState.tradeOptions.find { it.label == label }?.let { onTradeSelected(it.id) }
-            },
-            label = stringResource(R.string.onboarding_step_rubros_trade_label),
-            placeholder = stringResource(R.string.onboarding_step_rubros_select_placeholder),
-        )
+        if (uiState.selectedCategoryId == null) {
+            OficiosCategoriesGrid(
+                categories = uiState.categoryOptions.map { CategoryGridItem(it.id, it.label) },
+                onCategoryClick = { onCategorySelected(it.id) },
+            )
+        } else {
+            OficiosCategoriesGrid(
+                categories = uiState.tradeOptions.map { CategoryGridItem(it.id, it.label) },
+                onCategoryClick = { onTradeSelected(it.id) },
+                selectedCategoryId = uiState.selectedTradeId,
+            )
+        }
         uiState.specializationOptions.forEach { option ->
             OficiosCheckbox(
                 checked = option.id in uiState.selectedSubRubroIds,
