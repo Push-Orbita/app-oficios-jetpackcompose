@@ -61,7 +61,7 @@ class FavoritesScreenTest {
         }
 
         composeTestRule.onNodeWithText("Trabajador DePrueba").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Contratar").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Contactar").assertIsDisplayed()
         composeTestRule.onNodeWithText("Ver perfil").assertIsDisplayed()
     }
 }

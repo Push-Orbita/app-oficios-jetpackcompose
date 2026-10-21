@@ -64,7 +64,7 @@
     <string name="home_worker_contact">Contactar</string>
     <string name="home_worker_view_profile">Ver ficha completa</string>
     <string name="home_worker_profile_title">Ficha Completa</string>
-    <string name="home_worker_hire">Contratar</string>
+    <string name="home_worker_hire">Contactar</string>
     <string name="home_worker_oficios_label">Oficios:</string>
     <string name="home_worker_specialized_label">Especializado en:</string>
     <string name="home_worker_profile_loading">Cargando ficha del trabajador…</string>
@@ -156,7 +156,7 @@
     <string name="help_title">Ayuda</string>
     <string name="help_intro">Encuentre respuestas a las consultas más frecuentes sobre Oficios Formosa.</string>
     <string name="help_faq_how_to_hire_question">¿Cómo contrato a un trabajador?</string>
-    <string name="help_faq_how_to_hire_answer">Busque por categoría o rubro, entre al perfil del trabajador y toque Contratar. Complete fecha, domicilio y contacto para enviar la solicitud.</string>
+    <string name="help_faq_how_to_hire_answer">Busque por categoría o rubro, entre al perfil del trabajador y toque Contactar. Complete fecha, domicilio y contacto para enviar la solicitud.</string>
     <string name="help_faq_verify_phone_question">¿Cómo se verifica el WhatsApp?</string>
     <string name="help_faq_verify_phone_answer">Al cargar su contacto le enviamos un código por WhatsApp. Confírmelo para que el trabajador pueda coordinar el servicio.</string>
     <string name="help_faq_cancel_order_question">¿Puedo cancelar un pedido?</string>
