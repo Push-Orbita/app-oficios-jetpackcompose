@@ -283,7 +283,7 @@ private fun AgendaListContent(
 private fun AgendaSkeleton(contentDescription: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg)
+            .padding(horizontal = OficiosSpacing.md)
             .semantics { this.contentDescription = contentDescription },
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {

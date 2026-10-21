@@ -2,8 +2,11 @@ package com.cocido.oficios.core.designsystem.component.scaffold
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
@@ -12,6 +15,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
 /**
  * Slot inferior estándar para [OficiosScaffold] con edge-to-edge habilitado.
@@ -51,3 +57,15 @@ fun OficiosTopBarSlot(
         content()
     }
 }
+
+/** Suma [extraTop] al padding que ya reservó el Scaffold por la TopAppBar. */
+fun oficiosContentPaddingAfterTopBar(
+    padding: PaddingValues,
+    extraTop: Dp = OficiosSpacing.afterTopBar,
+    layoutDirection: LayoutDirection = LayoutDirection.Ltr,
+): PaddingValues = PaddingValues(
+    start = padding.calculateStartPadding(layoutDirection),
+    top = padding.calculateTopPadding() + extraTop,
+    end = padding.calculateEndPadding(layoutDirection),
+    bottom = padding.calculateBottomPadding(),
+)

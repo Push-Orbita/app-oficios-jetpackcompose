@@ -141,7 +141,7 @@ private fun SettingsContent(
     val displayName = "${user.firstName} ${user.lastName}".trim().ifBlank { user.email }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = OficiosSpacing.OficiosScreenPadding,
+        contentPadding = OficiosSpacing.OficiosScreenPaddingAfterTopBar,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
