@@ -7,6 +7,7 @@ import com.cocido.oficios.domain.model.ClientHomeContent
 import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ProviderProfileStatus
+import com.cocido.oficios.domain.model.inferProviderHomeTiles
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.repository.AuthRepository
@@ -64,6 +65,10 @@ class HomeRepositoryImpl @Inject constructor(
                             val missingItems = onboardingRepository
                                 .getProviderRequiredSteps(status)
                                 .map { it.title }
+                            val tiles = inferProviderHomeTiles(
+                                missingSteps = status.missingSteps + missingItems,
+                                isProfileComplete = status.isProfileComplete,
+                            )
                             val primarySpecialtyLabel = loadPrimarySpecialtyLabel()
                             val upcomingOrders = loadUpcomingWorkerOrders()
                             AppResult.Success(
@@ -80,6 +85,11 @@ class HomeRepositoryImpl @Inject constructor(
                                         it.bookingStatus == com.cocido.oficios.domain.model.BookingStatus.IN_PROGRESS
                                     },
                                     upcomingOrders = upcomingOrders,
+                                    profilePhotoUrl = userResult.data.profilePhotoUrl,
+                                    hasAgendaConfigured = status.isConfigurationComplete,
+                                    hasGalleryPhotos = tiles.gallery,
+                                    hasCommercialLocal = tiles.local,
+                                    hasCertificate = tiles.certificate,
                                 ),
                             )
                         }
