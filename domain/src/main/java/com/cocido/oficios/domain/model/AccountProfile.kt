@@ -46,6 +46,21 @@ data class ManagedTimeRange(
     val to: String,
 )
 
+private val WEEK_DAYS = listOf(
+    "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO",
+)
+
+fun ManagedWorkSchedule.expandedDays(): List<String> {
+    val start = WEEK_DAYS.indexOf(dayFrom)
+    val end = WEEK_DAYS.indexOf(dayTo)
+    if (start < 0 || end < 0) return listOf(dayFrom)
+    return if (start <= end) {
+        WEEK_DAYS.subList(start, end + 1)
+    } else {
+        WEEK_DAYS.subList(start, WEEK_DAYS.size) + WEEK_DAYS.subList(0, end + 1)
+    }
+}
+
 data class UpdateAccountProfileRequest(
     val userId: Long,
     val firstName: String,

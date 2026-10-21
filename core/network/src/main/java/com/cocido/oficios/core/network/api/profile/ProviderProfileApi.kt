@@ -32,5 +32,5 @@ interface ProviderProfileApi {
     suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto
 
     @DELETE("trabajador-oficio-rubro/{id}")
-    suspend fun deleteRubro(@Path("id") id: Long): JsonElement
+    suspend fun deleteRubro(@Path("id") id: Long)
 }

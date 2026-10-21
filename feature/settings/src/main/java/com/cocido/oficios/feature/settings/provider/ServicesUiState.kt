@@ -16,6 +16,7 @@ sealed interface ServicesEvent {
     data object Retry : ServicesEvent
     data object Back : ServicesEvent
     data object AddService : ServicesEvent
+    data class EditService(val service: ManagedProviderService) : ServicesEvent
     data class RequestDelete(val service: ManagedProviderService) : ServicesEvent
     data object ConfirmDelete : ServicesEvent
     data object DismissDelete : ServicesEvent
@@ -24,6 +25,7 @@ sealed interface ServicesEvent {
 sealed interface ServicesEffect {
     data object NavigateBack : ServicesEffect
     data object NavigateToAdd : ServicesEffect
+    data class NavigateToEdit(val serviceId: Long) : ServicesEffect
     data class ShowMessage(val message: String) : ServicesEffect
 }
 
@@ -54,9 +56,14 @@ data class AddServiceUiState(
     val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
     val paymentMethods: Set<String> = emptySet(),
     val errorMessage: String? = null,
+    val isEditing: Boolean = false,
+    val editingServiceId: Long? = null,
+    val isPrimaryService: Boolean = false,
+    val lockedRubroName: String = "",
 ) {
     val selectedCategoryLabel get() = categories.firstOrNull { it.id == selectedCategoryId }?.label.orEmpty()
     val selectedRubroLabel get() = rubros.firstOrNull { it.id == selectedRubroId }?.label.orEmpty()
+        .ifBlank { lockedRubroName }
 }
 
 sealed interface AddServiceEvent {

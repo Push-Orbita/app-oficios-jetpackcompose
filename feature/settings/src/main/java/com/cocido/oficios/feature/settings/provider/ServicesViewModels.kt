@@ -1,13 +1,16 @@
 package com.cocido.oficios.feature.settings.provider
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.expandedDays
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
@@ -41,6 +44,7 @@ class ServicesViewModel @Inject constructor(
             ServicesEvent.Retry -> load()
             ServicesEvent.Back -> emit(ServicesEffect.NavigateBack)
             ServicesEvent.AddService -> emit(ServicesEffect.NavigateToAdd)
+            is ServicesEvent.EditService -> emit(ServicesEffect.NavigateToEdit(event.service.id))
             is ServicesEvent.RequestDelete -> _uiState.update { it.copy(pendingDelete = event.service) }
             ServicesEvent.DismissDelete -> _uiState.update { it.copy(pendingDelete = null) }
             ServicesEvent.ConfirmDelete -> deletePending()
@@ -93,6 +97,7 @@ class ServicesViewModel @Inject constructor(
 
 @HiltViewModel
 class AddServiceViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val accountUseCases: AccountUseCases,
     private val getCategories: GetCategoriesUseCase,
     private val getRubros: GetRubrosByCategoryUseCase,
@@ -100,22 +105,25 @@ class AddServiceViewModel @Inject constructor(
     private val searchBarrios: SearchBarriosUseCase,
     private val getCurrentLocation: GetCurrentLocationUseCase,
 ) : ViewModel() {
+    private val editingServiceId: Long? = savedStateHandle.get<Long>("serviceId")?.takeIf { it > 0L }
     private val _uiState = MutableStateFlow(AddServiceUiState())
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<AddServiceEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
     private var barrioSearchJob: Job? = null
 
-    init { loadCategories() }
+    init {
+        if (editingServiceId != null) loadForEdit() else loadCategories()
+    }
 
     fun onEvent(event: AddServiceEvent) {
         when (event) {
-            AddServiceEvent.Retry -> loadCategories()
+            AddServiceEvent.Retry -> if (editingServiceId != null) loadForEdit() else loadCategories()
             AddServiceEvent.Back -> emit(AddServiceEffect.NavigateBack)
             AddServiceEvent.Next -> next()
             AddServiceEvent.Previous -> previous()
-            is AddServiceEvent.CategorySelected -> selectCategory(event.id)
-            is AddServiceEvent.RubroSelected -> selectRubro(event.id)
+            is AddServiceEvent.CategorySelected -> if (!_uiState.value.isEditing) selectCategory(event.id)
+            is AddServiceEvent.RubroSelected -> if (!_uiState.value.isEditing) selectRubro(event.id)
             is AddServiceEvent.SubRubroToggled -> update {
                 it.copy(selectedSubRubroIds = it.selectedSubRubroIds.toggled(event.id, event.checked), errorMessage = null)
             }
@@ -182,7 +190,11 @@ class AddServiceViewModel @Inject constructor(
     private fun next() {
         val state = _uiState.value
         val error = when (state.step) {
-            AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) "Seleccione un oficio y al menos una especialidad." else null
+            AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) {
+                "Seleccione al menos una especialidad."
+            } else {
+                null
+            }
             AddServiceStep.MODALITY -> when {
                 !state.servesAtClientHome && !state.servesAtLocal -> "Elija al menos una modalidad de atención."
                 state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Complete el barrio y la calle de su local."
@@ -231,8 +243,21 @@ class AddServiceViewModel @Inject constructor(
                 domicilioLocal = local,
                 paymentMethods = state.paymentMethods.toList(),
             )
-            when (val result = accountUseCases.addService(request)) {
-                is AppResult.Success -> emit(AddServiceEffect.Saved("Servicio agregado a su perfil."))
+            val result = if (state.isEditing && state.editingServiceId != null) {
+                accountUseCases.replaceService(
+                    existingId = state.editingServiceId,
+                    isPrimary = state.isPrimaryService,
+                    request = request,
+                )
+            } else {
+                accountUseCases.addService(request)
+            }
+            when (result) {
+                is AppResult.Success -> emit(
+                    AddServiceEffect.Saved(
+                        if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
+                    ),
+                )
                 is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
             }
         }
@@ -271,6 +296,59 @@ class AddServiceViewModel @Inject constructor(
 
     private fun changeSlot(index: Int, block: RegisterTradeTimeSlotDraft.() -> RegisterTradeTimeSlotDraft) = update { state ->
         state.copy(timeSlots = state.timeSlots.mapIndexed { itemIndex, slot -> if (itemIndex == index) slot.block() else slot }, errorMessage = null)
+    }
+
+    private fun loadForEdit() {
+        val serviceId = editingServiceId ?: return
+        viewModelScope.launch {
+            update { it.copy(isLoading = true, errorMessage = null, isEditing = true, editingServiceId = serviceId) }
+            when (val profileResult = accountUseCases.getProfile()) {
+                is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = profileResult.error.userMessage()) }
+                is AppResult.Success -> {
+                    val details = profileResult.data.providerDetails
+                    val service = details?.services?.firstOrNull { it.id == serviceId }
+                    if (service == null) {
+                        update { it.copy(isLoading = false, errorMessage = "No encontramos ese servicio.") }
+                        return@launch
+                    }
+                    applyService(service, details.paymentMethods.toSet())
+                }
+            }
+        }
+    }
+
+    private suspend fun applyService(service: ManagedProviderService, payments: Set<String>) {
+        val subRubros = when (val result = getSubRubros(service.rubroId)) {
+            is AppResult.Success -> result.data
+            is AppResult.Error -> {
+                update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+                return
+            }
+        }
+        val workDays = service.workSchedule.flatMap { it.expandedDays() }.toSet()
+        val timeSlots = service.workSchedule
+            .flatMap { schedule -> schedule.ranges.map { RegisterTradeTimeSlotDraft(it.from, it.to) } }
+            .distinct()
+            .ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) }
+        update {
+            it.copy(
+                isLoading = false,
+                isEditing = true,
+                editingServiceId = service.id,
+                isPrimaryService = service.isPrimary,
+                lockedRubroName = service.rubroName,
+                selectedRubroId = service.rubroId,
+                selectedSubRubroIds = service.subServices.map { sub -> sub.catalogSubRubroId }.toSet(),
+                subRubros = subRubros,
+                servesAtClientHome = service.subServices.any { sub -> sub.servesAtClientHome },
+                servesAtLocal = service.subServices.any { sub -> sub.servesAtLocal },
+                requiresTurns = service.subServices.any { sub -> sub.requiresTurns },
+                workDays = workDays.ifEmpty { it.workDays },
+                timeSlots = timeSlots,
+                paymentMethods = payments.ifEmpty { it.paymentMethods },
+                errorMessage = null,
+            )
+        }
     }
 
     private fun update(block: (AddServiceUiState) -> AddServiceUiState) = _uiState.update(block)

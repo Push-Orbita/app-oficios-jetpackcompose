@@ -135,6 +135,23 @@ class AccountRepositoryImpl @Inject constructor(
 
     override suspend fun deleteProviderService(id: Long) = providerRemote.deleteRubro(id).map { Unit }
 
+    override suspend fun replaceProviderService(
+        existingId: Long,
+        isPrimary: Boolean,
+        request: ProviderRubroFullRequest,
+    ): AppResult<Unit> {
+        when (val deleted = providerRemote.deleteRubro(existingId)) {
+            is AppResult.Error -> return deleted
+            is AppResult.Success -> Unit
+        }
+        val created = if (isPrimary) {
+            providerRemote.createRubroFull(request.toDto())
+        } else {
+            providerRemote.createSecondaryRubroFull(request.toDto())
+        }
+        return created.map { Unit }
+    }
+
     override suspend fun getCertificates() = providerRemote.getProviderProfile().map { profile ->
         profile.certificados.map { it.toDomainItem() }
     }

@@ -13,6 +13,8 @@ import com.cocido.oficios.feature.settings.provider.AddServiceRoute
 import com.cocido.oficios.feature.settings.provider.PortfolioRoute
 import com.cocido.oficios.feature.settings.provider.ServicesRoute
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 fun NavGraphBuilder.settingsScreen(
     navController: NavHostController,
@@ -64,10 +66,17 @@ fun NavGraphBuilder.settingsScreen(
         ServicesRoute(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToAdd = { navController.navigate(SettingsDestination.addService) },
+            onNavigateToEdit = { serviceId -> navController.navigate(SettingsDestination.editService(serviceId)) },
             onShowMessage = onShowMessage,
         )
     }
     composable(SettingsDestination.addService) {
+        AddServiceRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+    }
+    composable(
+        route = SettingsDestination.editService,
+        arguments = listOf(navArgument("serviceId") { type = NavType.LongType }),
+    ) {
         AddServiceRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
     }
     composable(SettingsDestination.portfolio) {

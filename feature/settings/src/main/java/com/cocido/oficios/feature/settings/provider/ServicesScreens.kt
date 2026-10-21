@@ -133,7 +133,11 @@ private fun ServicesList(state: ServicesUiState, onEvent: (ServicesEvent) -> Uni
 
 @Composable
 private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEvent: (ServicesEvent) -> Unit) {
-    OficiosCard(Modifier.fillMaxWidth()) {
+    OficiosCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = { onEvent(ServicesEvent.EditService(service)) },
+        enabled = !disabled,
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Icon(Icons.Outlined.WorkOutline, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
             Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
@@ -170,6 +174,8 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                 }
                 if (service.isPrimary) {
                     Text(stringResource(R.string.services_primary_locked), style = MaterialTheme.typography.labelSmall, color = OficiosColorSecondaryText)
+                } else {
+                    Text(stringResource(R.string.services_tap_to_edit), style = MaterialTheme.typography.labelSmall, color = OficiosColorSecondaryText)
                 }
             }
             if (!service.isPrimary) {
@@ -184,7 +190,14 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
 @Composable
 fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
     OficiosScaffold(
-        topBar = { OficiosBackTopBar(stringResource(R.string.services_add), onBack = { onEvent(AddServiceEvent.Previous) }) },
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(
+                    if (uiState.isEditing) R.string.services_edit_title else R.string.services_add,
+                ),
+                onBack = { onEvent(AddServiceEvent.Previous) },
+            )
+        },
     ) { padding ->
         OficiosStateContent(
             targetState = uiState,
@@ -216,7 +229,7 @@ private fun AddServiceUiState.phase(): OficiosContentPhase = when {
 @Composable
 private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(stringResource(R.string.services_step_counter, state.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
@@ -235,7 +248,11 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
                 OficiosButton(stringResource(R.string.services_back), { onEvent(AddServiceEvent.Previous) }, Modifier.weight(1f), OficiosButtonVariant.Outlined)
             }
             OficiosButton(
-                text = if (state.step == AddServiceStep.REVIEW) stringResource(R.string.services_publish) else stringResource(R.string.services_continue),
+                text = when {
+                    state.step != AddServiceStep.REVIEW -> stringResource(R.string.services_continue)
+                    state.isEditing -> stringResource(R.string.services_save_changes)
+                    else -> stringResource(R.string.services_publish)
+                },
                 onClick = { onEvent(if (state.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next) },
                 modifier = Modifier.weight(1f),
                 loading = state.isSaving,
@@ -250,6 +267,37 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
 
 @Composable
 private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    if (state.isEditing) {
+        Text(
+            text = stringResource(R.string.services_edit_trade_title),
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = stringResource(R.string.services_edit_trade_hint),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(state.selectedRubroLabel, style = MaterialTheme.typography.titleMedium)
+        if (state.isPrimaryService) {
+            Text(
+                text = stringResource(R.string.services_primary_rubro_locked),
+                style = MaterialTheme.typography.bodySmall,
+                color = OficiosColorSecondaryText,
+            )
+        }
+        if (state.subRubros.isNotEmpty()) {
+            Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
+            state.subRubros.forEach { option ->
+                OficiosCheckbox(
+                    option.id in state.selectedSubRubroIds,
+                    { onEvent(AddServiceEvent.SubRubroToggled(option.id, it)) },
+                    option.label,
+                )
+            }
+        }
+        return
+    }
     Text(
         text = stringResource(R.string.services_elegi_rubro_title),
         style = MaterialTheme.typography.headlineLarge,

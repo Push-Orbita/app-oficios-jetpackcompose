@@ -101,4 +101,15 @@ class ProviderProfileApiIntegrationTest {
         assertEquals("VALIDADO", response.estado)
         assertEquals(true, response.perfilCompleto)
     }
+
+    @Test
+    fun `delete rubro accepts empty 200 body`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200).setBody(""))
+
+        api.deleteRubro(11L)
+
+        val request = server.takeRequest()
+        assertEquals("DELETE", request.method)
+        assertEquals("/trabajador-oficio-rubro/11", request.path)
+    }
 }
