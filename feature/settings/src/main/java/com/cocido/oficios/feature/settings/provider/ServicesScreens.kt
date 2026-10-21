@@ -233,8 +233,8 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         Text(stringResource(R.string.services_step_counter, state.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
-        Text(stepTitle(state.step), style = MaterialTheme.typography.headlineSmall)
-        Text(stepDescription(state.step), style = MaterialTheme.typography.bodyMedium)
+        Text(stepTitle(state.step, state.isEditing), style = MaterialTheme.typography.headlineSmall)
+        Text(stepDescription(state.step, state.isEditing), style = MaterialTheme.typography.bodyMedium)
         when (state.step) {
             AddServiceStep.TRADE -> TradeStep(state, onEvent)
             AddServiceStep.MODALITY -> ModalityStep(state, onEvent)
@@ -268,16 +268,6 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
 @Composable
 private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
     if (state.isEditing) {
-        Text(
-            text = stringResource(R.string.services_edit_trade_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = stringResource(R.string.services_edit_trade_hint),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         Text(state.selectedRubroLabel, style = MaterialTheme.typography.titleMedium)
         if (state.isPrimaryService) {
             Text(
@@ -415,16 +405,20 @@ private fun ReviewStep(state: AddServiceUiState) {
 }
 
 @Composable
-private fun stepTitle(step: AddServiceStep) = when (step) {
-    AddServiceStep.TRADE -> stringResource(R.string.services_step_trade_title)
+private fun stepTitle(step: AddServiceStep, isEditing: Boolean) = when (step) {
+    AddServiceStep.TRADE -> stringResource(
+        if (isEditing) R.string.services_edit_trade_title else R.string.services_step_trade_title,
+    )
     AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_title)
     AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_title)
     AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_title)
     AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_title)
 }
 @Composable
-private fun stepDescription(step: AddServiceStep) = when (step) {
-    AddServiceStep.TRADE -> stringResource(R.string.services_step_trade_body)
+private fun stepDescription(step: AddServiceStep, isEditing: Boolean) = when (step) {
+    AddServiceStep.TRADE -> stringResource(
+        if (isEditing) R.string.services_edit_trade_hint else R.string.services_step_trade_body,
+    )
     AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_body)
     AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_body)
     AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_body)
