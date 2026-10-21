@@ -26,8 +26,6 @@ fun WorkerCertificatesSection(
     modifier: Modifier = Modifier,
 ) {
     val visible = certificates.filter { it.name.isPresentableCertificate() }
-    if (visible.isEmpty()) return
-
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),

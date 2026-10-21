@@ -1,6 +1,5 @@
 package com.cocido.oficios.feature.home.worker.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,16 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
 import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -69,6 +69,7 @@ fun WorkerProfileHeader(
                         circular = false,
                     )
                     Column(
+                        modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
                     ) {
                         Row(
@@ -79,6 +80,9 @@ fun WorkerProfileHeader(
                                 text = profile.displayName,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onBackground,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false),
                             )
                             if (profile.isVerified) {
                                 OficiosVerifiedBadge(
@@ -93,22 +97,21 @@ fun WorkerProfileHeader(
                     val favoriteCd = stringResource(
                         if (isFavorite) R.string.home_worker_favorite_remove else R.string.home_worker_favorite_add,
                     )
-                    Icon(
-                        imageVector = ImageVector.vectorResource(OficiosIcons.Heart),
-                        contentDescription = favoriteCd,
-                        tint = if (isFavorite) {
-                            OficiosColorAccent
-                        } else {
-                            MaterialTheme.colorScheme.onBackground
-                        },
-                        modifier = Modifier
-                            .size(OficiosComponentSize.iconMd)
-                            .semantics {
-                                contentDescription = favoriteCd
-                                role = Role.Button
-                            }
-                            .clickable(onClick = onFavoriteClick),
-                    )
+                    OficiosTouchTarget(
+                        onClick = onFavoriteClick,
+                        accessibilityContentDescription = favoriteCd,
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(OficiosIcons.Heart),
+                            contentDescription = null,
+                            tint = if (isFavorite) {
+                                OficiosColorAccent
+                            } else {
+                                MaterialTheme.colorScheme.onBackground
+                            },
+                            modifier = Modifier.size(OficiosComponentSize.iconMd),
+                        )
+                    }
                 }
             }
             profile.about?.takeIf { it.isNotBlank() }?.let { about ->
@@ -141,6 +144,7 @@ fun WorkerProfileHeader(
                             text = stringResource(R.string.home_worker_contact),
                             onClick = onHireClick,
                             variant = OficiosButtonVariant.Primary,
+                            size = OficiosButtonSize.Small,
                         )
                     }
                     if (showRate && onRateClick != null) {
@@ -148,6 +152,7 @@ fun WorkerProfileHeader(
                             text = stringResource(R.string.home_worker_rate),
                             onClick = onRateClick,
                             variant = OficiosButtonVariant.Secondary,
+                            size = OficiosButtonSize.Small,
                         )
                     }
                 }

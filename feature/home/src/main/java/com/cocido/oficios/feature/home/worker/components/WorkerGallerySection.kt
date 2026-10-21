@@ -6,43 +6,45 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
+import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkGalleryItem
 import com.cocido.oficios.feature.home.R
 
+/**
+ * Miniaturas 118 dp (mismo tile que Editar Perfil), no el carrusel 376×376 de
+ * Figma `613:460`: esa slide se recortaba contra el bottom nav.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WorkerGallerySection(
     gallery: List<WorkGalleryItem>,
     onPhotoClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val photos = gallery.filter { !it.imageUrl.isNullOrBlank() }.ifEmpty { gallery }
-    if (photos.isEmpty()) return
-
+    val photos = gallery.filter { !it.imageUrl.isNullOrBlank() }
+    val tiles = photos.ifEmpty { gallery }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -52,82 +54,62 @@ fun WorkerGallerySection(
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xl),
-            contentPadding = PaddingValues(),
-        ) {
-            itemsIndexed(photos, key = { _, item -> item.id }) { index, item ->
-                GallerySlide(
-                    imageUrl = item.imageUrl,
-                    contentDescription = stringResource(R.string.home_worker_gallery_thumb_cd, index + 1),
-                    showChevrons = photos.size > 1 && index == 0,
-                    onClick = { onPhotoClick(index) },
-                    onPrevious = if (index > 0) {
-                        { onPhotoClick(index - 1) }
-                    } else {
-                        null
-                    },
-                    onNext = if (index < photos.lastIndex) {
-                        { onPhotoClick(index + 1) }
-                    } else {
-                        null
-                    },
-                )
+        if (tiles.isEmpty()) {
+            Text(
+                text = stringResource(R.string.home_worker_gallery_empty_title),
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorTextSecondaryAccessible,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+        } else {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            ) {
+                tiles.forEachIndexed { index, item ->
+                    val url = item.imageUrl
+                    GalleryThumb(
+                        imageUrl = url,
+                        contentDescription = stringResource(
+                            R.string.home_worker_gallery_thumb_cd,
+                            index + 1,
+                        ),
+                        onClick = if (!url.isNullOrBlank()) {
+                            { onPhotoClick(index) }
+                        } else {
+                            null
+                        },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun GallerySlide(
+private fun GalleryThumb(
     imageUrl: String?,
     contentDescription: String,
-    showChevrons: Boolean,
-    onClick: () -> Unit,
-    onPrevious: (() -> Unit)?,
-    onNext: (() -> Unit)?,
+    onClick: (() -> Unit)?,
 ) {
     val shape = RoundedCornerShape(OficiosRadius.lg)
     Box(
         modifier = Modifier
-            .size(OficiosComponentSize.workerGallerySize)
+            .size(OficiosComponentSize.profileMediaTile)
             .clip(shape)
             .background(MaterialTheme.colorScheme.background)
             .border(1.dp, OficiosColorOutlineFill, shape)
-            .clickable(onClick = onClick),
+            .semantics { this.contentDescription = contentDescription }
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         if (!imageUrl.isNullOrBlank()) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = contentDescription,
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-        }
-        if (showChevrons) {
-            if (onPrevious != null) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(OficiosIcons.ChevronLeft),
-                    contentDescription = stringResource(R.string.home_worker_gallery_previous),
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(OficiosComponentSize.iconMd)
-                        .clickable(onClick = onPrevious),
-                )
-            }
-            if (onNext != null) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(OficiosIcons.ChevronRight),
-                    contentDescription = stringResource(R.string.home_worker_gallery_next),
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .size(OficiosComponentSize.iconMd)
-                        .clickable(onClick = onNext),
-                )
-            }
         }
     }
 }

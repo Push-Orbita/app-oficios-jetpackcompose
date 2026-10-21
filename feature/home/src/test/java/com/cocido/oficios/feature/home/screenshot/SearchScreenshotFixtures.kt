@@ -226,7 +226,7 @@ internal fun SearchScreenshotFicha(
 ) {
     SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
         WorkerProfileScreen(
-            uiState = previewState(withGallery = true, withReviews = false),
+            uiState = previewState(withGallery = true, withReviews = true),
             onEvent = {},
             showFavorites = true,
         )

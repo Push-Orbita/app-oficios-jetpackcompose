@@ -84,6 +84,7 @@
     <string name="home_worker_specialties_title">Especialidades</string>
     <string name="home_worker_availability_title">Disponibilidad</string>
     <string name="home_worker_gallery_title">Trabajos realizados</string>
+    <string name="home_worker_gallery_empty_title">Todavía no hay fotos de trabajos</string>
     <string name="home_worker_gallery_previous">Foto anterior</string>
     <string name="home_worker_gallery_next">Foto siguiente</string>
     <string name="home_worker_certificates_title">Certificación</string>

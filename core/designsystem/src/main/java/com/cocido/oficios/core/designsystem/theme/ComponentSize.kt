@@ -60,7 +60,7 @@ object OficiosComponentSize {
     val workerCardNameToRating = 7.dp
     val workerCardHeaderToSpecialty = 11.dp
     val workerCardSpecialtyToActions = 18.dp
-    /** Ficha 40:559: slide de galería 376×376 (440 − 32 − 32). */
+    /** Ficha 40:559 / 613:460: slide 376×376. La ficha usa [profileMediaTile]. */
     val workerGallerySize = 376.dp
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f

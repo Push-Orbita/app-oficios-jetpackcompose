@@ -28,12 +28,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -66,12 +67,6 @@ fun WorkerProfileScreen(
     val haptics = rememberOficiosHaptics()
     OficiosScaffold(
         modifier = modifier,
-        topBar = {
-            OficiosBackTopBar(
-                title = stringResource(R.string.home_worker_profile_title),
-                onBack = { onEvent(WorkerProfileEvent.Back) },
-            )
-        },
         bottomBar = {
             ClientHomeBottomBar(
                 selectedTab = selectedTab,
@@ -83,15 +78,26 @@ fun WorkerProfileScreen(
         OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
             when (state) {
                 WorkerProfileUiState.Loading -> WorkerProfileSkeleton(
+                    onBack = { onEvent(WorkerProfileEvent.Back) },
                     modifier = Modifier.fillMaxSize(),
                 )
                 is WorkerProfileUiState.Error -> {
-                    OficiosErrorState(
-                        title = stringResource(R.string.home_worker_profile_error_title),
-                        description = state.message,
-                        modifier = Modifier.fillMaxSize(),
-                        onRetry = { onEvent(WorkerProfileEvent.Retry) },
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(OficiosSpacing.OficiosScreenPadding),
+                    ) {
+                        OficiosScreenTitle(
+                            title = stringResource(R.string.home_worker_profile_title),
+                            onNavigateBack = { onEvent(WorkerProfileEvent.Back) },
+                        )
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_worker_profile_error_title),
+                            description = state.message,
+                            modifier = Modifier.fillMaxSize(),
+                            onRetry = { onEvent(WorkerProfileEvent.Retry) },
+                        )
+                    }
                 }
                 is WorkerProfileUiState.Success -> {
                     PullToRefreshBox(
@@ -144,6 +150,10 @@ private fun WorkerProfileContent(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        OficiosScreenTitle(
+            title = stringResource(R.string.home_worker_profile_title),
+            onNavigateBack = { onEvent(WorkerProfileEvent.Back) },
+        )
         WorkerProfileHeader(
             profile = uiState.profile,
             onFavoriteClick = { onEvent(WorkerProfileEvent.FavoriteClicked) },
@@ -176,6 +186,7 @@ private fun WorkerProfileContent(
             text = stringResource(R.string.home_worker_report_profile),
             onClick = onReport,
             variant = OficiosButtonVariant.Primary,
+            size = OficiosButtonSize.Small,
             leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
         )
     }
@@ -189,11 +200,18 @@ private fun WorkerProfileContent(
 }
 
 @Composable
-private fun WorkerProfileSkeleton(modifier: Modifier = Modifier) {
+private fun WorkerProfileSkeleton(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier.padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
+        OficiosScreenTitle(
+            title = stringResource(R.string.home_worker_profile_title),
+            onNavigateBack = onBack,
+        )
         OficiosSkeleton(
             modifier = Modifier
                 .fillMaxWidth()
