@@ -22,7 +22,7 @@ import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -96,7 +96,7 @@ class MisUbicacionesViewModelTest {
         savedStateHandle = SavedStateHandle(mapOf("selectedId" to 3L)),
         accountUseCases = AccountUseCases(FakeLocationsAccountRepository()),
         searchBarriosUseCase = SearchBarriosUseCase(FakeLocationsCatalogRepository()),
-        getCurrentLocationUseCase = GetCurrentLocationUseCase(FakeLocationsLocationRepository()),
+        geocodeLocalAddress = GeocodeLocalAddressUseCase(FakeLocationsLocationRepository()),
     )
 }
 

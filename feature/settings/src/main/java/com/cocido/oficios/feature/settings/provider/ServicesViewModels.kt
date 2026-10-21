@@ -5,7 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
@@ -17,7 +21,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -103,7 +107,7 @@ class AddServiceViewModel @Inject constructor(
     private val getRubros: GetRubrosByCategoryUseCase,
     private val getSubRubros: GetSubRubrosByRubroUseCase,
     private val searchBarrios: SearchBarriosUseCase,
-    private val getCurrentLocation: GetCurrentLocationUseCase,
+    private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
 ) : ViewModel() {
     private val editingServiceId: Long? = savedStateHandle.get<Long>("serviceId")?.takeIf { it > 0L }
     private val _uiState = MutableStateFlow(AddServiceUiState())
@@ -142,6 +146,7 @@ class AddServiceViewModel @Inject constructor(
                         localBarrioQuery = event.option.label,
                         localBarrioSuggestions = emptyList(),
                         isSearchingBarrios = false,
+                        localLocation = FormosaAddressGeocoding.invalidate(),
                     )
                 }
             }
@@ -149,13 +154,25 @@ class AddServiceViewModel @Inject constructor(
                 barrioSearchJob?.cancel()
                 update { it.copy(localBarrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
-            is AddServiceEvent.LocalStreetChanged -> update { it.copy(localStreet = event.value) }
-            is AddServiceEvent.LocalMapLocationSelected -> update {
-                it.copy(localLatitude = event.latitude, localLongitude = event.longitude, errorMessage = null)
+            is AddServiceEvent.LocalStreetChanged -> update {
+                it.copy(localStreet = event.value, localLocation = FormosaAddressGeocoding.invalidate())
             }
-            AddServiceEvent.UseCurrentLocation -> useCurrentLocation()
-            AddServiceEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
+            is AddServiceEvent.LocalNumberChanged -> update {
+                it.copy(localNumber = event.value, localLocation = FormosaAddressGeocoding.invalidate())
+            }
+            is AddServiceEvent.LocalMapLocationSelected -> update {
+                it.copy(
+                    localLocation = FormosaAddressGeocoding.pinMoved(it.localLocation, event.latitude, event.longitude),
+                    errorMessage = null,
+                )
+            }
+            AddServiceEvent.LocateOnMap -> update {
+                val next = FormosaAddressGeocoding.openMap(it.localLocation)
+                it.copy(localLocation = next, errorMessage = next.message)
+            }
+            AddServiceEvent.ConfirmPin -> update {
+                val confirmed = FormosaAddressGeocoding.confirmPin(it.localLocation)
+                it.copy(localLocation = confirmed, errorMessage = confirmed.message)
             }
             is AddServiceEvent.WorkDayToggled -> update {
                 it.copy(workDays = it.workDays.toggled(event.day, event.checked), errorMessage = null)
@@ -212,7 +229,12 @@ class AddServiceViewModel @Inject constructor(
             AddServiceStep.MODALITY -> when {
                 !state.servesAtClientHome && !state.servesAtLocal -> "Elija al menos una modalidad de atención."
                 state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Complete el barrio y la calle de su local."
-                state.servesAtLocal && (state.localLatitude == null || state.localLongitude == null) -> "Marque la entrada de su local en el mapa."
+                state.servesAtLocal && !state.localLocation.canPersist -> {
+                    if (state.localLocation.phase == AddressLocationPhase.Idle) {
+                        resolveLocalFromAddress()
+                    }
+                    state.localLocation.message ?: "Confirme la ubicación de su local."
+                }
                 else -> null
             }
             AddServiceStep.SCHEDULE -> when {
@@ -241,10 +263,12 @@ class AddServiceViewModel @Inject constructor(
             update { it.copy(isSaving = true, errorMessage = null) }
             val local = if (state.servesAtLocal) ProviderLocalDomicilioRequest(
                 barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccione el barrio de su local.") },
-                calle = state.localStreet.trim(),
+                calle = listOf(state.localStreet.trim(), state.localNumber.trim())
+                    .filter { it.isNotBlank() }
+                    .joinToString(" "),
                 nombre = state.localName.trim().ifBlank { null },
-                latitud = GeoCoordinates.roundForApi(state.localLatitude),
-                longitud = GeoCoordinates.roundForApi(state.localLongitude),
+                latitud = GeoCoordinates.roundForApi(state.localLocation.latitude),
+                longitud = GeoCoordinates.roundForApi(state.localLocation.longitude),
             ) else null
             val request = ProviderRubroFullRequest(
                 rubroId = rubroId,
@@ -296,19 +320,45 @@ class AddServiceViewModel @Inject constructor(
         )
     }
 
-    private fun useCurrentLocation() {
+    private fun resolveLocalFromAddress() {
+        val state = _uiState.value
+        if (state.isGeocoding) return
         viewModelScope.launch {
-            update { it.copy(isLocating = true, errorMessage = null) }
-            when (val result = getCurrentLocation()) {
-                is AppResult.Success -> update {
+            update {
+                it.copy(
+                    isGeocoding = true,
+                    localLocation = it.localLocation.copy(phase = AddressLocationPhase.Geocoding),
+                    errorMessage = null,
+                )
+            }
+            when (
+                val result = geocodeLocalAddress(
+                    LocalAddressQuery(
+                        street = state.localStreet,
+                        number = state.localNumber,
+                        neighborhood = state.localBarrioQuery,
+                    ),
+                )
+            ) {
+                is AppResult.Error -> update {
                     it.copy(
-                        isLocating = false,
-                        localLatitude = result.data.latitude,
-                        localLongitude = result.data.longitude,
+                        isGeocoding = false,
+                        localLocation = AddressLocationSnapshot(
+                            phase = AddressLocationPhase.NeedsMap,
+                            message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                        ),
+                        errorMessage = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
                     )
                 }
-                is AppResult.Error -> update {
-                    it.copy(isLocating = false, errorMessage = result.error.userMessage())
+                is AppResult.Success -> {
+                    val snapshot = FormosaAddressGeocoding.snapshotFor(result.data)
+                    update {
+                        it.copy(
+                            isGeocoding = false,
+                            localLocation = snapshot,
+                            errorMessage = snapshot.message,
+                        )
+                    }
                 }
             }
         }

@@ -4,15 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.toRubroFullRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -27,7 +31,7 @@ import kotlinx.coroutines.launch
 class CommercialLocalViewModel @Inject constructor(
     private val accountUseCases: AccountUseCases,
     private val searchBarrios: SearchBarriosUseCase,
-    private val getCurrentLocation: GetCurrentLocationUseCase,
+    private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CommercialLocalUiState())
     val uiState = _uiState.asStateFlow()
@@ -55,15 +59,31 @@ class CommercialLocalViewModel @Inject constructor(
                 searchJob?.cancel()
                 update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
             }
-            is CommercialLocalEvent.CalleChanged ->
-                update { it.copy(calle = event.value, errorMessage = null) }
+            is CommercialLocalEvent.CalleChanged -> update {
+                it.copy(
+                    calle = event.value,
+                    errorMessage = null,
+                    location = FormosaAddressGeocoding.invalidate(),
+                )
+            }
+            is CommercialLocalEvent.NumeroChanged -> update {
+                it.copy(
+                    numero = event.value,
+                    errorMessage = null,
+                    location = FormosaAddressGeocoding.invalidate(),
+                )
+            }
             is CommercialLocalEvent.MapLocationSelected -> update {
-                it.copy(latitud = event.latitude, longitud = event.longitude, errorMessage = null)
+                it.copy(
+                    location = FormosaAddressGeocoding.pinMoved(it.location, event.latitude, event.longitude),
+                    errorMessage = null,
+                )
             }
-            CommercialLocalEvent.UseCurrentLocation -> useCurrentLocation()
-            CommercialLocalEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
+            CommercialLocalEvent.LocateOnMap -> update {
+                val next = FormosaAddressGeocoding.openMap(it.location)
+                it.copy(location = next, errorMessage = next.message)
             }
+            CommercialLocalEvent.ConfirmPin -> confirmAndSave()
             CommercialLocalEvent.Submit -> submit()
         }
     }
@@ -110,7 +130,9 @@ class CommercialLocalViewModel @Inject constructor(
                             barrioQuery = local?.barrioName.orEmpty(),
                             selectedBarrioId = local?.barrioId,
                             calle = local?.street.orEmpty(),
+                            numero = "",
                             barrioOptions = emptyList(),
+                            location = AddressLocationSnapshot(),
                         )
                     }
                 }
@@ -125,6 +147,7 @@ class CommercialLocalViewModel @Inject constructor(
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
                 isSearchingBarrios = true,
                 errorMessage = null,
+                location = if (preserveSelection) it.location else FormosaAddressGeocoding.invalidate(),
             )
         }
         searchJob = viewModelScope.launchDebouncedBarrioSearch(
@@ -146,25 +169,8 @@ class CommercialLocalViewModel @Inject constructor(
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
                 errorMessage = null,
+                location = FormosaAddressGeocoding.invalidate(),
             )
-        }
-    }
-
-    private fun useCurrentLocation() {
-        viewModelScope.launch {
-            update { it.copy(isLocating = true, errorMessage = null) }
-            when (val result = getCurrentLocation()) {
-                is AppResult.Success -> update {
-                    it.copy(
-                        isLocating = false,
-                        latitud = result.data.latitude,
-                        longitud = result.data.longitude,
-                    )
-                }
-                is AppResult.Error -> update {
-                    it.copy(isLocating = false, errorMessage = result.error.userMessage())
-                }
-            }
         }
     }
 
@@ -177,20 +183,84 @@ class CommercialLocalViewModel @Inject constructor(
             return
         }
         if (barrioId == null || !state.canSubmit) {
-            update { it.copy(errorMessage = "Complete barrio, calle y la ubicación en el mapa.") }
+            update { it.copy(errorMessage = "Complete barrio, calle y número de su local.") }
             return
         }
+        if (!state.location.canPersist) {
+            resolveFromAddress()
+            return
+        }
+        persist()
+    }
+
+    private fun resolveFromAddress() {
+        val state = _uiState.value
+        viewModelScope.launch {
+            update {
+                it.copy(
+                    isGeocoding = true,
+                    errorMessage = null,
+                    location = it.location.copy(phase = AddressLocationPhase.Geocoding),
+                )
+            }
+            val result = geocodeLocalAddress(
+                LocalAddressQuery(
+                    street = state.calle,
+                    number = state.numero,
+                    neighborhood = state.barrioQuery,
+                ),
+            )
+            when (result) {
+                is AppResult.Error -> update {
+                    it.copy(
+                        isGeocoding = false,
+                        location = AddressLocationSnapshot(
+                            phase = AddressLocationPhase.NeedsMap,
+                            message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                        ),
+                        errorMessage = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                    )
+                }
+                is AppResult.Success -> {
+                    val snapshot = FormosaAddressGeocoding.snapshotFor(result.data)
+                    update {
+                        it.copy(
+                            isGeocoding = false,
+                            location = snapshot,
+                            errorMessage = snapshot.message,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun confirmAndSave() {
+        val confirmed = FormosaAddressGeocoding.confirmPin(_uiState.value.location)
+        update { it.copy(location = confirmed, errorMessage = confirmed.message) }
+        if (confirmed.canPersist) persist()
+    }
+
+    private fun persist() {
+        val state = _uiState.value
+        val barrioId = state.selectedBarrioId ?: return
+        val service = targetService ?: return
+        val location = state.location
+        if (!location.canPersist) return
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
+            val streetLine = listOf(state.calle.trim(), state.numero.trim())
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
             val request = service.toRubroFullRequest(
                 paymentMethods = paymentMethods,
                 servesAtLocal = true,
                 domicilioLocal = ProviderLocalDomicilioRequest(
                     barrioId = barrioId,
-                    calle = state.calle.trim(),
+                    calle = streetLine,
                     nombre = "Local comercial",
-                    latitud = GeoCoordinates.roundForApi(state.latitud),
-                    longitud = GeoCoordinates.roundForApi(state.longitud),
+                    latitud = GeoCoordinates.roundForApi(location.latitude),
+                    longitud = GeoCoordinates.roundForApi(location.longitude),
                 ),
             )
             when (val result = accountUseCases.replaceService(service.id, service.isPrimary, request)) {

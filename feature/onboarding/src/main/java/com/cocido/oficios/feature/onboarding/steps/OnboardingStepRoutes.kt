@@ -207,9 +207,10 @@ fun ProviderLocalRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
+        onNumeroChanged = viewModel::onNumeroChanged,
         onMapLocationSelected = viewModel::onMapLocationSelected,
-        onUseCurrentLocation = viewModel::useCurrentLocation,
-        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
+        onLocateOnMap = viewModel::locateOnMap,
+        onConfirmPin = viewModel::confirmPin,
         onSubmit = viewModel::submit,
     )
 }

@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientDomicilio
 
@@ -21,13 +22,15 @@ sealed interface MisUbicacionesUiState {
         val isSearchingBarrios: Boolean = false,
         val street: String = "",
         val number: String = "",
-        val addressLatitude: Double? = null,
-        val addressLongitude: Double? = null,
-        val isLocating: Boolean = false,
+        val location: AddressLocationSnapshot = AddressLocationSnapshot(),
+        val isGeocoding: Boolean = false,
         val addressFavorite: Boolean = false,
         val isSaving: Boolean = false,
         val errorMessage: String? = null,
-    ) : MisUbicacionesUiState
+    ) : MisUbicacionesUiState {
+        val addressLatitude: Double? get() = location.latitude
+        val addressLongitude: Double? get() = location.longitude
+    }
 }
 
 sealed interface MisUbicacionesEvent {
@@ -44,8 +47,8 @@ sealed interface MisUbicacionesEvent {
     data class StreetChanged(val value: String) : MisUbicacionesEvent
     data class NumberChanged(val value: String) : MisUbicacionesEvent
     data class MapLocationSelected(val latitude: Double, val longitude: Double) : MisUbicacionesEvent
-    data object UseCurrentLocation : MisUbicacionesEvent
-    data object LocationPermissionDenied : MisUbicacionesEvent
+    data object LocateOnMap : MisUbicacionesEvent
+    data object ConfirmPin : MisUbicacionesEvent
     data class FavoriteNewChanged(val value: Boolean) : MisUbicacionesEvent
     data object SaveNew : MisUbicacionesEvent
     data object Confirm : MisUbicacionesEvent

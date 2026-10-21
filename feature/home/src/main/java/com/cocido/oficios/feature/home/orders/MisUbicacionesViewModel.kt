@@ -5,12 +5,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -27,7 +31,7 @@ class MisUbicacionesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val accountUseCases: AccountUseCases,
     private val searchBarriosUseCase: SearchBarriosUseCase,
-    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
+    private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
 ) : ViewModel() {
 
     private val initialSelectedId: Long? = savedStateHandle.get<Long>("selectedId")?.takeIf { it > 0L }
@@ -72,22 +76,30 @@ class MisUbicacionesViewModel @Inject constructor(
                     barrioId = event.option.id,
                     barrioSuggestions = emptyList(),
                     errorMessage = null,
+                    location = FormosaAddressGeocoding.invalidate(),
                 )
             }
             is MisUbicacionesEvent.StreetChanged -> updateSuccess {
-                copy(street = event.value, errorMessage = null)
+                copy(street = event.value, errorMessage = null, location = FormosaAddressGeocoding.invalidate())
             }
             is MisUbicacionesEvent.NumberChanged -> updateSuccess {
-                copy(number = event.value, errorMessage = null)
+                copy(number = event.value, errorMessage = null, location = FormosaAddressGeocoding.invalidate())
             }
             is MisUbicacionesEvent.MapLocationSelected -> updateSuccess {
-                copy(addressLatitude = event.latitude, addressLongitude = event.longitude, errorMessage = null)
-            }
-            MisUbicacionesEvent.UseCurrentLocation -> useCurrentLocation()
-            MisUbicacionesEvent.LocationPermissionDenied -> updateSuccess {
                 copy(
-                    errorMessage = "Para usar su ubicación, permita el acceso cuando Android se lo solicite. También puede marcar el punto manualmente.",
+                    location = FormosaAddressGeocoding.pinMoved(location, event.latitude, event.longitude),
+                    errorMessage = null,
                 )
+            }
+            MisUbicacionesEvent.LocateOnMap -> updateSuccess {
+                val next = FormosaAddressGeocoding.openMap(location)
+                copy(location = next, errorMessage = next.message)
+            }
+            MisUbicacionesEvent.ConfirmPin -> {
+                val current = uiState.value as? MisUbicacionesUiState.Success ?: return
+                val confirmed = FormosaAddressGeocoding.confirmPin(current.location)
+                updateSuccess { copy(location = confirmed, errorMessage = confirmed.message) }
+                if (confirmed.canPersist) saveNew()
             }
             is MisUbicacionesEvent.FavoriteNewChanged -> updateSuccess {
                 copy(addressFavorite = event.value)
@@ -138,9 +150,8 @@ class MisUbicacionesViewModel @Inject constructor(
                 barrioSuggestions = emptyList(),
                 street = "",
                 number = "",
-                addressLatitude = null,
-                addressLongitude = null,
-                isLocating = false,
+                location = AddressLocationSnapshot(),
+                isGeocoding = false,
                 addressFavorite = domicilios.isEmpty(),
                 isSaving = false,
                 errorMessage = null,
@@ -163,6 +174,10 @@ class MisUbicacionesViewModel @Inject constructor(
             updateSuccess { copy(errorMessage = error) }
             return
         }
+        if (!state.location.canPersist) {
+            resolveFromAddress()
+            return
+        }
         viewModelScope.launch {
             updateSuccess { copy(isSaving = true, errorMessage = null) }
             val result = accountUseCases.createDomicilio(
@@ -171,8 +186,8 @@ class MisUbicacionesViewModel @Inject constructor(
                     personaId = ownerId!!,
                     calle = state.street.trim(),
                     numero = state.number.trim(),
-                    latitud = GeoCoordinates.roundForApi(state.addressLatitude),
-                    longitud = GeoCoordinates.roundForApi(state.addressLongitude),
+                    latitud = GeoCoordinates.roundForApi(state.location.latitude),
+                    longitud = GeoCoordinates.roundForApi(state.location.longitude),
                     favorito = state.addressFavorite,
                 ),
             )
@@ -235,19 +250,40 @@ class MisUbicacionesViewModel @Inject constructor(
         )
     }
 
-    private fun useCurrentLocation() {
+    private fun resolveFromAddress() {
+        val state = uiState.value as? MisUbicacionesUiState.Success ?: return
         viewModelScope.launch {
-            updateSuccess { copy(isLocating = true, errorMessage = null) }
-            when (val result = getCurrentLocationUseCase()) {
-                is AppResult.Success -> updateSuccess {
+            updateSuccess {
+                copy(
+                    isGeocoding = true,
+                    location = location.copy(phase = AddressLocationPhase.Geocoding),
+                    errorMessage = null,
+                )
+            }
+            when (
+                val result = geocodeLocalAddress(
+                    LocalAddressQuery(
+                        street = state.street,
+                        number = state.number,
+                        neighborhood = state.barrioQuery,
+                    ),
+                )
+            ) {
+                is AppResult.Error -> updateSuccess {
                     copy(
-                        isLocating = false,
-                        addressLatitude = result.data.latitude,
-                        addressLongitude = result.data.longitude,
+                        isGeocoding = false,
+                        location = AddressLocationSnapshot(
+                            phase = AddressLocationPhase.NeedsMap,
+                            message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                        ),
+                        errorMessage = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
                     )
                 }
-                is AppResult.Error -> updateSuccess {
-                    copy(isLocating = false, errorMessage = result.error.userMessage())
+                is AppResult.Success -> {
+                    val snapshot = FormosaAddressGeocoding.snapshotFor(result.data)
+                    updateSuccess {
+                        copy(isGeocoding = false, location = snapshot, errorMessage = snapshot.message)
+                    }
                 }
             }
         }

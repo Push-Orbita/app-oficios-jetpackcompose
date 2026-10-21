@@ -28,7 +28,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.core.ui.map.OficiosLocationPicker
+import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.feature.settings.R
 
 @Composable
@@ -113,15 +113,28 @@ private fun CommercialLocalForm(
             onValueChange = { onEvent(CommercialLocalEvent.CalleChanged(it)) },
             label = stringResource(R.string.commercial_local_street),
         )
-        OficiosLocationPicker(
-            latitude = state.latitud,
-            longitude = state.longitud,
-            onLocationSelected = { latitude, longitude ->
+        OficiosTextField(
+            value = state.numero,
+            onValueChange = { onEvent(CommercialLocalEvent.NumeroChanged(it)) },
+            label = stringResource(R.string.commercial_local_number),
+        )
+        OficiosAddressLocationPicker(
+            latitude = state.location.latitude,
+            longitude = state.location.longitude,
+            showMap = state.location.showMap,
+            pinDraggable = state.location.pinDraggable,
+            showLocateOnMap = state.location.showLocateOnMap,
+            showConfirm = state.location.showConfirm,
+            isGeocoding = state.isGeocoding,
+            onLocateOnMap = { onEvent(CommercialLocalEvent.LocateOnMap) },
+            onPinChanged = { latitude, longitude ->
                 onEvent(CommercialLocalEvent.MapLocationSelected(latitude, longitude))
             },
-            onUseCurrentLocation = { onEvent(CommercialLocalEvent.UseCurrentLocation) },
-            onPermissionDenied = { onEvent(CommercialLocalEvent.LocationPermissionDenied) },
-            isLocating = state.isLocating,
+            onConfirmPin = { onEvent(CommercialLocalEvent.ConfirmPin) },
+            locateOnMapLabel = state.location.locateOnMapLabel,
+            confirmLabel = stringResource(R.string.commercial_local_confirm_pin),
+            title = "Ubicación del local",
+            hint = state.location.message,
         )
         OficiosButton(
             text = stringResource(R.string.commercial_local_save),
@@ -129,8 +142,8 @@ private fun CommercialLocalForm(
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,
-            enabled = !state.isSaving,
-            loading = state.isSaving,
+            enabled = !state.isSaving && !state.isGeocoding,
+            loading = state.isSaving || state.isGeocoding,
         )
     }
 }

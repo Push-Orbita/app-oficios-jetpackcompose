@@ -56,6 +56,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
+import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.core.ui.map.OficiosLocationPicker
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioUiState
@@ -754,9 +755,10 @@ fun ProviderLocalStepScreen(
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
+    onNumeroChanged: (String) -> Unit,
     onMapLocationSelected: (Double, Double) -> Unit,
-    onUseCurrentLocation: () -> Unit,
-    onLocationPermissionDenied: () -> Unit,
+    onLocateOnMap: () -> Unit,
+    onConfirmPin: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -779,13 +781,21 @@ fun ProviderLocalStepScreen(
             onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
         OficiosTextField(value = uiState.calle, onValueChange = onCalleChanged, label = stringResource(R.string.onboarding_step_calle_label))
-        OficiosLocationPicker(
-            latitude = uiState.latitud,
-            longitude = uiState.longitud,
-            onLocationSelected = onMapLocationSelected,
-            onUseCurrentLocation = onUseCurrentLocation,
-            onPermissionDenied = onLocationPermissionDenied,
-            isLocating = uiState.isLocating,
+        OficiosTextField(value = uiState.numero, onValueChange = onNumeroChanged, label = stringResource(R.string.onboarding_step_numero_label))
+        OficiosAddressLocationPicker(
+            latitude = uiState.location.latitude,
+            longitude = uiState.location.longitude,
+            showMap = uiState.location.showMap,
+            pinDraggable = uiState.location.pinDraggable,
+            showLocateOnMap = uiState.location.showLocateOnMap,
+            showConfirm = uiState.location.showConfirm,
+            isGeocoding = uiState.isGeocoding,
+            onLocateOnMap = onLocateOnMap,
+            onPinChanged = onMapLocationSelected,
+            onConfirmPin = onConfirmPin,
+            locateOnMapLabel = uiState.location.locateOnMapLabel,
+            title = "Ubicación del local",
+            hint = uiState.location.message,
         )
     }
 }

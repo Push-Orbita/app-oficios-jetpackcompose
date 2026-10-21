@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.settings.provider
 
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -50,9 +51,9 @@ data class AddServiceUiState(
     val localBarrioSuggestions: List<CatalogOption> = emptyList(),
     val isSearchingBarrios: Boolean = false,
     val localStreet: String = "",
-    val localLatitude: Double? = null,
-    val localLongitude: Double? = null,
-    val isLocating: Boolean = false,
+    val localNumber: String = "",
+    val localLocation: AddressLocationSnapshot = AddressLocationSnapshot(),
+    val isGeocoding: Boolean = false,
     val workDays: Set<String> = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
     val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
     val paymentMethods: Set<String> = emptySet(),
@@ -65,6 +66,8 @@ data class AddServiceUiState(
     val selectedCategoryLabel get() = categories.firstOrNull { it.id == selectedCategoryId }?.label.orEmpty()
     val selectedRubroLabel get() = rubros.firstOrNull { it.id == selectedRubroId }?.label.orEmpty()
         .ifBlank { lockedRubroName }
+    val localLatitude: Double? get() = localLocation.latitude
+    val localLongitude: Double? get() = localLocation.longitude
 }
 
 sealed interface AddServiceEvent {
@@ -84,9 +87,10 @@ sealed interface AddServiceEvent {
     data class LocalBarrioSelected(val option: CatalogOption) : AddServiceEvent
     data object LocalBarrioSuggestionsDismissed : AddServiceEvent
     data class LocalStreetChanged(val value: String) : AddServiceEvent
+    data class LocalNumberChanged(val value: String) : AddServiceEvent
     data class LocalMapLocationSelected(val latitude: Double, val longitude: Double) : AddServiceEvent
-    data object UseCurrentLocation : AddServiceEvent
-    data object LocationPermissionDenied : AddServiceEvent
+    data object LocateOnMap : AddServiceEvent
+    data object ConfirmPin : AddServiceEvent
     data class WorkDayToggled(val day: String, val checked: Boolean) : AddServiceEvent
     data class TimeFromChanged(val index: Int, val value: String) : AddServiceEvent
     data class TimeToChanged(val index: Int, val value: String) : AddServiceEvent

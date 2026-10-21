@@ -50,7 +50,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.core.ui.map.OficiosLocationPicker
+import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
+import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
@@ -313,16 +314,30 @@ private fun MisUbicacionesAddForm(
                 imeAction = ImeAction.Done,
             ),
         )
-        OficiosLocationPicker(
-            latitude = state.addressLatitude,
-            longitude = state.addressLongitude,
-            onLocationSelected = { latitude, longitude ->
+        OficiosAddressLocationPicker(
+            latitude = state.location.latitude,
+            longitude = state.location.longitude,
+            showMap = state.location.showMap,
+            pinDraggable = state.location.pinDraggable,
+            showLocateOnMap = state.location.showLocateOnMap,
+            showConfirm = state.location.showConfirm,
+            isGeocoding = state.isGeocoding,
+            onLocateOnMap = { onEvent(MisUbicacionesEvent.LocateOnMap) },
+            onPinChanged = { latitude, longitude ->
                 onEvent(MisUbicacionesEvent.MapLocationSelected(latitude, longitude))
             },
-            onUseCurrentLocation = { onEvent(MisUbicacionesEvent.UseCurrentLocation) },
-            onPermissionDenied = { onEvent(MisUbicacionesEvent.LocationPermissionDenied) },
-            enabled = !state.isSaving,
-            isLocating = state.isLocating,
+            onConfirmPin = { onEvent(MisUbicacionesEvent.ConfirmPin) },
+            locateOnMapLabel = if (
+                state.location.phase == AddressLocationPhase.Preview ||
+                state.location.phase == AddressLocationPhase.Confirmed
+            ) {
+                "Ajustar en el mapa"
+            } else {
+                "Ubicar en el mapa"
+            },
+            confirmLabel = "Confirmar ubicación",
+            hint = state.location.message
+                ?: "La ubicación se calcula a partir de la dirección. El GPS del teléfono no se usa.",
         )
         OficiosCheckbox(
             checked = state.addressFavorite,
@@ -336,8 +351,8 @@ private fun MisUbicacionesAddForm(
                 onClick = { onEvent(MisUbicacionesEvent.SaveNew) },
                 variant = OficiosButtonVariant.Secondary,
                 size = OficiosButtonSize.Small,
-                loading = state.isSaving,
-                enabled = !state.isSaving,
+                loading = state.isSaving || state.isGeocoding,
+                enabled = !state.isSaving && !state.isGeocoding,
             )
         }
     }

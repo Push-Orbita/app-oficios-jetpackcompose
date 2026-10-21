@@ -33,7 +33,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -146,7 +146,7 @@ class AddServiceViewModelTest {
         getRubros = GetRubrosByCategoryUseCase(catalog),
         getSubRubros = GetSubRubrosByRubroUseCase(catalog),
         searchBarrios = SearchBarriosUseCase(catalog),
-        getCurrentLocation = GetCurrentLocationUseCase(FakeLocationRepository()),
+        geocodeLocalAddress = GeocodeLocalAddressUseCase(FakeLocationRepository()),
     )
 }
 

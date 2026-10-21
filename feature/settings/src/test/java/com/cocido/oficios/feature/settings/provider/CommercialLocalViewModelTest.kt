@@ -9,6 +9,9 @@ import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
+import com.cocido.oficios.domain.model.GeocodedPlace
 import com.cocido.oficios.domain.model.GeoPoint
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ManagedProviderSubService
@@ -31,7 +34,7 @@ import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -97,11 +100,15 @@ class CommercialLocalViewModelTest {
         val viewModel = createViewModel(accounts)
         advanceUntilIdle()
         viewModel.onEvent(CommercialLocalEvent.BarrioSelected(CatalogOption(7, "Centro")))
-        viewModel.onEvent(CommercialLocalEvent.CalleChanged("Av. 25 de Mayo 100"))
-        viewModel.onEvent(CommercialLocalEvent.MapLocationSelected(-26.1849, -58.1731))
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged("Av. 25 de Mayo"))
+        viewModel.onEvent(CommercialLocalEvent.NumeroChanged("100"))
         val effects = mutableListOf<CommercialLocalEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
         viewModel.onEvent(CommercialLocalEvent.Submit)
+        advanceUntilIdle()
+        assertEquals(null, accounts.replacedId)
+        assertEquals(AddressLocationPhase.Preview, viewModel.uiState.value.locationPhase)
+        viewModel.onEvent(CommercialLocalEvent.ConfirmPin)
         advanceUntilIdle()
         job.cancel()
 
@@ -111,6 +118,8 @@ class CommercialLocalViewModelTest {
         assertTrue(request.servesAtLocal)
         assertEquals(7L, request.domicilioLocal?.barrioId)
         assertEquals("Av. 25 de Mayo 100", request.domicilioLocal?.calle)
+        assertEquals(-26.1849, request.domicilioLocal?.latitud)
+        assertEquals(-58.1731, request.domicilioLocal?.longitud)
         assertEquals(listOf(21L, 22L), request.subRubroIds)
         assertTrue(effects.any { it is CommercialLocalEffect.ShowSuccess })
         assertTrue(effects.any { it is CommercialLocalEffect.NavigateBack })
@@ -141,24 +150,95 @@ class CommercialLocalViewModelTest {
     }
 
     @Test
-    fun `submit without map keeps form and does not call API`() = runTest(testDispatcher) {
+    fun `geocode unique shows preview without saving or rewriting street`() = runTest(testDispatcher) {
         val accounts = FakeCommercialAccountRepository()
         val viewModel = createViewModel(accounts)
         advanceUntilIdle()
         viewModel.onEvent(CommercialLocalEvent.BarrioSelected(CatalogOption(7, "Centro")))
-        viewModel.onEvent(CommercialLocalEvent.CalleChanged("Av. 25 de Mayo 100"))
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged("San Martín"))
+        viewModel.onEvent(CommercialLocalEvent.NumeroChanged("123"))
+        viewModel.onEvent(CommercialLocalEvent.Submit)
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals("San Martín", state.calle)
+        assertEquals("123", state.numero)
+        assertEquals(-26.1849, state.latitud)
+        assertEquals(-58.1731, state.longitud)
+        assertEquals(AddressLocationPhase.Preview, state.locationPhase)
+        assertFalse(state.location.confirmed)
+        assertEquals(null, accounts.replacedId)
+        assertEquals(FormosaAddressGeocoding.PREVIEW_MESSAGE, state.errorMessage)
+    }
+
+    @Test
+    fun `geocode miss offers map without gps coords`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(places = emptyList())
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.BarrioSelected(CatalogOption(7, "Centro")))
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged("Calle Inventada"))
+        viewModel.onEvent(CommercialLocalEvent.Submit)
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals("Calle Inventada", state.calle)
+        assertEquals(null, state.latitud)
+        assertEquals(AddressLocationPhase.NeedsMap, state.locationPhase)
+        assertEquals(FormosaAddressGeocoding.NONE_MESSAGE, state.errorMessage)
+    }
+
+    @Test
+    fun `emulator googleplex result is rejected`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(
+            places = listOf(GeocodedPlace(37.421998, -122.084, "charleston rd")),
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.BarrioSelected(CatalogOption(7, "Centro")))
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged("charleston rd"))
+        viewModel.onEvent(CommercialLocalEvent.Submit)
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals("charleston rd", state.calle)
+        assertEquals(null, state.latitud)
+        assertEquals(AddressLocationPhase.NeedsMap, state.locationPhase)
+        assertEquals(FormosaAddressGeocoding.OUTSIDE_MESSAGE, state.errorMessage)
+    }
+
+    @Test
+    fun `map pin does not overwrite the street`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged("San Martín 123"))
+        viewModel.onEvent(CommercialLocalEvent.LocateOnMap)
+        viewModel.onEvent(CommercialLocalEvent.MapLocationSelected(-26.19, -58.18))
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals("San Martín 123", state.calle)
+        assertEquals(-26.19, state.latitud)
+        assertEquals(-58.18, state.longitud)
+        assertEquals(AddressLocationPhase.PickingMap, state.locationPhase)
+        assertFalse(state.location.confirmed)
+    }
+
+    @Test
+    fun `submit without address keeps form and does not call API`() = runTest(testDispatcher) {
+        val accounts = FakeCommercialAccountRepository()
+        val viewModel = createViewModel(accounts)
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged(""))
         viewModel.onEvent(CommercialLocalEvent.Submit)
         advanceUntilIdle()
         assertEquals(null, accounts.replacedId)
-        assertEquals("Complete barrio, calle y la ubicación en el mapa.", viewModel.uiState.value.errorMessage)
+        assertEquals("Complete barrio, calle y número de su local.", viewModel.uiState.value.errorMessage)
     }
 
     private fun createViewModel(
         accounts: FakeCommercialAccountRepository = FakeCommercialAccountRepository(),
+        places: List<GeocodedPlace> = listOf(
+            GeocodedPlace(-26.1849, -58.1731, "San Martín 123, Formosa"),
+        ),
     ) = CommercialLocalViewModel(
         accountUseCases = AccountUseCases(accounts),
         searchBarrios = SearchBarriosUseCase(FakeCommercialCatalogRepository()),
-        getCurrentLocation = GetCurrentLocationUseCase(FakeCommercialLocationRepository()),
+        geocodeLocalAddress = GeocodeLocalAddressUseCase(FakeCommercialLocationRepository(places)),
     )
 }
 
@@ -257,9 +337,14 @@ private class FakeCommercialCatalogRepository : CatalogRepository {
     override suspend fun searchBarrios(query: String) = AppResult.Success(listOf(CatalogOption(7, "Centro")))
 }
 
-private class FakeCommercialLocationRepository : LocationRepository {
+private class FakeCommercialLocationRepository(
+    private val places: List<GeocodedPlace>,
+) : LocationRepository {
     override suspend fun getCurrentLocation(requirePrecise: Boolean) =
-        AppResult.Success(GeoPoint(-26.1849, -58.1731))
+        AppResult.Error(AppError.Forbidden("GPS no debe usarse para el local"))
 
     override fun observeLocations(intervalMillis: Long): Flow<AppResult<GeoPoint>> = emptyFlow()
+
+    override suspend fun geocodeForward(query: String): AppResult<List<GeocodedPlace>> =
+        AppResult.Success(places)
 }

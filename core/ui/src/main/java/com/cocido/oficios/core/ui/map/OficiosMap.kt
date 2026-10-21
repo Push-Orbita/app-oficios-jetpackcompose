@@ -58,7 +58,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-private val FormosaCenter = LatLng(-26.1849, -58.1731)
+internal val FormosaCenter = LatLng(-26.1849, -58.1731)
 
 @Composable
 fun OficiosLocationPicker(
@@ -73,14 +73,17 @@ fun OficiosLocationPicker(
 ) {
     val context = LocalContext.current
     val mapsApiKey = remember { context.googleMapsApiKey() }
-    var hasLocationPermission by remember {
-        mutableStateOf(context.hasAnyLocationPermission())
-    }
+    var showMyLocation by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { grants ->
-        hasLocationPermission = grants.values.any { it } || context.hasAnyLocationPermission()
-        if (hasLocationPermission) onUseCurrentLocation() else onPermissionDenied()
+        val granted = grants.values.any { it } || context.hasAnyLocationPermission()
+        if (granted) {
+            showMyLocation = true
+            onUseCurrentLocation()
+        } else {
+            onPermissionDenied()
+        }
     }
     val selected = latitude?.let { lat -> longitude?.let { lng -> LatLng(lat, lng) } }
     val cameraPositionState = rememberCameraPositionState {
@@ -109,7 +112,7 @@ fun OficiosLocationPicker(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = "Mueva el mapa o toque un punto para ubicar la entrada. Puede corregirla manualmente.",
+            text = "Toque el mapa o «Usar mi ubicación» para marcar la entrada. El GPS no se aplica solo.",
             style = MaterialTheme.typography.bodySmall,
             color = OficiosColorSecondaryText,
         )
@@ -123,7 +126,7 @@ fun OficiosLocationPicker(
             if (!mapUnavailable) GoogleMap(
                 modifier = Modifier.matchParentSize(),
                 cameraPositionState = cameraPositionState,
-                properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
+                properties = MapProperties(isMyLocationEnabled = showMyLocation),
                 uiSettings = MapUiSettings(
                     compassEnabled = true,
                     myLocationButtonEnabled = false,
@@ -172,7 +175,7 @@ fun OficiosLocationPicker(
                 text = "Usar mi ubicación",
                 onClick = {
                     if (context.hasAnyLocationPermission()) {
-                        hasLocationPermission = true
+                        showMyLocation = true
                         onUseCurrentLocation()
                     } else {
                         permissionLauncher.launch(
@@ -198,6 +201,162 @@ fun OficiosLocationPicker(
             style = MaterialTheme.typography.labelMedium,
             color = if (selected == null) OficiosColorSecondaryText else OficiosColorAction,
         )
+    }
+}
+
+/**
+ * Ubicación de un domicilio escrito a mano. Nunca usa el GPS del dispositivo:
+ * el pin sale del geocoding forward o de un arrastre explícito en Formosa.
+ */
+@Composable
+fun OficiosAddressLocationPicker(
+    latitude: Double?,
+    longitude: Double?,
+    showMap: Boolean,
+    pinDraggable: Boolean,
+    showLocateOnMap: Boolean,
+    showConfirm: Boolean,
+    isGeocoding: Boolean,
+    onLocateOnMap: () -> Unit,
+    onPinChanged: (Double, Double) -> Unit,
+    onConfirmPin: () -> Unit,
+    modifier: Modifier = Modifier,
+    locateOnMapLabel: String = "Ubicar mi local en el mapa",
+    confirmLabel: String = "Confirmar ubicación",
+    title: String = "Ubicación exacta",
+    hint: String? = null,
+) {
+    val context = LocalContext.current
+    val mapsApiKey = remember { context.googleMapsApiKey() }
+    val selected = latitude?.let { lat -> longitude?.let { lng -> LatLng(lat, lng) } }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(selected ?: FormosaCenter, if (selected == null) 12f else 16f)
+    }
+    var mapLoaded by remember { mutableStateOf(false) }
+    var mapUnavailable by remember { mutableStateOf(mapsApiKey.isBlank()) }
+    val markerState = remember { MarkerState(position = selected ?: FormosaCenter) }
+
+    LaunchedEffect(mapsApiKey) {
+        if (mapsApiKey.isBlank()) {
+            mapUnavailable = true
+            return@LaunchedEffect
+        }
+        delay(MAP_LOAD_TIMEOUT_MILLIS)
+        if (!mapLoaded) mapUnavailable = true
+    }
+
+    LaunchedEffect(selected) {
+        val target = selected ?: FormosaCenter
+        markerState.position = target
+        cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(target, if (selected == null) 12f else 16f))
+    }
+
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = hint ?: "La ubicación se calcula a partir de la dirección. El GPS del teléfono no se usa.",
+            style = MaterialTheme.typography.bodySmall,
+            color = OficiosColorSecondaryText,
+        )
+        if (showMap) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .semantics { contentDescription = "Mapa para confirmar la ubicación" },
+            ) {
+                if (!mapUnavailable) {
+                    GoogleMap(
+                        modifier = Modifier.matchParentSize(),
+                        cameraPositionState = cameraPositionState,
+                        properties = MapProperties(isMyLocationEnabled = false),
+                        uiSettings = MapUiSettings(
+                            compassEnabled = true,
+                            myLocationButtonEnabled = false,
+                            zoomControlsEnabled = false,
+                            mapToolbarEnabled = false,
+                            scrollGesturesEnabled = pinDraggable,
+                        ),
+                        onMapClick = { point ->
+                            if (pinDraggable) {
+                                markerState.position = point
+                                onPinChanged(point.latitude, point.longitude)
+                            }
+                        },
+                        onMapLoaded = { mapLoaded = true },
+                    ) {
+                        Marker(
+                            state = markerState,
+                            title = "Entrada del local",
+                            draggable = pinDraggable,
+                        )
+                    }
+                }
+                if (!mapLoaded && !mapUnavailable) {
+                    Box(
+                        Modifier.matchParentSize().background(MaterialTheme.colorScheme.surface),
+                        contentAlignment = Alignment.Center,
+                    ) { CircularProgressIndicator() }
+                }
+                if (mapUnavailable && !mapLoaded) {
+                    Column(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(OficiosSpacing.md),
+                        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterVertically),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Place,
+                            contentDescription = "Mapa no disponible",
+                            tint = OficiosColorWhite,
+                        )
+                        Text(
+                            text = "No pudimos cargar el mapa. Confirme la dirección escrita; no se usa el GPS.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
+            if (selected != null) {
+                Text(
+                    text = "Pin · %.5f, %.5f".format(selected.latitude, selected.longitude),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = OficiosColorAction,
+                )
+            }
+        }
+        if (showLocateOnMap) {
+            OficiosButton(
+                text = locateOnMapLabel,
+                onClick = onLocateOnMap,
+                enabled = !isGeocoding,
+                loading = isGeocoding,
+                variant = OficiosButtonVariant.Secondary,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (showConfirm) {
+            OficiosButton(
+                text = confirmLabel,
+                onClick = {
+                    val pin = markerState.position
+                    onPinChanged(pin.latitude, pin.longitude)
+                    onConfirmPin()
+                },
+                enabled = !isGeocoding && (selected != null || pinDraggable),
+                variant = OficiosButtonVariant.Primary,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

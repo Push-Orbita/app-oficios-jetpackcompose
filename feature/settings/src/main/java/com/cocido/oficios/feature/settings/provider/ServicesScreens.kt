@@ -44,7 +44,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.core.ui.map.OficiosLocationPicker
+import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 
@@ -345,15 +345,23 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             onSuggestionsDismissed = { onEvent(AddServiceEvent.LocalBarrioSuggestionsDismissed) },
         )
         OficiosTextField(state.localStreet, { onEvent(AddServiceEvent.LocalStreetChanged(it)) }, stringResource(R.string.services_street))
-        OficiosLocationPicker(
-            latitude = state.localLatitude,
-            longitude = state.localLongitude,
-            onLocationSelected = { latitude, longitude ->
+        OficiosTextField(state.localNumber, { onEvent(AddServiceEvent.LocalNumberChanged(it)) }, stringResource(R.string.commercial_local_number))
+        OficiosAddressLocationPicker(
+            latitude = state.localLocation.latitude,
+            longitude = state.localLocation.longitude,
+            showMap = state.localLocation.showMap,
+            pinDraggable = state.localLocation.pinDraggable,
+            showLocateOnMap = state.localLocation.showLocateOnMap,
+            showConfirm = state.localLocation.showConfirm,
+            isGeocoding = state.isGeocoding,
+            onLocateOnMap = { onEvent(AddServiceEvent.LocateOnMap) },
+            onPinChanged = { latitude, longitude ->
                 onEvent(AddServiceEvent.LocalMapLocationSelected(latitude, longitude))
             },
-            onUseCurrentLocation = { onEvent(AddServiceEvent.UseCurrentLocation) },
-            onPermissionDenied = { onEvent(AddServiceEvent.LocationPermissionDenied) },
-            isLocating = state.isLocating,
+            onConfirmPin = { onEvent(AddServiceEvent.ConfirmPin) },
+            locateOnMapLabel = state.localLocation.locateOnMapLabel,
+            title = "Ubicación del local",
+            hint = state.localLocation.message,
         )
     }
 }

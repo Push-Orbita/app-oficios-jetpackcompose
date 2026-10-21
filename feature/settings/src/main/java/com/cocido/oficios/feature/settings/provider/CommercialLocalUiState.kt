@@ -1,11 +1,13 @@
 package com.cocido.oficios.feature.settings.provider
 
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
 
 data class CommercialLocalUiState(
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
-    val isLocating: Boolean = false,
+    val isGeocoding: Boolean = false,
     val missingService: Boolean = false,
     val loadFailed: Boolean = false,
     val barrioQuery: String = "",
@@ -13,12 +15,15 @@ data class CommercialLocalUiState(
     val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val calle: String = "",
-    val latitud: Double? = null,
-    val longitud: Double? = null,
+    val numero: String = "",
+    val location: AddressLocationSnapshot = AddressLocationSnapshot(),
     val errorMessage: String? = null,
 ) {
+    val latitud: Double? get() = location.latitude
+    val longitud: Double? get() = location.longitude
+    val locationPhase: AddressLocationPhase get() = location.phase
     val canSubmit: Boolean
-        get() = selectedBarrioId != null && calle.isNotBlank() && latitud != null && longitud != null
+        get() = selectedBarrioId != null && calle.isNotBlank()
 }
 
 sealed interface CommercialLocalEvent {
@@ -30,9 +35,10 @@ sealed interface CommercialLocalEvent {
     data class BarrioSelected(val option: CatalogOption) : CommercialLocalEvent
     data object BarrioSuggestionsDismissed : CommercialLocalEvent
     data class CalleChanged(val value: String) : CommercialLocalEvent
+    data class NumeroChanged(val value: String) : CommercialLocalEvent
     data class MapLocationSelected(val latitude: Double, val longitude: Double) : CommercialLocalEvent
-    data object UseCurrentLocation : CommercialLocalEvent
-    data object LocationPermissionDenied : CommercialLocalEvent
+    data object LocateOnMap : CommercialLocalEvent
+    data object ConfirmPin : CommercialLocalEvent
     data object Submit : CommercialLocalEvent
 }
 

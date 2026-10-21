@@ -235,5 +235,7 @@
     <string name="commercial_local_missing_service_description">El local comercial se guarda junto al oficio. Agregue un servicio y después complete la dirección.</string>
     <string name="commercial_local_add_service">Agregar servicio</string>
     <string name="commercial_local_street">Calle</string>
+    <string name="commercial_local_number">Número</string>
     <string name="commercial_local_save">Guardar</string>
+    <string name="commercial_local_confirm_pin">Confirmar y guardar</string>
 </resources>
