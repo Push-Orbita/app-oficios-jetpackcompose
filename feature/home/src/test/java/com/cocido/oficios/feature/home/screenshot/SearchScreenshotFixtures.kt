@@ -35,9 +35,16 @@ import com.cocido.oficios.feature.home.rubros.RubrosUiState
 import com.cocido.oficios.feature.home.search.SearchResultsScreen
 import com.cocido.oficios.feature.home.search.SearchResultsUiState
 import com.cocido.oficios.feature.home.search.FilterSheetUiState
+import com.cocido.oficios.feature.home.providerhome.ProviderHomeScreen
+import com.cocido.oficios.feature.home.providerhome.ProviderHomeUiState
 import com.cocido.oficios.feature.home.worker.WorkerProfileScreen
 import com.cocido.oficios.feature.home.worker.previewState
+import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.ProviderHomeContent
+import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.ServiceRequestStatus
 import java.io.File
+import java.time.LocalDate
 import org.junit.Assume
 
 internal object SearchScreenshotChrome {
@@ -201,6 +208,75 @@ internal fun SearchScreenshotFicha(
         )
     }
 }
+
+internal val ProviderHomeScreenshotToday: LocalDate = LocalDate.of(2026, 3, 4)
+
+@Composable
+internal fun SearchScreenshotProviderHome(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        ProviderHomeScreen(
+            uiState = ProviderHomeUiState.Success(
+                ProviderHomeContent(
+                    userDisplayName = "Emanuel Molina",
+                    isVerified = true,
+                    primarySpecialtyLabel = "Albañil, Electricista",
+                    profileCompletionPercent = 80,
+                    missingProfileItems = emptyList(),
+                    hasActiveBooking = false,
+                    upcomingOrders = listOf(
+                        providerHomeOrder(
+                            id = 1,
+                            rubro = "Albañilería",
+                            address = "Juan José Silva 3800, Mz 52, Casa 4",
+                            sortKey = "2026-03-04T13:30:00",
+                        ),
+                        providerHomeOrder(
+                            id = 2,
+                            rubro = "Albañilería",
+                            address = "Av. Nestor Kirchner 6435",
+                            sortKey = "2026-03-06T18:30:00",
+                        ),
+                        providerHomeOrder(
+                            id = 3,
+                            rubro = "Plomeria",
+                            address = "Maipú 745",
+                            sortKey = "2026-03-17T09:30:00",
+                        ),
+                    ),
+                    hasAgendaConfigured = true,
+                    hasGalleryPhotos = true,
+                    hasCommercialLocal = false,
+                    hasCertificate = false,
+                ),
+            ),
+            unreadNotificationCount = 0,
+            selectedTab = ClientHomeTab.INICIO,
+            onEvent = {},
+            onTabSelected = {},
+            today = ProviderHomeScreenshotToday,
+        )
+    }
+}
+
+private fun providerHomeOrder(
+    id: Long,
+    rubro: String,
+    address: String,
+    sortKey: String,
+) = ServiceOrderListItem(
+    id = id,
+    counterpartName = "Cliente",
+    subRubroLabel = rubro,
+    status = ServiceRequestStatus.ACCEPTED,
+    bookingStatus = BookingStatus.CONFIRMED,
+    scheduledLabel = null,
+    addressLabel = address,
+    rubroLabel = rubro,
+    scheduledSortKey = sortKey,
+)
 
 @Composable
 internal fun SearchScreenshotFrame(
