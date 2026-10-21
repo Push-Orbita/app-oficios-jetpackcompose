@@ -24,7 +24,7 @@ Cada uno declara `Requires PR #N` y está stacked sobre el anterior. No mergear 
 | PR-11 Categoría | [#18](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/18) | `cursor/elegi-categoria-ee07` | draft | Grilla 2 col. en registro/onboarding |
 | PR-13 Copy / app-only | [#19](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/19) | `cursor/copy-usted-app-ee07` | draft | Usted fuera de auth; padding 32/16/32/32 |
 | PR-12 Push | [#20](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/20) | `cursor/push-firebase-config-ee07` | draft | FCM detrás de `FIREBASE_ENABLED`; docs BK-09 |
-| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | ESTADO_PLAN + Nombres/Apellido + logo Figma (casco azul) |
+| Cierre | [#21](https://github.com/Push-Orbita/app-oficios-jetpackcompose/pull/21) | `cursor/estado-plan-ee07` | draft | ESTADO_PLAN + Nombres/Apellido + logo + rewrite 1:1 pantallas |
 
 PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 
@@ -41,7 +41,7 @@ PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 | Completá tu Solicitud | `455:27` | #14 | Form + radios de ubicación | Título Figma en voseo; Presupuesto/Trabajo oculto (BK-15) |
 | Agendar Cita | `613:1373` | #14 | Calendario + grilla horas | Días off #918E9B |
 | Resumen Solicitud | `455:423` | #14 | Toast `Solicitud enviada` → home | Sin shell intermedio |
-| Home trabajador | `191:11` | #15 | 3 tiles de beneficio, % perfil | Beneficios estáticos (BK-18); % derivado de hitos |
+| Home trabajador | `259:254` (#15 usaba `191:11`) | #21 | Lista Agenda 1:1; sin calendario ni banner AHORA. QA `docs/qa-1a1/home-trabajador.png`. Pixel-diff ~32% (nav 3 tabs acordada vs 5 Figma, D-DIN, scroll). Layout filas de turno ±3–14 dp (P9 427 vs frame 440). | Beneficios Figma voseo + bold; Completa tu perfil 40 dp dashed + 3 hitos; calendario solo en ver agenda completa; bottom nav acordada |
 | Calendario general | `239:475` | #16 | Do–Sá, 30/60/120, grilla máx. 12 h | Editar `sesion` = delete+recreate (BK-02/03) |
 | Agenda completa | `210:106` | #16 | — | `diasLaborales` por día en alta |
 | Editar Perfil | `231:15` | #17 | CTA Editar Rubro o Especialidad | PATCH limitado (BK-01) |
@@ -80,6 +80,21 @@ El casco amarillo (`#F8AE1A`, nodo `12:101`) no se usa. Marca vigente exportada 
 `OficiosColorBrandMark` = `#006AF0`. El acento UI `#F8AE1A` (`OficiosColorAccent`) no pinta el logo. `ic_casco` del rol sigue blanco.
 
 Bottom nav: Inicio / Mis pedidos / Favoritos (oculto para trabajador) / Perfil (`home_tab_ajustes`). Ayuda vive en Ajustes.
+
+### Fix en #21 — Estructura 1:1 pantallas importantes
+
+Matías: no alcanza con tipografía/íconos si la composición sigue la app vieja. Rewrite por pantalla, side-by-side en `docs/qa-1a1/<pantalla>.png` (Figma | Roborazzi P9 | diff).
+
+| Pantalla | Nodo | Diff pixel | Commit | Notas |
+|---|---|---|---|---|
+| Home trabajador | `259:254` | ~32% (nav acordada + fuente) | (este PR) | Beneficios bold, perfil 40 dp + hitos dashed, Agenda lista HOY, sin calendario/AHORA |
+| Home cliente | `25:95` | pendiente | | |
+| Detalle pedido | `198:697` | pendiente | | |
+| Ficha trabajador | `40:559` | pendiente | | |
+| Solicitud/reserva | `455:27` | pendiente | | |
+| Agenda/calendario | `239:475` | pendiente | | |
+| Perfil/editar perfil | `231:15` | pendiente | | |
+| Mis pedidos | — | pendiente | | |
 
 ## Bloqueos abiertos
 

@@ -1,56 +1,40 @@
 package com.cocido.oficios.feature.home.providerhome
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.cards.HomeBenefitTile
+import com.cocido.oficios.core.designsystem.component.cards.ProfileMilestoneTile
+import com.cocido.oficios.core.designsystem.component.cards.ProfileProgressBar
+import com.cocido.oficios.core.designsystem.component.cards.emphasizedBody
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
-import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
-import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
-import com.cocido.oficios.feature.home.providerhome.components.ProviderActiveBookingBanner
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +45,7 @@ fun ProviderHomeScreen(
     onEvent: (ProviderHomeEvent) -> Unit,
     onTabSelected: (ClientHomeTab) -> Unit,
     modifier: Modifier = Modifier,
+    today: LocalDate = LocalDate.now(),
 ) {
     OficiosScaffold(
         modifier = modifier,
@@ -100,6 +85,7 @@ fun ProviderHomeScreen(
                         ProviderHomeSuccessContent(
                             content = state.content,
                             unreadNotificationCount = unreadNotificationCount,
+                            today = today,
                             onEvent = onEvent,
                         )
                     }
@@ -113,12 +99,13 @@ fun ProviderHomeScreen(
 private fun ProviderHomeSuccessContent(
     content: ProviderHomeContent,
     unreadNotificationCount: Int,
+    today: LocalDate,
     onEvent: (ProviderHomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
@@ -132,40 +119,28 @@ private fun ProviderHomeSuccessContent(
             profilePhotoUrl = content.profilePhotoUrl,
         )
 
-        if (content.hasActiveBooking) {
-            val activeOrder = content.upcomingOrders.firstOrNull { it.bookingStatus == BookingStatus.IN_PROGRESS }
-            if (activeOrder != null) {
-                ProviderActiveBookingBanner(
-                    clientName = activeOrder.counterpartName,
-                    serviceTitle = activeOrder.subRubroLabel,
-                    onClick = { onEvent(ProviderHomeEvent.OrderClicked(activeOrder.id)) },
-                )
-            }
-        }
-
         ProviderBenefitsSection()
 
-        if (content.profileCompletionPercent < 100) {
-            ProviderProfileCompletionSection(
-                percent = content.profileCompletionPercent,
-                hasGallery = content.hasGalleryPhotos,
-                hasLocal = content.hasCommercialLocal,
-                hasCertificate = content.hasCertificate,
-                onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
-            )
-        }
+        ProviderProfileCompletionSection(
+            percent = content.profileCompletionPercent,
+            hasGallery = content.hasGalleryPhotos,
+            hasLocal = content.hasCommercialLocal,
+            hasCertificate = content.hasCertificate,
+            onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
+        )
 
-        if (content.hasAgendaConfigured) {
-            ProviderAgendaSection(
-                onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
-                upcomingOrders = content.upcomingOrders,
-                onOrderClick = { onEvent(ProviderHomeEvent.OrderClicked(it)) },
-            )
-        } else {
-            ProviderCalendarSetupCard(
-                onConfigure = { onEvent(ProviderHomeEvent.ConfigureAgendaClicked) },
-            )
-        }
+        ProviderAgendaSection(
+            upcomingOrders = content.upcomingOrders,
+            today = today,
+            onViewFullAgenda = {
+                if (content.hasAgendaConfigured) {
+                    onEvent(ProviderHomeEvent.ViewFullAgendaClicked)
+                } else {
+                    onEvent(ProviderHomeEvent.ConfigureAgendaClicked)
+                }
+            },
+            onOrderClick = { onEvent(ProviderHomeEvent.OrderClicked(it)) },
+        )
     }
 }
 
@@ -173,7 +148,7 @@ private fun ProviderHomeSuccessContent(
 private fun ProviderBenefitsSection(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
     ) {
         Text(
             text = stringResource(R.string.provider_home_benefits_title),
@@ -182,39 +157,30 @@ private fun ProviderBenefitsSection(modifier: Modifier = Modifier) {
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
         ) {
-            ProviderBenefitTile(
-                text = stringResource(R.string.provider_home_benefit_visibility),
+            HomeBenefitTile(
+                text = emphasizedBody(
+                    stringResource(R.string.provider_home_benefit_services),
+                    stringResource(R.string.provider_home_benefit_services_emphasis),
+                ),
                 modifier = Modifier.weight(1f),
             )
-            ProviderBenefitTile(
-                text = stringResource(R.string.provider_home_benefit_agenda),
+            HomeBenefitTile(
+                text = emphasizedBody(
+                    stringResource(R.string.provider_home_benefit_reach),
+                    stringResource(R.string.provider_home_benefit_reach_emphasis),
+                ),
                 modifier = Modifier.weight(1f),
             )
-            ProviderBenefitTile(
-                text = stringResource(R.string.provider_home_benefit_trust),
+            HomeBenefitTile(
+                text = emphasizedBody(
+                    stringResource(R.string.provider_home_benefit_efficient),
+                    stringResource(R.string.provider_home_benefit_efficient_emphasis),
+                ),
                 modifier = Modifier.weight(1f),
             )
         }
-    }
-}
-
-@Composable
-private fun ProviderBenefitTile(text: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .height(118.dp)
-            .clip(RoundedCornerShape(OficiosRadius.sm))
-            .background(OficiosColorOutlineFill)
-            .padding(OficiosSpacing.xs),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorWhite,
-        )
     }
 }
 
@@ -229,121 +195,49 @@ private fun ProviderProfileCompletionSection(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
     ) {
         Text(
             text = stringResource(R.string.provider_home_complete_profile_title),
             style = MaterialTheme.typography.headlineLarge,
             color = OficiosColorWhite,
         )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(12.dp)
-                .clip(RoundedCornerShape(OficiosRadius.pill))
-                .border(1.dp, OficiosColorOutlineFill, RoundedCornerShape(OficiosRadius.pill)),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(percent.coerceIn(0, 100) / 100f)
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(OficiosRadius.pill))
-                    .background(OficiosColorOutlineFill),
-            )
-        }
-        Text(
-            text = stringResource(R.string.provider_home_complete_profile_percent, percent),
-            style = MaterialTheme.typography.titleMedium,
-            color = OficiosColorWhite,
-        )
+        ProfileProgressBar(percent = percent)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
         ) {
             ProfileMilestoneTile(
                 label = stringResource(R.string.provider_home_tile_gallery),
                 done = hasGallery,
+                onClick = onCompleteProfile,
                 modifier = Modifier.weight(1f),
             )
             ProfileMilestoneTile(
                 label = stringResource(R.string.provider_home_tile_local),
                 done = hasLocal,
+                onClick = onCompleteProfile,
                 modifier = Modifier.weight(1f),
             )
             ProfileMilestoneTile(
                 label = stringResource(R.string.provider_home_tile_certificate),
                 done = hasCertificate,
+                onClick = onCompleteProfile,
                 modifier = Modifier.weight(1f),
             )
         }
-        Text(
-            text = stringResource(R.string.provider_home_complete_profile_link),
-            style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorWhite,
-            textDecoration = TextDecoration.Underline,
-            modifier = Modifier.clickable(onClick = onCompleteProfile),
-        )
-    }
-}
-
-@Composable
-private fun ProfileMilestoneTile(
-    label: String,
-    done: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(OficiosRadius.sm))
-            .background(OficiosColorOutlineFill)
-            .padding(OficiosSpacing.xs),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-    ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(
-                if (done) OficiosIcons.CircleCheck else OficiosIcons.CircleDashed,
-            ),
-            contentDescription = null,
-            tint = OficiosColorWhite,
-            modifier = Modifier.size(OficiosComponentSize.iconMd),
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorWhite,
-        )
-    }
-}
-
-@Composable
-private fun ProviderCalendarSetupCard(
-    onConfigure: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-    ) {
-        Text(
-            text = stringResource(R.string.provider_home_calendar_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = OficiosColorWhite,
-        )
-        OficiosCard(modifier = Modifier.fillMaxWidth()) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                Text(
-                    text = stringResource(R.string.provider_home_calendar_setup_body),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorSecondaryTextFigma,
-                )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    OficiosButton(
-                        text = stringResource(R.string.provider_home_configure_agenda),
-                        onClick = onConfigure,
-                        variant = OficiosButtonVariant.Secondary,
-                    )
-                }
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.provider_home_complete_profile_link),
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorWhite,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onCompleteProfile),
+            )
         }
     }
 }

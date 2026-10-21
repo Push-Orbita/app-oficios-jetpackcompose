@@ -29,6 +29,14 @@ object OficiosComponentSize {
     val avatarSettings = 72.dp
     val ratingIcon = 36.dp
     val categoryCardSize = 118.dp
+    /** Figma 259:293 — tiles Beneficios / hitos de perfil 118.67. */
+    val homeBenefitTile = 118.dp
+    /** Figma 259:303 — barra de progreso de perfil. */
+    val profileProgressHeight = 40.dp
+    /** Figma 259:498 — barra HOY. */
+    val agendaTodayBarWidth = 24.dp
+    /** Figma 259:502 — barra lateral de turno. */
+    val agendaDefaultBarWidth = 16.dp
     /** Figma 224:1013 — Recientes: título + gap 10 + cards 118. */
     val homeRecentsSectionMinHeight = 184.dp
     /** Compensa el capital-top de D-DIN vs DIN Pro (título rel 155). */

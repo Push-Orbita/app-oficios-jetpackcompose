@@ -119,15 +119,19 @@
         <item quantity="other">(%d reseñas)</item>
     </plurals>
     <string name="provider_home_benefits_title">Beneficios</string>
-    <string name="provider_home_benefit_visibility">Más visibilidad frente a clientes de su zona</string>
-    <string name="provider_home_benefit_agenda">Agenda propia para organizar sus turnos</string>
-    <string name="provider_home_benefit_trust">Perfil verificado que genera confianza</string>
+    <string name="provider_home_benefit_services">Todos tus servicios en un mismo espacio</string>
+    <string name="provider_home_benefit_services_emphasis">Todos</string>
+    <string name="provider_home_benefit_reach">Mayor alcance a potenciales clientes</string>
+    <string name="provider_home_benefit_reach_emphasis">alcance</string>
+    <string name="provider_home_benefit_efficient">Organizate de manera más eficiente</string>
+    <string name="provider_home_benefit_efficient_emphasis">eficiente</string>
     <string name="provider_home_complete_profile_title">Completa Tu Perfil</string>
     <string name="provider_home_complete_profile_percent">%1$d%%</string>
     <string name="provider_home_complete_profile_link">completar perfil</string>
-    <string name="provider_home_tile_gallery">Agrega fotos a su galería</string>
-    <string name="provider_home_tile_local">Agrega su local comercial</string>
+    <string name="provider_home_tile_gallery">Agrega fotos a tu galería</string>
+    <string name="provider_home_tile_local">Agrega tu local comercial</string>
     <string name="provider_home_tile_certificate">Agrega un certificado</string>
+    <string name="provider_home_agenda_today_tag">HOY</string>
     <string name="provider_home_pending_validation">Pendiente de validación</string>
     <string name="provider_home_calendar_title">Calendario</string>
     <string name="provider_home_calendar_setup_body">Configure su calendario para que los clientes puedan reservar turnos con usted.</string>

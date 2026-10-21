@@ -233,6 +233,15 @@ val OficiosBottomNavLabelStyle = TextStyle(
     letterSpacing = 0.sp,
 )
 
+/** Porcentaje de "Completa tu perfil" — Figma Satoshi Bold 16. Solo hay Medium. */
+val OficiosProgressPercentStyle = TextStyle(
+    fontFamily = SatoshiFontFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 16.sp,
+    lineHeight = 19.sp,
+    letterSpacing = 0.sp,
+)
+
 // Alias de compatibilidad con código previo del template
 @Deprecated("Usar OficiosTypography", replaceWith = ReplaceWith("OficiosTypography"))
 val AppTypography = OficiosTypography
