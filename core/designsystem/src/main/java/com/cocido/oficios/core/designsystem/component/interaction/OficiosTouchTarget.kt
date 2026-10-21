@@ -49,8 +49,17 @@ fun OficiosTouchTarget(
     content: @Composable () -> Unit,
 ) {
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Box(Modifier.clearAndSetSemantics { }) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+        // fillMaxWidth / weight del caller tiene que llegar al visual; si no, el
+        // botón queda hug-content y se ve chico y centrado dentro del slot.
+        propagateMinConstraints = true,
+    ) {
+        Box(
+            Modifier.clearAndSetSemantics { },
+            propagateMinConstraints = true,
+        ) {
             content()
         }
         Box(

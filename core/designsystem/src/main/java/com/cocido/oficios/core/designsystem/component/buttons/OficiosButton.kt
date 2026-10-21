@@ -44,7 +44,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAlertText
 import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorError
+import com.cocido.oficios.core.designsystem.theme.OficiosColorDangerFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -135,15 +135,15 @@ fun OficiosButton(
             shadow = Color.Transparent,
         )
         OficiosButtonVariant.Ghost -> ButtonColors(
-            container = OficiosColorBackground,
+            container = Color.Transparent,
             content = MaterialTheme.colorScheme.onSurface,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
             shadow = Color.Transparent,
         )
         OficiosButtonVariant.Danger -> ButtonColors(
-            container = OficiosColorError,
-            content = MaterialTheme.colorScheme.onError,
-            border = BorderStroke(1.dp, OficiosColorError.copy(alpha = 0.5f)),
+            container = OficiosColorDangerFill,
+            content = OficiosColorWhite,
+            border = BorderStroke(1.dp, OficiosColorDangerFill),
             shadow = Color.Black.copy(alpha = 0.15f),
         )
         OficiosButtonVariant.Success -> ButtonColors(

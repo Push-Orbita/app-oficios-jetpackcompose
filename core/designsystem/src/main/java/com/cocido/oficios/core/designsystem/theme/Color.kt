@@ -57,6 +57,20 @@ val OficiosColorDisabledText = Color(0xFF918E9B)
 /** Borde de input con error — Figma rgb(163,47,86). */
 val OficiosColorErrorBorder = Color(0xFFA32F56)
 
+/**
+ * Fill de acción destructiva (botón Danger / confirmar eliminar).
+ *
+ * Figma (`hhKrcrusbr3h6qJxqYBiTd`) no publica variable ni estilo de error/danger
+ * fill: `search_design_system` para error, danger y alert devolvió vacío.
+ * `#BA6380` ([OficiosColorAlert]) es stroke/texto de alerta sobre navy; como
+ * fill con texto blanco queda ~4.05:1 y se lee rosa lavado.
+ * `#A32F56` ([OficiosColorErrorBorder]) es borde de input, no un fill de CTA.
+ *
+ * `#D23C3C` es el `#D64545` pedido, un paso más oscuro para WCAG AA 4.5:1
+ * de texto blanco sobre fill sólido (sin alpha). Contrast ~4.7:1.
+ */
+val OficiosColorDangerFill = Color(0xFFD23C3C)
+
 val OficiosColorWhite = Color(0xFFFFFFFF)
 /** Placeholders sobre fondo — rgba(255,255,255,0.5) */
 val OficiosColorPlaceholder = Color(0x80FFFFFF)
