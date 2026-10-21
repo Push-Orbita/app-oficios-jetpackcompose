@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
@@ -80,11 +81,8 @@ fun WorkerProfileHeader(
                                 color = MaterialTheme.colorScheme.onBackground,
                             )
                             if (profile.isVerified) {
-                                Icon(
-                                    imageVector = ImageVector.vectorResource(OficiosIcons.ShieldCheck),
+                                OficiosVerifiedBadge(
                                     contentDescription = stringResource(R.string.home_worker_verified_cd),
-                                    tint = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.size(OficiosComponentSize.iconMd),
                                 )
                             }
                         }

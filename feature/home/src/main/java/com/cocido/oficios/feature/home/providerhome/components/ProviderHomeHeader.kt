@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +63,6 @@ fun ProviderHomeHeader(
                 isVerified = isVerified,
                 verifiedContentDescription = stringResource(R.string.home_verified_user),
                 subtitle = subtitle,
-                verifiedTint = MaterialTheme.colorScheme.onBackground,
             )
         }
         OficiosNotificationBadge(count = unreadNotificationCount) {

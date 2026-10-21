@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.calendar.HourChipState
@@ -371,12 +372,7 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
                         color = OficiosColorWhite,
                     )
                     if (state.workerVerified) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(OficiosIcons.ShieldCheck),
-                            contentDescription = null,
-                            tint = OficiosColorWhite,
-                            modifier = Modifier.size(OficiosComponentSize.iconMd),
-                        )
+                        OficiosVerifiedBadge(contentDescription = null)
                     }
                 }
                 WorkerFiveStarRow(rating = state.workerRating)

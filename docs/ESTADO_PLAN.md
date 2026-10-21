@@ -79,6 +79,10 @@ El casco amarillo (`#F8AE1A`, nodo `12:101`) no se usa. Marca vigente exportada 
 
 `OficiosColorBrandMark` = `#006AF0`. El acento UI `#F8AE1A` (`OficiosColorAccent`) no pinta el logo. `ic_casco` del rol sigue blanco.
 
+### Fix en #21 — Badge verificado verde
+
+`OficiosVerifiedBadge`: Lucide `badge-check` outline 24 dp, tint `OficiosColorSuccess` (`#4CAF7D`). Home/ficha/cards/solicitud del **trabajador**. Home **cliente** lo conserva porque Figma `25:95` / `221:990` lo dibuja y la API expone `usuario.emailVerificado`. No se agregó junto al nombre en Ajustes (no hay frame Figma de esa tarjeta).
+
 Bottom nav: Inicio / Mis pedidos / Favoritos (oculto para trabajador) / Perfil (`home_tab_ajustes`). Ayuda vive en Ajustes.
 
 ### Fix en #21 — Estructura 1:1 pantallas importantes
