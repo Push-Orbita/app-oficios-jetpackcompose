@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.home.orders
 
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.arrangedFor
 import java.time.ZonedDateTime
 
@@ -14,6 +15,7 @@ sealed interface OrdersListUiState {
     data class Success(
         val orders: List<ServiceOrderListItem>,
         val filter: OrdersListFilter = OrdersListFilter.ACTIVE,
+        val viewerRole: UserRole = UserRole.UNKNOWN,
         val isRefreshing: Boolean = false,
     ) : OrdersListUiState {
         fun visibleOrders(now: ZonedDateTime): List<ServiceOrderListItem> =

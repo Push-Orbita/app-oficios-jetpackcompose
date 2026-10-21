@@ -97,6 +97,38 @@ class OrdersListViewModelTest {
     }
 
     @Test
+    fun `changing session resets filter to Activos`() = runTest(testDispatcher) {
+        val repository = FakeOrderRepository(AppResult.Success(listOf(order(7))))
+        val auth = FakeAuthRepository()
+        val viewModel = viewModel(repository, auth)
+        advanceUntilIdle()
+        viewModel.onEvent(OrdersListEvent.FilterSelected(OrdersListFilter.HISTORY))
+        assertEquals(
+            OrdersListFilter.HISTORY,
+            (viewModel.uiState.value as OrdersListUiState.Success).filter,
+        )
+
+        auth.currentUser = AppResult.Success(
+            User(
+                id = 2,
+                email = "matias@oficios.test",
+                firstName = "Matías",
+                lastName = "Britez",
+                role = UserRole.PROVIDER,
+                emailVerified = true,
+            ),
+        )
+        repository.clientOrders = AppResult.Success(emptyList())
+        viewModel.onEvent(OrdersListEvent.Refresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as OrdersListUiState.Success
+        assertEquals(OrdersListFilter.ACTIVE, state.filter)
+        assertEquals(UserRole.PROVIDER, state.viewerRole)
+        assertEquals(emptyList<ServiceOrderListItem>(), state.orders)
+    }
+
+    @Test
     fun `initial load failure stays on retry error without refresh effect`() = runTest(testDispatcher) {
         val repository = FakeOrderRepository(
             AppResult.Error(AppError.Network("No internet connection")),

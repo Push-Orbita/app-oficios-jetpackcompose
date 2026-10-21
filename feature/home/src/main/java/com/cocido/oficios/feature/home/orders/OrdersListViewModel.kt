@@ -37,6 +37,7 @@ class OrdersListViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var loadGeneration = 0
     private var lastSuccess: OrdersListUiState.Success? = null
+    private var loadedUserId: Long? = null
 
     init {
         load()
@@ -84,7 +85,14 @@ class OrdersListViewModel @Inject constructor(
                 if (generation != loadGeneration) return@launch
                 val userResult = authRepository.getCurrentUser()
                 if (generation != loadGeneration) return@launch
-                val role = (userResult as? AppResult.Success)?.data?.role
+                val user = (userResult as? AppResult.Success)?.data
+                val sessionChanged = user != null && user.id != loadedUserId
+                if (sessionChanged) {
+                    loadedUserId = user.id
+                    lastSuccess = null
+                }
+                val retained = if (sessionChanged) null else previous
+                val role = user?.role
                 val ordersResult = when {
                     userResult is AppResult.Error -> userResult
                     role == UserRole.PROVIDER -> orderUseCases.getWorkerOrders()
@@ -95,15 +103,16 @@ class OrdersListViewModel @Inject constructor(
                     is AppResult.Success -> {
                         val next = OrdersListUiState.Success(
                             orders = ordersResult.data,
-                            filter = previous?.filter ?: OrdersListFilter.ACTIVE,
+                            filter = retained?.filter ?: OrdersListFilter.ACTIVE,
+                            viewerRole = role ?: UserRole.UNKNOWN,
                         )
                         lastSuccess = next
                         _uiState.value = next
                     }
                     is AppResult.Error -> {
                         val message = ordersResult.error.userMessage()
-                        val kept = previous ?: lastSuccess
-                        if (kept != null && (refreshing || silent)) {
+                        val kept = retained ?: lastSuccess
+                        if (kept != null && (refreshing || silent) && !sessionChanged) {
                             val restored = kept.copy(isRefreshing = false)
                             lastSuccess = restored
                             _uiState.value = restored
