@@ -41,7 +41,7 @@ PR-0…PR-3 ya están en `main` (#7, #8, #9, #10).
 | Completá tu Solicitud | `455:27` | #14/#21 | Form + radios de ubicación | Título Figma en voseo; Presupuesto/Trabajo oculto (BK-15) |
 | Agendar Cita | `613:1373` | #21 | Mini-card + Fecha + calendario 5 semanas + Horario. QA `docs/qa-1a1/solicitud.png` ~18.3% | Días con cupo en azul; nav 4 tabs |
 | Resumen Solicitud | `455:423` | #14 | Toast `Solicitud enviada` → home | Sin shell intermedio |
-| Home trabajador | `259:254` (#15 usaba `191:11`) | #21 | Lista Agenda 1:1; sin calendario ni banner AHORA. QA `docs/qa-1a1/home-trabajador.png`. Pixel-diff ~32% (nav 3 tabs acordada vs 5 Figma, D-DIN, scroll). Layout filas de turno ±3–14 dp (P9 427 vs frame 440). | Beneficios Figma voseo + bold; Completa tu perfil 40 dp dashed + 3 hitos; calendario solo en ver agenda completa; bottom nav acordada |
+| Home trabajador | `191:11` + lista `259:534` | #21 | Agenda **dentro de Inicio**. QA incompleto `docs/qa-1a1/home-trabajador.png` **15.6%** vs `191:11`. Completo `home-trabajador-completo.png` **33.5%** vs `259:534` (Figma sin Beneficios + 5 tabs). Sin tab Agenda. | Nav acordada; Completa Tu Perfil solo &lt;100%; % BK-19 |
 | Calendario general | `239:475` | #21 | Pills + división + grilla + oficio. QA `docs/qa-1a1/agenda.png` ~28.5% | Editar `sesion` = delete+recreate (BK-02/03); CTA Guardar (Figma no lo muestra) |
 | Agenda completa | `210:106` | #16 | — | `diasLaborales` por día en alta |
 | Editar Perfil | `231:15` | #21 | Oficios/galería/certs/Darme De Baja 1:1. QA `docs/qa-1a1/perfil.png` ~28.8% | PATCH limitado (BK-01); tab Perfil = Ajustes |
@@ -91,7 +91,7 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 
 | Pantalla | Nodo | Diff pixel | Commit | Notas |
 |---|---|---|---|---|
-| Home trabajador | `259:254` | ~32% (nav acordada + fuente) | `efd049f` | Beneficios bold, perfil 40 dp + hitos dashed, Agenda lista HOY, sin calendario/AHORA |
+| Home trabajador | `191:11` + `259:534` | 15.6% incompleto / 33.5% completo | este PR | Incompleto: Beneficios + Completa Tu Perfil 80% + calendario. Completo: sin perfil; Beneficios queda (Figma `259:534` no lo tiene). Agenda completa solo por el link. |
 | Home cliente | `25:95` | ~9.6% (nav acordada, placeholder usted, datos reales) | `6d3bea5` | Recientes sin "Ver todos"; 3 cards r16 |
 | Detalle pedido | `198:697` | ~35.8% (mapa sin API key, D-DIN, P9 427 vs 440) | `64c68c1` | Mapa 248 dp → filas icon-box + Contacto/Estoy En Camino a la derecha; sin chips/avatar |
 | Ficha trabajador | `40:559` | ~33.7% (sin foto, nav 4 vs 5) | `d491c96` | Título + card + oficios/especializado + Contactar/Calificar + Trabajos realizados |
@@ -119,6 +119,30 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 | BK-16 | Recordatorios de turno | Baja | — |
 | BK-17 | Puntaje único vs calidad+puntualidad | 2 filas de estrellas | — |
 | BK-18 | Endpoint de beneficios | Copy estático | — |
+| BK-19 | % numérico + flags galería/local/cert | Home trabajador calcula 0/33/66/100 | ver abajo |
+
+### Decisión Home trabajador (Matías, 21/10/2026)
+
+Figma tiene 3 frames inconsistentes: `191:11` (Beneficios + Completa Tu Perfil 80% + calendario, lista cortada), `259:254` (lista Agenda sin calendario), `259:534` (header + calendario + AHORA/HOY, sin Beneficios/perfil, 5 tabs). Quedó:
+
+1. **Agenda vive en Inicio.** Header (avatar, nombre, shield-check verde, rubros, campana) → Beneficios → Completa Tu Perfil (solo si &lt;100%) → calendario mensual + lista por fecha (card AHORA blanca, HOY con etiqueta vertical, chevron) → `ver agenda completa`.
+2. **No hay tab Agenda** en la bottom nav del trabajador. Nav acordada: Inicio · Mis pedidos · Perfil. Favoritos oculto. Ayuda en Ajustes/Perfil. `AgendaDestination.list` solo desde el link.
+3. **Completa Tu Perfil** desaparece entera al 100%. Check si el hito está hecho, círculo punteado si falta.
+
+### API: qué se puede calcular y qué no (BK-19)
+
+`TrabajadorPerfilEstadoDto` expone flags (`perfilCompleto`, `configuracionCompleta`, `perfilOperativo`, `faltantes`) **sin % numérico** ni flags dedicados de galería / local comercial / certificado.
+
+| Hito Figma | Fuente real | Limitación |
+|---|---|---|
+| Galería | `GET perfil` → `providerDetails.gallery.isNotEmpty()` | — |
+| Certificado | `GET perfil` → `providerDetails.certificates.isNotEmpty()` | BK-11: no hay badge Validado/Pendiente admin |
+| Local comercial | heurística `services.subServices.any { servesAtLocal }` | **No hay entidad "local comercial"** en la API |
+| % barra | `(hitos hechos × 100) / 3` → 0 / 33 / 66 / 100 | Figma mockea **80%**; ese valor no sale de la API |
+| Fallback | si `GET perfil` falla: `inferProviderHomeTiles(faltantes)` | Match por texto (`galer`/`foto`, `local`/`comercio`, `certific`) |
+| `perfilCompleto == true` | los 3 hitos se marcan hechos (100%) | El flag no distingue cuál faltaba |
+
+AHORA = `BookingStatus.IN_PROGRESS`. HOY = fecha del turno = hoy. Beneficios siguen copy estático (BK-18).
 
 ## Reglas que se mantuvieron
 

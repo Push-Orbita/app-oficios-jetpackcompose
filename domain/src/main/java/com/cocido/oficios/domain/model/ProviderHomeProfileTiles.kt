@@ -19,6 +19,12 @@ data class ProviderHomeTiles(
     val gallery: Boolean,
     val local: Boolean,
     val certificate: Boolean,
-)
+) {
+    val completionPercent: Int
+        get() {
+            val done = listOf(gallery, local, certificate).count { it }
+            return (done * 100) / 3
+        }
+}
 
 private fun String.containsAny(vararg needles: String): Boolean = needles.any { contains(it) }

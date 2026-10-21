@@ -247,31 +247,43 @@ internal fun SearchScreenshotProviderHome(
                     primarySpecialtyLabel = "Albañil, Electricista",
                     profileCompletionPercent = 80,
                     missingProfileItems = emptyList(),
-                    hasActiveBooking = false,
-                    upcomingOrders = listOf(
-                        providerHomeOrder(
-                            id = 1,
-                            rubro = "Albañilería",
-                            address = "Juan José Silva 3800, Mz 52, Casa 4",
-                            sortKey = "2026-03-04T13:30:00",
-                        ),
-                        providerHomeOrder(
-                            id = 2,
-                            rubro = "Albañilería",
-                            address = "Av. Nestor Kirchner 6435",
-                            sortKey = "2026-03-06T18:30:00",
-                        ),
-                        providerHomeOrder(
-                            id = 3,
-                            rubro = "Plomeria",
-                            address = "Maipú 745",
-                            sortKey = "2026-03-17T09:30:00",
-                        ),
-                    ),
+                    hasActiveBooking = true,
+                    upcomingOrders = providerHomeAgendaOrders(),
                     hasAgendaConfigured = true,
                     hasGalleryPhotos = true,
                     hasCommercialLocal = false,
                     hasCertificate = false,
+                ),
+            ),
+            unreadNotificationCount = 0,
+            selectedTab = ClientHomeTab.INICIO,
+            onEvent = {},
+            onTabSelected = {},
+            today = ProviderHomeScreenshotToday,
+        )
+    }
+}
+
+@Composable
+internal fun SearchScreenshotProviderHomeComplete(
+    statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
+    navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+        ProviderHomeScreen(
+            uiState = ProviderHomeUiState.Success(
+                ProviderHomeContent(
+                    userDisplayName = "Emanuel Molina",
+                    isVerified = true,
+                    primarySpecialtyLabel = "Albañil, Electricista",
+                    profileCompletionPercent = 100,
+                    missingProfileItems = emptyList(),
+                    hasActiveBooking = true,
+                    upcomingOrders = providerHomeAgendaOrders(),
+                    hasAgendaConfigured = true,
+                    hasGalleryPhotos = true,
+                    hasCommercialLocal = true,
+                    hasCertificate = true,
                 ),
             ),
             unreadNotificationCount = 0,
@@ -458,17 +470,46 @@ internal fun SearchScreenshotOrdersList(
     }
 }
 
+private fun providerHomeAgendaOrders() = listOf(
+    providerHomeOrder(
+        id = 1,
+        rubro = "Albañilería",
+        address = "Juan José Silva 3800, Mz 52, Casa 4",
+        sortKey = "2026-03-04T13:30:00",
+        bookingStatus = BookingStatus.IN_PROGRESS,
+    ),
+    providerHomeOrder(
+        id = 2,
+        rubro = "Albañilería",
+        address = "Juan José Silva 3800, Mz 52, Casa 4",
+        sortKey = "2026-03-04T13:30:00",
+    ),
+    providerHomeOrder(
+        id = 3,
+        rubro = "Albañilería",
+        address = "Av. Nestor Kirchner 6435",
+        sortKey = "2026-03-06T18:30:00",
+    ),
+    providerHomeOrder(
+        id = 4,
+        rubro = "Plomeria",
+        address = "Maipú 745",
+        sortKey = "2026-03-17T09:30:00",
+    ),
+)
+
 private fun providerHomeOrder(
     id: Long,
     rubro: String,
     address: String,
     sortKey: String,
+    bookingStatus: BookingStatus = BookingStatus.CONFIRMED,
 ) = ServiceOrderListItem(
     id = id,
     counterpartName = "Cliente",
     subRubroLabel = rubro,
     status = ServiceRequestStatus.ACCEPTED,
-    bookingStatus = BookingStatus.CONFIRMED,
+    bookingStatus = bookingStatus,
     scheduledLabel = null,
     addressLabel = address,
     rubroLabel = rubro,

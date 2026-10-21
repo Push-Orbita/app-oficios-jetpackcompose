@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,8 +22,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
+import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
@@ -39,8 +41,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Fila de turno en home trabajador — Figma `259:435`.
- * Hoy: barra 24dp #006DEF + tag vertical HOY. Resto: barra 16dp #004DA8.
+ * Fila de turno — Figma `259:435` / `259:606`.
+ * AHORA: card blanca + barra 24dp #006DEF. HOY: barra 24dp + tag vertical. Resto: barra 16dp #004DA8.
  */
 @Composable
 fun AgendaAppointmentRow(
@@ -50,20 +52,30 @@ fun AgendaAppointmentRow(
     isToday: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isNow: Boolean = false,
     todayLabel: String = "HOY",
+    nowLabel: String = "AHORA",
 ) {
     val shape = RoundedCornerShape(OficiosRadius.sm)
+    val highlighted = isNow
+    val showSideLabel = isNow || isToday
+    val sideLabel = if (isNow) nowLabel else todayLabel
+    val surface = if (highlighted) OficiosColorWhite else Color.Transparent
+    val titleColor = if (highlighted) OficiosColorBackground else OficiosColorWhite
+    val bodyColor = if (highlighted) OficiosColorBackground else OficiosColorSecondaryTextFigma
+    val chevronColor = if (highlighted) OficiosColorBackground else OficiosColorWhite
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
             .clip(shape)
+            .background(surface, shape)
             .border(1.dp, OficiosColorOutlineFill, shape)
             .clickable(onClick = onClick)
             .padding(end = OficiosSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (isToday) {
+        if (showSideLabel) {
             Box(
                 modifier = Modifier
                     .width(OficiosComponentSize.agendaTodayBarWidth)
@@ -72,7 +84,7 @@ fun AgendaAppointmentRow(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = todayLabel,
+                    text = sideLabel,
                     style = MaterialTheme.typography.titleMedium,
                     color = OficiosColorWhite,
                     maxLines = 1,
@@ -103,7 +115,7 @@ fun AgendaAppointmentRow(
             Text(
                 text = rubro,
                 style = MaterialTheme.typography.titleMedium,
-                color = OficiosColorWhite,
+                color = titleColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -111,7 +123,7 @@ fun AgendaAppointmentRow(
                 Text(
                     text = address,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorSecondaryTextFigma,
+                    color = bodyColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -120,7 +132,7 @@ fun AgendaAppointmentRow(
                 Text(
                     text = time,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorSecondaryTextFigma,
+                    color = bodyColor,
                     maxLines = 1,
                 )
             }
@@ -128,7 +140,7 @@ fun AgendaAppointmentRow(
         Icon(
             imageVector = ImageVector.vectorResource(OficiosIcons.ChevronRight),
             contentDescription = null,
-            tint = OficiosColorWhite,
+            tint = chevronColor,
             modifier = Modifier.size(OficiosComponentSize.iconMd),
         )
     }
@@ -144,7 +156,16 @@ private fun AgendaAppointmentRowPreview() {
                 address = "Juan José Silva 3800, Mz 52, Casa 4",
                 time = "13:30hs",
                 isToday = true,
+                isNow = true,
                 onClick = {},
+            )
+            AgendaAppointmentRow(
+                rubro = "Albañilería",
+                address = "Juan José Silva 3800, Mz 52, Casa 4",
+                time = "13:30hs",
+                isToday = true,
+                onClick = {},
+                modifier = Modifier.padding(top = OficiosSpacing.sm),
             )
             AgendaAppointmentRow(
                 rubro = "Plomeria",

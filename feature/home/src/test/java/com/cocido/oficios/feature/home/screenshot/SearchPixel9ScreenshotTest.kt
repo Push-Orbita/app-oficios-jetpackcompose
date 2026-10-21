@@ -1,9 +1,7 @@
 package com.cocido.oficios.feature.home.screenshot
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performScrollTo
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule
 import org.junit.Test
@@ -73,7 +71,13 @@ class SearchPixel9ScreenshotTest {
     fun providerHome() {
         assumeGoldenOrRecording(javaClass, "providerHome")
         composeRule.setContent { SearchScreenshotProviderHome(status, nav) }
-        composeRule.onNodeWithText("ver agenda completa").performScrollTo()
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun providerHomeComplete() {
+        assumeGoldenOrRecording(javaClass, "providerHomeComplete")
+        composeRule.setContent { SearchScreenshotProviderHomeComplete(status, nav) }
         composeRule.onRoot().captureRoboImage()
     }
 
