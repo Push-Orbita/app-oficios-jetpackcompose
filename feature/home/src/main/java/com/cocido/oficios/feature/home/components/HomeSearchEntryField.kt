@@ -15,26 +15,9 @@ fun HomeSearchEntryField(
     placeholder: String,
     modifier: Modifier = Modifier,
     onMicClick: (() -> Unit)? = null,
-) {
-    HomeSearchEntryField(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = onSearch,
-        placeholder = placeholder,
-        modifier = modifier,
-        onMicClick = onMicClick ?: {},
-        showMic = true,
-    )
-}
-
-@Composable
-fun HomeSearchEntryField(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit,
-    placeholder: String,
-    modifier: Modifier = Modifier,
-    onMicClick: (() -> Unit)? = null,
+    onFilterClick: (() -> Unit)? = null,
+    filterContentDescription: String? = null,
+    activeFilterCount: Int = 0,
     showMic: Boolean = true,
 ) {
     OficiosSearchField(
@@ -44,6 +27,9 @@ fun HomeSearchEntryField(
         modifier = modifier,
         onMicClick = if (showMic) onMicClick ?: {} else null,
         onSearchClick = onSearch,
+        onFilterClick = onFilterClick,
+        filterContentDescription = filterContentDescription,
+        activeFilterCount = activeFilterCount,
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
     )
 }

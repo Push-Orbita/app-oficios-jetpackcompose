@@ -3,15 +3,12 @@ package com.cocido.oficios.feature.home.components
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,12 +23,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
-import com.cocido.oficios.core.designsystem.component.layout.HomeUserIdentityColumn
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton
+import com.cocido.oficios.core.designsystem.component.layout.HomeUserIdentityColumn
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBottomNavigationBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosNavItem
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -69,25 +65,11 @@ fun ClientHomeHeader(
                 verifiedContentDescription = stringResource(R.string.home_verified_user),
             )
         }
-        OficiosNotificationBadge(count = unreadNotificationCount) {
-            IconButton(
-                onClick = onNotificationsClick,
-                modifier = Modifier
-                    .size(OficiosComponentSize.avatarSm)
-                    .clip(RoundedCornerShape(OficiosSpacing.sm))
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(OficiosSpacing.sm),
-                    ),
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(OficiosIcons.BellDot),
-                    contentDescription = stringResource(R.string.home_notifications),
-                    tint = MaterialTheme.colorScheme.onBackground,
-                )
-            }
-        }
+        OficiosNotificationButton(
+            onClick = onNotificationsClick,
+            contentDescription = stringResource(R.string.home_notifications),
+            unreadCount = unreadNotificationCount,
+        )
     }
 }
 
@@ -142,11 +124,15 @@ fun ClientHomeBottomBar(
     modifier: Modifier = Modifier,
     showFavorites: Boolean? = null,
 ) {
-    val roleShowsFavorites = hiltViewModel<HomeChromeViewModel>().showFavorites.collectAsState().value
+    val roleShowsFavorites = if (showFavorites != null) {
+        showFavorites
+    } else {
+        hiltViewModel<HomeChromeViewModel>().showFavorites.collectAsState().value
+    }
     val items = buildList {
         add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), OficiosIcons.House))
         add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), OficiosIcons.ReceiptText))
-        if (showFavorites ?: roleShowsFavorites) {
+        if (roleShowsFavorites) {
             add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), OficiosIcons.Heart))
         }
         add(OficiosNavItem(ClientHomeTab.AJUSTES.route, stringResource(R.string.home_nav_ajustes), OficiosIcons.User))

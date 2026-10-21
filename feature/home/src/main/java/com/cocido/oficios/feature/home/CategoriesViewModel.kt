@@ -56,12 +56,16 @@ class CategoriesViewModel @Inject constructor(
             CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.NavigateToNotifications)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
             is CategoriesEvent.SearchSubmitted -> onSearchSubmitted(event.query)
+            CategoriesEvent.SeeAll -> emitEffect(CategoriesEffect.NavigateToSearchResults(""))
         }
     }
 
     private fun onSearchSubmitted(query: String) {
         val trimmed = query.trim()
-        if (trimmed.isEmpty()) return
+        if (trimmed.isEmpty()) {
+            emitEffect(CategoriesEffect.NavigateToSearchResults(""))
+            return
+        }
         emitEffect(CategoriesEffect.NavigateToSearchResults(trimmed))
     }
 
