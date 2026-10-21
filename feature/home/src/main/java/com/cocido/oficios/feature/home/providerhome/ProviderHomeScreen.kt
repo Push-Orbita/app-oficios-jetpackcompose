@@ -121,13 +121,15 @@ private fun ProviderHomeSuccessContent(
 
         ProviderBenefitsSection()
 
-        ProviderProfileCompletionSection(
-            percent = content.profileCompletionPercent,
-            hasGallery = content.hasGalleryPhotos,
-            hasLocal = content.hasCommercialLocal,
-            hasCertificate = content.hasCertificate,
-            onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
-        )
+        if (content.showProfileCompletion) {
+            ProviderProfileCompletionSection(
+                percent = content.profileCompletionPercent,
+                hasGallery = content.hasGalleryPhotos,
+                hasLocal = content.hasCommercialLocal,
+                hasCertificate = content.hasCertificate,
+                onCompleteProfile = { onEvent(ProviderHomeEvent.CompleteProfileClicked) },
+            )
+        }
 
         ProviderAgendaSection(
             upcomingOrders = content.upcomingOrders,

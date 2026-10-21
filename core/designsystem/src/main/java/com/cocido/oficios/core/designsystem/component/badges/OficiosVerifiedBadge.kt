@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.badges
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -15,16 +16,17 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Badge de usuario verificado — mismo ícono, verde y tamaño para cliente y trabajador.
- * Lucide badge-check outline, [OficiosColorSuccess] (#4CAF7D) sobre navy.
+ * Badge de usuario verificado — [OficiosColorSuccess] (#4CAF7D) sobre navy.
+ * Cliente: badge-check (Figma 25:95). Trabajador: shield-check (Figma 259:254).
  */
 @Composable
 fun OficiosVerifiedBadge(
     modifier: Modifier = Modifier,
     contentDescription: String? = stringResource(R.string.ds_verified),
+    @DrawableRes iconRes: Int = OficiosIcons.BadgeCheck,
 ) {
     Icon(
-        imageVector = ImageVector.vectorResource(OficiosIcons.BadgeCheck),
+        imageVector = ImageVector.vectorResource(iconRes),
         contentDescription = contentDescription,
         tint = OficiosColorSuccess,
         modifier = modifier.size(OficiosComponentSize.iconMd),

@@ -8,12 +8,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import com.cocido.oficios.core.designsystem.component.calendar.OficiosMonthCalendar
 import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
 import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -24,12 +28,14 @@ import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.agendaRubroLabel
 import com.cocido.oficios.domain.model.agendaTimeLabel
 import com.cocido.oficios.domain.model.groupAgendaAppointments
+import com.cocido.oficios.domain.model.scheduledDate
 import com.cocido.oficios.feature.home.R
 import java.time.LocalDate
+import java.time.YearMonth
 
 /**
- * Agenda de la home trabajador — Figma `259:423`.
- * Lista agrupada por fecha; el calendario mensual vive en "ver agenda completa".
+ * Agenda en Inicio trabajador — Figma `191:11` + `259:534`.
+ * Calendario mensual (días con turno marcados) + lista por fecha (AHORA / HOY).
  */
 @Composable
 fun ProviderAgendaSection(
@@ -42,6 +48,11 @@ fun ProviderAgendaSection(
     val groups = remember(upcomingOrders, today) {
         groupAgendaAppointments(upcomingOrders, today)
     }
+    val appointmentDates = remember(upcomingOrders) {
+        upcomingOrders.mapNotNull { it.scheduledDate() }.toSet()
+    }
+    var visibleMonth by remember(today) { mutableStateOf(YearMonth.from(today)) }
+    var selectedDate by remember(today) { mutableStateOf<LocalDate?>(today) }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
@@ -56,6 +67,13 @@ fun ProviderAgendaSection(
                 style = MaterialTheme.typography.headlineLarge,
                 color = OficiosColorWhite,
             )
+            OficiosMonthCalendar(
+                month = visibleMonth,
+                selectedDate = selectedDate,
+                onMonthChange = { visibleMonth = it },
+                onDateSelected = { selectedDate = it },
+                isDateHighlighted = { it in appointmentDates && it != selectedDate },
+            )
             groups.forEach { group ->
                 Text(
                     text = group.headerLabel,
@@ -68,7 +86,9 @@ fun ProviderAgendaSection(
                         address = order.addressLabel,
                         time = order.agendaTimeLabel(),
                         isToday = group.isToday,
+                        isNow = order.bookingStatus == BookingStatus.IN_PROGRESS,
                         todayLabel = stringResource(R.string.provider_home_agenda_today_tag),
+                        nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
                         onClick = { onOrderClick(order.id) },
                     )
                 }
@@ -103,7 +123,7 @@ private fun ProviderAgendaSectionPreview() {
                     counterpartName = "Juan",
                     subRubroLabel = "Albañilería",
                     status = ServiceRequestStatus.ACCEPTED,
-                    bookingStatus = BookingStatus.CONFIRMED,
+                    bookingStatus = BookingStatus.IN_PROGRESS,
                     scheduledLabel = "13:30hs",
                     addressLabel = "Juan José Silva 3800, Mz 52, Casa 4",
                     rubroLabel = "Albañilería",

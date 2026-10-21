@@ -9,8 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
@@ -24,6 +26,7 @@ fun HomeUserIdentityColumn(
     verifiedContentDescription: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    @DrawableRes verifiedIconRes: Int = OficiosIcons.BadgeCheck,
 ) {
     val stackVerifiedBadge = LocalConfiguration.current.fontScale >= 1.3f
 
@@ -40,7 +43,10 @@ fun HomeUserIdentityColumn(
                 overflow = TextOverflow.Ellipsis,
             )
             if (isVerified) {
-                OficiosVerifiedBadge(contentDescription = verifiedContentDescription)
+                OficiosVerifiedBadge(
+                    contentDescription = verifiedContentDescription,
+                    iconRes = verifiedIconRes,
+                )
             }
         } else {
             Row(
@@ -56,7 +62,10 @@ fun HomeUserIdentityColumn(
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 if (isVerified) {
-                    OficiosVerifiedBadge(contentDescription = verifiedContentDescription)
+                    OficiosVerifiedBadge(
+                        contentDescription = verifiedContentDescription,
+                        iconRes = verifiedIconRes,
+                    )
                 }
             }
         }

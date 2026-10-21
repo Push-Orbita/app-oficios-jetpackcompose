@@ -17,6 +17,9 @@ data class ProviderHomeContent(
 ) {
     val headerSubtitle: String?
         get() = if (isVerified) primarySpecialtyLabel else null
+
+    val showProfileCompletion: Boolean
+        get() = profileCompletionPercent < 100
 }
 
 data class ProviderBenefit(

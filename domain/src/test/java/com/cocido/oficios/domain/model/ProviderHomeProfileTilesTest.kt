@@ -48,4 +48,29 @@ class ProviderHomeProfileTilesTest {
         )
         assertEquals(null, content.headerSubtitle)
     }
+
+    @Test
+    fun `completion percent is thirds of the three tiles`() {
+        assertEquals(0, ProviderHomeTiles(gallery = false, local = false, certificate = false).completionPercent)
+        assertEquals(33, ProviderHomeTiles(gallery = true, local = false, certificate = false).completionPercent)
+        assertEquals(66, ProviderHomeTiles(gallery = true, local = true, certificate = false).completionPercent)
+        assertEquals(100, ProviderHomeTiles(gallery = true, local = true, certificate = true).completionPercent)
+    }
+
+    @Test
+    fun `showProfileCompletion hides Completa Tu Perfil at 100 percent`() {
+        assertTrue(providerHome(0).showProfileCompletion)
+        assertTrue(providerHome(33).showProfileCompletion)
+        assertTrue(providerHome(80).showProfileCompletion)
+        assertTrue(providerHome(99).showProfileCompletion)
+        assertFalse(providerHome(100).showProfileCompletion)
+    }
+
+    private fun providerHome(percent: Int) = ProviderHomeContent(
+        userDisplayName = "Emanuel",
+        isVerified = true,
+        primarySpecialtyLabel = "Albañil",
+        profileCompletionPercent = percent,
+        missingProfileItems = emptyList(),
+    )
 }

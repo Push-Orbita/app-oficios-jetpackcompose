@@ -63,6 +63,7 @@ fun ProviderHomeHeader(
                 isVerified = isVerified,
                 verifiedContentDescription = stringResource(R.string.home_verified_user),
                 subtitle = subtitle,
+                verifiedIconRes = OficiosIcons.ShieldCheck,
             )
         }
         OficiosNotificationBadge(count = unreadNotificationCount) {
