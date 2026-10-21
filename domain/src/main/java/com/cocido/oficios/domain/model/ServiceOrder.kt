@@ -1,5 +1,7 @@
 package com.cocido.oficios.domain.model
 
+import java.time.ZonedDateTime
+
 // Estados reales del backend (apioficios.pushsoftware.com.ar) — ver /solicitud-servicio,
 // /booking. No inventar estados nuevos: mapear 1:1 contra estos.
 enum class ServiceRequestStatus {
@@ -98,13 +100,23 @@ enum class OrdersListFilter {
 }
 
 /**
- * Historial: solicitud cancelada/expirada, o booking FINALIZADA/CANCELADA.
- * Activos conserva los estados vivos: PENDIENTE, CONTRAPROPUESTA, CONFIRMADA,
- * EN_CAMINO, EN_CURSO y LLEGUE (este último llega mapeado como en curso).
+ * Historial: solicitud cancelada/expirada, booking FINALIZADA/CANCELADA,
+ * o PENDIENTE/CONTRAPROPUESTA/CONFIRMADA cuya franja ya terminó.
+ * EN_CAMINO / EN_CURSO (y LLEGUE mapeado a en curso) siguen en Activos
+ * aunque el horario haya pasado: el trabajo está en marcha.
+ * No inventa estados: el ítem conserva el estado real del backend.
  */
-fun ServiceOrderListItem.isHistoryOrder(): Boolean {
+fun ServiceOrderListItem.isHistoryOrder(now: ZonedDateTime): Boolean {
     if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return true
-    return bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED
+    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED) return true
+    if (bookingStatus == BookingStatus.EN_ROUTE || bookingStatus == BookingStatus.IN_PROGRESS) return false
+    return isElapsedUnstartedSlot(now)
+}
+
+/** True si hay fecha/hora y el fin exclusivo de la franja ya quedó atrás. */
+fun ServiceOrderListItem.isElapsedUnstartedSlot(now: ZonedDateTime): Boolean {
+    val end = agendaSlotEndExclusive(now.zone) ?: return false
+    return !now.isBefore(end)
 }
 
 /** LLEGUE en el tracking deja el pedido en la misma UI que EN_CURSO: el código de finalización. */
@@ -118,9 +130,12 @@ fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
     return copy(bookingStatus = BookingStatus.IN_PROGRESS)
 }
 
-fun List<ServiceOrderListItem>.arrangedFor(filter: OrdersListFilter): List<ServiceOrderListItem> {
+fun List<ServiceOrderListItem>.arrangedFor(
+    filter: OrdersListFilter,
+    now: ZonedDateTime,
+): List<ServiceOrderListItem> {
     val matching = filter { item ->
-        if (filter == OrdersListFilter.HISTORY) item.isHistoryOrder() else !item.isHistoryOrder()
+        if (filter == OrdersListFilter.HISTORY) item.isHistoryOrder(now) else !item.isHistoryOrder(now)
     }
     return if (filter == OrdersListFilter.ACTIVE) {
         matching.sortedWith(

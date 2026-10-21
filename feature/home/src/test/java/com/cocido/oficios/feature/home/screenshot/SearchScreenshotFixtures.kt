@@ -471,6 +471,7 @@ internal fun SearchScreenshotOrdersList(
             showBackNavigation = false,
             onTabSelected = {},
             today = LocalDate.of(2026, 3, 4),
+            now = ZonedDateTime.of(2026, 3, 4, 10, 0, 0, 0, DisplayDateTime.ARGENTINA),
             showFavorites = true,
         )
     }
