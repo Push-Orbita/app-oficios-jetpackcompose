@@ -107,8 +107,8 @@ fun OficiosMonthCalendar(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            WEEKDAY_LABELS.forEachIndexed { index, label ->
-                val color = if (index == 0) OficiosColorOutlineFill else OficiosColorWhite
+            WEEKDAY_LABELS.forEach { label ->
+                val color = OficiosColorWhite
                 Box(
                     modifier = Modifier.size(OficiosComponentSize.calendarDayCell),
                     contentAlignment = Alignment.Center,
