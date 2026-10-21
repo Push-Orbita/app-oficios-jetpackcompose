@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -23,15 +23,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Título de pantalla estilo Figma — 36sp in-content con chevron izquierdo
- * 
- * Reemplaza OficiosTopAppBar/OficiosBackTopBar (M3 titleMedium 16sp) en todas las pantallas.
- * Figma: "‹ Título" DIN Bold 36 con chevron-left 24 y gap 10, más acción opcional a la derecha
- * (ej: campana 48dp con fondo #004DA8 r8).
- * 
- * @param title Título de la pantalla (ej: "Oficios", "Pedido Confirmado", "Recientes")
- * @param onNavigateBack Acción al tocar el chevron (null = sin chevron)
- * @param trailingAction Composable opcional a la derecha (ej: IconButton de notificaciones)
+ * Título de pantalla estilo Figma — 36sp in-content con chevron izquierdo.
+ * Sin padding horizontal: el caller aplica OficiosScreenPadding (px 32).
  */
 @Composable
 fun OficiosScreenTitle(
@@ -43,13 +36,13 @@ fun OficiosScreenTitle(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.md),
+            .heightIn(min = 48.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.weight(1f, fill = false),
         ) {
             if (onNavigateBack != null) {
                 Icon(
@@ -58,17 +51,17 @@ fun OficiosScreenTitle(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable(onClick = onNavigateBack),
-                    tint = MaterialTheme.colorScheme.onBackground
+                    tint = MaterialTheme.colorScheme.onBackground,
                 )
                 Spacer(modifier = Modifier.width(10.dp))
             }
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineLarge, // DIN Bold 36sp
+                style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground,
             )
         }
-        
+
         if (trailingAction != null) {
             trailingAction()
         }
@@ -91,7 +84,7 @@ private fun PreviewOficiosScreenTitleWithBack() {
 private fun PreviewOficiosScreenTitleNoBack() {
     OficiosTheme {
         OficiosScreenTitle(
-            title = "Inicio"
+            title = "Inicio",
         )
     }
 }
@@ -108,9 +101,9 @@ private fun PreviewOficiosScreenTitleWithAction() {
                     imageVector = ImageVector.vectorResource(OficiosIcons.BellDot),
                     contentDescription = "Notificaciones",
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onBackground
+                    tint = MaterialTheme.colorScheme.onBackground,
                 )
-            }
+            },
         )
     }
 }
