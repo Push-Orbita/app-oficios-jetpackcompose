@@ -179,6 +179,12 @@
     <string name="orders_empty_history_description">Los pedidos finalizados o cancelados van a aparecer acá.</string>
     <string name="orders_empty_cta">Buscar trabajadores</string>
     <string name="orders_detail_title">Pedido</string>
+    <string name="orders_title_pending">Pedido Pendiente</string>
+    <string name="orders_title_confirmed">Pedido Confirmado</string>
+    <string name="orders_title_finish">Terminar Pedido</string>
+    <string name="orders_title_cancelled">Pedido cancelado</string>
+    <string name="orders_cancel_deadline">Plazo de cancelación: %1$s</string>
+    <string name="orders_cancel_reason_required">Ingrese el motivo de cancelación.</string>
     <string name="orders_detail_loading">Cargando pedido…</string>
     <string name="orders_detail_error_title">No pudimos cargar el pedido</string>
     <string name="orders_detail_error_description">Revisá tu conexión e intentá de nuevo.</string>
@@ -217,7 +223,7 @@
     <string name="orders_cancelled_by_system">Lo canceló el sistema</string>
     <string name="orders_cancel">Cancelar</string>
     <string name="orders_cancel_title">Cancelar pedido</string>
-    <string name="orders_cancel_message">¿Seguro que querés cancelar este pedido?</string>
+    <string name="orders_cancel_message">¿Seguro que quiere cancelar este pedido?</string>
     <string name="orders_cancel_confirm">Sí, cancelar</string>
     <string name="orders_cancel_back">Volver</string>
     <string name="orders_open_map">Abrir en el mapa</string>
@@ -277,7 +283,7 @@
     <string name="orders_finalize_success_description">El código es correcto y el servicio quedó cerrado.</string>
     <string name="orders_dialog_cancel">Cancelar</string>
     <string name="orders_code_label">Código de 6 dígitos</string>
-    <string name="orders_reason_message">Contanos el motivo para que la otra persona lo vea.</string>
+    <string name="orders_reason_message">Ingrese el motivo para que la otra persona lo vea.</string>
     <string name="orders_reason_label">Motivo</string>
     <string name="agenda_title">Agenda</string>
     <string name="agenda_configure">Configurar agenda</string>

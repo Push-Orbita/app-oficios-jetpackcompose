@@ -61,6 +61,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.Hyphens
@@ -79,7 +80,8 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.component.motion.oficiosShake
 import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosRejectShake
@@ -105,10 +107,7 @@ fun OrderDetailScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OficiosScaffold(
-        modifier = modifier,
-        topBar = { OficiosBackTopBar(title = stringResource(R.string.orders_detail_title), onBack = onNavigateBack) },
-    ) { paddingValues ->
+    OficiosScaffold(modifier = modifier) { paddingValues ->
         OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
             when (state) {
                 OrderDetailUiState.Loading -> OrderDetailSkeleton(
@@ -139,6 +138,7 @@ fun OrderDetailScreen(
                     OrderDetailContent(
                         state = state,
                         onEvent = onEvent,
+                        onNavigateBack = onNavigateBack,
                     )
                 }
             }
@@ -168,6 +168,7 @@ private fun OrderDetailSkeleton(message: String, modifier: Modifier = Modifier) 
 private fun OrderDetailContent(
     state: OrderDetailUiState.Success,
     onEvent: (OrderDetailEvent) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val order = state.order
@@ -182,9 +183,13 @@ private fun OrderDetailContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+            .padding(OficiosSpacing.OficiosScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
+        OficiosScreenTitle(
+            title = stringResource(orderScreenTitleRes(order.status, order.bookingStatus)),
+            onNavigateBack = onNavigateBack,
+        )
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -201,7 +206,6 @@ private fun OrderDetailContent(
                     )
                 }
             }
-            OrderProgress(status = order.status, bookingStatus = order.bookingStatus)
             cancelledByLabelRes(order.cancelledBy)?.let { label ->
                 Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
             }
@@ -284,6 +288,13 @@ private fun OrderDetailContent(
                 }
                 order.bookingType?.takeIf { it.isNotBlank() }?.let {
                     InfoRow(Icons.Outlined.Category, stringResource(R.string.orders_type), "${stringResource(R.string.orders_type)}: $it")
+                }
+                order.cancellationDeadlineLabel?.takeIf { it.isNotBlank() }?.let { deadline ->
+                    InfoRow(
+                        icon = ImageVector.vectorResource(OficiosIcons.Clock),
+                        contentDescription = stringResource(R.string.orders_cancel_deadline, deadline),
+                        text = stringResource(R.string.orders_cancel_deadline, deadline),
+                    )
                 }
             }
         }
@@ -543,23 +554,32 @@ private fun OrderDetailContent(
     }
 
     if (showCancelDialog) {
-        OficiosDialog(
-            title = stringResource(R.string.orders_cancel_title),
-            message = stringResource(R.string.orders_cancel_message),
-            confirmLabel = stringResource(R.string.orders_cancel_confirm),
-            dismissLabel = stringResource(R.string.orders_cancel_back),
-            isDangerous = true,
-            actionSize = OficiosButtonSize.Large,
-            onConfirm = {
-                if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING) {
-                    onEvent(OrderDetailEvent.CancelConfirmed(null))
-                } else {
+        val confirmedCancel = order.canCancelBooking && order.status != ServiceRequestStatus.PENDING
+        if (confirmedCancel) {
+            ReasonDialog(
+                title = stringResource(R.string.orders_cancel_title),
+                confirmLabel = stringResource(R.string.orders_cancel_confirm),
+                onConfirm = { reason ->
+                    onEvent(OrderDetailEvent.CancelConfirmed(reason))
+                    showCancelDialog = false
+                },
+                onDismiss = { showCancelDialog = false },
+            )
+        } else {
+            OficiosDialog(
+                title = stringResource(R.string.orders_cancel_title),
+                message = stringResource(R.string.orders_cancel_message),
+                confirmLabel = stringResource(R.string.orders_cancel_confirm),
+                dismissLabel = stringResource(R.string.orders_cancel_back),
+                isDangerous = true,
+                actionSize = OficiosButtonSize.Large,
+                onConfirm = {
                     onEvent(OrderDetailEvent.CancelBeforeAcceptance)
-                }
-                showCancelDialog = false
-            },
-            onDismiss = { showCancelDialog = false },
-        )
+                    showCancelDialog = false
+                },
+                onDismiss = { showCancelDialog = false },
+            )
+        }
     }
 
     if (showFinalizeDialog && order.bookingStatus != BookingStatus.FINISHED) {
@@ -798,8 +818,8 @@ private fun CancelOrderButton(
     OficiosButton(
         text = stringResource(R.string.orders_cancel),
         onClick = onClick,
-        leadingIcon = Icons.Outlined.Close,
-        variant = OficiosButtonVariant.OutlinedDanger,
+        leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
+        variant = OficiosButtonVariant.Danger,
         size = size,
         modifier = Modifier.fillMaxWidth(),
         enabled = enabled,

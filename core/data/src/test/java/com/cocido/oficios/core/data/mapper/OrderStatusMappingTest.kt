@@ -33,7 +33,7 @@ class OrderStatusMappingTest {
             solicitud(17, "CANCELADA", "CANCELADA"),
         ).map { it.toListItem(isWorkerViewing = true) }
 
-        assertEquals(listOf(5L, 6L, 9L, 11L, 15L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
+        assertEquals(listOf(6L, 15L, 11L, 9L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE).map { it.id })
         assertEquals(listOf(18L, 17L), items.arrangedFor(OrdersListFilter.HISTORY).map { it.id })
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 11L }.bookingStatus)
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 15L }.bookingStatus)

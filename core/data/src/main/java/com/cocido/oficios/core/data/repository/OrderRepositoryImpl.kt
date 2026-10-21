@@ -107,7 +107,13 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?): AppResult<Unit> =
         withContext(dispatcherProvider.io) {
-            remoteDataSource.cancelarSolicitudConfirmada(orderId, reason).map { }.notifyIfChanged()
+            val motivo = reason?.trim().orEmpty()
+            if (motivo.isEmpty()) {
+                return@withContext AppResult.Error(
+                    AppError.Validation("Ingrese el motivo de cancelación."),
+                )
+            }
+            remoteDataSource.cancelarSolicitudConfirmada(orderId, motivo).map { }.notifyIfChanged()
         }
 
     override suspend fun findOrderIdForBooking(bookingId: Long): AppResult<Long?> =

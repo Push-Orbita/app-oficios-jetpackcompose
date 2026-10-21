@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.withArrivedTracking
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -71,7 +72,14 @@ class OrderDetailViewModel @Inject constructor(
                 if (counterOfferId != null) runAction { orderUseCases.rejectCounterOffer(counterOfferId) }
             }
             OrderDetailEvent.CancelBeforeAcceptance -> runAction { orderUseCases.cancelOrderBeforeAcceptance(orderId) }
-            is OrderDetailEvent.CancelConfirmed -> runAction { orderUseCases.cancelConfirmedOrder(orderId, event.reason) }
+            is OrderDetailEvent.CancelConfirmed -> {
+                val motivo = event.reason?.trim().orEmpty()
+                if (motivo.isEmpty()) {
+                    emitEffect(OrderDetailEffect.ShowMessage("Ingrese el motivo de cancelación."))
+                    return
+                }
+                runAction { orderUseCases.cancelConfirmedOrder(orderId, motivo) }
+            }
             OrderDetailEvent.OpenWorkerProfile -> {
                 val workerId = (uiState.value as? OrderDetailUiState.Success)?.order?.workerId ?: return
                 if (workerId != 0L) emitEffect(OrderDetailEffect.NavigateToWorker(workerId))
@@ -296,6 +304,28 @@ class OrderDetailViewModel @Inject constructor(
         )
     }
 
+    /**
+     * Cliente/trabajador: mientras el pedido está pendiente o en contrapropuesta,
+     * recarga el detalle cada [STATUS_REFRESH_MILLIS] para ver la confirmación
+     * sin push. Se llama desde la Route con `repeatOnLifecycle(STARTED)`.
+     */
+    suspend fun keepOrderStatusFresh() {
+        uiState
+            .filterIsInstance<OrderDetailUiState.Success>()
+            .map { it.shouldPollStatus() }
+            .distinctUntilChanged()
+            .collectLatest { shouldPoll ->
+                if (!shouldPoll) return@collectLatest
+                while (true) {
+                    delay(STATUS_REFRESH_MILLIS)
+                    load(silent = true)
+                }
+            }
+    }
+
+    private fun OrderDetailUiState.Success.shouldPollStatus(): Boolean =
+        order.status == ServiceRequestStatus.PENDING || order.status == ServiceRequestStatus.COUNTER_OFFER
+
     private fun startTrackingRefreshIfNeeded(bookingId: Long?, status: BookingStatus?) {
         trackingRefreshJob?.cancel()
         if (bookingId == null || status != BookingStatus.EN_ROUTE || viewerRole != UserRole.CLIENT) return
@@ -365,6 +395,7 @@ class OrderDetailViewModel @Inject constructor(
     }
 
     internal companion object {
+        const val STATUS_REFRESH_MILLIS = 12_000L
         const val TRACKING_REFRESH_MILLIS = 15_000L
         const val COMPLETION_CODE_FETCH_MILLIS = 30_000L
         const val COMPLETION_CODE_REGENERATE_MILLIS = 4 * 60_000L
