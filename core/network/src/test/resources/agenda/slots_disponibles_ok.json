@@ -1,0 +1,15 @@
+[
+  {
+    "id": 31,
+    "inicio": "2026-10-25T10:00:00.000Z",
+    "fin": "2026-10-25T11:00:00.000Z",
+    "estado": "DISPONIBLE",
+    "autoAceptacion": false,
+    "bookingId": null,
+    "trabajadorOficioSubRubro": {
+      "id": 10,
+      "requiereTurnos": true,
+      "subRubro": { "id": 1, "nombre": "Reparacion de canerias" }
+    }
+  }
+]

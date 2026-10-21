@@ -1,0 +1,8 @@
+{
+  "id": 13,
+  "email": "qa@example.test",
+  "emailVerificado": true,
+  "fotoPerfil": null,
+  "persona": { "id": 13, "nombres": "QA", "apellido": "Emulator" },
+  "rolUsuario": { "id": 2, "nombre": "CLIENTE" }
+}

@@ -1,0 +1,56 @@
+{
+  "id": 5,
+  "cliente": {
+    "id": 7,
+    "usuario": {
+      "id": 13,
+      "email": "qa@example.test",
+      "emailVerificado": true,
+      "persona": { "id": 13, "nombres": "QA", "apellido": "Emulator" },
+      "rolUsuario": { "id": 2, "nombre": "CLIENTE" }
+    },
+    "estado": "ACTIVO"
+  },
+  "trabajadorOficio": {
+    "id": 5,
+    "usuario": {
+      "id": 7,
+      "email": "worker@example.test",
+      "emailVerificado": true,
+      "persona": { "id": 7, "nombres": "Matias", "apellido": "Britez" },
+      "rolUsuario": { "id": 1, "nombre": "TRABAJADOR_DE_OFICIOS" }
+    },
+    "estado": "VALIDADO",
+    "documento": "43453547"
+  },
+  "rubro": { "id": 1, "nombre": "Plomeria" },
+  "subRubro": { "id": 1, "nombre": "Reparacion de canerias" },
+  "domicilio": {
+    "id": 6,
+    "nombre": "Casa QA",
+    "calle": "Av. 25 de Mayo",
+    "numero": "100",
+    "latitud": -26.185,
+    "longitud": -58.175,
+    "favorito": true
+  },
+  "contacto": {
+    "id": 5,
+    "nombre": "QA Emulator",
+    "telefonoWhatsapp": "+54000000000",
+    "telefonoVerificado": false,
+    "email": "qa@example.test",
+    "favorito": true
+  },
+  "estado": "PENDIENTE",
+  "descripcion": "qa",
+  "booking": {
+    "id": 5,
+    "inicioConfirmado": "2026-10-25T10:00:00.000Z",
+    "finConfirmado": "2026-10-25T12:00:00.000Z",
+    "tipo": "PRESUPUESTO",
+    "estado": "PENDIENTE",
+    "puedeCancelar": true
+  },
+  "contrapropuestas": []
+}

@@ -141,4 +141,27 @@ class ProfileScreensTest {
         composeRule.onNodeWithText("Escriba ELIMINAR").assertIsDisplayed()
         composeRule.onNodeWithText("Eliminar mi cuenta").assertIsDisplayed()
     }
+
+    @Test
+    fun settings_logoutButtonIsVisible() {
+        composeRule.setContent {
+            OficiosTheme {
+                SettingsScreen(
+                    uiState = SettingsUiState(
+                        isLoading = false,
+                        profile = AccountProfile(
+                            user = User(9, "trabajador@test.com", "Trabajador", "Prueba", UserRole.PROVIDER, true),
+                            providerDetails = ProviderAccountDetails(
+                                9, "VALIDADO", "99887766", "Descripción", "Experiencia",
+                                emptyList(), emptyList(), emptyList(), emptyList(),
+                            ),
+                        ),
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Ayuda").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cerrar sesión").performScrollTo().assertIsDisplayed()
+    }
 }

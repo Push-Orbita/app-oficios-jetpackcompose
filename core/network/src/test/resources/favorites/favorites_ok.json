@@ -1,0 +1,20 @@
+{
+  "data": [
+    {
+      "id": 9,
+      "trabajadorOficioId": 5,
+      "displayName": "Matias Britez",
+      "profilePhotoUrl": null,
+      "specialtyLabel": "Plomería",
+      "rating": 4.8,
+      "verified": true,
+      "createdAt": "2026-10-01T10:00:00.000Z"
+    }
+  ],
+  "metadata": {
+    "count": 1,
+    "pageSize": 20,
+    "pageNumber": 1,
+    "totalPages": 1
+  }
+}
