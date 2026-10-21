@@ -30,12 +30,19 @@ fun NavGraphBuilder.ordersScreen(
     ) {
         CreateOrderRoute(
             onNavigateBack = { navController.popBackStack() },
-            onNavigateToOrderDetail = { orderId ->
-                navController.navigate(OrdersDestination.orderDetail(orderId)) {
-                    popUpTo(OrdersDestination.createOrder) { inclusive = true }
+            onNavigateHome = {
+                if (!navController.popBackStack(HomeDestination.inicio, inclusive = false)) {
+                    navController.navigate(HomeDestination.inicio) {
+                        popUpTo(OrdersDestination.createOrder) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             },
+            onNavigateToAddLocation = {
+                navController.navigate("settings/client-data")
+            },
             onShowMessage = onShowMessage,
+            onTabSelected = { navController.openClientTab(it, settingsRoute = "settings") },
         )
     }
 

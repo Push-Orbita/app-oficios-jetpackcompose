@@ -11,10 +11,12 @@ import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.CreateServiceRequestUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 @HiltViewModel
 class CreateOrderViewModel @Inject constructor(
@@ -57,6 +58,7 @@ class CreateOrderViewModel @Inject constructor(
                         availableSlots = emptyList(),
                         slotsErrorMessage = null,
                         submitIdempotencyKey = null,
+                        specialtyLabel = subRubroOptions.firstOrNull { it.id == event.id }?.name.orEmpty(),
                     )
                 }
                 loadAvailableSlots(event.id)
@@ -67,33 +69,70 @@ class CreateOrderViewModel @Inject constructor(
             is CreateOrderEvent.ContactoSelected -> updateSuccess {
                 copy(selectedContactoId = event.id, submitIdempotencyKey = null)
             }
-            is CreateOrderEvent.SlotSelected -> updateSuccess {
-                copy(selectedSlotId = event.id, proposedDateTime = null, submitIdempotencyKey = null)
+            is CreateOrderEvent.DateSelected -> updateSuccess {
+                applyDateHour(selectedDate = event.date, selectedHour = selectedHour)
             }
-            is CreateOrderEvent.DateTimeSelected -> updateSuccess {
-                copy(proposedDateTime = event.dateTime, selectedSlotId = null, submitIdempotencyKey = null)
+            is CreateOrderEvent.HourSelected -> updateSuccess {
+                applyDateHour(selectedDate = selectedDate, selectedHour = event.hour)
+            }
+            is CreateOrderEvent.MonthChanged -> updateSuccess {
+                copy(visibleMonth = event.month)
             }
             is CreateOrderEvent.DescriptionChanged -> updateSuccess {
                 copy(description = event.value, submitIdempotencyKey = null)
             }
+            CreateOrderEvent.ContinueToSummary -> continueToSummary()
+            CreateOrderEvent.EditRequest -> updateSuccess {
+                copy(step = CreateOrderStep.FORM)
+            }
             CreateOrderEvent.Submit -> submit()
+            CreateOrderEvent.AddLocation -> viewModelScope.launch {
+                _effects.send(CreateOrderEffect.NavigateToAddLocation)
+            }
         }
+    }
+
+    private fun CreateOrderUiState.Success.applyDateHour(
+        selectedDate: LocalDate?,
+        selectedHour: java.time.LocalTime?,
+    ): CreateOrderUiState.Success {
+        val slot = CreateOrderSchedule.matchingSlot(availableSlots, selectedDate, selectedHour)
+        return copy(
+            selectedDate = selectedDate,
+            selectedHour = selectedHour,
+            selectedSlotId = slot?.id,
+            proposedDateTime = if (slot == null) {
+                CreateOrderSchedule.visitDateTime(selectedDate, selectedHour)
+            } else {
+                null
+            },
+            submitIdempotencyKey = null,
+        )
     }
 
     private fun loadAvailableSlots(subRubroId: Long) {
         viewModelScope.launch {
             updateSuccess { copy(isLoadingSlots = true, slotsErrorMessage = null) }
             val zone = ZoneId.systemDefault()
-            val from = LocalDate.now().atStartOfDay(zone).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            val to = LocalDate.now().plusWeeks(4).atStartOfDay(zone).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val from = LocalDate.now().atStartOfDay(zone).toOffsetDateTime()
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val to = LocalDate.now().plusWeeks(4).atStartOfDay(zone).toOffsetDateTime()
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
             when (val result = agendaUseCases.getAvailableSlots(subRubroId, from, to)) {
                 is AppResult.Success -> updateSuccess {
-                    copy(isLoadingSlots = false, availableSlots = result.data, selectedSlotId = null, slotsErrorMessage = null)
+                    val next = copy(
+                        isLoadingSlots = false,
+                        availableSlots = result.data,
+                        hasAgenda = result.data.isNotEmpty(),
+                        slotsErrorMessage = null,
+                    )
+                    next.applyDateHour(next.selectedDate, next.selectedHour)
                 }
                 is AppResult.Error -> updateSuccess {
                     copy(
                         isLoadingSlots = false,
                         availableSlots = emptyList(),
+                        hasAgenda = false,
                         slotsErrorMessage = result.error.userMessage(),
                     )
                 }
@@ -117,25 +156,58 @@ class CreateOrderViewModel @Inject constructor(
             val domicilios = (domiciliosResult as? AppResult.Success)?.data.orEmpty()
             val contactos = (contactosResult as? AppResult.Success)?.data.orEmpty()
             val selectedSubRubroId = subRubroOptions.singleOrNull()?.id
+            val workDayKeys = profile.availability?.workDays
+                ?.map { it.dayStart.uppercase() }
+                ?.toSet()
+                .orEmpty()
 
             _uiState.update {
                 CreateOrderUiState.Success(
                     workerName = profile.displayName,
+                    workerAvatarUrl = profile.avatarUrl,
+                    workerVerified = profile.isVerified,
+                    workerRating = profile.reputation?.rating,
+                    workerReviewCount = profile.reputation?.reviewCount,
+                    specialtyLabel = subRubroOptions.singleOrNull()?.name.orEmpty(),
                     subRubroOptions = subRubroOptions,
                     domicilios = domicilios,
                     contactos = contactos,
+                    workDayKeys = workDayKeys,
                     selectedSubRubroId = selectedSubRubroId,
-                    selectedDomicilioId = domicilios.singleOrNull()?.id,
-                    selectedContactoId = contactos.singleOrNull()?.id,
+                    selectedDomicilioId = domicilios.firstOrNull { it.favorito }?.id
+                        ?: domicilios.singleOrNull()?.id,
+                    selectedContactoId = contactos.firstOrNull { it.favorito }?.id
+                        ?: contactos.singleOrNull()?.id,
                 )
             }
             selectedSubRubroId?.let { loadAvailableSlots(it) }
         }
     }
 
+    private fun continueToSummary() {
+        val state = uiState.value
+        if (state !is CreateOrderUiState.Success) return
+        _uiState.update { state.copy(hasAttemptedContinue = true) }
+        if (!CreateOrderSchedule.canContinue(
+                selectedSubRubroId = state.selectedSubRubroId,
+                selectedDomicilioId = state.selectedDomicilioId,
+                selectedContactoId = state.selectedContactoId,
+                selectedDate = state.selectedDate,
+                selectedHour = state.selectedHour,
+            )
+        ) {
+            return
+        }
+        updateSuccess { copy(step = CreateOrderStep.SUMMARY) }
+    }
+
     private fun submit() {
         val state = uiState.value
         if (state !is CreateOrderUiState.Success) return
+        if (state.step != CreateOrderStep.SUMMARY) {
+            continueToSummary()
+            return
+        }
 
         _uiState.update { state.copy(hasAttemptedSubmit = true) }
 
@@ -144,6 +216,7 @@ class CreateOrderViewModel @Inject constructor(
         val contactoId = state.selectedContactoId
         val slotId = state.selectedSlotId
         val dateTime = state.proposedDateTime
+            ?: CreateOrderSchedule.visitDateTime(state.selectedDate, state.selectedHour)
         val hasSlotOrDate = slotId != null || dateTime != null
         if (subRubroId == null || domicilioId == null || contactoId == null || !hasSlotOrDate) {
             return
@@ -182,7 +255,7 @@ class CreateOrderViewModel @Inject constructor(
             }
             when (result) {
                 is AppResult.Success -> {
-                    _effects.send(CreateOrderEffect.NavigateToOrderDetail(result.data))
+                    _effects.send(CreateOrderEffect.RequestSent)
                 }
                 is AppResult.Error -> {
                     _uiState.update {

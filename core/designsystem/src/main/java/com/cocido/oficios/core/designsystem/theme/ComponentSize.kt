@@ -55,6 +55,14 @@ object OficiosComponentSize {
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f
     val agendaCell = 48.dp
+    /** Figma calendario: celda de día 32×32. */
+    val calendarDayCell = 32.dp
+    /** Figma chip de hora h32. */
+    val hourChipHeight = 32.dp
+    /** Figma resumen Solicitud: mapa 376×248 r16. */
+    val mapCardHeight = 248.dp
+    /** Icon-box 40 (p8 + icono 24). */
+    val iconBox = 40.dp
     val listRowMinHeight = 56.dp
     val skeletonBlockMd = 160.dp
     val skeletonBlockLg = 240.dp
