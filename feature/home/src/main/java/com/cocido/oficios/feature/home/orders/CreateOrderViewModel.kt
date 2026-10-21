@@ -89,6 +89,24 @@ class CreateOrderViewModel @Inject constructor(
             CreateOrderEvent.AddLocation -> viewModelScope.launch {
                 _effects.send(CreateOrderEffect.NavigateToAddLocation)
             }
+            is CreateOrderEvent.LocationPicked -> refreshDomicilios(event.id)
+        }
+    }
+
+    private fun refreshDomicilios(preferredId: Long) {
+        viewModelScope.launch {
+            val result = clientProfileRepository.getMyDomicilios()
+            val list = (result as? AppResult.Success)?.data.orEmpty()
+            updateSuccess {
+                copy(
+                    domicilios = list,
+                    selectedDomicilioId = list.firstOrNull { it.id == preferredId }?.id
+                        ?: selectedDomicilioId?.takeIf { id -> list.any { it.id == id } }
+                        ?: list.firstOrNull { it.favorito }?.id
+                        ?: list.singleOrNull()?.id,
+                    submitIdempotencyKey = null,
+                )
+            }
         }
     }
 

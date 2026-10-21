@@ -21,6 +21,8 @@ import com.cocido.oficios.feature.home.notifications.NotificationsScreen
 import com.cocido.oficios.feature.home.notifications.NotificationsUiState
 import com.cocido.oficios.feature.home.orders.CreateOrderScreen
 import com.cocido.oficios.feature.home.orders.CreateOrderUiState
+import com.cocido.oficios.feature.home.orders.MisUbicacionesScreen
+import com.cocido.oficios.feature.home.orders.MisUbicacionesUiState
 import com.cocido.oficios.feature.home.orders.OrderDetailScreen
 import com.cocido.oficios.feature.home.orders.OrderDetailUiState
 import com.cocido.oficios.feature.home.orders.OrdersListScreen
@@ -168,6 +170,21 @@ class ErrorCopyComposeTest {
             }
         }
         assertErrorCopy("No pudimos cargar el pedido", homeTitleMustBeAbsent = true)
+    }
+
+    @Test
+    fun locationsErrorCopy() {
+        composeRule.setContent {
+            OficiosTheme {
+                MisUbicacionesScreen(
+                    uiState = MisUbicacionesUiState.Error("Sin conexión"),
+                    onEvent = {},
+                    onNavigateBack = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        assertErrorCopy("No pudimos cargar sus ubicaciones", homeTitleMustBeAbsent = true)
     }
 
     @Test

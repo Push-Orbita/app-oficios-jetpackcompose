@@ -62,6 +62,7 @@ sealed interface CreateOrderEvent {
     data object EditRequest : CreateOrderEvent
     data object Submit : CreateOrderEvent
     data object AddLocation : CreateOrderEvent
+    data class LocationPicked(val id: Long) : CreateOrderEvent
 }
 
 sealed interface CreateOrderEffect {

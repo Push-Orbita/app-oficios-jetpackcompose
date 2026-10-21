@@ -15,16 +15,24 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 fun CreateOrderRoute(
     onNavigateBack: () -> Unit,
     onNavigateHome: () -> Unit,
-    onNavigateToAddLocation: () -> Unit,
+    onNavigateToAddLocation: (Long?) -> Unit,
     onShowMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
     selectedTab: ClientHomeTab = ClientHomeTab.INICIO,
     onTabSelected: (ClientHomeTab) -> Unit = {},
+    pickedLocationId: Long? = null,
+    onPickedLocationConsumed: () -> Unit = {},
     viewModel: CreateOrderViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val toastController = LocalOficiosToastController.current
     val sentToast = stringResource(R.string.create_order_sent_toast)
+
+    LaunchedEffect(pickedLocationId) {
+        val id = pickedLocationId ?: return@LaunchedEffect
+        viewModel.onEvent(CreateOrderEvent.LocationPicked(id))
+        onPickedLocationConsumed()
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -34,7 +42,10 @@ fun CreateOrderRoute(
                     onNavigateHome()
                 }
                 is CreateOrderEffect.ShowMessage -> onShowMessage(effect.message)
-                CreateOrderEffect.NavigateToAddLocation -> onNavigateToAddLocation()
+                CreateOrderEffect.NavigateToAddLocation -> {
+                    val selected = (viewModel.uiState.value as? CreateOrderUiState.Success)?.selectedDomicilioId
+                    onNavigateToAddLocation(selected)
+                }
             }
         }
     }

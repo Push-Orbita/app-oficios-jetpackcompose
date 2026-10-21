@@ -46,7 +46,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosScreenTitle
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
 import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
@@ -192,7 +191,7 @@ private fun CreateOrderForm(
         }
 
         if (!state.hasAgenda) {
-            if (state.domicilios.isEmpty() || state.contactos.isEmpty()) {
+            if (state.contactos.isEmpty()) {
                 OficiosInlineAlert(message = stringResource(R.string.create_order_profile_required))
             } else {
                 Text(
@@ -200,11 +199,26 @@ private fun CreateOrderForm(
                     style = MaterialTheme.typography.titleMedium,
                     color = OficiosColorWhite,
                 )
-                LocationRadioList(
-                    domicilios = state.domicilios,
-                    selectedId = state.selectedDomicilioId,
-                    onSelected = { onEvent(CreateOrderEvent.DomicilioSelected(it)) },
-                    onAdd = { onEvent(CreateOrderEvent.AddLocation) },
+                val selected = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }
+                OficiosTextField(
+                    value = selected?.displayLabel().orEmpty(),
+                    onValueChange = {},
+                    label = "",
+                    floatingLabel = false,
+                    readOnly = true,
+                    placeholder = stringResource(R.string.create_order_add_location),
+                    trailingContent = {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
+                            contentDescription = stringResource(R.string.create_order_add_location),
+                            tint = OficiosColorWhite,
+                            modifier = Modifier
+                                .size(OficiosComponentSize.iconMd)
+                                .clickable { onEvent(CreateOrderEvent.AddLocation) },
+                        )
+                    },
+                    modifier = Modifier.clickable { onEvent(CreateOrderEvent.AddLocation) },
+                    isError = state.hasAttemptedContinue && state.selectedDomicilioId == null,
                 )
             }
         }
@@ -380,75 +394,6 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
             }
             Icon(
                 imageVector = ImageVector.vectorResource(OficiosIcons.Heart),
-                contentDescription = null,
-                tint = OficiosColorWhite,
-                modifier = Modifier.size(OficiosComponentSize.iconMd),
-            )
-        }
-    }
-}
-
-@Composable
-private fun LocationRadioList(
-    domicilios: List<ClientDomicilio>,
-    selectedId: Long?,
-    onSelected: (Long) -> Unit,
-    onAdd: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, OficiosColorOutlineFill, RoundedCornerShape(OficiosRadius.lg))
-            .padding(OficiosSpacing.s10),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
-    ) {
-        domicilios.forEach { domicilio ->
-            val selected = domicilio.id == selectedId
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(OficiosRadius.sm))
-                    .background(if (selected) OficiosColorWhite else OficiosColorBackground)
-                    .clickable { onSelected(domicilio.id) }
-                    .padding(OficiosSpacing.xs),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = domicilio.displayLabel(),
-                    style = if (selected) {
-                        MaterialTheme.typography.titleMedium
-                    } else {
-                        MaterialTheme.typography.bodyLarge
-                    },
-                    color = if (selected) OficiosColorBackground else OficiosColorWhite,
-                )
-                if (domicilio.favorito) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(OficiosIcons.Star),
-                        contentDescription = stringResource(R.string.create_order_favorite_address),
-                        tint = if (selected) OficiosColorBackground else OficiosColorWhite,
-                        modifier = Modifier.size(OficiosComponentSize.iconMd),
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(OficiosRadius.sm))
-                .clickable(onClick = onAdd)
-                .padding(OficiosSpacing.xs),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(R.string.create_order_add_location),
-                style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
-            )
-            Icon(
-                imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
                 contentDescription = null,
                 tint = OficiosColorWhite,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
