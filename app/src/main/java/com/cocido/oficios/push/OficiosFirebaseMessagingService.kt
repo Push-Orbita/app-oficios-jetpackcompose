@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.cocido.oficios.BuildConfig
 import com.cocido.oficios.MainActivity
 import com.cocido.oficios.R
 import com.cocido.oficios.core.common.navigation.PushDeepLinkMapper
@@ -35,10 +36,12 @@ class OficiosFirebaseMessagingService : FirebaseMessagingService() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
+        if (!BuildConfig.FIREBASE_ENABLED) return
         serviceScope.launch { deviceTokenRegistrar.syncCurrentToken() }
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
+        if (!BuildConfig.FIREBASE_ENABLED) return
         val data = message.data
         val type = data["type"] ?: "GENERIC"
         val deepLink = data["deep_link"] ?: data["deepLink"]
