@@ -23,7 +23,10 @@ object OficiosComponentSize {
     val iconMd = 24.dp
     val iconLg = 32.dp
     val checkboxSize = 18.dp
-    val bottomBarHeight = 64.dp
+    /** Círculo 1:1 del ítem seleccionado (BBVA). */
+    val bottomNavIndicator = 48.dp
+    /** 48 círculo + label Satoshi 16 + gap. */
+    val bottomBarHeight = 76.dp
     val topBarHeight = 56.dp
     val avatarSm = 48.dp
     val avatarMd = 64.dp

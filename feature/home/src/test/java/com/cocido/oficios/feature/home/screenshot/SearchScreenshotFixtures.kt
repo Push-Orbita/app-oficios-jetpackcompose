@@ -17,6 +17,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBottomNavigationBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosNavItem
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientHomeContent
@@ -133,6 +136,31 @@ private val screenshotWorkers = listOf(
         primaryRubroId = 12,
     ),
 )
+
+@Composable
+internal fun SearchScreenshotBottomNav(
+    darkTheme: Boolean = false,
+    selectedRoute: String = "home",
+) {
+    OficiosTheme(darkTheme = darkTheme) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            OficiosBottomNavigationBar(
+                currentRoute = selectedRoute,
+                items = listOf(
+                    OficiosNavItem("home", "Inicio", OficiosIcons.House),
+                    OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
+                    OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
+                    OficiosNavItem("profile", "Perfil", OficiosIcons.User),
+                ),
+                onItemSelected = {},
+            )
+        }
+    }
+}
 
 @Composable
 internal fun SearchScreenshotHome(

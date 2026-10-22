@@ -34,6 +34,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.designsystem.theme.selectedContent
 
 // ---------------------------------------------------------------------------
 // OficiosChip — chip básico de etiqueta/selección
@@ -132,7 +133,7 @@ fun OficiosSegmentChip(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (selected) {
-                    MaterialTheme.colorScheme.onPrimary
+                    OficiosTheme.colors.selectedContent(onFilledPrimary = true)
                 } else {
                     MaterialTheme.colorScheme.onSurface
                 },
@@ -156,7 +157,11 @@ fun OficiosFilterChip(
     iconUrl: String? = null,
 ) {
     val containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
-    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val contentColor = if (selected) {
+        OficiosTheme.colors.selectedContent(onFilledPrimary = true)
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val haptics = rememberOficiosHaptics()
     val shape = RoundedCornerShape(OficiosRadius.sm)

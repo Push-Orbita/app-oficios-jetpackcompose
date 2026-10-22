@@ -547,12 +547,12 @@ private fun DniImageUploadCard(
                     },
                 ),
                 containerColor = if (isLoaded) {
-                    OficiosTheme.colors.success
+                    OficiosTheme.colors.successContainer
                 } else {
                     MaterialTheme.colorScheme.surfaceVariant
                 },
                 contentColor = if (isLoaded) {
-                    MaterialTheme.colorScheme.onPrimary
+                    OficiosTheme.colors.success
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },

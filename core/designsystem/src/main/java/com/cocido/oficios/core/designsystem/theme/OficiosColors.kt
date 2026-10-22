@@ -8,9 +8,10 @@ import androidx.compose.ui.graphics.Color
  * Tokens semánticos de Oficios (light / dark).
  *
  * El azul de marca Figma (`#00358B`) en claro se reserva para botones primarios,
- * títulos destacados, links, círculos de ícono, chip/tab seleccionado e
- * indicador del bottom nav. El fondo claro es hueso **`#F4F5F7`** (rango
- * BBVA `#F5F5F2`–`#F4F5F7`). El tema oscuro replica el Mode 1 actual de Figma.
+ * títulos destacados, links, círculos de ícono, chip/tab seleccionado y el
+ * bottom nav (íconos/labels siempre primary; seleccionado = círculo 48dp).
+ * El fondo claro es hueso **`#F4F5F7`** (rango BBVA `#F5F5F2`–`#F4F5F7`).
+ * El tema oscuro replica el Mode 1 actual de Figma.
  */
 @Immutable
 data class OficiosColors(
@@ -45,6 +46,8 @@ data class OficiosColors(
     val placeholder: Color,
     val selectedContainer: Color,
     val onSelected: Color,
+    /** Texto/ícono seleccionado sobre fondo claro/superficie (no sobre fill primary). */
+    val selectedOnSurface: Color,
     val unavailable: Color,
     val inverseSurface: Color,
     val inverseOnSurface: Color,
@@ -95,6 +98,7 @@ val LightOficiosColors = OficiosColors(
     placeholder = Color(0xFF8A8F99),
     selectedContainer = OficiosColorBackground,
     onSelected = OficiosColorWhite,
+    selectedOnSurface = OficiosColorBackground,
     unavailable = OficiosLightSurfaceVariant,
     inverseSurface = OficiosColorWhite,
     inverseOnSurface = OficiosColorBackground,
@@ -135,6 +139,7 @@ val DarkOficiosColors = OficiosColors(
     placeholder = OficiosColorPlaceholder,
     selectedContainer = OficiosColorWhite,
     onSelected = OficiosColorBackground,
+    selectedOnSurface = OficiosColorWhite,
     unavailable = OficiosColorUnavailable,
     inverseSurface = OficiosColorWhite,
     inverseOnSurface = OficiosColorBackground,
@@ -145,3 +150,7 @@ val DarkOficiosColors = OficiosColors(
 
 val LocalOficiosColors = staticCompositionLocalOf { LightOficiosColors }
 val LocalOficiosDarkTheme = staticCompositionLocalOf { false }
+
+/** Contenido seleccionado: `onPrimary` si va sobre fill azul; si no, `selectedOnSurface`. */
+fun OficiosColors.selectedContent(onFilledPrimary: Boolean): Color =
+    if (onFilledPrimary) onPrimary else selectedOnSurface

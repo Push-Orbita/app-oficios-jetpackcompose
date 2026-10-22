@@ -355,12 +355,12 @@ private fun OrdersSortMenu(
                 Text(
                     text = selectedLabel,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.ChevronDown),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp),
                 )
             }
@@ -401,7 +401,11 @@ private fun OrdersSortMenuItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
             )
         },
         onClick = onClick,
@@ -410,7 +414,7 @@ private fun OrdersSortMenuItem(
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.Check),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp),
                 )
             }

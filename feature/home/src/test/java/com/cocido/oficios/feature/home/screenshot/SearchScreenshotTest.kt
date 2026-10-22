@@ -23,6 +23,20 @@ class SearchScreenshotTest {
     val composeRule = createComposeRule()
 
     @Test
+    fun bottomNav() {
+        assumeGoldenOrRecording(javaClass, "bottomNav")
+        composeRule.setContent { SearchScreenshotBottomNav() }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun bottomNavDark() {
+        assumeGoldenOrRecording(javaClass, "bottomNavDark")
+        composeRule.setContent { SearchScreenshotBottomNav(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
     fun home() {
         assumeGoldenOrRecording(javaClass, "home")
         composeRule.setContent { SearchScreenshotHome() }

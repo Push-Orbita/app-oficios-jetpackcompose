@@ -1,7 +1,7 @@
 # Checklist temas — claro (default) / oscuro (Figma)
 
 **Rama / PR:** `cursor/qa-fixes-figma-ee07` · PR #22  
-**Tema claro:** fondo hueso `#F4F5F7`, cards blancas, texto navy/casi negro, azul de marca `#00358B` solo en CTA, títulos destacados, links, círculos de ícono, chip/tab seleccionado e indicador del bottom nav.  
+**Tema claro:** fondo hueso `#F4F5F7`, cards blancas, texto navy/casi negro, azul de marca `#00358B` en CTA, títulos destacados, links, círculos de ícono, chip/tab seleccionado y bottom nav (todos los ítems primary; seleccionado = círculo 48dp con ícono blanco).  
 **Tema oscuro:** Mode 1 actual de Figma (`#00358B` full).  
 **Selector:** Ajustes → Apariencia → Claro (default) / Oscuro / Según el sistema (DataStore, sin restart, sin flash).  
 **Roborazzi:** opt-in `-Proborazzi.test.record=true`; sin golden el test se omite. Gate JVM: `assembleDebug`, `testDebugUnitTest`, `lintDebug`, `:domain:test`.
@@ -13,6 +13,7 @@
 | Login error | OK | OK | Tokens + fixture `darkTheme` (banner error) |
 | Registro / rol | OK | OK | Tokens + `register` / `registerDark` + `role` / `roleDark` |
 | Onboarding / forgot | OK | OK | Tokens semánticos (`AuthScreenLayout` / `OficiosScaffold`) |
+| Bottom nav (BBVA) | OK | OK | Círculo 48dp + `bottomNav` / `bottomNavDark`; claro all-primary, oscuro navy actual |
 | Home cliente | OK | OK | Tokens + `home` / `homeDark` |
 | Home trabajador (Beneficios, Agenda, Completa tu perfil) | OK | OK | Tokens + `providerHome` / `providerHomeDark` |
 | Buscador / resultados | OK | OK | Tokens + `results` / `resultsDark` |
