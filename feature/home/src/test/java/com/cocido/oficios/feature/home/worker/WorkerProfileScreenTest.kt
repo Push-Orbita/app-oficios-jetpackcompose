@@ -109,4 +109,22 @@ class WorkerProfileScreenTest {
         composeRule.onNodeWithContentDescription("Sacar de favoritos").assertDoesNotExist()
         composeRule.onNodeWithText("Denunciar perfil").assertExists()
     }
+
+    @Test
+    @Config(qualifiers = "w360dp-h800dp-mdpi")
+    fun fichaShowsLongDisplayName() {
+        val longName = "Matías Federico Britez Fernández"
+        composeRule.setContent {
+            OficiosTheme {
+                WorkerProfileScreen(
+                    uiState = previewState(withGallery = false, withReviews = false).let { state ->
+                        state.copy(profile = state.profile.copy(displayName = longName))
+                    },
+                    onEvent = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeRule.onNodeWithText(longName).assertIsDisplayed()
+    }
 }

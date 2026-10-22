@@ -73,14 +73,14 @@ fun WorkerProfileHeader(
                         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalAlignment = Alignment.Top,
                             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xss),
                         ) {
                             Text(
                                 text = profile.displayName,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onBackground,
-                                maxLines = 1,
+                                maxLines = 3,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f, fill = false),
                             )

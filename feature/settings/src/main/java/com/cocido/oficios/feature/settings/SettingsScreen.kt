@@ -257,21 +257,14 @@ private fun SettingsProfileCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                ) {
-                    Text(
-                        text = displayName,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    OficiosRoleChip(label = roleLabel)
-                }
+                Text(
+                    text = displayName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                OficiosRoleChip(label = roleLabel)
                 Text(
                     text = user.email,
                     style = MaterialTheme.typography.bodyMedium,

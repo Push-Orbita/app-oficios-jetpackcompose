@@ -76,4 +76,32 @@ class SettingsProfileCardTest {
         composeRule.onNodeWithText("Correo verificado").assertIsDisplayed()
         composeRule.onNodeWithText("Trabajador").assertIsDisplayed()
     }
+
+    @Test
+    @Config(qualifiers = "w360dp-h800dp-mdpi")
+    fun longNameIsFullyVisibleNextToRoleChip() {
+        composeRule.setContent {
+            OficiosTheme {
+                SettingsScreen(
+                    uiState = SettingsUiState(
+                        isLoading = false,
+                        profile = AccountProfile(
+                            user = User(
+                                id = 3,
+                                email = "matias@oficios.test",
+                                firstName = "Matías Federico",
+                                lastName = "Britez Fernández",
+                                role = UserRole.PROVIDER,
+                                emailVerified = true,
+                            ),
+                        ),
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Matías Federico Britez Fernández").assertIsDisplayed()
+        composeRule.onNodeWithText("Trabajador").assertIsDisplayed()
+        composeRule.onNodeWithText("Correo verificado").assertIsDisplayed()
+    }
 }
