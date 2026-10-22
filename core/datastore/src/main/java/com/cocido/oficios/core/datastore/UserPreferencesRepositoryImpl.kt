@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.cocido.oficios.core.model.AppConstants
 import com.cocido.oficios.domain.model.ThemeMode
+import com.cocido.oficios.domain.model.parseThemeMode
 import com.cocido.oficios.domain.repository.UserPreferencesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -16,6 +17,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 
 private val Context.userPreferencesDataStore: DataStore<Preferences> by preferencesDataStore(
     name = AppConstants.DATASTORE_NAME,
@@ -26,16 +28,12 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : UserPreferencesRepository {
 
-    override val themeMode: Flow<ThemeMode> = context.userPreferencesDataStore.data.map { preferences ->
-        when (preferences[THEME_MODE_KEY]) {
-            ThemeMode.LIGHT.name -> ThemeMode.LIGHT
-            ThemeMode.DARK.name -> ThemeMode.DARK
-            ThemeMode.SYSTEM.name -> ThemeMode.SYSTEM
-            else -> ThemeMode.LIGHT
-        }
-    }
+    override val themeMode: Flow<ThemeMode> = context.userPreferencesDataStore.data
+        .map { preferences -> parseThemeMode(preferences[THEME_MODE_KEY]) }
+        .onEach { mode -> ThemeModePreferences.write(context, mode) }
 
     override suspend fun setThemeMode(themeMode: ThemeMode) {
+        ThemeModePreferences.write(context, themeMode)
         context.userPreferencesDataStore.edit { preferences ->
             preferences[THEME_MODE_KEY] = themeMode.name
         }

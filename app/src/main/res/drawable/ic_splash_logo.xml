@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono del splash de sistema (claro): isotipo Figma recuadrado para la máscara circular. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/oficios_splash_background" />
+    <item
+        android:width="120dp"
+        android:height="192dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_oficios_logotipo_outline" />
+</layer-list>
