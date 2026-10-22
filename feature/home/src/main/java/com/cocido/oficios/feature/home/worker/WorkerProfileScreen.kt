@@ -318,7 +318,7 @@ internal fun previewState(withGallery: Boolean, withReviews: Boolean): WorkerPro
                     punctualityScore = 5,
                     comment = "Excelente profesional",
                     clientLabel = "María",
-                    reviewedAt = "25/02/2025, 08:27:46",
+                    reviewedAt = "25/02/2025, 08:27",
                 ),
             )
         } else {

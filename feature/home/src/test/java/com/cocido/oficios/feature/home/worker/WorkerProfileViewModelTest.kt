@@ -118,6 +118,46 @@ class WorkerProfileViewModelTest {
         assertTrue(state.hasMoreReviews)
         assertFalse(state.isSelf)
         assertTrue(state.canFavorite)
+        assertEquals(4.5f, state.profile.reputation?.rating!!, 0.01f)
+        assertEquals(1, state.profile.reputation?.reviewCount)
+    }
+
+    @Test
+    fun `computes 4,2 from five reviews when reputation is missing`() = runTest(testDispatcher) {
+        val workerId = 42L
+        val profile = WorkerProfile(
+            id = workerId,
+            displayName = "Matias",
+            avatarUrl = null,
+            isVerified = true,
+        )
+        val reviews = listOf(3, 5, 5, 3, 5).mapIndexed { index, quality ->
+            WorkerReview(
+                id = index.toLong() + 1,
+                qualityScore = quality,
+                punctualityScore = 5,
+                comment = null,
+                clientLabel = null,
+            )
+        }
+        val viewModel = viewModel(
+            workerId,
+            FakeWorkerProfileRepository(
+                profile = AppResult.Success(profile),
+                reviewsPages = mapOf(
+                    1 to PagedWorkerReviews(
+                        items = reviews,
+                        pageNumber = 1,
+                        totalPages = 1,
+                        hasMore = false,
+                    ),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+        val state = viewModel.uiState.value as WorkerProfileUiState.Success
+        assertEquals(4.2f, state.profile.reputation?.rating!!, 0.01f)
+        assertEquals(5, state.profile.reputation?.reviewCount)
     }
 
     @Test

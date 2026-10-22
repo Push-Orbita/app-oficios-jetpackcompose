@@ -8,6 +8,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.domain.model.orComputedFrom
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.FavoritesRepository
 import com.cocido.oficios.domain.usecase.OrderUseCases
@@ -185,7 +186,7 @@ class WorkerProfileViewModel @Inject constructor(
                 }
                 _uiState.update {
                     WorkerProfileUiState.Success(
-                        profile = profile,
+                        profile = profile.copy(reputation = profile.reputation.orComputedFrom(paged.items)),
                         reviews = paged.items,
                         isLoadingReviews = false,
                         hasMoreReviews = paged.hasMore,

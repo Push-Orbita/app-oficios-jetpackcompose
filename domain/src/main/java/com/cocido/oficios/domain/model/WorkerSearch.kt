@@ -41,6 +41,7 @@ data class WorkerSummary(
     val avatarUrl: String?,
     val isVerified: Boolean,
     val primaryRubroId: Long?,
+    val reviewCount: Int? = null,
 )
 
 data class PagedWorkers(

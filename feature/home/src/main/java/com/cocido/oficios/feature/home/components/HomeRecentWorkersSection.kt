@@ -28,6 +28,7 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadg
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkerSummary
+import com.cocido.oficios.domain.model.formatStarRatingLabel
 import com.cocido.oficios.feature.home.R
 
 @Composable
@@ -123,6 +124,16 @@ private fun HomeRecentWorkerCard(
             if (worker.isVerified) {
                 OficiosVerifiedBadge(contentDescription = null)
             }
+        }
+        val rating = worker.rating
+        if (rating != null) {
+            Text(
+                text = formatStarRatingLabel(rating, worker.reviewCount),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+            )
         }
         if (worker.specialtyLabel.isNotBlank()) {
             Text(

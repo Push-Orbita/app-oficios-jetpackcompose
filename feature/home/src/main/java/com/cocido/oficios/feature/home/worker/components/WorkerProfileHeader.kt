@@ -28,6 +28,7 @@ import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.domain.model.formatStarRatingLabel
 import com.cocido.oficios.core.designsystem.R as DsR
 import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.feature.home.R
@@ -89,7 +90,10 @@ fun WorkerProfileHeader(
                                 )
                             }
                         }
-                        WorkerFiveStarRow(rating = profile.reputation?.rating)
+                        WorkerFiveStarRow(
+                            rating = profile.reputation?.rating,
+                            reviewCount = profile.reputation?.reviewCount,
+                        )
                     }
                 }
                 if (canFavorite && onFavoriteClick != null) {
@@ -177,7 +181,7 @@ private fun LabeledValue(label: String, value: String) {
 }
 
 @Composable
-fun WorkerFiveStarRow(rating: Float?) {
+fun WorkerFiveStarRow(rating: Float?, reviewCount: Int? = null) {
     val ratingCd = if (rating != null) {
         stringResource(DsR.string.ds_worker_rating, rating)
     } else {
@@ -197,7 +201,7 @@ fun WorkerFiveStarRow(rating: Float?) {
         modifier = Modifier.semantics { contentDescription = ratingCd },
     ) {
         Text(
-            text = if (rating % 1f == 0f) rating.toInt().toString() else String.format("%.1f", rating),
+            text = formatStarRatingLabel(rating, reviewCount),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )

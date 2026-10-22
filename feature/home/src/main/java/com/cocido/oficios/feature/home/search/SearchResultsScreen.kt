@@ -317,6 +317,7 @@ private fun WorkersList(
                 name = worker.displayName,
                 specialty = worker.specialtyLabel,
                 rating = worker.rating,
+                reviewCount = worker.reviewCount,
                 avatarUrl = worker.avatarUrl,
                 isVerified = worker.isVerified,
                 contactLabel = stringResource(R.string.home_search_worker_contact),

@@ -403,7 +403,10 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
                         OficiosVerifiedBadge(contentDescription = null)
                     }
                 }
-                WorkerFiveStarRow(rating = state.workerRating)
+                WorkerFiveStarRow(
+                    rating = state.workerRating,
+                    reviewCount = state.workerReviewCount,
+                )
             }
             Icon(
                 imageVector = ImageVector.vectorResource(OficiosIcons.Heart),

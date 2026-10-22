@@ -105,6 +105,7 @@ fun HomeFeaturedWorkersSection(
                         name = worker.displayName,
                         specialty = worker.specialtyLabel,
                         rating = worker.rating,
+                        reviewCount = worker.reviewCount,
                         avatarUrl = worker.avatarUrl,
                         isVerified = worker.isVerified,
                         contactLabel = stringResource(R.string.home_worker_contact),
