@@ -163,7 +163,7 @@ private fun ProfessionalProfileForm(
             OficiosButton(
                 text = stringResource(R.string.professional_profile_delete_account),
                 onClick = { onEvent(ProfessionalProfileEvent.DeleteAccount) },
-                variant = OficiosButtonVariant.Primary,
+                variant = OficiosButtonVariant.Danger,
                 size = OficiosButtonSize.Small,
                 leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
             )

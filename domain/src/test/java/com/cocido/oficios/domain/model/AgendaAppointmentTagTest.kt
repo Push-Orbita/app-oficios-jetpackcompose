@@ -69,6 +69,12 @@ class AgendaAppointmentTagTest {
     }
 
     @Test
+    fun `finished today never shows AHORA or HOY`() {
+        val item = order(10, "2026-10-21T03:00:00", BookingStatus.FINISHED, end = "2026-10-21T04:00:00")
+        assertEquals(AgendaAppointmentTag.NONE, item.agendaTag(nowInArgentina(clock)))
+    }
+
+    @Test
     fun `without end uses session duration of 60 minutes`() {
         val during = order(8, "2026-10-21T03:00:00", BookingStatus.CONFIRMED)
         val after = order(9, "2026-10-21T02:00:00", BookingStatus.CONFIRMED)

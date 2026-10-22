@@ -36,6 +36,12 @@ fun ServiceOrderListItem.agendaSlotEndExclusive(clockZone: ZoneId = DisplayDateT
  * Sin etiqueta: pasado o futuro.
  */
 fun ServiceOrderListItem.agendaTag(now: ZonedDateTime): AgendaAppointmentTag {
+    if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) {
+        return AgendaAppointmentTag.NONE
+    }
+    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED) {
+        return AgendaAppointmentTag.NONE
+    }
     val zone = now.zone
     val start = agendaSlotStart(zone) ?: return AgendaAppointmentTag.NONE
     if (start.toLocalDate() != now.toLocalDate()) return AgendaAppointmentTag.NONE

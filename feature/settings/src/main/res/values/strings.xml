@@ -116,7 +116,7 @@
     <string name="professional_profile_add">Añadir</string>
     <string name="professional_profile_validated">Validado</string>
     <string name="professional_profile_pending">Pendiente</string>
-    <string name="professional_profile_delete_account">Darme De Baja</string>
+    <string name="professional_profile_delete_account">Darme de baja</string>
     <string name="professional_profile_cash">Efectivo</string>
     <string name="professional_profile_transfer">Transferencia bancaria</string>
     <string name="professional_profile_mercadopago">Mercado Pago</string>

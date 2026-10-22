@@ -196,7 +196,7 @@ fun OficiosLocationPicker(
         }
         Text(
             text = if (selected == null) {
-                "Todavía no seleccionaste una ubicación."
+                "Todavía no seleccionó una ubicación."
             } else {
                 "Ubicación confirmada · %.5f, %.5f".format(selected.latitude, selected.longitude)
             },
