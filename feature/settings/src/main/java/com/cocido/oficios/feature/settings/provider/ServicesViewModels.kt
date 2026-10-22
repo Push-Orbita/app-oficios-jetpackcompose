@@ -289,9 +289,8 @@ class AddServiceViewModel @Inject constructor(
             update { it.copy(isSaving = true, errorMessage = null) }
             val local = if (state.servesAtLocal) ProviderLocalDomicilioRequest(
                 barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccione el barrio de su local.") },
-                calle = listOf(state.localStreet.trim(), state.localNumber.trim())
-                    .filter { it.isNotBlank() }
-                    .joinToString(" "),
+                calle = state.localStreet.trim().ifBlank { null },
+                numero = state.localNumber.trim().ifBlank { null },
                 nombre = state.localName.trim().ifBlank { null },
                 latitud = GeoCoordinates.roundForApi(state.localLocation.latitude),
                 longitud = GeoCoordinates.roundForApi(state.localLocation.longitude),

@@ -21,7 +21,6 @@ fun RegisterTradeDraft.toRubroFullRequest() = ProviderRubroFullRequest(
     domicilioLocal = if (servesAtLocal && barrioId != null) {
         com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest(
             barrioId = barrioId,
-            calle = neighborhoodQuery,
             nombre = "Local",
         )
     } else {

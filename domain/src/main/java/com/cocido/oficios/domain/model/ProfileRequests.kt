@@ -71,7 +71,8 @@ data class ProviderRubroFullRequest(
 
 data class ProviderLocalDomicilioRequest(
     val barrioId: Long,
-    val calle: String,
+    val calle: String? = null,
+    val numero: String? = null,
     val nombre: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,

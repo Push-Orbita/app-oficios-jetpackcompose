@@ -44,7 +44,8 @@ data class CreateHorarioLaboralRequestDto(
 @Serializable
 data class CreateDomicilioLocalRequestDto(
     val barrioId: Long,
-    val calle: String,
+    val calle: String? = null,
+    val numero: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
     val nombre: String? = null,

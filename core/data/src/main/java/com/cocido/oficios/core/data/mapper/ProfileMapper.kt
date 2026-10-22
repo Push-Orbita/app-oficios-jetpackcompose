@@ -90,7 +90,8 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
     domicilioLocal = domicilioLocal?.let {
         CreateDomicilioLocalRequestDto(
             barrioId = it.barrioId,
-            calle = it.calle,
+            calle = it.calle?.trim()?.ifBlank { null },
+            numero = it.numero?.trim()?.ifBlank { null },
             nombre = it.nombre,
             latitud = it.latitud,
             longitud = it.longitud,

@@ -721,9 +721,6 @@ class ProviderLocalViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, error = "Complete primero rubro y subrubros") }
                 return@launch
             }
-            val streetLine = listOf(state.calle.trim(), state.numero.trim())
-                .filter { it.isNotBlank() }
-                .joinToString(" ")
             val updatedDraft = draft.copy(
                 barrioId = barrioId,
                 servesAtLocal = true,
@@ -732,7 +729,8 @@ class ProviderLocalViewModel @Inject constructor(
             val request = updatedDraft.toRubroFullRequest().copy(
                 domicilioLocal = ProviderLocalDomicilioRequest(
                     barrioId = barrioId,
-                    calle = streetLine,
+                    calle = state.calle.trim().ifBlank { null },
+                    numero = state.numero.trim().ifBlank { null },
                     nombre = state.nombre.trim().ifBlank { "Local comercial" },
                     latitud = GeoCoordinates.roundForApi(location.latitude),
                     longitud = GeoCoordinates.roundForApi(location.longitude),

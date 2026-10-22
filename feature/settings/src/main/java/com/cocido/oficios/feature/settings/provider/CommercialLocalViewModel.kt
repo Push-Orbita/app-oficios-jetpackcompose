@@ -263,15 +263,13 @@ class CommercialLocalViewModel @Inject constructor(
         if (!location.canPersist) return
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
-            val streetLine = listOf(state.calle.trim(), state.numero.trim())
-                .filter { it.isNotBlank() }
-                .joinToString(" ")
             val request = service.toRubroFullRequest(
                 paymentMethods = paymentMethods,
                 servesAtLocal = true,
                 domicilioLocal = ProviderLocalDomicilioRequest(
                     barrioId = barrioId,
-                    calle = streetLine,
+                    calle = state.calle.trim().ifBlank { null },
+                    numero = state.numero.trim().ifBlank { null },
                     nombre = "Local comercial",
                     latitud = GeoCoordinates.roundForApi(location.latitude),
                     longitud = GeoCoordinates.roundForApi(location.longitude),
