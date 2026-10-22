@@ -156,12 +156,24 @@ private fun WorkerProfileContent(
         )
         WorkerProfileHeader(
             profile = uiState.profile,
-            onFavoriteClick = { onEvent(WorkerProfileEvent.FavoriteClicked) },
+            onFavoriteClick = if (uiState.isSelf) {
+                null
+            } else {
+                { onEvent(WorkerProfileEvent.FavoriteClicked) }
+            },
             isFavorite = uiState.isFavorite,
-            canFavorite = uiState.canFavorite,
-            showRate = true,
-            onHireClick = { onEvent(WorkerProfileEvent.HireClicked) },
-            onRateClick = { onEvent(WorkerProfileEvent.RateClicked) },
+            canFavorite = uiState.canFavorite && !uiState.isSelf,
+            showRate = !uiState.isSelf,
+            onHireClick = if (uiState.isSelf) {
+                null
+            } else {
+                { onEvent(WorkerProfileEvent.HireClicked) }
+            },
+            onRateClick = if (uiState.isSelf) {
+                null
+            } else {
+                { onEvent(WorkerProfileEvent.RateClicked) }
+            },
         )
         WorkerGallerySection(
             gallery = uiState.profile.gallery,

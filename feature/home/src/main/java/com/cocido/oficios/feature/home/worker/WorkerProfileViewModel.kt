@@ -6,9 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.WorkerProfile
+import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.FavoritesRepository
 import com.cocido.oficios.domain.usecase.OrderUseCases
+import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
 import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
@@ -36,9 +39,12 @@ class WorkerProfileViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val orderUseCases: OrderUseCases,
     private val favoritesRepository: FavoritesRepository,
+    private val authRepository: AuthRepository,
+    private val accountUseCases: AccountUseCases,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
+    private var isSelf: Boolean = false
 
     private val _uiState = MutableStateFlow<WorkerProfileUiState>(WorkerProfileUiState.Loading)
     val uiState: StateFlow<WorkerProfileUiState> = _uiState.asStateFlow()
@@ -75,8 +81,12 @@ class WorkerProfileViewModel @Inject constructor(
             WorkerProfileEvent.Retry -> loadInitial()
             WorkerProfileEvent.Refresh -> refresh()
             WorkerProfileEvent.Back -> emitEffect(WorkerProfileEffect.NavigateBack)
-            WorkerProfileEvent.HireClicked -> emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
+            WorkerProfileEvent.HireClicked -> {
+                if (isSelfProfile()) return
+                emitEffect(WorkerProfileEffect.NavigateToHire(workerId))
+            }
             WorkerProfileEvent.RateClicked -> {
+                if (isSelfProfile()) return
                 val state = uiState.value as? WorkerProfileUiState.Success ?: return
                 val bookingId = state.rateBookingId
                 if (bookingId == null) {
@@ -89,7 +99,10 @@ class WorkerProfileViewModel @Inject constructor(
                 val profile = (uiState.value as? WorkerProfileUiState.Success)?.profile ?: return
                 emitEffect(WorkerProfileEffect.NavigateToReport(workerId, profile.displayName))
             }
-            WorkerProfileEvent.FavoriteClicked -> toggleFavorite()
+            WorkerProfileEvent.FavoriteClicked -> {
+                if (isSelfProfile()) return
+                toggleFavorite()
+            }
             WorkerProfileEvent.LoadNextReviews -> loadNextReviews()
         }
     }
@@ -128,8 +141,10 @@ class WorkerProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { WorkerProfileUiState.Loading }
             coroutineScope {
+                val identityDeferred = async { resolveIsSelf() }
                 val profileDeferred = async { getWorkerProfileUseCase(workerId) }
                 val favoriteDeferred = async { getFavoriteStatusUseCase(workerId) }
+                isSelf = identityDeferred.await()
                 when (val profileResult = profileDeferred.await()) {
                     is AppResult.Success -> {
                         val favoriteFlags = favoriteDeferred.await().toFavoriteFlags()
@@ -159,11 +174,15 @@ class WorkerProfileViewModel @Inject constructor(
                 val paged = reviewsResult.data
                 currentReviewsPage = paged.pageNumber
                 hasMoreReviews = paged.hasMore
-                val rateBookingId = pendingRatingBookingId(
-                    workerId = workerId,
-                    orders = clientOrders(),
-                    ratedBookingIds = paged.items.mapNotNull { review -> review.bookingId }.toSet(),
-                )
+                val rateBookingId = if (isSelf) {
+                    null
+                } else {
+                    pendingRatingBookingId(
+                        workerId = workerId,
+                        orders = clientOrders(),
+                        ratedBookingIds = paged.items.mapNotNull { review -> review.bookingId }.toSet(),
+                    )
+                }
                 _uiState.update {
                     WorkerProfileUiState.Success(
                         profile = profile,
@@ -172,9 +191,10 @@ class WorkerProfileViewModel @Inject constructor(
                         hasMoreReviews = paged.hasMore,
                         reviewsPageNumber = paged.pageNumber,
                         totalReviewsPages = paged.totalPages,
-                        canFavorite = canFavorite,
-                        isFavorite = isFavorite,
+                        canFavorite = canFavorite && !isSelf,
+                        isFavorite = isFavorite && !isSelf,
                         rateBookingId = rateBookingId,
+                        isSelf = isSelf,
                     )
                 }
             }
@@ -185,8 +205,9 @@ class WorkerProfileViewModel @Inject constructor(
                         reviews = emptyList(),
                         isLoadingReviews = false,
                         hasMoreReviews = false,
-                        canFavorite = canFavorite,
-                        isFavorite = isFavorite,
+                        canFavorite = canFavorite && !isSelf,
+                        isFavorite = isFavorite && !isSelf,
+                        isSelf = isSelf,
                     )
                 }
             }
@@ -272,16 +293,38 @@ class WorkerProfileViewModel @Inject constructor(
     }
 
     private fun refreshFavoriteFlag() {
+        if (isSelfProfile()) return
         viewModelScope.launch {
             val flags = getFavoriteStatusUseCase(workerId).toFavoriteFlags()
             _uiState.update { current ->
-                if (current is WorkerProfileUiState.Success) {
+                if (current is WorkerProfileUiState.Success && !current.isSelf) {
                     current.copy(canFavorite = flags.canFavorite, isFavorite = flags.isFavorite)
                 } else {
                     current
                 }
             }
         }
+    }
+
+    private suspend fun resolveIsSelf(): Boolean {
+        val user = (authRepository.getCurrentUser() as? AppResult.Success)?.data
+        val cachedWorkerId = accountUseCases.providerDetails.value?.workerId?.takeIf { it > 0L }
+        val providerWorkerId = cachedWorkerId ?: if (user?.role == UserRole.PROVIDER) {
+            (accountUseCases.getProfile() as? AppResult.Success)?.data?.providerDetails?.workerId
+                ?.takeIf { it > 0L }
+        } else {
+            null
+        }
+        return isOwnPublicWorkerProfile(
+            publicWorkerId = workerId,
+            currentUserId = user?.id,
+            currentProviderWorkerId = providerWorkerId,
+        )
+    }
+
+    private fun isSelfProfile(): Boolean {
+        val state = _uiState.value as? WorkerProfileUiState.Success
+        return isSelf || state?.isSelf == true
     }
 
     private suspend fun clientOrders() =

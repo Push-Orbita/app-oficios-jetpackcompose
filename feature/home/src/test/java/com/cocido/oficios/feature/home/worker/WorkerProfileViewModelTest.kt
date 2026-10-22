@@ -3,13 +3,35 @@ package com.cocido.oficios.feature.home.worker
 import androidx.lifecycle.SavedStateHandle
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.domain.model.AccountDeletionRequest
+import com.cocido.oficios.domain.model.AccountProfile
+import com.cocido.oficios.domain.model.AuthTokens
+import com.cocido.oficios.domain.model.ClientContactoRequest
+import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.FavoriteStatus
 import com.cocido.oficios.domain.model.PagedWorkerReviews
+import com.cocido.oficios.domain.model.ProviderAccountDetails
+import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.RegisterClientRequest
+import com.cocido.oficios.domain.model.RegisterProviderRequest
+import com.cocido.oficios.domain.model.RequestAccountDeletionParams
+import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
+import com.cocido.oficios.domain.model.UpdateClientContactoRequest
+import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
+import com.cocido.oficios.domain.model.User
+import com.cocido.oficios.domain.model.UserRole
+import com.cocido.oficios.domain.model.UserRoleDefinition
+import com.cocido.oficios.domain.model.UserSession
 import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.domain.model.WorkerReview
+import com.cocido.oficios.domain.repository.AccountRepository
+import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.FavoritesRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import com.cocido.oficios.domain.repository.WorkerProfileRepository
 import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
@@ -18,6 +40,7 @@ import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.usecase.OrderUseCases
+import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.social.GetFavoriteStatusUseCase
 import com.cocido.oficios.domain.usecase.social.ToggleFavoriteUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
@@ -32,6 +55,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -81,15 +105,7 @@ class WorkerProfileViewModelTest {
             reviewsPages = mapOf(1 to reviewsPage1),
         )
 
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = FakeFavoritesStatusRepository(),
-        )
+        val viewModel = viewModel(workerId, repository)
 
         advanceUntilIdle()
 
@@ -100,6 +116,8 @@ class WorkerProfileViewModelTest {
         assertEquals(workerId, state.profile.id)
         assertEquals(1, state.reviews.size)
         assertTrue(state.hasMoreReviews)
+        assertFalse(state.isSelf)
+        assertTrue(state.canFavorite)
     }
 
     @Test
@@ -117,15 +135,7 @@ class WorkerProfileViewModelTest {
             reviewsPages = emptyMap(),
         )
 
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = FakeFavoritesStatusRepository(),
-        )
+        val viewModel = viewModel(workerId, repository)
 
         val effects = mutableListOf<WorkerProfileEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
@@ -153,15 +163,7 @@ class WorkerProfileViewModelTest {
             profile = AppResult.Success(profile),
             reviewsPages = emptyMap(),
         )
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = FakeFavoritesStatusRepository(),
-        )
+        val viewModel = viewModel(workerId, repository)
         advanceUntilIdle()
 
         val effects = mutableListOf<WorkerProfileEffect>()
@@ -211,15 +213,7 @@ class WorkerProfileViewModelTest {
             ),
         )
 
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = FakeFavoritesStatusRepository(),
-        )
+        val viewModel = viewModel(workerId, repository)
 
         advanceUntilIdle()
 
@@ -249,15 +243,7 @@ class WorkerProfileViewModelTest {
             reviewsPages = emptyMap(),
         )
         val favorites = FakeFavoritesStatusRepository(isFavorite = false)
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(favorites),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(favorites),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = favorites,
-        )
+        val viewModel = viewModel(workerId, repository, favorites = favorites)
         advanceUntilIdle()
 
         viewModel.onEvent(WorkerProfileEvent.FavoriteClicked)
@@ -283,15 +269,7 @@ class WorkerProfileViewModelTest {
             reviewsPages = emptyMap(),
         )
         val favorites = FakeFavoritesStatusRepository(isFavorite = true, failToggle = true)
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(repository),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(repository),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(favorites),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(favorites),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = favorites,
-        )
+        val viewModel = viewModel(workerId, repository, favorites = favorites)
         advanceUntilIdle()
         val effects = mutableListOf<WorkerProfileEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
@@ -310,18 +288,9 @@ class WorkerProfileViewModelTest {
     fun `rate stays unavailable without a finished booking of this client`() = runTest(testDispatcher) {
         val workerId = 8L
         val profile = WorkerProfile(id = workerId, displayName = "Ana", avatarUrl = null, isVerified = true)
-        val viewModel = WorkerProfileViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
-            getWorkerProfileUseCase = GetWorkerProfileUseCase(
-                FakeWorkerProfileRepository(AppResult.Success(profile), emptyMap()),
-            ),
-            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(
-                FakeWorkerProfileRepository(AppResult.Success(profile), emptyMap()),
-            ),
-            getFavoriteStatusUseCase = GetFavoriteStatusUseCase(FakeFavoritesStatusRepository()),
-            toggleFavoriteUseCase = ToggleFavoriteUseCase(FakeFavoritesStatusRepository()),
-            orderUseCases = OrderUseCases(IdleOrderRepository()),
-            favoritesRepository = FakeFavoritesStatusRepository(),
+        val viewModel = viewModel(
+            workerId,
+            FakeWorkerProfileRepository(AppResult.Success(profile), emptyMap()),
         )
         advanceUntilIdle()
         val effects = mutableListOf<WorkerProfileEffect>()
@@ -333,7 +302,82 @@ class WorkerProfileViewModelTest {
         assertTrue(effects.any { it is WorkerProfileEffect.ShowRateUnavailable })
         assertTrue((viewModel.uiState.value as WorkerProfileUiState.Success).rateBookingId == null)
     }
+
+    @Test
+    fun `own public profile hides contact request rate and favorite`() = runTest(testDispatcher) {
+        val workerId = 42L
+        val profile = WorkerProfile(
+            id = workerId,
+            displayName = "Matias",
+            avatarUrl = null,
+            isVerified = true,
+        )
+        val viewer = User(
+            id = 7L,
+            email = "trabajador@oficios.test",
+            firstName = "Matias",
+            lastName = "Perez",
+            role = UserRole.PROVIDER,
+            emailVerified = true,
+        )
+        val viewModel = viewModel(
+            workerId = workerId,
+            profileRepo = FakeWorkerProfileRepository(AppResult.Success(profile), emptyMap()),
+            favorites = FakeFavoritesStatusRepository(isFavorite = true),
+            currentUser = viewer,
+            currentProviderWorkerId = workerId,
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as WorkerProfileUiState.Success
+        assertTrue(state.isSelf)
+        assertFalse(state.canFavorite)
+        assertFalse(state.isFavorite)
+        assertTrue(state.rateBookingId == null)
+
+        val effects = mutableListOf<WorkerProfileEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+        viewModel.onEvent(WorkerProfileEvent.HireClicked)
+        viewModel.onEvent(WorkerProfileEvent.RateClicked)
+        viewModel.onEvent(WorkerProfileEvent.FavoriteClicked)
+        advanceUntilIdle()
+        job.cancel()
+
+        assertTrue(effects.none { it is WorkerProfileEffect.NavigateToHire })
+        assertTrue(effects.none { it is WorkerProfileEffect.NavigateToRate })
+        assertTrue(effects.none { it is WorkerProfileEffect.ShowRateUnavailable })
+        assertTrue(effects.none { it is WorkerProfileEffect.ShowFavoriteResult })
+        assertFalse((viewModel.uiState.value as WorkerProfileUiState.Success).isFavorite)
+    }
 }
+
+private fun viewModel(
+    workerId: Long,
+    profileRepo: WorkerProfileRepository,
+    favorites: FavoritesRepository = FakeFavoritesStatusRepository(),
+    orders: OrderRepository = IdleOrderRepository(),
+    currentUser: User = User(
+        id = 1L,
+        email = "cliente@oficios.test",
+        firstName = "Ana",
+        lastName = "Perez",
+        role = UserRole.CLIENT,
+        emailVerified = true,
+    ),
+    currentProviderWorkerId: Long? = null,
+) = WorkerProfileViewModel(
+    savedStateHandle = SavedStateHandle(mapOf("workerId" to workerId)),
+    getWorkerProfileUseCase = GetWorkerProfileUseCase(profileRepo),
+    getWorkerReviewsUseCase = GetWorkerReviewsUseCase(profileRepo),
+    getFavoriteStatusUseCase = GetFavoriteStatusUseCase(favorites),
+    toggleFavoriteUseCase = ToggleFavoriteUseCase(favorites),
+    orderUseCases = OrderUseCases(orders),
+    favoritesRepository = favorites,
+    authRepository = FakeWorkerAuthRepository(currentUser),
+    accountUseCases = AccountUseCases(
+        FakeWorkerAccountRepository(currentUser, currentProviderWorkerId),
+    ),
+)
 
 private class FakeWorkerProfileRepository(
     private val profile: AppResult<WorkerProfile>,
@@ -383,6 +427,85 @@ private class FakeFavoritesStatusRepository(
         isFavorite = false
         return AppResult.Success(Unit)
     }
+}
+
+private class FakeWorkerAuthRepository(
+    private val currentUser: User,
+) : AuthRepository {
+    override suspend fun getCurrentUser() = AppResult.Success(currentUser)
+    override suspend fun login(email: String, password: String): AppResult<UserSession> = unused()
+    override suspend fun registerClient(request: RegisterClientRequest): AppResult<UserSession> = unused()
+    override suspend fun registerProvider(request: RegisterProviderRequest): AppResult<UserSession> = unused()
+    override suspend fun refreshToken(refreshToken: String): AppResult<AuthTokens> = unused()
+    override suspend fun logout(): AppResult<Unit> = unused()
+    override suspend fun requestPasswordReset(email: String): AppResult<Unit> = unused()
+    override suspend fun verifyPasswordResetCode(code: String): AppResult<String> = unused()
+    override suspend fun resetPassword(
+        resetToken: String,
+        password: String,
+        confirmPassword: String,
+    ): AppResult<Unit> = unused()
+    override suspend fun sendVerificationEmail(): AppResult<String> = unused()
+    override suspend fun verifyEmail(code: String): AppResult<Unit> = unused()
+    override suspend fun getUserRoles(): AppResult<List<UserRoleDefinition>> = unused()
+
+    private fun unused(): Nothing = error("unused")
+}
+
+private class FakeWorkerAccountRepository(
+    private val user: User,
+    providerWorkerId: Long?,
+) : AccountRepository {
+    private val unused = AppResult.Error(AppError.Unknown("unused"))
+    private val details = providerWorkerId?.takeIf { it > 0L }?.let { id ->
+        ProviderAccountDetails(
+            workerId = id,
+            status = "VALIDADO",
+            document = null,
+            description = null,
+            experience = null,
+            paymentMethods = emptyList(),
+            services = emptyList(),
+            gallery = emptyList(),
+            certificates = emptyList(),
+        )
+    }
+    override val providerDetails: StateFlow<ProviderAccountDetails?> = MutableStateFlow(details)
+
+    override suspend fun getProfile() = AppResult.Success(
+        AccountProfile(user = user, providerDetails = details),
+    )
+
+    override suspend fun updateProfile(request: UpdateAccountProfileRequest) = unused
+    override suspend fun changePassword(email: String, password: String, confirmation: String) = unused
+    override suspend fun getClientDomicilios() = unused
+    override suspend fun createClientDomicilio(request: ClientDomicilioRequest) = unused
+    override suspend fun updateClientDomicilio(id: Long, request: UpdateClientDomicilioRequest) = unused
+    override suspend fun deleteClientDomicilio(id: Long) = unused
+    override suspend fun setFavoriteDomicilio(id: Long, favorite: Boolean) = unused
+    override suspend fun getClientContactos() = unused
+    override suspend fun createClientContacto(request: ClientContactoRequest) = unused
+    override suspend fun updateClientContacto(id: Long, request: UpdateClientContactoRequest) = unused
+    override suspend fun deleteClientContacto(id: Long) = unused
+    override suspend fun setFavoriteContacto(id: Long, favorite: Boolean) = unused
+    override suspend fun updateProviderProfessionalInfo(request: ProviderProfessionalInfoRequest) = unused
+    override suspend fun addProviderService(request: ProviderRubroFullRequest) = unused
+    override suspend fun deleteProviderService(id: Long) = unused
+    override suspend fun replaceProviderService(
+        existingId: Long,
+        isPrimary: Boolean,
+        request: ProviderRubroFullRequest,
+    ) = unused
+    override suspend fun getCertificates() = unused
+    override suspend fun uploadCertificate(name: String, filePath: String) = unused
+    override suspend fun updateCertificate(id: Long, name: String, currentUrl: String?, filePath: String?) = unused
+    override suspend fun deleteCertificate(id: Long) = unused
+    override suspend fun getGallery() = unused
+    override suspend fun uploadGallery(filePaths: List<String>) = unused
+    override suspend fun deleteGalleryItem(id: Long) = unused
+    override suspend fun getCurrentDeletionRequest() = unused
+    override suspend fun requestAccountDeletion(params: RequestAccountDeletionParams) = unused
+    override suspend fun cancelAccountDeletion() = unused
 }
 
 private class IdleOrderRepository : OrderRepository {

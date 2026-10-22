@@ -21,6 +21,7 @@ sealed interface WorkerProfileUiState {
         val isTogglingFavorite: Boolean = false,
         val isRefreshing: Boolean = false,
         val rateBookingId: Long? = null,
+        val isSelf: Boolean = false,
     ) : WorkerProfileUiState
 }
 

@@ -89,4 +89,24 @@ class WorkerProfileScreenTest {
             events,
         )
     }
+
+    @Test
+    fun ownProfileHidesContactRateAndFavorite() {
+        composeRule.setContent {
+            OficiosTheme {
+                WorkerProfileScreen(
+                    uiState = previewState(withGallery = false, withReviews = false)
+                        .copy(isSelf = true, canFavorite = false, rateBookingId = null),
+                    onEvent = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeRule.onNodeWithText("Contactar").assertDoesNotExist()
+        composeRule.onNodeWithText("Solicitar").assertDoesNotExist()
+        composeRule.onNodeWithText("Calificar").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Guardar en favoritos").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Sacar de favoritos").assertDoesNotExist()
+        composeRule.onNodeWithText("Denunciar perfil").assertExists()
+    }
 }
