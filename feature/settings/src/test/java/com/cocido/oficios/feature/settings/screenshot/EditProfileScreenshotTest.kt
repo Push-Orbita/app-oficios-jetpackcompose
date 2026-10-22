@@ -14,6 +14,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.domain.model.AccountProfile
+import com.cocido.oficios.domain.model.ThemeMode
+import com.cocido.oficios.domain.model.User
+import com.cocido.oficios.domain.model.UserRole
+import com.cocido.oficios.feature.settings.SettingsScreen
+import com.cocido.oficios.feature.settings.SettingsUiState
 import com.cocido.oficios.feature.settings.provider.ProfessionalProfileScreen
 import com.cocido.oficios.feature.settings.provider.ProfessionalProfileUiState
 import com.cocido.oficios.feature.settings.provider.ProfileCertificateUi
@@ -82,7 +88,44 @@ class EditProfileScreenshotTest {
         }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun settingsAppearance() {
+        assumeGoldenOrRecording(javaClass, "settingsAppearance")
+        composeRule.setContent {
+            ScreenshotFrame {
+                SettingsScreen(uiState = appearanceState(ThemeMode.LIGHT), onEvent = {})
+            }
+        }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun settingsAppearanceDark() {
+        assumeGoldenOrRecording(javaClass, "settingsAppearanceDark")
+        composeRule.setContent {
+            ScreenshotFrame(darkTheme = true) {
+                SettingsScreen(uiState = appearanceState(ThemeMode.DARK), onEvent = {})
+            }
+        }
+        composeRule.onRoot().captureRoboImage()
+    }
 }
+
+private fun appearanceState(mode: ThemeMode) = SettingsUiState(
+    isLoading = false,
+    themeMode = mode,
+    profile = AccountProfile(
+        user = User(
+            id = 1,
+            email = "cliente@test.com",
+            firstName = "Nicolas",
+            lastName = "Ayala",
+            role = UserRole.CLIENT,
+            emailVerified = true,
+        ),
+    ),
+)
 
 @Composable
 private fun ScreenshotFrame(

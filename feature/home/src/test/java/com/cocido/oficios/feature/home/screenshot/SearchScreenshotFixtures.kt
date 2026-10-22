@@ -170,8 +170,9 @@ internal fun SearchScreenshotHome(
 internal fun SearchScreenshotCategories(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         CategoriesScreen(
             uiState = CategoriesUiState.Success(screenshotCategories),
             selectedTab = ClientHomeTab.INICIO,
@@ -186,8 +187,9 @@ internal fun SearchScreenshotCategories(
 internal fun SearchScreenshotRubros(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         RubrosScreen(
             uiState = RubrosUiState.Success(
                 categoryName = "Construcción",
@@ -203,8 +205,9 @@ internal fun SearchScreenshotRubros(
 internal fun SearchScreenshotResults(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         SearchResultsScreen(
             uiState = SearchResultsUiState.Success(
                 workers = screenshotWorkers,
@@ -275,8 +278,9 @@ internal fun SearchScreenshotProviderHome(
 internal fun SearchScreenshotProviderHomeComplete(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         ProviderHomeScreen(
             uiState = ProviderHomeUiState.Success(
                 content = ProviderHomeContent(
@@ -306,8 +310,9 @@ internal fun SearchScreenshotProviderHomeComplete(
 internal fun SearchScreenshotOrderDetail(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         OrderDetailScreen(
             uiState = OrderDetailUiState.Success(
                 order = ServiceOrder(
@@ -346,9 +351,10 @@ internal fun SearchScreenshotOrderDetail(
 internal fun SearchScreenshotCreateOrder(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
     val today = LocalDate.of(2026, 3, 4)
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         CreateOrderScreen(
             uiState = CreateOrderUiState.Success(
                 workerName = "Emanuel Molina",
@@ -414,8 +420,9 @@ internal fun SearchScreenshotCreateOrder(
 internal fun SearchScreenshotAgendaConfig(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         AgendaConfigScreen(
             uiState = AgendaConfigUiState.Success(
                 subRubroOptions = listOf(
@@ -443,8 +450,9 @@ internal fun SearchScreenshotAgendaConfig(
 internal fun SearchScreenshotOrdersList(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         OrdersListScreen(
             uiState = OrdersListUiState.Success(
                 orders = listOf(
@@ -529,8 +537,9 @@ private fun providerHomeOrder(
 internal fun SearchScreenshotNotifications(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         NotificationsScreen(
             uiState = NotificationsUiState(
                 items = listOf(

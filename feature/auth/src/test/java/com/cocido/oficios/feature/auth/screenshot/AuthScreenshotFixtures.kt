@@ -78,8 +78,9 @@ internal fun AuthScreenshotLogin(
 internal fun AuthScreenshotLoginError(
     statusBar: Dp = AuthScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = AuthScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         LoginScreen(
             uiState = LoginUiState(
                 email = "correoescritoeninputselected@mail.com",
@@ -97,8 +98,9 @@ internal fun AuthScreenshotLoginError(
 internal fun AuthScreenshotRole(
     statusBar: Dp = AuthScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = AuthScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         RegisterRoleSelectionScreen(
             onSelectClient = {},
             onSelectProvider = {},
@@ -111,8 +113,9 @@ internal fun AuthScreenshotRole(
 internal fun AuthScreenshotRegister(
     statusBar: Dp = AuthScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = AuthScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         RegisterFormScreen(
             mode = RegisterMode.CLIENT,
             uiState = RegisterFormUiState(canSubmit = true, acceptedTerms = true),

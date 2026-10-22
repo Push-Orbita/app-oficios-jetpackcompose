@@ -75,4 +75,18 @@ class AuthScreenshotTest {
         composeRule.setContent { AuthScreenshotLogin(darkTheme = true) }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun roleDark() {
+        assumeGoldenOrRecording(javaClass, "roleDark")
+        composeRule.setContent { AuthScreenshotRole(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun registerDark() {
+        assumeGoldenOrRecording(javaClass, "registerDark")
+        composeRule.setContent { AuthScreenshotRegister(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
 }
