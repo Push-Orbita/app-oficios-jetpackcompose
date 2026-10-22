@@ -15,6 +15,7 @@ import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -99,13 +100,21 @@ class MisUbicacionesViewModel @Inject constructor(
                     barrioSuggestions = emptyList(),
                     errorMessage = null,
                     location = FormosaAddressGeocoding.invalidate(),
-                )
+                ).withAddressFieldErrors()
             }
             is MisUbicacionesEvent.StreetChanged -> updateSuccess {
-                copy(street = event.value, errorMessage = null, location = FormosaAddressGeocoding.invalidate())
+                copy(
+                    street = event.value,
+                    errorMessage = null,
+                    location = FormosaAddressGeocoding.invalidate(),
+                ).withAddressFieldErrors()
             }
             is MisUbicacionesEvent.NumberChanged -> updateSuccess {
-                copy(number = event.value, errorMessage = null, location = FormosaAddressGeocoding.invalidate())
+                copy(
+                    number = event.value,
+                    errorMessage = null,
+                    location = FormosaAddressGeocoding.invalidate(),
+                ).withAddressFieldErrors()
             }
             is MisUbicacionesEvent.MapLocationSelected -> updateSuccess {
                 copy(
@@ -177,23 +186,20 @@ class MisUbicacionesViewModel @Inject constructor(
                 addressFavorite = domicilios.isEmpty(),
                 isSaving = false,
                 errorMessage = null,
-            )
+            ).withAddressFieldErrors()
         }
     }
 
     private fun saveNew() {
-        val state = uiState.value as? MisUbicacionesUiState.Success ?: return
+        val state = (uiState.value as? MisUbicacionesUiState.Success)
+            ?.withAddressFieldErrors(showBlank = true) ?: return
+        updateSuccess { state }
         val barrioId = state.barrioId
         val ownerId = personaId
-        val error = when {
-            barrioId == null -> "Seleccione un barrio de la lista."
-            state.street.isBlank() -> "Ingrese la calle."
-            state.number.isBlank() -> "Ingrese la altura."
-            ownerId == null -> "No pudimos identificar a qué cuenta pertenece el domicilio."
-            else -> null
-        }
-        if (error != null) {
-            updateSuccess { copy(errorMessage = error) }
+        if (!state.canSaveNew) {
+            if (ownerId == null) {
+                updateSuccess { copy(errorMessage = DomicilioFieldValidation.PERSONA_REQUIRED) }
+            }
             return
         }
         if (!state.location.canPersist) {
@@ -260,7 +266,7 @@ class MisUbicacionesViewModel @Inject constructor(
                 barrioId = if (preserveSelection) barrioId else null,
                 isSearchingBarrios = true,
                 errorMessage = null,
-            )
+            ).withAddressFieldErrors()
         }
         barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = barrioSearchJob,
@@ -309,6 +315,25 @@ class MisUbicacionesViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun MisUbicacionesUiState.Success.withAddressFieldErrors(
+        showBlank: Boolean = false,
+    ): MisUbicacionesUiState.Success {
+        val errors = DomicilioFieldValidation.validate(
+            barrioId = barrioId,
+            barrioQuery = barrioQuery,
+            street = street,
+            number = number,
+            personaMissing = personaId == null,
+            showBlank = showBlank,
+        )
+        return copy(
+            addressBarrioError = errors.barrioError,
+            addressStreetError = errors.streetError,
+            addressNumberError = errors.numberError,
+            canSaveNew = errors.canSave,
+        )
     }
 
     private inline fun updateSuccess(

@@ -27,6 +27,10 @@ sealed interface MisUbicacionesUiState {
         val addressFavorite: Boolean = false,
         val isSaving: Boolean = false,
         val errorMessage: String? = null,
+        val addressBarrioError: String? = null,
+        val addressStreetError: String? = null,
+        val addressNumberError: String? = null,
+        val canSaveNew: Boolean = false,
     ) : MisUbicacionesUiState {
         val addressLatitude: Double? get() = location.latitude
         val addressLongitude: Double? get() = location.longitude

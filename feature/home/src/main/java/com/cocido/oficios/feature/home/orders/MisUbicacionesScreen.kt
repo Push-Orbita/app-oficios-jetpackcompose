@@ -298,17 +298,23 @@ private fun MisUbicacionesAddForm(
             isLoading = state.isSearchingBarrios,
             onFocused = { onEvent(MisUbicacionesEvent.BarrioFocused) },
             onSuggestionsDismissed = { onEvent(MisUbicacionesEvent.BarrioSuggestionsDismissed) },
+            isError = state.addressBarrioError != null,
+            supportingText = state.addressBarrioError,
         )
         OficiosTextField(
             value = state.street,
             onValueChange = { onEvent(MisUbicacionesEvent.StreetChanged(it)) },
             label = stringResource(R.string.locations_street),
+            isError = state.addressStreetError != null,
+            supportingText = state.addressStreetError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
         OficiosTextField(
             value = state.number,
             onValueChange = { onEvent(MisUbicacionesEvent.NumberChanged(it)) },
             label = stringResource(R.string.locations_number),
+            isError = state.addressNumberError != null,
+            supportingText = state.addressNumberError,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done,
@@ -352,7 +358,7 @@ private fun MisUbicacionesAddForm(
                 variant = OficiosButtonVariant.Secondary,
                 size = OficiosButtonSize.Small,
                 loading = state.isSaving || state.isGeocoding,
-                enabled = !state.isSaving && !state.isGeocoding,
+                enabled = state.canSaveNew && !state.isSaving && !state.isGeocoding,
             )
         }
     }

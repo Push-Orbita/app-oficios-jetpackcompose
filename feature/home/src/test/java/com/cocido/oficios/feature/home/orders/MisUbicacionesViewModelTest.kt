@@ -35,6 +35,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -90,6 +91,40 @@ class MisUbicacionesViewModelTest {
 
         val state = viewModel.uiState.value as MisUbicacionesUiState.Success
         assertEquals(MisUbicacionesMode.ADD, state.mode)
+        assertFalse(state.canSaveNew)
+    }
+
+    @Test
+    fun `save without fields shows errors under barrio street and number`() = runTest(testDispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(MisUbicacionesEvent.AddClicked)
+        viewModel.onEvent(MisUbicacionesEvent.SaveNew)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as MisUbicacionesUiState.Success
+        assertEquals("Seleccione un barrio de la lista.", state.addressBarrioError)
+        assertEquals("Ingrese la calle.", state.addressStreetError)
+        assertEquals("Ingrese la altura.", state.addressNumberError)
+        assertFalse(state.canSaveNew)
+        assertEquals(null, state.errorMessage)
+    }
+
+    @Test
+    fun `complete address enables save`() = runTest(testDispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(MisUbicacionesEvent.AddClicked)
+        viewModel.onEvent(MisUbicacionesEvent.BarrioSelected(CatalogOption(7, "Centro")))
+        viewModel.onEvent(MisUbicacionesEvent.StreetChanged("San Martín"))
+        viewModel.onEvent(MisUbicacionesEvent.NumberChanged("123"))
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as MisUbicacionesUiState.Success
+        assertTrue(state.canSaveNew)
+        assertEquals(null, state.addressBarrioError)
+        assertEquals(null, state.addressStreetError)
+        assertEquals(null, state.addressNumberError)
     }
 
     private fun viewModel() = MisUbicacionesViewModel(

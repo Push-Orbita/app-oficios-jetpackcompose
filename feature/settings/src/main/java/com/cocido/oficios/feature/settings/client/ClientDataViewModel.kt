@@ -14,6 +14,7 @@ import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
+import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -414,14 +415,18 @@ private fun ClientDataUiState.withContactFieldErrors(showBlank: Boolean = false)
 }
 
 private fun ClientDataUiState.withAddressFieldErrors(showBlank: Boolean = false): ClientDataUiState {
-    val barrioError = if (barrioId == null) "Seleccione un barrio de la lista." else null
-    val streetError = if (street.isBlank()) "Ingrese la calle." else null
-    val numberError = if (number.isBlank()) "Ingrese la altura." else null
-    val personaError = editingId == null && personaId == null
+    val errors = DomicilioFieldValidation.validate(
+        barrioId = barrioId,
+        barrioQuery = barrioQuery,
+        street = street,
+        number = number,
+        personaMissing = editingId == null && personaId == null,
+        showBlank = showBlank,
+    )
     return copy(
-        addressBarrioError = barrioError.takeIf { showBlank || barrioQuery.isNotBlank() },
-        addressStreetError = streetError.takeIf { showBlank || street.isNotBlank() },
-        addressNumberError = numberError.takeIf { showBlank || number.isNotBlank() },
-        canSaveDomicilio = barrioError == null && streetError == null && numberError == null && !personaError,
+        addressBarrioError = errors.barrioError,
+        addressStreetError = errors.streetError,
+        addressNumberError = errors.numberError,
+        canSaveDomicilio = errors.canSave,
     )
 }
