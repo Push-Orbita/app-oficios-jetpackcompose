@@ -31,8 +31,11 @@ object OficiosComponentSize {
     val avatarSettings = 72.dp
     val ratingIcon = 36.dp
     val categoryCardSize = 118.dp
-    /** Figma 259:293 — tiles Beneficios / hitos de perfil 118.67. */
-    val homeBenefitTile = 118.dp
+    /**
+     * Ancho mínimo legible del tile Beneficios cuando 3 no entran
+     * (Figma 259:293 es 118.67 en artboard 440; en 360–430dp se usa carrusel).
+     */
+    val homeBenefitTileMinWidth = 170.dp
     /** Figma 259:303 — barra de progreso de perfil. */
     val profileProgressHeight = 40.dp
     /** Figma 259:498 — barra HOY. */

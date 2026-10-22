@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import com.cocido.oficios.core.designsystem.component.cards.HomeBenefitTile
+import com.cocido.oficios.core.designsystem.component.cards.HomeBenefitsRow
 import com.cocido.oficios.core.designsystem.component.cards.ProfileMilestoneTile
 import com.cocido.oficios.core.designsystem.component.cards.ProfileProgressBar
 import com.cocido.oficios.core.designsystem.component.cards.emphasizedBody
@@ -155,32 +155,22 @@ private fun ProviderBenefitsSection(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.headlineLarge,
             color = OficiosColorWhite,
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
-        ) {
-            HomeBenefitTile(
-                text = emphasizedBody(
+        HomeBenefitsRow(
+            tiles = listOf(
+                emphasizedBody(
                     stringResource(R.string.provider_home_benefit_services),
                     stringResource(R.string.provider_home_benefit_services_emphasis),
                 ),
-                modifier = Modifier.weight(1f),
-            )
-            HomeBenefitTile(
-                text = emphasizedBody(
+                emphasizedBody(
                     stringResource(R.string.provider_home_benefit_reach),
                     stringResource(R.string.provider_home_benefit_reach_emphasis),
                 ),
-                modifier = Modifier.weight(1f),
-            )
-            HomeBenefitTile(
-                text = emphasizedBody(
+                emphasizedBody(
                     stringResource(R.string.provider_home_benefit_efficient),
                     stringResource(R.string.provider_home_benefit_efficient_emphasis),
                 ),
-                modifier = Modifier.weight(1f),
-            )
-        }
+            ),
+        )
     }
 }
 
