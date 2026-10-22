@@ -44,6 +44,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 
@@ -188,13 +189,19 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
 
 @Composable
 fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    val leavingForm = uiState.step == AddServiceStep.TRADE
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = leavingForm && uiState.hasUnsavedChanges,
+        enabled = true,
+        onConfirmExit = { onEvent(AddServiceEvent.Previous) },
+    )
     OficiosScaffold(
         topBar = {
             OficiosBackTopBar(
                 title = stringResource(
                     if (uiState.isEditing) R.string.services_edit_title else R.string.services_add,
                 ),
-                onBack = { onEvent(AddServiceEvent.Previous) },
+                onBack = handleBack,
             )
         },
     ) { padding ->
@@ -219,9 +226,9 @@ fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> U
     }
 }
 
-private fun AddServiceUiState.phase(): OficiosContentPhase = when {
-    isLoading && categories.isEmpty() -> OficiosContentPhase.Loading
-    errorMessage != null && categories.isEmpty() -> OficiosContentPhase.Error
+internal fun AddServiceUiState.phase(): OficiosContentPhase = when {
+    isLoading && !hasFormContent -> OficiosContentPhase.Loading
+    loadFailed && !hasFormContent -> OficiosContentPhase.Error
     else -> OficiosContentPhase.Content
 }
 
@@ -256,7 +263,7 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
                 modifier = Modifier.weight(1f),
                 loading = state.isSaving,
                 enabled = !state.isSaving,
-                variant = OficiosButtonVariant.Secondary,
+                variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Large,
             )
         }

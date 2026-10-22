@@ -35,6 +35,7 @@ enum class AddServiceStep { TRADE, MODALITY, SCHEDULE, PAYMENT, REVIEW }
 data class AddServiceUiState(
     val step: AddServiceStep = AddServiceStep.TRADE,
     val isLoading: Boolean = true,
+    val loadFailed: Boolean = false,
     val isSaving: Boolean = false,
     val categories: List<CatalogOption> = emptyList(),
     val rubros: List<CatalogOption> = emptyList(),
@@ -68,6 +69,22 @@ data class AddServiceUiState(
         .ifBlank { lockedRubroName }
     val localLatitude: Double? get() = localLocation.latitude
     val localLongitude: Double? get() = localLocation.longitude
+    /** Edición no carga categorías: el form ya tiene rubro/especialidades. */
+    val hasFormContent: Boolean
+        get() = if (isEditing) {
+            selectedRubroId != null || subRubros.isNotEmpty()
+        } else {
+            categories.isNotEmpty()
+        }
+    val hasUnsavedChanges: Boolean
+        get() = !isEditing && (
+            selectedCategoryId != null ||
+                localName.isNotBlank() ||
+                localBarrioQuery.isNotBlank() ||
+                localStreet.isNotBlank() ||
+                localNumber.isNotBlank() ||
+                paymentMethods.isNotEmpty()
+            )
 }
 
 sealed interface AddServiceEvent {

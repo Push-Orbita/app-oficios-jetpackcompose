@@ -80,7 +80,43 @@ class CatalogRepositoryImplTest {
         assertEquals(listOf("Miguel Ortiz", "San Miguel"), result.data.map { it.label })
 
         val request = server.takeRequest()
-        assertEquals("/barrios/search?q=miguel&pageSize=20&pageNumber=1", request.path)
+        assertEquals("/barrios/search?q=miguel&nombre=miguel&pageSize=20&pageNumber=1", request.path)
+    }
+
+    @Test
+    fun `searchBarrios Centro matches case and accents then falls back to full list`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """
+                    { "data": [], "metadata": { "count": 0, "pageSize": 20, "pageNumber": 1, "totalPages": 0 } }
+                    """.trimIndent(),
+                ),
+        )
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(
+                    """
+                    {
+                      "data": [
+                        { "id": 1, "nombre": "Centro" },
+                        { "id": 2, "nombre": "San Francisco" }
+                      ],
+                      "metadata": { "count": 2, "pageSize": 100, "pageNumber": 1, "totalPages": 1 }
+                    }
+                    """.trimIndent(),
+                ),
+        )
+
+        val result = repository.searchBarrios("centro")
+
+        assertTrue(result is AppResult.Success)
+        result as AppResult.Success
+        assertEquals(listOf("Centro"), result.data.map { it.label })
+        assertEquals("/barrios/search?q=centro&nombre=centro&pageSize=20&pageNumber=1", server.takeRequest().path)
+        assertEquals("/barrios/search?pageSize=100&pageNumber=1", server.takeRequest().path)
     }
 
     @Test

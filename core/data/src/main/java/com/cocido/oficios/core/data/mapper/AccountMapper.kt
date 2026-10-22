@@ -37,6 +37,7 @@ private fun List<ProviderDomicilioDto>.toCommercialLocal(): ProviderCommercialLo
         barrioId = dto.barrioId ?: dto.barrio?.id,
         barrioName = dto.barrio?.nombre,
         street = dto.calle,
+        number = dto.numero,
         name = dto.nombre,
     )
 }

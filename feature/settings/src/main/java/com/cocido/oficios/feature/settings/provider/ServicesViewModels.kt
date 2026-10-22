@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.ManagedProviderService
+import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -22,6 +23,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -194,11 +196,11 @@ class AddServiceViewModel @Inject constructor(
             }
             AddServiceEvent.LocateOnMap -> update {
                 val next = FormosaAddressGeocoding.openMap(it.localLocation)
-                it.copy(localLocation = next, errorMessage = next.message)
+                it.copy(localLocation = next)
             }
             AddServiceEvent.ConfirmPin -> update {
                 val confirmed = FormosaAddressGeocoding.confirmPin(it.localLocation)
-                it.copy(localLocation = confirmed, errorMessage = confirmed.message)
+                it.copy(localLocation = confirmed)
             }
             is AddServiceEvent.WorkDayToggled -> update {
                 it.copy(workDays = it.workDays.toggled(event.day, event.checked), errorMessage = null)
@@ -221,10 +223,18 @@ class AddServiceViewModel @Inject constructor(
     }
 
     private fun loadCategories() = viewModelScope.launch {
-        update { it.copy(isLoading = true, errorMessage = null) }
+        update { it.copy(isLoading = true, loadFailed = false, errorMessage = null) }
         when (val result = getCategories()) {
-            is AppResult.Success -> update { it.copy(isLoading = false, categories = result.data) }
-            is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+            is AppResult.Success -> update {
+                it.copy(isLoading = false, loadFailed = false, categories = result.data)
+            }
+            is AppResult.Error -> update {
+                it.copy(
+                    isLoading = false,
+                    loadFailed = it.categories.isEmpty(),
+                    errorMessage = result.error.userMessage(),
+                )
+            }
         }
     }
 
@@ -372,7 +382,6 @@ class AddServiceViewModel @Inject constructor(
                             phase = AddressLocationPhase.NeedsMap,
                             message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
                         ),
-                        errorMessage = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
                     )
                 }
                 is AppResult.Success -> {
@@ -381,7 +390,6 @@ class AddServiceViewModel @Inject constructor(
                         it.copy(
                             isGeocoding = false,
                             localLocation = snapshot,
-                            errorMessage = snapshot.message,
                         )
                     }
                 }
@@ -396,27 +404,57 @@ class AddServiceViewModel @Inject constructor(
     private fun loadForEdit() {
         val serviceId = editingServiceId ?: return
         viewModelScope.launch {
-            update { it.copy(isLoading = true, errorMessage = null, isEditing = true, editingServiceId = serviceId) }
+            update {
+                it.copy(
+                    isLoading = true,
+                    loadFailed = false,
+                    errorMessage = null,
+                    isEditing = true,
+                    editingServiceId = serviceId,
+                )
+            }
             when (val profileResult = accountUseCases.getProfile()) {
-                is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = profileResult.error.userMessage()) }
+                is AppResult.Error -> update {
+                    it.copy(
+                        isLoading = false,
+                        loadFailed = true,
+                        errorMessage = profileResult.error.userMessage(),
+                    )
+                }
                 is AppResult.Success -> {
                     val details = profileResult.data.providerDetails
                     val service = details?.services?.firstOrNull { it.id == serviceId }
                     if (service == null) {
-                        update { it.copy(isLoading = false, errorMessage = "No encontramos ese servicio.") }
+                        update {
+                            it.copy(
+                                isLoading = false,
+                                loadFailed = true,
+                                errorMessage = "No encontramos ese servicio.",
+                            )
+                        }
                         return@launch
                     }
-                    applyService(service, details.paymentMethods.toSet())
+                    applyService(service, details.paymentMethods.toSet(), details.commercialLocal)
                 }
             }
         }
     }
 
-    private suspend fun applyService(service: ManagedProviderService, payments: Set<String>) {
+    private suspend fun applyService(
+        service: ManagedProviderService,
+        payments: Set<String>,
+        commercialLocal: ProviderCommercialLocal? = null,
+    ) {
         val subRubros = when (val result = getSubRubros(service.rubroId)) {
             is AppResult.Success -> result.data
             is AppResult.Error -> {
-                update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+                update {
+                    it.copy(
+                        isLoading = false,
+                        loadFailed = true,
+                        errorMessage = result.error.userMessage(),
+                    )
+                }
                 return
             }
         }
@@ -425,9 +463,13 @@ class AddServiceViewModel @Inject constructor(
             .flatMap { schedule -> schedule.ranges.map { RegisterTradeTimeSlotDraft(it.from, it.to) } }
             .distinct()
             .ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) }
+        val servesAtLocal = service.subServices.any { sub -> sub.servesAtLocal }
+        val (street, numberFromStreet) = DomicilioFieldValidation.splitStreetAndNumber(commercialLocal?.street)
+        val number = commercialLocal?.number?.trim().orEmpty().ifBlank { numberFromStreet }
         update {
             it.copy(
                 isLoading = false,
+                loadFailed = false,
                 isEditing = true,
                 editingServiceId = service.id,
                 isPrimaryService = service.isPrimary,
@@ -436,8 +478,13 @@ class AddServiceViewModel @Inject constructor(
                 selectedSubRubroIds = service.subServices.map { sub -> sub.catalogSubRubroId }.toSet(),
                 subRubros = subRubros,
                 servesAtClientHome = service.subServices.any { sub -> sub.servesAtClientHome },
-                servesAtLocal = service.subServices.any { sub -> sub.servesAtLocal },
+                servesAtLocal = servesAtLocal,
                 requiresTurns = service.subServices.any { sub -> sub.requiresTurns },
+                localName = commercialLocal?.name.orEmpty(),
+                localBarrioId = if (servesAtLocal) commercialLocal?.barrioId else it.localBarrioId,
+                localBarrioQuery = if (servesAtLocal) commercialLocal?.barrioName.orEmpty() else it.localBarrioQuery,
+                localStreet = if (servesAtLocal) street else it.localStreet,
+                localNumber = if (servesAtLocal) number else it.localNumber,
                 workDays = workDays.ifEmpty { it.workDays },
                 timeSlots = timeSlots,
                 paymentMethods = payments.ifEmpty { it.paymentMethods },

@@ -128,7 +128,11 @@ class ErrorCopyComposeTest {
         composeRule.setContent {
             OficiosTheme {
                 AddServiceScreen(
-                    uiState = AddServiceUiState(isLoading = false, errorMessage = "Sin conexión"),
+                    uiState = AddServiceUiState(
+                        isLoading = false,
+                        loadFailed = true,
+                        errorMessage = "Sin conexión",
+                    ),
                     onEvent = {},
                 )
             }

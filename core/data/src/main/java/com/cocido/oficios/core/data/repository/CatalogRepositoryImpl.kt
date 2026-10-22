@@ -52,11 +52,43 @@ class CatalogRepositoryImpl @Inject constructor(
     override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> {
         val trimmed = query.trim()
         val pageSize = if (trimmed.isEmpty()) 100 else 20
-        return catalogRemoteDataSource.fetchBarrios(
-            query = trimmed.ifEmpty { null },
-            pageSize = pageSize,
-        ).map { barrios ->
-            barrios.map { it.toCatalogOption() }
+        return when (
+            val first = catalogRemoteDataSource.fetchBarrios(
+                query = trimmed.ifEmpty { null },
+                nombre = trimmed.ifEmpty { null },
+                pageSize = pageSize,
+            )
+        ) {
+            is AppResult.Error -> first
+            is AppResult.Success -> {
+                val options = first.data.map { it.toCatalogOption() }
+                if (trimmed.isEmpty()) {
+                    AppResult.Success(options)
+                } else {
+                    val filtered = filterBarrios(options, trimmed)
+                    if (filtered.isNotEmpty()) {
+                        AppResult.Success(filtered)
+                    } else {
+                        catalogRemoteDataSource.fetchBarrios(
+                            query = null,
+                            nombre = null,
+                            pageSize = 100,
+                        ).map { barrios ->
+                            filterBarrios(barrios.map { it.toCatalogOption() }, trimmed)
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+internal fun filterBarrios(options: List<CatalogOption>, query: String): List<CatalogOption> {
+    val needle = query.foldForSearch()
+    if (needle.isBlank()) return options
+    return options.filter { option -> option.label.foldForSearch().contains(needle) }
+}
+
+internal fun String.foldForSearch(): String =
+    java.text.Normalizer.normalize(lowercase(), java.text.Normalizer.Form.NFD)
+        .replace("\\p{M}+".toRegex(), "")

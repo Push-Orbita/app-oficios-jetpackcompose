@@ -10,7 +10,9 @@ import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.domain.model.ManagedProviderService
+import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.ManagedProviderSubService
 import com.cocido.oficios.domain.model.ManagedTimeRange
 import com.cocido.oficios.domain.model.ManagedWorkSchedule
@@ -95,6 +97,29 @@ class AddServiceViewModelTest {
     }
 
     @Test
+    fun `phase keeps form in edit when errorMessage is informative`() {
+        val state = AddServiceUiState(
+            isLoading = false,
+            isEditing = true,
+            selectedRubroId = 2L,
+            errorMessage = "Arrastre el pin hasta la entrada y confirme. La calle escrita no se modifica.",
+        )
+        assertEquals(OficiosContentPhase.Content, state.phase())
+        assertTrue(state.hasFormContent)
+    }
+
+    @Test
+    fun `phase is error only when loadFailed without form content`() {
+        val state = AddServiceUiState(
+            isLoading = false,
+            loadFailed = true,
+            isEditing = true,
+            errorMessage = "No encontramos ese servicio.",
+        )
+        assertEquals(OficiosContentPhase.Error, state.phase())
+    }
+
+    @Test
     fun `edit mode preloads specialties modality and hours`() = runTest(testDispatcher) {
         val accounts = FakeAccountRepository()
         val catalog = FakeCatalogRepository()
@@ -112,6 +137,40 @@ class AddServiceViewModelTest {
         assertEquals(setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"), state.workDays)
         assertEquals("09:00", state.timeSlots.first().from)
         assertEquals("Plomería", state.selectedRubroLabel)
+        assertEquals(OficiosContentPhase.Content, state.phase())
+    }
+
+    @Test
+    fun `locate on map in edit stays on form and does not set loadFailed`() = runTest(testDispatcher) {
+        val viewModel = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = 11L)
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.LocateOnMap)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.loadFailed)
+        assertEquals(OficiosContentPhase.Content, state.phase())
+        assertEquals(
+            "Arrastre el pin hasta la entrada y confirme. La calle escrita no se modifica.",
+            state.localLocation.message,
+        )
+        assertEquals(null, state.errorMessage)
+    }
+
+    @Test
+    fun `edit prefills barrio street and number from commercial local`() = runTest(testDispatcher) {
+        val accounts = FakeAccountRepository(localService = true)
+        val viewModel = addViewModel(accounts, FakeCatalogRepository(), serviceId = 11L)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.servesAtLocal)
+        assertEquals(7L, state.localBarrioId)
+        assertEquals("Centro", state.localBarrioQuery)
+        assertEquals("Av. 25 de Mayo", state.localStreet)
+        assertEquals("450", state.localNumber)
+        assertEquals(OficiosContentPhase.Content, state.phase())
     }
 
     @Test
@@ -150,14 +209,14 @@ class AddServiceViewModelTest {
     )
 }
 
-private fun sampleService() = ManagedProviderService(
+private fun sampleService(atLocal: Boolean = false) = ManagedProviderService(
     id = 11L,
     rubroId = 2L,
     rubroName = "Plomería",
     isPrimary = true,
     subServices = listOf(
-        ManagedProviderSubService(1, 21L, "Reparación de cañerías", true, false, false),
-        ManagedProviderSubService(2, 22L, "Instalación de sanitarios", true, false, false),
+        ManagedProviderSubService(1, 21L, "Reparación de cañerías", true, atLocal, false),
+        ManagedProviderSubService(2, 22L, "Instalación de sanitarios", true, atLocal, false),
     ),
     workSchedule = listOf(
         ManagedWorkSchedule(
@@ -168,7 +227,9 @@ private fun sampleService() = ManagedProviderService(
     ),
 )
 
-private class FakeAccountRepository : AccountRepository {
+private class FakeAccountRepository(
+    private val localService: Boolean = false,
+) : AccountRepository {
     var replacedId: Long? = null
     var replacedPrimary: Boolean? = null
     private val unused = AppResult.Error(AppError.Unknown("unused"))
@@ -183,9 +244,21 @@ private class FakeAccountRepository : AccountRepository {
                 description = null,
                 experience = null,
                 paymentMethods = listOf("EFECTIVO"),
-                services = listOf(sampleService()),
+                services = listOf(sampleService(atLocal = localService)),
                 gallery = emptyList(),
                 certificates = emptyList(),
+                commercialLocal = if (localService) {
+                    ProviderCommercialLocal(
+                        id = 4,
+                        barrioId = 7,
+                        barrioName = "Centro",
+                        street = "Av. 25 de Mayo",
+                        number = "450",
+                        name = "Local",
+                    )
+                } else {
+                    null
+                },
             ),
         ),
     )
@@ -237,7 +310,9 @@ private class FakeCatalogRepository : CatalogRepository {
             CatalogOption(23, "Destape"),
         ),
     )
-    override suspend fun searchBarrios(query: String) = AppResult.Success(emptyList<CatalogOption>())
+    override suspend fun searchBarrios(query: String) = AppResult.Success(
+        listOf(CatalogOption(7, "Centro")).filter { it.label.contains(query, ignoreCase = true) || query.isBlank() },
+    )
 }
 
 private class FakeLocationRepository : LocationRepository {
