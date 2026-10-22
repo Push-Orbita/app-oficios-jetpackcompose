@@ -10,6 +10,10 @@ import javax.inject.Inject
 class AgendaUseCases @Inject constructor(
     private val repository: AgendaRepository,
 ) {
+    val slots get() = repository.slots
+    val sessions get() = repository.sessions
+    val agendaChanged get() = repository.agendaChanged
+
     suspend fun getAvailableSlots(subRubroId: Long, fromIso: String, toIso: String) =
         repository.getAvailableSlots(subRubroId, fromIso, toIso)
     suspend fun getSlotsForSubRubro(subRubroId: Long, fromIso: String? = null, toIso: String? = null) =

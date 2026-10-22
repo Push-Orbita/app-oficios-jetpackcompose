@@ -20,6 +20,7 @@ class OrderUseCases @Inject constructor(
 ) {
     val clientOrders get() = orderRepository.clientOrders
     val workerOrders get() = orderRepository.workerOrders
+    val ordersChanged get() = orderRepository.ordersChanged
 
     suspend fun getClientOrders() = orderRepository.getClientOrders()
     suspend fun getWorkerOrders() = orderRepository.getWorkerOrders()

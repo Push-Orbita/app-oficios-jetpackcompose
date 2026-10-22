@@ -122,7 +122,10 @@ class HomeRepositoryImpl @Inject constructor(
                 orders = result.data,
                 now = nowInArgentina(clock),
             )
-            is AppResult.Error -> emptyList()
+            is AppResult.Error -> {
+                val cached = orderRepository.workerOrders.value ?: return emptyList()
+                upcomingAgendaAppointments(orders = cached, now = nowInArgentina(clock))
+            }
         }
     }
 

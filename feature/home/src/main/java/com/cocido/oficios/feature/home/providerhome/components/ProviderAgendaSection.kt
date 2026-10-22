@@ -51,6 +51,8 @@ fun ProviderAgendaSection(
     now: ZonedDateTime = ZonedDateTime.now(DisplayDateTime.ARGENTINA),
     showTitle: Boolean = true,
     showViewFullAgenda: Boolean = true,
+    hasAgendaConfigured: Boolean = true,
+    onConfigureAgenda: (() -> Unit)? = null,
 ) {
     val today = now.toLocalDate()
     val appointmentDates = remember(upcomingOrders) {
@@ -111,11 +113,28 @@ fun ProviderAgendaSection(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
-                        text = stringResource(R.string.agenda_bookings_empty_description),
+                        text = stringResource(
+                            if (!hasAgendaConfigured) {
+                                R.string.provider_home_calendar_setup_body
+                            } else {
+                                R.string.agenda_bookings_empty_description
+                            },
+                        ),
                         style = MaterialTheme.typography.bodyLarge,
                         color = OficiosColorWhite,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    if (!hasAgendaConfigured && onConfigureAgenda != null) {
+                        Text(
+                            text = stringResource(R.string.provider_home_calendar_title),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = OficiosColorWhite,
+                            textDecoration = TextDecoration.Underline,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onConfigureAgenda),
+                        )
+                    }
                 } else {
                     Text(
                         text = stringResource(R.string.provider_home_agenda_empty_day),

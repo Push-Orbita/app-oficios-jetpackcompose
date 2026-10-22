@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.nowInArgentina
 import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.usecase.OrderUseCases
@@ -32,9 +33,29 @@ class BookingsAgendaViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
 
     private var loadJob: Job? = null
+    private var skipNextResume = true
 
     init {
+        viewModelScope.launch {
+            orderUseCases.workerOrders.collect { list ->
+                if (list == null) return@collect
+                applyOrders(list)
+            }
+        }
+        viewModelScope.launch {
+            orderUseCases.ordersChanged.collect {
+                load(refreshing = _uiState.value is BookingsAgendaUiState.Success)
+            }
+        }
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load(refreshing = _uiState.value is BookingsAgendaUiState.Success)
     }
 
     fun onEvent(event: BookingsAgendaEvent) {
@@ -60,15 +81,7 @@ class BookingsAgendaViewModel @Inject constructor(
                     _uiState.update { BookingsAgendaUiState.Loading }
                 }
                 when (val result = orderUseCases.getWorkerOrders()) {
-                    is AppResult.Success -> {
-                        val now = nowInArgentina(clock)
-                        _uiState.update {
-                            BookingsAgendaUiState.Success(
-                                orders = upcomingAgendaAppointments(result.data, now),
-                                now = now,
-                            )
-                        }
-                    }
+                    is AppResult.Success -> applyOrders(result.data)
                     is AppResult.Error -> {
                         val message = result.error.userMessage()
                         if (previous is BookingsAgendaUiState.Success) {
@@ -89,6 +102,16 @@ class BookingsAgendaViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun applyOrders(orders: List<ServiceOrderListItem>) {
+        val now = nowInArgentina(clock)
+        _uiState.update {
+            BookingsAgendaUiState.Success(
+                orders = upcomingAgendaAppointments(orders, now),
+                now = now,
+            )
         }
     }
 

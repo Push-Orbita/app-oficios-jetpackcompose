@@ -9,8 +9,15 @@ import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.repository.NotificationsRepository
+import com.cocido.oficios.domain.model.CreateServiceRequestParams
+import com.cocido.oficios.domain.model.GeoPoint
+import com.cocido.oficios.domain.model.ServiceOrder
+import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.usecase.GetProviderHomeUseCase
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import com.cocido.oficios.feature.home.FakeHomeRepository
 import java.time.Clock
 import java.time.ZonedDateTime
@@ -229,6 +236,7 @@ class ProviderHomeViewModelTest {
         getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(
             FakeUnreadNotificationsRepository(),
         ),
+        orderUseCases = OrderUseCases(FakeProviderHomeOrdersRepository()),
         clock = clock,
     )
 
@@ -282,4 +290,39 @@ private class FakeUnreadNotificationsRepository : NotificationsRepository {
             ),
         )
     }
+}
+
+private class FakeProviderHomeOrdersRepository : OrderRepository {
+    override val ordersChanged: SharedFlow<Unit> = MutableSharedFlow()
+    override suspend fun getWorkerOrders() = AppResult.Success(emptyList<ServiceOrderListItem>())
+    override suspend fun getClientOrders() = unused()
+    override suspend fun createServiceRequest(params: CreateServiceRequestParams) = unused()
+    override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> = unused()
+    override suspend fun acceptOrder(orderId: Long) = unused()
+    override suspend fun rejectOrder(orderId: Long, reason: String) = unused()
+    override suspend fun sendCounterOffer(
+        orderId: Long,
+        newStartIso: String,
+        newEndIso: String,
+        newPrice: Double?,
+    ) = unused()
+    override suspend fun acceptCounterOffer(counterOfferId: Long) = unused()
+    override suspend fun rejectCounterOffer(counterOfferId: Long) = unused()
+    override suspend fun cancelOrderBeforeAcceptance(orderId: Long) = unused()
+    override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?) = unused()
+    override suspend fun getBookingTracking(bookingId: Long) = unused()
+    override suspend fun findOrderIdForBooking(bookingId: Long) = unused()
+    override suspend fun markEnRoute(bookingId: Long, location: GeoPoint) = unused()
+    override suspend fun markArrived(bookingId: Long, location: GeoPoint) = unused()
+    override suspend fun getCompletionCode(bookingId: Long) = unused()
+    override suspend fun resendCompletionCode(bookingId: Long) = unused()
+    override suspend fun finalizeBooking(bookingId: Long, completionCode: String) = unused()
+    override suspend fun submitRating(
+        bookingId: Long,
+        quality: Int,
+        punctuality: Int,
+        comment: String?,
+    ) = unused()
+
+    private fun unused(): Nothing = error("unused")
 }

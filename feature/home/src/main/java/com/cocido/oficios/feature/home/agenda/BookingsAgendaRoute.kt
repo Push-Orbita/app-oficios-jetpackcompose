@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 
 @Composable
 fun BookingsAgendaRoute(
@@ -17,6 +18,7 @@ fun BookingsAgendaRoute(
     viewModel: BookingsAgendaViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->

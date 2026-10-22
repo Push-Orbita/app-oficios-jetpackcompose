@@ -136,6 +136,8 @@ private fun ProviderHomeSuccessContent(
         ProviderAgendaSection(
             upcomingOrders = content.upcomingOrders,
             now = now,
+            hasAgendaConfigured = content.hasAgendaConfigured,
+            onConfigureAgenda = { onEvent(ProviderHomeEvent.ConfigureAgendaClicked) },
             onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
             onOrderClick = { onEvent(ProviderHomeEvent.OrderClicked(it)) },
         )

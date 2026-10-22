@@ -31,8 +31,31 @@ class AgendaConfigViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<AgendaConfigEffect>()
     val effects: SharedFlow<AgendaConfigEffect> = _effects.asSharedFlow()
 
+    private var skipNextResume = true
+
     init {
+        viewModelScope.launch {
+            agendaUseCases.sessions.collect { snap ->
+                if (snap == null) return@collect
+                updateSuccess { state ->
+                    if (state.selectedSubRubroId != snap.subRubroId) {
+                        state
+                    } else {
+                        state.copy(isLoadingSessions = false, sessions = snap.sessions, error = null)
+                    }
+                }
+            }
+        }
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        val state = _uiState.value as? AgendaConfigUiState.Success ?: return
+        state.selectedSubRubroId?.let { loadSessions(it) }
     }
 
     fun onEvent(event: AgendaConfigEvent) {
@@ -158,7 +181,7 @@ class AgendaConfigViewModel @Inject constructor(
                 state.selectedSubRubroId?.let { loadSessions(it) }
             } else {
                 updateSuccess { it.copy(isSaving = false) }
-                emitEffect(AgendaConfigEffect.ShowMessage(lastError))
+                emitEffect(AgendaConfigEffect.ShowError(lastError))
             }
         }
     }
@@ -177,7 +200,7 @@ class AgendaConfigViewModel @Inject constructor(
                 }
                 is AppResult.Error -> {
                     updateSuccess { it.copy(isDeleting = false, sessionPendingDeleteId = null) }
-                    emitEffect(AgendaConfigEffect.ShowMessage(result.error.userMessage()))
+                    emitEffect(AgendaConfigEffect.ShowError(result.error.userMessage()))
                 }
             }
         }

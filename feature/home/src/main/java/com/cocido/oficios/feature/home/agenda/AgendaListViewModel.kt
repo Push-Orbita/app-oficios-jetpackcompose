@@ -41,8 +41,35 @@ class AgendaListViewModel @Inject constructor(
 
     private var slotsJob: Job? = null
 
+    private var skipNextResume = true
+
     init {
+        viewModelScope.launch {
+            agendaUseCases.slots.collect { snap ->
+                if (snap == null) return@collect
+                updateSuccess { state ->
+                    if (state.selectedSubRubroId != snap.subRubroId) {
+                        state
+                    } else {
+                        state.copy(
+                            slots = snap.slots.sortedBy { slot -> slot.start },
+                            isLoadingSlots = false,
+                            isRefreshing = false,
+                            slotsError = null,
+                        )
+                    }
+                }
+            }
+        }
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        refreshSlots()
     }
 
     fun onEvent(event: AgendaListEvent) {

@@ -56,4 +56,5 @@ sealed interface AgendaConfigEvent {
 
 sealed interface AgendaConfigEffect {
     data class ShowMessage(val message: String) : AgendaConfigEffect
+    data class ShowError(val message: String) : AgendaConfigEffect
 }

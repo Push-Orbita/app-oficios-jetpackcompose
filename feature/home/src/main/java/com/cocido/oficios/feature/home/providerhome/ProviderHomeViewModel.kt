@@ -9,6 +9,7 @@ import com.cocido.oficios.domain.model.ProviderProfileCompletionTarget
 import com.cocido.oficios.domain.model.nowInArgentina
 import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.usecase.GetProviderHomeUseCase
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 class ProviderHomeViewModel @Inject constructor(
     private val getProviderHomeUseCase: GetProviderHomeUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
+    private val orderUseCases: OrderUseCases,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -44,6 +46,21 @@ class ProviderHomeViewModel @Inject constructor(
         viewModelScope.launch {
             getUnreadNotificationCountUseCase.unreadCount.collect { count ->
                 if (count != null) _unreadNotificationCount.value = count
+            }
+        }
+        viewModelScope.launch {
+            orderUseCases.workerOrders.collect { list ->
+                if (list == null) return@collect
+                val now = nowInArgentina(clock)
+                _uiState.update { state ->
+                    val success = state as? ProviderHomeUiState.Success ?: return@update state
+                    success.copy(
+                        content = success.content.copy(
+                            upcomingOrders = upcomingAgendaAppointments(list, now),
+                        ),
+                        now = now,
+                    )
+                }
             }
         }
         loadHome()
