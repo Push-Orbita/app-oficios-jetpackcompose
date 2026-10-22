@@ -3,6 +3,7 @@ package com.cocido.oficios
 import android.app.Application
 import android.content.Context
 import com.cocido.oficios.core.datastore.ThemeModePreferences
+import com.cocido.oficios.core.ui.map.MapsPreheat
 import com.cocido.oficios.domain.repository.UserPreferencesRepository
 import com.cocido.oficios.theme.ThemeNightMode
 import dagger.hilt.android.HiltAndroidApp
@@ -27,6 +28,7 @@ class OficiosApplication : Application() {
     override fun onCreate() {
         ThemeNightMode.applyFromPreferences(this)
         super.onCreate()
+        MapsPreheat.start(this)
         applicationScope.launch(Dispatchers.Main.immediate) {
             userPreferencesRepository.themeMode.collect { mode ->
                 ThemeModePreferences.write(this@OficiosApplication, mode)

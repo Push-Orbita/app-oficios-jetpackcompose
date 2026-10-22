@@ -27,13 +27,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -85,25 +89,15 @@ fun OficiosLocationPicker(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(selected ?: FormosaCenter, if (selected == null) 12f else 16f)
     }
-    var mapLoaded by remember { mutableStateOf(false) }
-    var mapUnavailable by remember { mutableStateOf(mapsApiKey.isBlank()) }
+    val mapLoad = rememberMapLoadSession(mapsApiKey)
 
-    LaunchedEffect(mapsApiKey) {
-        if (mapsApiKey.isBlank()) {
-            mapUnavailable = true
-            return@LaunchedEffect
-        }
-        delay(MAP_LOAD_TIMEOUT_MILLIS)
-        if (!mapLoaded) mapUnavailable = true
-    }
-
-    LaunchedEffect(selected, mapLoaded, mapUnavailable) {
+    LaunchedEffect(selected, mapLoad.state.loaded, mapLoad.state.unavailable) {
         val target = selected ?: return@LaunchedEffect
         cameraPositionState.moveSafely(
             target = target,
             zoom = 16f,
-            mapLoaded = mapLoaded,
-            mapUnavailable = mapUnavailable,
+            mapLoaded = mapLoad.state.loaded,
+            mapUnavailable = mapLoad.state.unavailable,
         )
     }
 
@@ -123,55 +117,44 @@ fun OficiosLocationPicker(
                 .fillMaxWidth()
                 .height(260.dp)
                 .clip(RoundedCornerShape(16.dp))
+                .then(mapLoad.visibilityModifier)
                 .semantics { contentDescription = "Mapa para seleccionar la ubicación" },
         ) {
-            if (!mapUnavailable) GoogleMap(
-                modifier = Modifier.matchParentSize(),
-                cameraPositionState = cameraPositionState,
-                properties = MapProperties(isMyLocationEnabled = showMyLocation),
-                uiSettings = MapUiSettings(
-                    compassEnabled = true,
-                    myLocationButtonEnabled = false,
-                    zoomControlsEnabled = false,
-                    mapToolbarEnabled = false,
-                ),
-                onMapClick = { if (enabled) onLocationSelected(it.latitude, it.longitude) },
-                onMapLoaded = { mapLoaded = true },
-            ) {
-                selected?.let {
-                    Marker(
-                        state = remember(it) { MarkerState(position = it) },
-                        title = "Ubicación seleccionada",
-                    )
+            if (mapLoad.state.showGoogleMap) {
+                key(mapLoad.state.generation) {
+                    GoogleMap(
+                        modifier = Modifier.matchParentSize(),
+                        cameraPositionState = cameraPositionState,
+                        properties = MapProperties(isMyLocationEnabled = showMyLocation),
+                        uiSettings = MapUiSettings(
+                            compassEnabled = true,
+                            myLocationButtonEnabled = false,
+                            zoomControlsEnabled = false,
+                            mapToolbarEnabled = false,
+                        ),
+                        onMapClick = { if (enabled) onLocationSelected(it.latitude, it.longitude) },
+                        onMapLoaded = mapLoad.onLoaded,
+                    ) {
+                        selected?.let {
+                            Marker(
+                                state = remember(it) { MarkerState(position = it) },
+                                title = "Ubicación seleccionada",
+                            )
+                        }
+                    }
                 }
             }
-            if (!mapLoaded && !mapUnavailable) {
+            if (mapLoad.state.showSpinner) {
                 Box(
                     Modifier.matchParentSize().background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center,
                 ) { CircularProgressIndicator() }
             }
-            if (mapUnavailable && !mapLoaded) {
-                Column(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(OficiosSpacing.md),
-                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterVertically),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Place,
-                        contentDescription = "Mapa no disponible",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = "No pudimos cargar el mapa. Use su ubicación actual para guardar el domicilio.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+            if (mapLoad.state.showFallback) {
+                MapLoadFallback(
+                    text = "No pudimos cargar el mapa. Use su ubicación actual para guardar el domicilio.",
+                    onRetry = mapLoad.onRetry,
+                )
             }
             OficiosButton(
                 text = "Usar mi ubicación",
@@ -234,27 +217,17 @@ fun OficiosAddressLocationPicker(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(selected ?: FormosaCenter, if (selected == null) 12f else 16f)
     }
-    var mapLoaded by remember { mutableStateOf(false) }
-    var mapUnavailable by remember { mutableStateOf(mapsApiKey.isBlank()) }
+    val mapLoad = rememberMapLoadSession(mapsApiKey)
     val markerState = remember { MarkerState(position = selected ?: FormosaCenter) }
 
-    LaunchedEffect(mapsApiKey) {
-        if (mapsApiKey.isBlank()) {
-            mapUnavailable = true
-            return@LaunchedEffect
-        }
-        delay(MAP_LOAD_TIMEOUT_MILLIS)
-        if (!mapLoaded) mapUnavailable = true
-    }
-
-    LaunchedEffect(selected, mapLoaded, mapUnavailable) {
+    LaunchedEffect(selected, mapLoad.state.loaded, mapLoad.state.unavailable) {
         val target = selected ?: FormosaCenter
         markerState.position = target
         cameraPositionState.moveSafely(
             target = target,
             zoom = if (selected == null) 12f else 16f,
-            mapLoaded = mapLoaded,
-            mapUnavailable = mapUnavailable,
+            mapLoaded = mapLoad.state.loaded,
+            mapUnavailable = mapLoad.state.unavailable,
         )
     }
 
@@ -275,62 +248,49 @@ fun OficiosAddressLocationPicker(
                     .fillMaxWidth()
                     .height(260.dp)
                     .clip(RoundedCornerShape(16.dp))
+                    .then(mapLoad.visibilityModifier)
                     .semantics { contentDescription = "Mapa para confirmar la ubicación" },
             ) {
-                if (!mapUnavailable) {
-                    GoogleMap(
-                        modifier = Modifier.matchParentSize(),
-                        cameraPositionState = cameraPositionState,
-                        properties = MapProperties(isMyLocationEnabled = false),
-                        uiSettings = MapUiSettings(
-                            compassEnabled = true,
-                            myLocationButtonEnabled = false,
-                            zoomControlsEnabled = false,
-                            mapToolbarEnabled = false,
-                            scrollGesturesEnabled = pinDraggable,
-                        ),
-                        onMapClick = { point ->
-                            if (pinDraggable) {
-                                markerState.position = point
-                                onPinChanged(point.latitude, point.longitude)
-                            }
-                        },
-                        onMapLoaded = { mapLoaded = true },
-                    ) {
-                        Marker(
-                            state = markerState,
-                            title = "Entrada del local",
-                            draggable = pinDraggable,
-                        )
+                if (mapLoad.state.showGoogleMap) {
+                    key(mapLoad.state.generation) {
+                        GoogleMap(
+                            modifier = Modifier.matchParentSize(),
+                            cameraPositionState = cameraPositionState,
+                            properties = MapProperties(isMyLocationEnabled = false),
+                            uiSettings = MapUiSettings(
+                                compassEnabled = true,
+                                myLocationButtonEnabled = false,
+                                zoomControlsEnabled = false,
+                                mapToolbarEnabled = false,
+                                scrollGesturesEnabled = pinDraggable,
+                            ),
+                            onMapClick = { point ->
+                                if (pinDraggable) {
+                                    markerState.position = point
+                                    onPinChanged(point.latitude, point.longitude)
+                                }
+                            },
+                            onMapLoaded = mapLoad.onLoaded,
+                        ) {
+                            Marker(
+                                state = markerState,
+                                title = "Entrada del local",
+                                draggable = pinDraggable,
+                            )
+                        }
                     }
                 }
-                if (!mapLoaded && !mapUnavailable) {
+                if (mapLoad.state.showSpinner) {
                     Box(
                         Modifier.matchParentSize().background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.Center,
                     ) { CircularProgressIndicator() }
                 }
-                if (mapUnavailable && !mapLoaded) {
-                    Column(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(OficiosSpacing.md),
-                        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterVertically),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Place,
-                            contentDescription = "Mapa no disponible",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = "No pudimos cargar el mapa. Confirme la dirección escrita; no se usa el GPS.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
+                if (mapLoad.state.showFallback) {
+                    MapLoadFallback(
+                        text = "No pudimos cargar el mapa. Confirme la dirección escrita; no se usa el GPS.",
+                        onRetry = mapLoad.onRetry,
+                    )
                 }
             }
             if (selected != null) {
@@ -383,8 +343,7 @@ fun OficiosTrackingMap(
 ) {
     val context = LocalContext.current
     val mapsApiKey = remember { context.googleMapsApiKey() }
-    var mapReady by remember { mutableStateOf(false) }
-    var mapFailed by remember { mutableStateOf(mapsApiKey.isBlank()) }
+    val mapLoad = rememberMapLoadSession(mapsApiKey)
     val destination = LatLng(destinationLatitude, destinationLongitude)
     val worker = workerLatitude?.let { lat -> workerLongitude?.let { lng -> LatLng(lat, lng) } }
     val focus = worker ?: destination
@@ -392,21 +351,12 @@ fun OficiosTrackingMap(
         position = CameraPosition.fromLatLngZoom(focus, if (worker == null) 16f else 14f)
     }
 
-    LaunchedEffect(mapsApiKey) {
-        if (mapsApiKey.isBlank()) {
-            mapFailed = true
-            return@LaunchedEffect
-        }
-        delay(MAP_LOAD_TIMEOUT_MILLIS)
-        if (!mapReady) mapFailed = true
-    }
-
-    LaunchedEffect(focus, mapReady, mapFailed) {
+    LaunchedEffect(focus, mapLoad.state.loaded, mapLoad.state.unavailable) {
         cameraPositionState.moveSafely(
             target = focus,
             zoom = if (worker == null) 16f else 14f,
-            mapLoaded = mapReady,
-            mapUnavailable = mapFailed,
+            mapLoaded = mapLoad.state.loaded,
+            mapUnavailable = mapLoad.state.unavailable,
         )
     }
 
@@ -414,8 +364,13 @@ fun OficiosTrackingMap(
         modifier = modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp)),
         color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
-        Box(Modifier.fillMaxSize()) {
-            if (!mapFailed) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .then(mapLoad.visibilityModifier),
+        ) {
+            if (mapLoad.state.showGoogleMap) {
+            key(mapLoad.state.generation) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
@@ -428,7 +383,7 @@ fun OficiosTrackingMap(
                     scrollGesturesEnabled = onMapClick == null,
                 ),
                 onMapClick = { onMapClick?.invoke() },
-                onMapLoaded = { mapReady = true },
+                onMapLoaded = mapLoad.onLoaded,
             ) {
                 Marker(
                     state = remember(destination) { MarkerState(position = destination) },
@@ -441,7 +396,8 @@ fun OficiosTrackingMap(
                     )
                 }
             }
-            if (onMapClick != null && mapReady) {
+            }
+            if (onMapClick != null && mapLoad.state.loaded) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -456,7 +412,12 @@ fun OficiosTrackingMap(
                 )
             }
             }
-            if (!mapReady) {
+            if (mapLoad.state.showFallback) {
+                MapLoadFallback(
+                    text = "No pudimos cargar el mapa. Confirme la dirección escrita; no se usa el GPS.",
+                    onRetry = mapLoad.onRetry,
+                )
+            } else if (!mapLoad.state.loaded) {
                 MapPlaceholder(
                     address = addressLabel,
                     openLabel = openInMapsLabel,
@@ -528,7 +489,87 @@ private fun android.content.Context.googleMapsApiKey(): String {
     }
 }
 
-private const val MAP_LOAD_TIMEOUT_MILLIS = 8_000L
+@Composable
+private fun rememberMapLoadSession(apiKey: String): MapLoadSession {
+    val view = LocalView.current
+    var state by remember(apiKey) {
+        mutableStateOf(MapLoadState(unavailable = apiKey.isBlank()))
+    }
+    var visibleOnScreen by remember { mutableStateOf(false) }
+
+    LaunchedEffect(apiKey, state.generation, visibleOnScreen, state.loaded) {
+        if (apiKey.isBlank()) {
+            state = state.copy(unavailable = true)
+            return@LaunchedEffect
+        }
+        if (!shouldStartMapTimeout(apiKeyBlank = false, visibleOnScreen = visibleOnScreen)) {
+            return@LaunchedEffect
+        }
+        delay(MAP_LOAD_TIMEOUT_MILLIS)
+        state = state.onTimeout()
+    }
+
+    return MapLoadSession(
+        state = state,
+        visibilityModifier = Modifier.onGloballyPositioned { coords ->
+            val bounds = coords.boundsInWindow()
+            if (
+                isMapOnScreen(
+                    boundsLeft = bounds.left,
+                    boundsTop = bounds.top,
+                    boundsRight = bounds.right,
+                    boundsBottom = bounds.bottom,
+                    viewportWidth = view.width.toFloat(),
+                    viewportHeight = view.height.toFloat(),
+                )
+            ) {
+                visibleOnScreen = true
+            }
+        },
+        onLoaded = { state = state.onLoaded() },
+        onRetry = { state = state.retry(apiKeyBlank = apiKey.isBlank()) },
+    )
+}
+
+private data class MapLoadSession(
+    val state: MapLoadState,
+    val visibilityModifier: Modifier,
+    val onLoaded: () -> Unit,
+    val onRetry: () -> Unit,
+)
+
+@Composable
+private fun MapLoadFallback(
+    text: String,
+    onRetry: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(OficiosSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Place,
+            contentDescription = "Mapa no disponible",
+            tint = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
+        OficiosButton(
+            text = "Reintentar",
+            onClick = onRetry,
+            variant = OficiosButtonVariant.Secondary,
+            size = OficiosButtonSize.Large,
+        )
+    }
+}
 
 private fun android.content.Context.hasAnyLocationPermission(): Boolean =
     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
