@@ -204,7 +204,7 @@
     <string name="services_local_name_hint">Ej: Taller Centro</string>
     <string name="services_neighborhood">Barrio</string>
     <string name="services_neighborhood_hint">Busque y seleccione el barrio</string>
-    <string name="services_street">Calle y altura</string>
+    <string name="services_street">Calle</string>
     <string name="services_days">Días habituales</string>
     <string name="services_hours">Horarios</string>
     <string name="services_from">Desde</string>
