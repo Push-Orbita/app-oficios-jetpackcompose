@@ -134,7 +134,7 @@ Matías: no alcanza con tipografía/íconos si la composición sigue la app viej
 | ID | Qué | Impacto | Doc |
 |---|---|---|---|
 | BK-01 | PATCH atómico especialidades/modalidad/`diasLaborales` | Edit servicio = DELETE+POST `/full` | [BK-01-editar-servicio.md](backend-requests/BK-01-editar-servicio.md) |
-| BK-02 / BK-03 | PATCH `diasLaborales` / `sesion` | Calendario borra y recrea | — |
+| BK-02 / BK-03 | PATCH `diasLaborales` / `sesion` | Calendario borra y recrea | [AGENDA_SESION_UI_VS_OPENAPI.md](backend/AGENDA_SESION_UI_VS_OPENAPI.md) |
 | BK-04 | Bloqueos de agenda | No hay UI de bloqueo | — |
 | BK-05 | Disponibilidad por subrubro / sin turnos | Horario por oficio incompleto | — |
 | BK-06 / BK-07 | Plazo cancelación 1–24 vs 12–168 | InfoRow muestra lo que manda prod | — |
