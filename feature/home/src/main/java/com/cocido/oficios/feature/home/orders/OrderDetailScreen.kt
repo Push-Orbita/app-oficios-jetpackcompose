@@ -4,6 +4,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.text.KeyboardActions
@@ -446,7 +447,7 @@ private fun OrderDetailContent(
                             text = stringResource(R.string.orders_finish),
                             onClick = { showFinalizeDialog = true },
                             modifier = Modifier.fillMaxWidth(),
-                            variant = OficiosButtonVariant.Secondary,
+                            variant = OficiosButtonVariant.Primary,
                             size = OficiosButtonSize.Large,
                             enabled = !state.isActionInProgress,
                         )
@@ -663,16 +664,16 @@ private fun TimelineStep(
         targetValue = when (phase) {
             OrderTimelinePhase.Done -> MaterialTheme.colorScheme.primary
             OrderTimelinePhase.Current -> OficiosTheme.colors.accent
-            OrderTimelinePhase.Upcoming -> MaterialTheme.colorScheme.outline
+            OrderTimelinePhase.Upcoming -> Color.Transparent
         },
         animationSpec = colorSpec,
         label = "TimelineStepCircle",
     )
     val iconTint by animateColorAsState(
         targetValue = when (phase) {
-            OrderTimelinePhase.Done -> MaterialTheme.colorScheme.onSurface
-            OrderTimelinePhase.Current -> MaterialTheme.colorScheme.background
-            OrderTimelinePhase.Upcoming -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
+            OrderTimelinePhase.Done -> MaterialTheme.colorScheme.onPrimary
+            OrderTimelinePhase.Current -> MaterialTheme.colorScheme.onPrimary
+            OrderTimelinePhase.Upcoming -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         animationSpec = colorSpec,
         label = "TimelineStepIcon",
@@ -694,20 +695,7 @@ private fun TimelineStep(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(OficiosComponentSize.iconMd)
-                    .clip(CircleShape)
-                    .background(circle),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(OficiosComponentSize.iconSm),
-                )
-            }
+            TimelineStepGlyph(phase = phase, step = step, circle = circle, iconTint = iconTint)
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelLarge.copy(hyphens = Hyphens.None),
@@ -721,20 +709,7 @@ private fun TimelineStep(
                 .clearAndSetSemantics { contentDescription = description },
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(OficiosComponentSize.iconMd)
-                    .clip(CircleShape)
-                    .background(circle),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(OficiosComponentSize.iconSm),
-                )
-            }
+            TimelineStepGlyph(phase = phase, step = step, circle = circle, iconTint = iconTint)
             Text(
                 text = label,
                 modifier = Modifier.padding(top = OficiosSpacing.xxs),
@@ -748,6 +723,36 @@ private fun TimelineStep(
                 maxLines = 2,
             )
         }
+    }
+}
+
+@Composable
+private fun TimelineStepGlyph(
+    phase: OrderTimelinePhase,
+    step: OrderTimelineStep,
+    circle: Color,
+    iconTint: Color,
+) {
+    Box(
+        modifier = Modifier
+            .size(OficiosComponentSize.iconMd)
+            .clip(CircleShape)
+            .background(circle)
+            .then(
+                if (phase == OrderTimelinePhase.Upcoming) {
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                } else {
+                    Modifier
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = if (phase == OrderTimelinePhase.Done) Icons.Outlined.Check else orderTimelineStepIcon(step),
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(OficiosComponentSize.iconSm),
+        )
     }
 }
 

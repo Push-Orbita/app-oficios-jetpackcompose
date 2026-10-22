@@ -199,8 +199,8 @@ fun orderScreenTitleRes(status: ServiceRequestStatus, bookingStatus: BookingStat
     status == ServiceRequestStatus.EXPIRED -> R.string.orders_title_cancelled
     status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER ->
         R.string.orders_title_pending
-    bookingStatus == BookingStatus.IN_PROGRESS || bookingStatus == BookingStatus.FINISHED ->
-        R.string.orders_title_finish
+    bookingStatus == BookingStatus.FINISHED -> R.string.orders_title_detail
+    bookingStatus == BookingStatus.IN_PROGRESS -> R.string.orders_title_finish
     else -> R.string.orders_title_confirmed
 }
 
