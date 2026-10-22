@@ -48,7 +48,6 @@ import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import kotlinx.coroutines.delay
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -101,8 +100,14 @@ fun OficiosLocationPicker(
         if (!mapLoaded) mapUnavailable = true
     }
 
-    LaunchedEffect(selected) {
-        selected?.let { cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(it, 16f)) }
+    LaunchedEffect(selected, mapLoaded, mapUnavailable) {
+        val target = selected ?: return@LaunchedEffect
+        cameraPositionState.moveSafely(
+            target = target,
+            zoom = 16f,
+            mapLoaded = mapLoaded,
+            mapUnavailable = mapUnavailable,
+        )
     }
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
@@ -245,10 +250,15 @@ fun OficiosAddressLocationPicker(
         if (!mapLoaded) mapUnavailable = true
     }
 
-    LaunchedEffect(selected) {
+    LaunchedEffect(selected, mapLoaded, mapUnavailable) {
         val target = selected ?: FormosaCenter
         markerState.position = target
-        cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(target, if (selected == null) 12f else 16f))
+        cameraPositionState.moveSafely(
+            target = target,
+            zoom = if (selected == null) 12f else 16f,
+            mapLoaded = mapLoaded,
+            mapUnavailable = mapUnavailable,
+        )
     }
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
@@ -394,10 +404,13 @@ fun OficiosTrackingMap(
         if (!mapReady) mapFailed = true
     }
 
-    LaunchedEffect(focus, mapFailed) {
-        if (!mapFailed) {
-            cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(focus, if (worker == null) 16f else 14f))
-        }
+    LaunchedEffect(focus, mapReady, mapFailed) {
+        cameraPositionState.moveSafely(
+            target = focus,
+            zoom = if (worker == null) 16f else 14f,
+            mapLoaded = mapReady,
+            mapUnavailable = mapFailed,
+        )
     }
 
     Surface(
