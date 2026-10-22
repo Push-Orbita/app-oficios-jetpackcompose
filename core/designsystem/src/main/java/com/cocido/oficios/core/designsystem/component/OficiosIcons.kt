@@ -34,6 +34,7 @@ object OficiosIcons {
     @DrawableRes val ChevronLeft = R.drawable.ic_lucide_chevron_left
     @DrawableRes val ChevronRight = R.drawable.ic_lucide_chevron_right
     @DrawableRes val ChevronDown = R.drawable.ic_lucide_chevron_down
+    @DrawableRes val Check = R.drawable.ic_lucide_check
     @DrawableRes val Menu = R.drawable.ic_lucide_menu
     @DrawableRes val X = R.drawable.ic_lucide_x
     @DrawableRes val Search = R.drawable.ic_lucide_search

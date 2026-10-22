@@ -8,25 +8,34 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
 import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonList
@@ -157,8 +166,12 @@ private fun OrdersListSuccess(
     now: ZonedDateTime,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        OrdersFilterRow(selected = state.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
-        OrdersSortRow(selected = state.sort, onSelected = { onEvent(OrdersListEvent.SortSelected(it)) })
+        OrdersFilterRow(
+            selectedFilter = state.filter,
+            selectedSort = state.sort,
+            onFilterSelected = { onEvent(OrdersListEvent.FilterSelected(it)) },
+            onSortSelected = { onEvent(OrdersListEvent.SortSelected(it)) },
+        )
         val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
             onEvent(OrdersListEvent.Refresh)
         }
@@ -283,46 +296,127 @@ private fun LazyItemScope.PlaceholderPage(
 }
 
 @Composable
-private fun OrdersSortRow(selected: OrdersListSort, onSelected: (OrdersListSort) -> Unit) {
-    val sortDescription = stringResource(R.string.orders_sort_content_description)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = OficiosSpacing.xl, vertical = OficiosSpacing.xxs)
-            .selectableGroup()
-            .semantics { contentDescription = sortDescription },
-        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm, Alignment.End),
-    ) {
-        OficiosSegmentChip(
-            label = stringResource(R.string.orders_sort_newest),
-            selected = selected == OrdersListSort.NEWEST_FIRST,
-            onClick = { onSelected(OrdersListSort.NEWEST_FIRST) },
-        )
-        OficiosSegmentChip(
-            label = stringResource(R.string.orders_sort_oldest),
-            selected = selected == OrdersListSort.OLDEST_FIRST,
-            onClick = { onSelected(OrdersListSort.OLDEST_FIRST) },
-        )
-    }
-}
-
-@Composable
-private fun OrdersFilterRow(selected: OrdersListFilter, onSelected: (OrdersListFilter) -> Unit) {
+private fun OrdersFilterRow(
+    selectedFilter: OrdersListFilter,
+    selectedSort: OrdersListSort,
+    onFilterSelected: (OrdersListFilter) -> Unit,
+    onSortSelected: (OrdersListSort) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = OficiosSpacing.xl, vertical = OficiosSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
-        OficiosSegmentChip(
-            label = stringResource(R.string.orders_filter_active),
-            selected = selected == OrdersListFilter.ACTIVE,
-            onClick = { onSelected(OrdersListFilter.ACTIVE) },
-        )
-        OficiosSegmentChip(
-            label = stringResource(R.string.orders_filter_history),
-            selected = selected == OrdersListFilter.HISTORY,
-            onClick = { onSelected(OrdersListFilter.HISTORY) },
-        )
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OficiosSegmentChip(
+                label = stringResource(R.string.orders_filter_active),
+                selected = selectedFilter == OrdersListFilter.ACTIVE,
+                onClick = { onFilterSelected(OrdersListFilter.ACTIVE) },
+            )
+            OficiosSegmentChip(
+                label = stringResource(R.string.orders_filter_history),
+                selected = selectedFilter == OrdersListFilter.HISTORY,
+                onClick = { onFilterSelected(OrdersListFilter.HISTORY) },
+            )
+        }
+        OrdersSortMenu(selected = selectedSort, onSelected = onSortSelected)
     }
+}
+
+@Composable
+private fun OrdersSortMenu(
+    selected: OrdersListSort,
+    onSelected: (OrdersListSort) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = stringResource(
+        if (selected == OrdersListSort.NEWEST_FIRST) {
+            R.string.orders_sort_newest
+        } else {
+            R.string.orders_sort_oldest
+        },
+    )
+    val sortDescription = stringResource(R.string.orders_sort_content_description, selectedLabel)
+    Box {
+        OficiosTouchTarget(
+            onClick = { expanded = true },
+            accessibilityContentDescription = sortDescription,
+            role = Role.Button,
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+            ) {
+                Text(
+                    text = selectedLabel,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = OficiosColorWhite,
+                )
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.ChevronDown),
+                    contentDescription = null,
+                    tint = OficiosColorWhite,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            OrdersSortMenuItem(
+                label = stringResource(R.string.orders_sort_newest),
+                selected = selected == OrdersListSort.NEWEST_FIRST,
+                onClick = {
+                    onSelected(OrdersListSort.NEWEST_FIRST)
+                    expanded = false
+                },
+            )
+            OrdersSortMenuItem(
+                label = stringResource(R.string.orders_sort_oldest),
+                selected = selected == OrdersListSort.OLDEST_FIRST,
+                onClick = {
+                    onSelected(OrdersListSort.OLDEST_FIRST)
+                    expanded = false
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun OrdersSortMenuItem(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = OficiosColorWhite,
+            )
+        },
+        onClick = onClick,
+        trailingIcon = if (selected) {
+            {
+                Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.Check),
+                    contentDescription = null,
+                    tint = OficiosColorWhite,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        } else {
+            null
+        },
+    )
 }

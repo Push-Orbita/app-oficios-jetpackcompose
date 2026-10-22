@@ -214,7 +214,7 @@
     <string name="orders_filter_history">Historial</string>
     <string name="orders_sort_newest">Más recientes</string>
     <string name="orders_sort_oldest">Más antiguos</string>
-    <string name="orders_sort_content_description">Orden de sus pedidos</string>
+    <string name="orders_sort_content_description">Orden de sus pedidos: %1$s</string>
     <string name="orders_empty_active_title">No tiene pedidos activos</string>
     <string name="orders_empty_active_description">Cuando solicite un servicio, va a verlo acá.</string>
     <string name="orders_empty_active_worker_title">No tiene pedidos activos</string>
