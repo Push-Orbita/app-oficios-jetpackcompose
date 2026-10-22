@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.account
 
+import com.cocido.oficios.domain.validation.AuthValidators
+
 data class PersonalDataUiState(
     val isLoading: Boolean = true,
     val userId: Long = 0L,
@@ -14,7 +16,12 @@ data class PersonalDataUiState(
     val emailError: String? = null,
     val errorMessage: String? = null,
     val isSaving: Boolean = false,
-)
+) {
+    val canSave: Boolean
+        get() = AuthValidators.validateName(firstName, "nombres") == null &&
+            AuthValidators.validateName(lastName, "apellido") == null &&
+            AuthValidators.validateEmail(email.trim()) == null
+}
 
 sealed interface PersonalDataEvent {
     data object Retry : PersonalDataEvent

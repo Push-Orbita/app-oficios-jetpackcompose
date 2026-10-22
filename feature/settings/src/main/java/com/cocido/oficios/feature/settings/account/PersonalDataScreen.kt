@@ -168,7 +168,7 @@ private fun PersonalDataForm(
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,
             loading = state.isSaving,
-            enabled = !state.isSaving,
+            enabled = state.canSave && !state.isSaving,
             modifier = Modifier.fillMaxWidth(),
         )
     }

@@ -137,7 +137,7 @@ class PersonalDataViewModel @Inject constructor(
                             removePhoto = false,
                         )
                     }
-                    emitEffect(PersonalDataEffect.Saved("Tus datos se actualizaron correctamente."))
+                    emitEffect(PersonalDataEffect.Saved("Sus datos se actualizaron correctamente."))
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isSaving = false, errorMessage = result.error.userMessage())

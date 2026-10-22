@@ -115,7 +115,7 @@ private fun ChangePasswordForm(
             text = stringResource(R.string.change_password_submit),
             onClick = { onEvent(ChangePasswordEvent.Submit) },
             loading = state.isSubmitting,
-            enabled = !state.isSubmitting,
+            enabled = state.canSubmit && !state.isSubmitting,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,
