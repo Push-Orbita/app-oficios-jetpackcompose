@@ -56,7 +56,7 @@ fun OficiosBrandBlock(
             height = iconHeight,
             modifier = Modifier.width(iconWidth),
         )
-        OficiosFormosaWordmark(height = wordmarkHeight)
+        OficiosFormosaWordmark(height = wordmarkHeight, fillWidth = false)
     }
 }
 

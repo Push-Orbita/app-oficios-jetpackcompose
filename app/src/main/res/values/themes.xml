@@ -9,7 +9,9 @@
 
     <style name="Theme.Oficios.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/oficios_splash_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <!-- Icono plano del mismo azul: el lockup (isotipo + wordmark) vive en Compose, centrado. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_compat</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/oficios_splash_background</item>
         <item name="postSplashScreenTheme">@style/Theme.Oficios</item>
     </style>
 </resources>

@@ -25,7 +25,10 @@ class MainActivity : ComponentActivity() {
     private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen().setOnExitAnimationListener { splashView ->
+            // Sin zoom del icono de sistema: el lockup Compose ya está centrado sobre el mismo azul.
+            splashView.remove()
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         handlePushIntent(intent)

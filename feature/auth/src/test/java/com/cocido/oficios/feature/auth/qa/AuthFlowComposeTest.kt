@@ -1,11 +1,17 @@
 package com.cocido.oficios.feature.auth.qa
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performScrollTo
+import com.cocido.oficios.feature.auth.splash.SplashBrandTestTag
+import kotlin.math.abs
+import org.junit.Assert.assertTrue
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.auth.forgot.ForgotPasswordScreen
 import com.cocido.oficios.feature.auth.forgot.ForgotPasswordUiState
@@ -35,6 +41,27 @@ class AuthFlowComposeTest {
             OficiosTheme { SplashScreen(uiState = SplashUiState.Loading, onRetry = {}) }
         }
         composeRule.onAllNodesWithContentDescription("Oficios Formosa").onFirst().assertIsDisplayed()
+    }
+
+    @Test
+    fun splashBrandLockupIsCentered() {
+        composeRule.setContent {
+            OficiosTheme { SplashScreen(uiState = SplashUiState.Loading, onRetry = {}) }
+        }
+        val root = composeRule.onRoot().getUnclippedBoundsInRoot()
+        val brand = composeRule.onNodeWithTag(SplashBrandTestTag).getUnclippedBoundsInRoot()
+        val rootCenterX = (root.left + root.right) / 2
+        val rootCenterY = (root.top + root.bottom) / 2
+        val brandCenterX = (brand.left + brand.right) / 2
+        val brandCenterY = (brand.top + brand.bottom) / 2
+        assertTrue(
+            "lockup X ${brandCenterX.value} vs screen ${rootCenterX.value}",
+            abs(brandCenterX.value - rootCenterX.value) <= 8f,
+        )
+        assertTrue(
+            "lockup Y ${brandCenterY.value} vs screen ${rootCenterY.value}",
+            abs(brandCenterY.value - rootCenterY.value) <= 16f,
+        )
     }
 
     @Test
