@@ -13,6 +13,7 @@ import com.cocido.oficios.core.network.api.search.WorkerSearchApi
 import com.cocido.oficios.core.network.api.social.FavoritesApi
 import com.cocido.oficios.core.network.api.worker.WorkerProfileApi
 import com.cocido.oficios.core.network.api.worker.WorkerReviewsApi
+import com.cocido.oficios.core.network.JsonElementLenientConverterFactory
 import com.cocido.oficios.core.network.UnitResponseConverterFactory
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
@@ -41,6 +42,7 @@ object NetworkTestFactory {
             .baseUrl(server.url("/"))
             .client(client)
             .addConverterFactory(UnitResponseConverterFactory)
+            .addConverterFactory(JsonElementLenientConverterFactory)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }

@@ -18,6 +18,7 @@ import com.cocido.oficios.core.network.api.notifications.NotificationsApi
 import com.cocido.oficios.core.network.api.orders.OrdersApi
 import com.cocido.oficios.core.network.api.safety.ReportsApi
 import com.cocido.oficios.core.network.api.social.FavoritesApi
+import com.cocido.oficios.core.network.JsonElementLenientConverterFactory
 import com.cocido.oficios.core.network.UnitResponseConverterFactory
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
@@ -81,6 +82,7 @@ object NetworkModule {
             .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(UnitResponseConverterFactory)
+            .addConverterFactory(JsonElementLenientConverterFactory)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
     }
@@ -105,6 +107,7 @@ object NetworkModule {
             .baseUrl(BuildConfig.DEMO_BASE_URL)
             .client(demoClient)
             .addConverterFactory(UnitResponseConverterFactory)
+            .addConverterFactory(JsonElementLenientConverterFactory)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
     }

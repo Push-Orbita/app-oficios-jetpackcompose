@@ -153,7 +153,7 @@ private class FakeOrdersApi : OrdersApi {
     override suspend fun getSolicitud(id: Long) = SolicitudServicioDto(id = id, estado = "PENDIENTE")
     override suspend fun aceptarSolicitud(id: Long) = error("no")
     override suspend fun rechazarSolicitud(id: Long, request: RechazarSolicitudRequestDto) = error("no")
-    override suspend fun enviarContrapropuesta(id: Long, request: CreateContrapropuestaRequestDto): JsonElement = error("no")
+    override suspend fun enviarContrapropuesta(id: Long, request: CreateContrapropuestaRequestDto) = error("no")
     override suspend fun cancelarSolicitudConfirmada(id: Long, request: CancelarSolicitudRequestDto): SolicitudServicioDto {
         cancelConfirmedCalls++
         lastCancelMotivo = request.motivoCancelacion
@@ -163,12 +163,12 @@ private class FakeOrdersApi : OrdersApi {
         result(SolicitudServicioDto(id = id, estado = "CANCELADA")).also {
             clientOrders.removeAll { order -> order.id == id }
         }
-    override suspend fun aceptarContrapropuesta(id: Long): JsonElement = error("no")
-    override suspend fun rechazarContrapropuesta(id: Long): JsonElement = error("no")
+    override suspend fun aceptarContrapropuesta(id: Long) = error("no")
+    override suspend fun rechazarContrapropuesta(id: Long) = error("no")
     override suspend fun getBooking(id: Long) = BookingDto(id = id, estado = "PENDIENTE")
     override suspend fun resendCompletionCode(id: Long): com.cocido.oficios.core.network.api.orders.dto.ResendCompletionCodeResponseDto = error("no")
     override suspend fun finalizarBooking(id: Long, request: FinalizeBookingRequestDto) = error("no")
     override suspend fun marcarTracking(bookingId: Long, request: MarcarTrackingRequestDto): TrackingBookingDto = error("no")
     override suspend fun getTracking(bookingId: Long): JsonElement = JsonNull
-    override suspend fun crearCalificacion(request: CreateCalificacionRequestDto): JsonElement = error("no")
+    override suspend fun crearCalificacion(request: CreateCalificacionRequestDto) = error("no")
 }

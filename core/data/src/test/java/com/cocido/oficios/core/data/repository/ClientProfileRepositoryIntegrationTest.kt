@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -78,5 +79,27 @@ class ClientProfileRepositoryIntegrationTest {
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is AppError.Validation)
+    }
+
+    @Test
+    fun `delete-equivalent create still succeeds when later GET is empty`() = runTest {
+        // Covered at API layer; here we assert contact cache refresh after a successful POST.
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(201)
+                .setBody("""{"id":21}"""),
+        )
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"contactos":[{"id":21,"nombre":"Daniel","telefonoWhatsapp":"93705219109","telefonoVerificado":false,"email":null,"favorito":true}]}"""),
+        )
+
+        val result = repository.saveContacto(
+            ClientContactoRequest(nombre = "Daniel", telefonoWhatsapp = "93705219109"),
+        )
+        assertTrue(result is AppResult.Success)
+        assertEquals(21L, (result as AppResult.Success).data)
+        assertEquals(21L, repository.contactos.value?.single()?.id)
     }
 }

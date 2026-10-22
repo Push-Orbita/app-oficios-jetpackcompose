@@ -6,8 +6,10 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 
 /**
- * kotlinx.serialization reclama [Unit] y falla con 200 vacío o texto plano
- * ("Foto eliminada"). Registrarlo **antes** del converter JSON descarta el body.
+ * Cualquier 2xx cuyo body no se usa (DELETE, PATCH/POST con texto plano o vacío)
+ * debe declarar [Unit]. kotlinx.serialization falla con "Foto eliminada" /
+ * "Contacto eliminado correctamente". Registrarlo **antes** del converter JSON
+ * descarta el body.
  */
 object UnitResponseConverterFactory : Converter.Factory() {
     override fun responseBodyConverter(

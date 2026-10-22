@@ -200,7 +200,7 @@ private class FakeAccountApi : AccountApi {
         profilePhoto: MultipartBody.Part?,
         currentPhotoUrl: RequestBody?,
     ) = updatedUser
-    override suspend fun changePassword(request: ChangePasswordRequestDto): JsonElement = unused()
+    override suspend fun changePassword(request: ChangePasswordRequestDto) = unused()
     override suspend fun createDeletionRequest(
         idempotencyKey: String,
         request: CreateAccountDeletionRequestDto,
@@ -226,26 +226,26 @@ private class FakeWorkGalleryApi(
 private class UnusedClientProfileApi : ClientProfileApi {
     override suspend fun getMyDomicilios(): MisDomiciliosResponseDto = unused()
     override suspend fun getMyContactos(): MisContactosResponseDto = unused()
-    override suspend fun createDomicilio(request: CreateDomicilioRequestDto): JsonElement = unused()
-    override suspend fun createMyDomicilio(request: UpdateDomicilioRequestDto): JsonElement = unused()
+    override suspend fun createDomicilio(request: CreateDomicilioRequestDto) = unused()
+    override suspend fun createMyDomicilio(request: UpdateDomicilioRequestDto) = unused()
     override suspend fun createContacto(request: CreateContactoRequestDto): CreateContactoResponseDto = unused()
     override suspend fun sendPhoneVerificationCode(contactId: Long): EnviarCodigoTelefonoResponseDto = unused()
     override suspend fun verifyPhoneCode(
         contactId: Long,
         request: VerifyTelefonoCodigoRequestDto,
     ): VerificarTelefonoCodigoResponseDto = unused()
-    override suspend fun updateDomicilio(id: Long, request: UpdateDomicilioRequestDto): JsonElement = unused()
-    override suspend fun deleteDomicilio(id: Long): JsonElement = unused()
-    override suspend fun setFavoriteDomicilio(id: Long, request: UpdateFavoriteRequestDto): JsonElement = unused()
-    override suspend fun updateContacto(id: Long, request: UpdateContactoRequestDto): JsonElement = unused()
-    override suspend fun deleteContacto(id: Long): JsonElement = unused()
-    override suspend fun setFavoriteContacto(id: Long, request: UpdateFavoriteRequestDto): JsonElement = unused()
+    override suspend fun updateDomicilio(id: Long, request: UpdateDomicilioRequestDto) = unused()
+    override suspend fun deleteDomicilio(id: Long) = unused()
+    override suspend fun setFavoriteDomicilio(id: Long, request: UpdateFavoriteRequestDto) = unused()
+    override suspend fun updateContacto(id: Long, request: UpdateContactoRequestDto) = unused()
+    override suspend fun deleteContacto(id: Long) = unused()
+    override suspend fun setFavoriteContacto(id: Long, request: UpdateFavoriteRequestDto) = unused()
 }
 
 private class UnusedProviderProfileApi : ProviderProfileApi {
     override suspend fun updateProfile(request: UpdateTrabajadorPerfilProfesionalRequestDto) = unused()
-    override suspend fun createRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto): JsonElement = unused()
-    override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto): JsonElement = unused()
+    override suspend fun createRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
+    override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
     override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
     override suspend fun deleteRubro(id: Long) = unused()
 }

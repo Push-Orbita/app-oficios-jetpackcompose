@@ -11,7 +11,6 @@ import com.cocido.oficios.core.network.api.notifications.dto.NotificationDto
 import com.cocido.oficios.core.network.api.notifications.dto.NotificationsPageDto
 import com.cocido.oficios.core.network.api.notifications.dto.RegisterDeviceTokenRequestDto
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.JsonElement
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -35,7 +34,7 @@ class NotificationsRepositoryImplTest {
 }
 
 private class FakeNotificationsApi : NotificationsApi {
-    override suspend fun registerDeviceToken(request: RegisterDeviceTokenRequestDto): JsonElement = error("unused")
+    override suspend fun registerDeviceToken(request: RegisterDeviceTokenRequestDto) = error("unused")
 
     override suspend fun markAsRead(notificationId: Long) = MarkNotificationReadResponseDto(leido = true)
 
