@@ -16,6 +16,7 @@ data class PersonalDataUiState(
     val emailError: String? = null,
     val errorMessage: String? = null,
     val isSaving: Boolean = false,
+    val hasUnsavedChanges: Boolean = false,
 ) {
     val canSave: Boolean
         get() = AuthValidators.validateName(firstName, "nombres") == null &&

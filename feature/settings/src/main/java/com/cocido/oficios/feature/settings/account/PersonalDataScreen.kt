@@ -38,6 +38,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 
 @Composable
 fun PersonalDataScreen(
@@ -46,9 +47,13 @@ fun PersonalDataScreen(
     onRequestPhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = uiState.hasUnsavedChanges,
+        onConfirmExit = { onEvent(PersonalDataEvent.Back) },
+    )
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = stringResource(R.string.personal_data_title), onBack = { onEvent(PersonalDataEvent.Back) }) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.personal_data_title), onBack = handleBack) },
     ) { padding ->
         OficiosStateContent(
             targetState = uiState,

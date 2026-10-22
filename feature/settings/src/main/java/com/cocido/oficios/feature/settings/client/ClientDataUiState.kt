@@ -52,7 +52,22 @@ data class ClientDataUiState(
     val errorMessage: String? = null,
     val isSaving: Boolean = false,
     val pendingDelete: ClientDataDeleteTarget? = null,
-)
+) {
+    val hasUnsavedEditorChanges: Boolean
+        get() = when (mode) {
+            ClientDataMode.LIST -> false
+            ClientDataMode.CONTACT ->
+                contactName.isNotBlank() || contactPhone.isNotBlank() || contactEmail.isNotBlank()
+            ClientDataMode.DOMICILIO ->
+                addressName.isNotBlank() ||
+                    barrioQuery.isNotBlank() ||
+                    street.isNotBlank() ||
+                    number.isNotBlank() ||
+                    floor.isNotBlank() ||
+                    apartment.isNotBlank() ||
+                    houseTower.isNotBlank()
+        }
+}
 
 sealed interface ClientDataEvent {
     data object Retry : ClientDataEvent

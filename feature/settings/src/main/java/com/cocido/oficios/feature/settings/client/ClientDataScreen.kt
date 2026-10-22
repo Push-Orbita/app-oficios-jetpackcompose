@@ -54,6 +54,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosLocationPicker
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientDomicilio
 
@@ -67,14 +68,19 @@ fun ClientDataScreen(
         ClientDataMode.CONTACT -> if (uiState.editingId == null) stringResource(R.string.client_data_new_contact) else stringResource(R.string.client_data_edit_contact)
         ClientDataMode.DOMICILIO -> if (uiState.editingId == null) stringResource(R.string.client_data_new_address) else stringResource(R.string.client_data_edit_address)
     }
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = uiState.hasUnsavedEditorChanges,
+        enabled = uiState.mode != ClientDataMode.LIST,
+        onConfirmExit = {
+            if (uiState.mode == ClientDataMode.LIST) onEvent(ClientDataEvent.Back)
+            else onEvent(ClientDataEvent.CloseEditor)
+        },
+    )
     OficiosScaffold(
         topBar = {
             OficiosBackTopBar(
                 title = title,
-                onBack = {
-                    if (uiState.mode == ClientDataMode.LIST) onEvent(ClientDataEvent.Back)
-                    else onEvent(ClientDataEvent.CloseEditor)
-                },
+                onBack = handleBack,
             )
         },
     ) { padding ->

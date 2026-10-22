@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 
 private const val DISCARD_CHANGES_TITLE = "¿Salir sin guardar?"
-private const val DISCARD_CHANGES_MESSAGE = "Vas a perder los datos que ingresaste en este formulario."
+private const val DISCARD_CHANGES_MESSAGE = "Va a perder los datos que ingresó en este formulario."
 private const val DISCARD_CHANGES_CONFIRM = "Salir"
 
 @Composable
@@ -36,10 +36,15 @@ private fun DiscardChangesDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
 fun rememberConfirmDiscardBackHandler(
     hasUnsavedChanges: Boolean,
     onConfirmExit: () -> Unit,
+    enabled: Boolean = hasUnsavedChanges,
 ): () -> Unit {
     var showDialog by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = hasUnsavedChanges) { showDialog = true }
+    val requestExit: () -> Unit = {
+        if (hasUnsavedChanges) showDialog = true else onConfirmExit()
+    }
+
+    BackHandler(enabled = enabled) { requestExit() }
 
     if (showDialog) {
         DiscardChangesDialog(
@@ -51,7 +56,7 @@ fun rememberConfirmDiscardBackHandler(
         )
     }
 
-    return { if (hasUnsavedChanges) showDialog = true else onConfirmExit() }
+    return requestExit
 }
 
 /**

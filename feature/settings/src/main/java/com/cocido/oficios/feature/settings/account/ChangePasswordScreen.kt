@@ -34,14 +34,19 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 
 @Composable
 fun ChangePasswordScreen(
     uiState: ChangePasswordUiState,
     onEvent: (ChangePasswordEvent) -> Unit,
 ) {
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = uiState.hasUnsavedChanges,
+        onConfirmExit = { onEvent(ChangePasswordEvent.Back) },
+    )
     OficiosScaffold(
-        topBar = { OficiosBackTopBar(title = stringResource(R.string.change_password_title), onBack = { onEvent(ChangePasswordEvent.Back) }) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.change_password_title), onBack = handleBack) },
     ) { padding ->
         OficiosStateContent(
             targetState = uiState,

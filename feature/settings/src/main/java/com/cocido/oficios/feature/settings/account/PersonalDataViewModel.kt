@@ -47,23 +47,23 @@ class PersonalDataViewModel @Inject constructor(
             PersonalDataEvent.Retry -> load()
             is PersonalDataEvent.FirstNameChanged -> {
                 formDirty = true
-                _uiState.update { it.copy(firstName = event.value, firstNameError = null) }
+                _uiState.update { it.copy(firstName = event.value, firstNameError = null, hasUnsavedChanges = true) }
             }
             is PersonalDataEvent.LastNameChanged -> {
                 formDirty = true
-                _uiState.update { it.copy(lastName = event.value, lastNameError = null) }
+                _uiState.update { it.copy(lastName = event.value, lastNameError = null, hasUnsavedChanges = true) }
             }
             is PersonalDataEvent.EmailChanged -> {
                 formDirty = true
-                _uiState.update { it.copy(email = event.value, emailError = null) }
+                _uiState.update { it.copy(email = event.value, emailError = null, hasUnsavedChanges = true) }
             }
             is PersonalDataEvent.PhotoSelected -> {
                 formDirty = true
-                _uiState.update { it.copy(selectedPhotoPath = event.path, removePhoto = false) }
+                _uiState.update { it.copy(selectedPhotoPath = event.path, removePhoto = false, hasUnsavedChanges = true) }
             }
             PersonalDataEvent.RemovePhoto -> {
                 formDirty = true
-                _uiState.update { it.copy(selectedPhotoPath = null, removePhoto = true) }
+                _uiState.update { it.copy(selectedPhotoPath = null, removePhoto = true, hasUnsavedChanges = true) }
             }
             PersonalDataEvent.Save -> save()
             PersonalDataEvent.Back -> emitEffect(PersonalDataEffect.NavigateBack)

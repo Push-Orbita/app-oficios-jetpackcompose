@@ -32,6 +32,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.feature.settings.R
 
 @Composable
@@ -40,12 +41,16 @@ fun CommercialLocalScreen(
     onEvent: (CommercialLocalEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = uiState.hasUnsavedChanges,
+        onConfirmExit = { onEvent(CommercialLocalEvent.Back) },
+    )
     OficiosScaffold(
         modifier = modifier,
         topBar = {
             OficiosBackTopBar(
                 title = stringResource(R.string.commercial_local_title),
-                onBack = { onEvent(CommercialLocalEvent.Back) },
+                onBack = handleBack,
             )
         },
     ) { padding ->

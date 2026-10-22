@@ -27,6 +27,8 @@ data class CommercialLocalUiState(
     val locationPhase: AddressLocationPhase get() = location.phase
     val canSubmit: Boolean
         get() = selectedBarrioId != null && calle.isNotBlank() && numero.isNotBlank()
+    val hasUnsavedChanges: Boolean
+        get() = barrioQuery.isNotBlank() || calle.isNotBlank() || numero.isNotBlank()
 }
 
 sealed interface CommercialLocalEvent {

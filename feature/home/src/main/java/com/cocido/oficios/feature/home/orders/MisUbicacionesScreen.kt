@@ -47,6 +47,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.feature.home.R
@@ -63,16 +64,25 @@ fun MisUbicacionesScreen(
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = true,
 ) {
-    val adding = uiState is MisUbicacionesUiState.Success &&
-        uiState.mode == MisUbicacionesMode.ADD
+    val successState = uiState as? MisUbicacionesUiState.Success
+    val adding = successState?.mode == MisUbicacionesMode.ADD
+    val addDirty = adding && successState != null &&
+        (successState.barrioQuery.isNotBlank() ||
+            successState.street.isNotBlank() ||
+            successState.number.isNotBlank())
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = addDirty,
+        enabled = adding,
+        onConfirmExit = {
+            if (adding) onEvent(MisUbicacionesEvent.CancelAdd) else onNavigateBack()
+        },
+    )
     OficiosScaffold(
         modifier = modifier,
         topBar = {
             OficiosBackTopBar(
                 title = stringResource(R.string.locations_title),
-                onBack = {
-                    if (adding) onEvent(MisUbicacionesEvent.CancelAdd) else onNavigateBack()
-                },
+                onBack = handleBack,
             )
         },
         bottomBar = {

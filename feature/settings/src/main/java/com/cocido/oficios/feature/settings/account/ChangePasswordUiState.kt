@@ -15,6 +15,8 @@ data class ChangePasswordUiState(
     val canSubmit: Boolean
         get() = AuthValidators.validatePassword(password) == null &&
             AuthValidators.validatePasswordConfirmation(password, confirmation) == null
+    val hasUnsavedChanges: Boolean
+        get() = password.isNotBlank() || confirmation.isNotBlank()
 }
 
 sealed interface ChangePasswordEvent {
