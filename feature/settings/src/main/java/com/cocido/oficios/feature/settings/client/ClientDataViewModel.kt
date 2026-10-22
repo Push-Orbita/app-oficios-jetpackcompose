@@ -70,9 +70,15 @@ class ClientDataViewModel @Inject constructor(
             is ClientDataEvent.EditContact -> openContact(event.contact)
             ClientDataEvent.AddDomicilio -> openDomicilio()
             is ClientDataEvent.EditDomicilio -> openDomicilio(event.domicilio)
-            is ClientDataEvent.ContactNameChanged -> update { it.copy(contactName = event.value, errorMessage = null) }
-            is ClientDataEvent.ContactPhoneChanged -> update { it.copy(contactPhone = event.value, errorMessage = null) }
-            is ClientDataEvent.ContactEmailChanged -> update { it.copy(contactEmail = event.value, errorMessage = null) }
+            is ClientDataEvent.ContactNameChanged -> update {
+                it.copy(contactName = event.value, errorMessage = null).withContactFieldErrors()
+            }
+            is ClientDataEvent.ContactPhoneChanged -> update {
+                it.copy(contactPhone = event.value, errorMessage = null).withContactFieldErrors()
+            }
+            is ClientDataEvent.ContactEmailChanged -> update {
+                it.copy(contactEmail = event.value, errorMessage = null).withContactFieldErrors()
+            }
             is ClientDataEvent.ContactFavoriteChanged -> update { it.copy(contactFavorite = event.value) }
             ClientDataEvent.SaveContact -> saveContact()
             is ClientDataEvent.AddressNameChanged -> update { it.copy(addressName = event.value) }
@@ -87,15 +93,20 @@ class ClientDataViewModel @Inject constructor(
                         barrioQuery = event.option.label,
                         barrioSuggestions = emptyList(),
                         isSearchingBarrios = false,
-                    )
+                        errorMessage = null,
+                    ).withAddressFieldErrors()
                 }
             }
             ClientDataEvent.BarrioSuggestionsDismissed -> {
                 barrioSearchJob?.cancel()
                 update { it.copy(barrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
-            is ClientDataEvent.StreetChanged -> update { it.copy(street = event.value) }
-            is ClientDataEvent.NumberChanged -> update { it.copy(number = event.value) }
+            is ClientDataEvent.StreetChanged -> update {
+                it.copy(street = event.value, errorMessage = null).withAddressFieldErrors()
+            }
+            is ClientDataEvent.NumberChanged -> update {
+                it.copy(number = event.value, errorMessage = null).withAddressFieldErrors()
+            }
             is ClientDataEvent.FloorChanged -> update { it.copy(floor = event.value) }
             is ClientDataEvent.ApartmentChanged -> update { it.copy(apartment = event.value) }
             is ClientDataEvent.HouseTowerChanged -> update { it.copy(houseTower = event.value) }
@@ -164,7 +175,7 @@ class ClientDataViewModel @Inject constructor(
                 originalPhoneVerified = contact?.telefonoVerificado ?: false,
                 isSaving = false,
                 errorMessage = null,
-            )
+            ).withContactFieldErrors()
         }
     }
 
@@ -188,7 +199,7 @@ class ClientDataViewModel @Inject constructor(
                 barrioSuggestions = emptyList(),
                 isSaving = false,
                 errorMessage = null,
-            )
+            ).withAddressFieldErrors()
         }
     }
 
@@ -200,19 +211,11 @@ class ClientDataViewModel @Inject constructor(
     }
 
     private fun saveContact() {
-        val state = _uiState.value
+        val validated = _uiState.value.withContactFieldErrors(showBlank = true)
+        _uiState.value = validated
+        if (!validated.canSaveContact) return
+        val state = validated
         val phone = AuthValidators.normalizeArgentinePhone(state.contactPhone)
-        val error = when {
-            state.contactName.isBlank() -> "Ingrese un nombre para identificar este contacto."
-            phone.length != 11 || !phone.startsWith("9") -> "Ingrese el celular con el 9 de móvil, sin +54."
-            state.contactEmail.isNotBlank() && AuthValidators.validateEmail(state.contactEmail.trim()) != null ->
-                "Ingrese un correo válido o déjelo vacío."
-            else -> null
-        }
-        if (error != null) {
-            update { it.copy(errorMessage = error) }
-            return
-        }
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
             val id = state.editingId
@@ -260,20 +263,16 @@ class ClientDataViewModel @Inject constructor(
     }
 
     private fun saveDomicilio() {
-        val state = _uiState.value
-        val barrioId = state.barrioId
-        val personaId = state.personaId
-        val error = when {
-            barrioId == null -> "Seleccione un barrio de la lista."
-            state.street.isBlank() -> "Ingrese la calle."
-            state.number.isBlank() -> "Ingrese la altura."
-            state.editingId == null && personaId == null -> "No pudimos identificar a qué cuenta pertenece el domicilio."
-            else -> null
-        }
-        if (error != null) {
-            update { it.copy(errorMessage = error) }
+        val validated = _uiState.value.withAddressFieldErrors(showBlank = true)
+        if (validated.editingId == null && validated.personaId == null) {
+            update { validated.copy(errorMessage = "No pudimos identificar a qué cuenta pertenece el domicilio.") }
             return
         }
+        _uiState.value = validated
+        if (!validated.canSaveDomicilio) return
+        val state = validated
+        val barrioId = state.barrioId
+        val personaId = state.personaId
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
             val result = if (state.editingId == null) {
@@ -329,7 +328,7 @@ class ClientDataViewModel @Inject constructor(
                 barrioId = if (preserveSelection) it.barrioId else null,
                 isSearchingBarrios = true,
                 errorMessage = null,
-            )
+            ).withAddressFieldErrors()
         }
         barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = barrioSearchJob,
@@ -400,4 +399,29 @@ class ClientDataViewModel @Inject constructor(
 
     private fun update(block: (ClientDataUiState) -> ClientDataUiState) = _uiState.update(block)
     private fun emit(effect: ClientDataEffect) { viewModelScope.launch { _effects.send(effect) } }
+}
+
+private fun ClientDataUiState.withContactFieldErrors(showBlank: Boolean = false): ClientDataUiState {
+    val nameError = AuthValidators.validateContactName(contactName)
+    val phoneError = AuthValidators.validateArgentineMobile(contactPhone)
+    val emailError = AuthValidators.validateOptionalEmail(contactEmail)
+    return copy(
+        contactNameError = nameError.takeIf { showBlank || contactName.isNotBlank() },
+        contactPhoneError = phoneError.takeIf { showBlank || contactPhone.isNotBlank() },
+        contactEmailError = emailError.takeIf { showBlank || contactEmail.isNotBlank() },
+        canSaveContact = nameError == null && phoneError == null && emailError == null,
+    )
+}
+
+private fun ClientDataUiState.withAddressFieldErrors(showBlank: Boolean = false): ClientDataUiState {
+    val barrioError = if (barrioId == null) "Seleccione un barrio de la lista." else null
+    val streetError = if (street.isBlank()) "Ingrese la calle." else null
+    val numberError = if (number.isBlank()) "Ingrese la altura." else null
+    val personaError = editingId == null && personaId == null
+    return copy(
+        addressBarrioError = barrioError.takeIf { showBlank || barrioQuery.isNotBlank() },
+        addressStreetError = streetError.takeIf { showBlank || street.isNotBlank() },
+        addressNumberError = numberError.takeIf { showBlank || number.isNotBlank() },
+        canSaveDomicilio = barrioError == null && streetError == null && numberError == null && !personaError,
+    )
 }

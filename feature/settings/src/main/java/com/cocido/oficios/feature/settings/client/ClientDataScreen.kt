@@ -5,12 +5,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -308,8 +304,6 @@ private fun ContactEditor(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .consumeWindowInsets(WindowInsets.safeDrawing)
-            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -323,6 +317,8 @@ private fun ContactEditor(
             value = uiState.contactName,
             onValueChange = { onEvent(ClientDataEvent.ContactNameChanged(it)) },
             label = stringResource(R.string.client_data_contact_name),
+            isError = uiState.contactNameError != null,
+            supportingText = uiState.contactNameError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { phoneFocus.requestFocus() }),
         )
@@ -331,7 +327,9 @@ private fun ContactEditor(
             onValueChange = { onEvent(ClientDataEvent.ContactPhoneChanged(it)) },
             selectedCountry = PhoneCountryOptions.ARGENTINA,
             label = stringResource(R.string.client_data_whatsapp),
-            supportingText = "11 dígitos con el 9",
+            isError = uiState.contactPhoneError != null,
+            supportingText = uiState.contactPhoneError
+                ?: "Ingrese el número local, con el 9 de móvil.",
             numberModifier = Modifier.focusRequester(phoneFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
@@ -341,6 +339,8 @@ private fun ContactEditor(
             onValueChange = { onEvent(ClientDataEvent.ContactEmailChanged(it)) },
             label = stringResource(R.string.client_data_alt_email),
             modifier = Modifier.focusRequester(emailFocus),
+            isError = uiState.contactEmailError != null,
+            supportingText = uiState.contactEmailError,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Done,
@@ -357,7 +357,7 @@ private fun ContactEditor(
             text = if (uiState.editingId == null) stringResource(R.string.client_data_save_verify) else stringResource(R.string.client_data_save_changes),
             onClick = { onEvent(ClientDataEvent.SaveContact) },
             loading = uiState.isSaving,
-            enabled = !uiState.isSaving,
+            enabled = uiState.canSaveContact && !uiState.isSaving,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,
@@ -380,8 +380,6 @@ private fun DomicilioEditor(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .consumeWindowInsets(WindowInsets.safeDrawing)
-            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = OficiosSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -411,6 +409,8 @@ private fun DomicilioEditor(
             onFocused = { onEvent(ClientDataEvent.BarrioFocused) },
             onSuggestionsDismissed = { onEvent(ClientDataEvent.BarrioSuggestionsDismissed) },
             modifier = Modifier.focusRequester(barrioFocus),
+            isError = uiState.addressBarrioError != null,
+            supportingText = uiState.addressBarrioError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { streetFocus.requestFocus() }),
         )
@@ -419,6 +419,8 @@ private fun DomicilioEditor(
             onValueChange = { onEvent(ClientDataEvent.StreetChanged(it)) },
             label = stringResource(R.string.client_data_street),
             modifier = Modifier.focusRequester(streetFocus),
+            isError = uiState.addressStreetError != null,
+            supportingText = uiState.addressStreetError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { numberFocus.requestFocus() }),
         )
@@ -427,6 +429,8 @@ private fun DomicilioEditor(
             onValueChange = { onEvent(ClientDataEvent.NumberChanged(it)) },
             label = stringResource(R.string.client_data_number),
             modifier = Modifier.focusRequester(numberFocus),
+            isError = uiState.addressNumberError != null,
+            supportingText = uiState.addressNumberError,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next,
@@ -484,7 +488,7 @@ private fun DomicilioEditor(
             text = stringResource(R.string.client_data_save_address),
             onClick = { onEvent(ClientDataEvent.SaveDomicilio) },
             loading = uiState.isSaving,
-            enabled = !uiState.isSaving,
+            enabled = uiState.canSaveDomicilio && !uiState.isSaving,
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,

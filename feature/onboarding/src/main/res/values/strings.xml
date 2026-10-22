@@ -60,8 +60,8 @@
     <string name="onboarding_step_contact_domicilio_contact_hint">Guarde su contacto para recibir notificaciones sobre sus servicios.</string>
     <string name="onboarding_step_contact_domicilio_address_section">Su domicilio</string>
     <string name="onboarding_step_contact_nombre_label">Nombre</string>
-    <string name="onboarding_step_contact_whatsapp_label">WhatsApp</string>
-    <string name="onboarding_step_contact_whatsapp_hint">11 dígitos con el 9</string>
+    <string name="onboarding_step_contact_whatsapp_label">Celular (WhatsApp)</string>
+    <string name="onboarding_step_contact_whatsapp_hint">Ingrese el número local, con el 9 de móvil. El +54 ya está indicado.</string>
     <string name="onboarding_step_contact_email_label">Correo (opcional)</string>
     <string name="onboarding_step_piso_label">Piso</string>
     <string name="onboarding_step_departamento_label">Dpto.</string>

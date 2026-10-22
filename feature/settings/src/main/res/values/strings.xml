@@ -76,9 +76,9 @@
     <string name="client_data_edit_address_action">Editar domicilio</string>
     <string name="client_data_delete_address">el domicilio</string>
     <string name="client_data_delete_address_action">Eliminar domicilio</string>
-    <string name="client_data_phone_hint">El número se valida por WhatsApp. Argentina usa +54 y usted ingresa solo el número local, por ejemplo 9 370 5219109.</string>
+    <string name="client_data_phone_hint">El número se valida por WhatsApp. Ingrese el celular local: el +54 ya está indicado. Ejemplo: 9 370 5219109.</string>
     <string name="client_data_contact_name">Nombre del contacto</string>
-    <string name="client_data_whatsapp">WhatsApp</string>
+    <string name="client_data_whatsapp">Celular (WhatsApp)</string>
     <string name="client_data_alt_email">Correo alternativo (opcional)</string>
     <string name="client_data_primary_contact_toggle">Usar como contacto principal</string>
     <string name="client_data_save_verify">Guardar y verificar</string>

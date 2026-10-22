@@ -89,6 +89,7 @@ fun OficiosTextField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     leadingIcon: ImageVector? = null,
+    prefix: String? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -241,6 +242,14 @@ fun OficiosTextField(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(OficiosComponentSize.iconMd),
+                        )
+                    }
+                    if (!prefix.isNullOrBlank()) {
+                        Text(
+                            text = prefix,
+                            style = fieldTextStyle,
+                            color = valueColor,
+                            maxLines = 1,
                         )
                     }
                     Box(

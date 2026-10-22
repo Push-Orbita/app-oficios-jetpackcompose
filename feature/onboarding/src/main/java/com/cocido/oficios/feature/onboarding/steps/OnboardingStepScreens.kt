@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.PhotoCamera
@@ -51,6 +53,8 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
+import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
+import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -178,7 +182,11 @@ fun ClientContactDomicilioStepScreen(
             selectedCountry = uiState.selectedCountry,
             onCountrySelected = onCountrySelected,
             label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
-            supportingText = stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+            isError = uiState.telefono.isNotBlank() &&
+                AuthValidators.validateArgentineMobile(uiState.telefono) != null,
+            supportingText = AuthValidators.validateArgentineMobile(uiState.telefono)
+                ?.takeIf { uiState.telefono.isNotBlank() }
+                ?: stringResource(R.string.onboarding_step_contact_whatsapp_hint),
         )
         OficiosTextField(
             value = uiState.email,
@@ -311,13 +319,24 @@ fun ClientContactoStepScreen(
         onSubmit = onSubmit,
     ) {
         OficiosTextField(value = uiState.nombre, onValueChange = onNombreChanged, label = stringResource(R.string.onboarding_step_contact_nombre_label))
-        OficiosTextField(
+        OficiosPhoneField(
             value = uiState.telefono,
             onValueChange = onTelefonoChanged,
+            selectedCountry = PhoneCountryOptions.ARGENTINA,
             label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
-            supportingText = stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+            isError = uiState.telefono.isNotBlank() &&
+                AuthValidators.validateArgentineMobile(uiState.telefono) != null,
+            supportingText = AuthValidators.validateArgentineMobile(uiState.telefono)
+                ?.takeIf { uiState.telefono.isNotBlank() }
+                ?: stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
         )
-        OficiosTextField(value = uiState.email, onValueChange = onEmailChanged, label = stringResource(R.string.onboarding_step_contact_email_label))
+        OficiosTextField(
+            value = uiState.email,
+            onValueChange = onEmailChanged,
+            label = stringResource(R.string.onboarding_step_contact_email_label),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        )
     }
 }
 

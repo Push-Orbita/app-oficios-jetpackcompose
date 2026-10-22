@@ -54,7 +54,7 @@ data class ClientContactDomicilioUiState(
 ) {
     val canSubmit: Boolean get() =
         nombre.isNotBlank() &&
-            telefono.isNotBlank() &&
+            AuthValidators.validateArgentineMobile(telefono) == null &&
             selectedBarrioId != null &&
             calle.isNotBlank()
 }
