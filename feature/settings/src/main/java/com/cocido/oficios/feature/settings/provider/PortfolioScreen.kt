@@ -13,24 +13,27 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,7 +47,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
-import com.cocido.oficios.core.designsystem.component.cards.WorkGalleryCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -57,7 +59,9 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.domain.model.WorkCertificateItem
+import com.cocido.oficios.core.ui.gallery.OficiosGalleryViewer
+import com.cocido.oficios.core.ui.gallery.OficiosPhotoMosaic
+import com.cocido.oficios.core.ui.intent.openRemoteDocument
 import java.io.File
 
 @Composable
@@ -67,6 +71,9 @@ fun PortfolioScreen(
     onPickGalleryImage: () -> Unit,
     onPickCertificateFile: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var photoViewerIndex by rememberSaveable { mutableStateOf(-1) }
+    var certViewerIndex by rememberSaveable { mutableStateOf(-1) }
     val title = if (uiState.certificateEditorVisible) {
         if (uiState.editingCertificateId == null) stringResource(R.string.portfolio_new_certificate) else stringResource(R.string.portfolio_edit_certificate)
     } else stringResource(R.string.portfolio_title)
@@ -96,10 +103,32 @@ fun PortfolioScreen(
                 -> if (state.certificateEditorVisible) {
                     CertificateEditor(state, onEvent, onPickCertificateFile)
                 } else {
-                    PortfolioList(state, onEvent, onPickGalleryImage)
+                    PortfolioList(
+                        state = state,
+                        onEvent = onEvent,
+                        onPickGalleryImage = onPickGalleryImage,
+                        onOpenPhoto = { photoViewerIndex = it },
+                        onOpenCertificate = { certViewerIndex = it },
+                    )
                 }
             }
         }
+    }
+    if (!uiState.certificateEditorVisible && photoViewerIndex >= 0 && uiState.gallery.isNotEmpty()) {
+        OficiosGalleryViewer(
+            items = uiState.gallery.map { it.toGalleryMedia() },
+            initialIndex = photoViewerIndex,
+            onClose = { photoViewerIndex = -1 },
+            onOpenExternal = { openRemoteDocument(context, it) },
+        )
+    }
+    if (!uiState.certificateEditorVisible && certViewerIndex >= 0 && uiState.certificates.isNotEmpty()) {
+        OficiosGalleryViewer(
+            items = uiState.certificates.map { it.toGalleryMedia() },
+            initialIndex = certViewerIndex,
+            onClose = { certViewerIndex = -1 },
+            onOpenExternal = { openRemoteDocument(context, it) },
+        )
     }
     uiState.pendingDelete?.let { target ->
         OficiosDialog(
@@ -130,6 +159,8 @@ private fun PortfolioList(
     state: PortfolioUiState,
     onEvent: (PortfolioEvent) -> Unit,
     onPickGalleryImage: () -> Unit,
+    onOpenPhoto: (Int) -> Unit,
+    onOpenCertificate: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -154,23 +185,23 @@ private fun PortfolioList(
                 )
             }
         } else {
-            items(state.gallery.chunked(2), key = { row -> row.joinToString { it.id.toString() } }) { rowItems ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                    rowItems.forEach { item ->
-                        Column(Modifier.weight(1f)) {
-                            WorkGalleryCard(item.imageUrl, stringResource(R.string.portfolio_work_description), modifier = Modifier.fillMaxWidth())
-                            OficiosButton(
-                                text = stringResource(R.string.portfolio_delete_confirm),
-                                onClick = { onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Gallery(item.id))) },
-                                modifier = Modifier.fillMaxWidth(),
-                                variant = OficiosButtonVariant.Ghost,
-                                leadingIcon = Icons.Outlined.DeleteOutline,
-                                enabled = !state.isSaving,
+            item {
+                OficiosPhotoMosaic(
+                    items = state.gallery.map { it.toGalleryMedia() },
+                    onItemClick = onOpenPhoto,
+                    onDelete = if (state.isSaving) {
+                        null
+                    } else {
+                        { index ->
+                            onEvent(
+                                PortfolioEvent.RequestDelete(
+                                    PortfolioDeleteTarget.Gallery(state.gallery[index].id),
+                                ),
                             )
                         }
-                    }
-                    if (rowItems.size == 1) Column(Modifier.weight(1f)) {}
-                }
+                    },
+                    deleteLabel = stringResource(R.string.portfolio_delete_confirm),
+                )
             }
         }
         item { PortfolioHeader(stringResource(R.string.portfolio_certificates), stringResource(R.string.portfolio_add), { onEvent(PortfolioEvent.AddCertificate) }) }
@@ -184,7 +215,30 @@ private fun PortfolioList(
                 )
             }
         } else {
-            items(state.certificates, key = { it.id }) { item -> CertificateItem(item, state.isSaving, onEvent) }
+            item {
+                OficiosPhotoMosaic(
+                    items = state.certificates.map { it.toGalleryMedia() },
+                    onItemClick = onOpenCertificate,
+                    onEdit = if (state.isSaving) {
+                        null
+                    } else {
+                        { index -> onEvent(PortfolioEvent.EditCertificate(state.certificates[index])) }
+                    },
+                    onDelete = if (state.isSaving) {
+                        null
+                    } else {
+                        { index ->
+                            val item = state.certificates[index]
+                            onEvent(
+                                PortfolioEvent.RequestDelete(
+                                    PortfolioDeleteTarget.Certificate(item.id, item.name),
+                                ),
+                            )
+                        }
+                    },
+                    deleteLabel = stringResource(R.string.portfolio_delete_confirm),
+                )
+            }
         }
         item { Column(Modifier.padding(bottom = OficiosSpacing.xl)) {} }
     }
@@ -221,28 +275,6 @@ private fun PortfolioHeader(title: String, action: String, onAction: () -> Unit)
                 leadingIcon = Icons.Outlined.AddAPhoto,
                 modifier = Modifier.widthIn(max = OficiosComponentSize.contentMaxWidth),
             )
-        }
-    }
-}
-
-@Composable
-private fun CertificateItem(item: WorkCertificateItem, disabled: Boolean, onEvent: (PortfolioEvent) -> Unit) {
-    OficiosCard(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.WorkspacePremium, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
-            Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm)) {
-                Text(item.name, style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.portfolio_document_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.EditCertificate(item)) }) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(OficiosIcons.Pencil),
-                    contentDescription = stringResource(R.string.portfolio_edit_named, item.name)
-                )
-            }
-            IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Certificate(item.id, item.name))) }) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.portfolio_delete_named, item.name))
-            }
         }
     }
 }

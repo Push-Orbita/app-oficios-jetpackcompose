@@ -1,7 +1,5 @@
 package com.cocido.oficios.feature.home.worker
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,11 +44,15 @@ import com.cocido.oficios.domain.model.WorkerSpecialty
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.core.ui.gallery.OficiosGalleryViewer
+import com.cocido.oficios.core.ui.intent.openRemoteDocument
 import com.cocido.oficios.feature.home.worker.components.WorkerCertificatesSection
 import com.cocido.oficios.feature.home.worker.components.WorkerGallerySection
 import com.cocido.oficios.feature.home.worker.components.WorkerGalleryViewer
 import com.cocido.oficios.feature.home.worker.components.WorkerProfileHeader
 import com.cocido.oficios.feature.home.worker.components.WorkerReviewsSection
+import com.cocido.oficios.feature.home.worker.components.isPresentableCertificate
+import com.cocido.oficios.feature.home.worker.components.toGalleryMedia
 
 /** Ficha trabajador — fuente de verdad Flujos `613:460` / `453:343`. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,8 +142,10 @@ private fun WorkerProfileContent(
     onReport: () -> Unit,
 ) {
     val context = LocalContext.current
-    var viewerIndex by rememberSaveable { mutableStateOf(-1) }
-    val photos = uiState.profile.gallery.filter { !it.imageUrl.isNullOrBlank() }
+    var photoViewerIndex by rememberSaveable { mutableStateOf(-1) }
+    var certViewerIndex by rememberSaveable { mutableStateOf(-1) }
+    val photos = uiState.profile.gallery
+    val certificates = uiState.profile.certificates.filter { it.name.isPresentableCertificate() }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -176,16 +180,12 @@ private fun WorkerProfileContent(
             },
         )
         WorkerGallerySection(
-            gallery = uiState.profile.gallery,
-            onPhotoClick = { viewerIndex = it },
+            gallery = photos,
+            onPhotoClick = { photoViewerIndex = it },
         )
         WorkerCertificatesSection(
             certificates = uiState.profile.certificates,
-            onOpen = { url ->
-                runCatching {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                }
-            },
+            onOpen = { _, index -> certViewerIndex = index },
         )
         WorkerReviewsSection(
             reviews = uiState.reviews,
@@ -202,11 +202,20 @@ private fun WorkerProfileContent(
             leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
         )
     }
-    if (viewerIndex >= 0 && photos.isNotEmpty()) {
+    if (photoViewerIndex >= 0 && photos.isNotEmpty()) {
         WorkerGalleryViewer(
             photos = photos,
-            initialIndex = viewerIndex,
-            onClose = { viewerIndex = -1 },
+            initialIndex = photoViewerIndex,
+            onClose = { photoViewerIndex = -1 },
+            onOpenExternal = { openRemoteDocument(context, it) },
+        )
+    }
+    if (certViewerIndex >= 0 && certificates.isNotEmpty()) {
+        OficiosGalleryViewer(
+            items = certificates.map { it.toGalleryMedia() },
+            initialIndex = certViewerIndex,
+            onClose = { certViewerIndex = -1 },
+            onOpenExternal = { openRemoteDocument(context, it) },
         )
     }
 }

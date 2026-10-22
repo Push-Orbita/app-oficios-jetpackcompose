@@ -5,7 +5,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.domain.model.WorkCertificateItem
+import com.cocido.oficios.domain.model.WorkGalleryItem
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -126,5 +129,45 @@ class WorkerProfileScreenTest {
             }
         }
         composeRule.onNodeWithText(longName).assertIsDisplayed()
+    }
+
+    @Test
+    fun tappingGalleryPhotoOpensViewerAtThatIndex() {
+        composeRule.setContent {
+            OficiosTheme {
+                WorkerProfileScreen(
+                    uiState = previewState(withGallery = true, withReviews = false),
+                    onEvent = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Foto 2 de la galería").performClick()
+        composeRule.onNodeWithText("2 / 2").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Cerrar galería").assertIsDisplayed()
+    }
+
+    @Test
+    fun certificatesGalleryOpensViewerAndShowsPdfTitle() {
+        val state = previewState(withGallery = false, withReviews = false).let { current ->
+            current.copy(
+                profile = current.profile.copy(
+                    gallery = listOf(WorkGalleryItem(1L, null)),
+                    certificates = listOf(
+                        WorkCertificateItem(1L, "Matrícula", "https://cdn.example/titulo.jpg"),
+                        WorkCertificateItem(2L, "Curso electricista", "https://cdn.example/curso.pdf"),
+                    ),
+                ),
+            )
+        }
+        composeRule.setContent {
+            OficiosTheme {
+                WorkerProfileScreen(uiState = state, onEvent = {}, showFavorites = true)
+            }
+        }
+        composeRule.onNodeWithText("Curso electricista").performScrollTo().performClick()
+        composeRule.onNodeWithText("2 / 2").assertExists()
+        composeRule.onNodeWithText("Abrir documento").assertExists()
+        composeRule.onNodeWithContentDescription("Cerrar galería").assertExists()
     }
 }

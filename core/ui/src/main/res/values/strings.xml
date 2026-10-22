@@ -28,4 +28,12 @@
     <string name="image_crop_handle_bottom">Manija inferior</string>
     <string name="image_crop_handle_left">Manija izquierda</string>
     <string name="image_crop_handle_right">Manija derecha</string>
+    <string name="gallery_close">Cerrar galería</string>
+    <string name="gallery_page">%1$d / %2$d</string>
+    <string name="gallery_photo">Foto %1$d de %2$d</string>
+    <string name="gallery_thumb_cd">Foto %1$d de la galería</string>
+    <string name="gallery_open_document">Abrir documento</string>
+    <string name="gallery_pdf_cd">Documento PDF</string>
+    <string name="gallery_delete">Eliminar</string>
+    <string name="gallery_edit">Editar</string>
 </resources>
