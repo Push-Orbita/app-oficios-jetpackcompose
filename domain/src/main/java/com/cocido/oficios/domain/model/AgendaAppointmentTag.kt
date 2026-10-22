@@ -6,7 +6,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import kotlin.math.abs
 
 /** Etiqueta de card en Agenda. Nunca se infiere solo por estado de booking. */
 enum class AgendaAppointmentTag {
@@ -62,31 +61,34 @@ fun upcomingAgendaAppointments(
         .sortedWith(ordersListComparator(OrdersListSort.NEWEST_FIRST))
 }
 
-/** Día inicial del calendario: hoy si tiene pedidos; si no, el más cercano. */
+/** Día inicial del calendario de agenda: siempre hoy. Los pedidos no roban la selección. */
+@Suppress("UNUSED_PARAMETER")
 fun defaultAgendaSelectedDate(
     orders: List<ServiceOrderListItem>,
     today: LocalDate,
-): LocalDate = defaultAgendaSelectedDate(
-    dates = orders.mapNotNull { it.scheduledDate() }.toSet(),
-    today = today,
-)
+): LocalDate = defaultAgendaSelectedDate(today = today)
 
+@Suppress("UNUSED_PARAMETER")
 fun defaultAgendaSelectedDate(
     dates: Set<LocalDate>,
     today: LocalDate,
-): LocalDate {
-    if (today in dates) return today
-    return dates.minByOrNull { abs(it.toEpochDay() - today.toEpochDay()) } ?: today
-}
+): LocalDate = defaultAgendaSelectedDate(today = today)
 
+fun defaultAgendaSelectedDate(today: LocalDate): LocalDate = today
+
+@Suppress("UNUSED_PARAMETER")
 fun defaultAgendaDateInMonth(
     dates: Set<LocalDate>,
     month: YearMonth,
     today: LocalDate,
     fallbackDay: Int,
+): LocalDate = defaultAgendaDateInMonth(month, today, fallbackDay)
+
+fun defaultAgendaDateInMonth(
+    month: YearMonth,
+    today: LocalDate,
+    fallbackDay: Int,
 ): LocalDate {
     if (YearMonth.from(today) == month) return today
-    val inMonth = dates.filter { YearMonth.from(it) == month }
-    return inMonth.minByOrNull { abs(it.toEpochDay() - today.toEpochDay()) }
-        ?: month.atDay(fallbackDay.coerceIn(1, month.lengthOfMonth()))
+    return month.atDay(fallbackDay.coerceIn(1, month.lengthOfMonth()))
 }

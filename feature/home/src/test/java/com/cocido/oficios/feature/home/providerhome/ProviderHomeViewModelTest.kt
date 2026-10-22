@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import com.cocido.oficios.feature.home.FakeHomeRepository
 import java.time.Clock
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -187,6 +189,46 @@ class ProviderHomeViewModelTest {
     }
 
     @Test
+    fun `agenda selection starts on today even with past bookings`() = runTest(testDispatcher) {
+        val today = LocalDate.of(2026, 10, 22)
+        val viewModel = createViewModel(
+            percent = 100,
+            upcoming = listOf(
+                agendaOrder(1, "2026-10-05T12:00:00", BookingStatus.IN_PROGRESS),
+                agendaOrder(2, "2026-09-25T07:00:00", BookingStatus.IN_PROGRESS),
+                agendaOrder(3, "2026-10-22T09:00:00", BookingStatus.CONFIRMED),
+            ),
+            clock = clockAt(2026, 10, 22, 9, 15),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as ProviderHomeUiState.Success
+        assertEquals(today, state.selectedAgendaDate)
+        assertEquals(YearMonth.of(2026, 10), state.visibleAgendaMonth)
+        assertFalse(state.userPickedAgendaDate)
+    }
+
+    @Test
+    fun `user picked agenda date survives refresh and is not stolen by past bookings`() = runTest(testDispatcher) {
+        val picked = LocalDate.of(2026, 10, 5)
+        val viewModel = createViewModel(
+            percent = 100,
+            upcoming = listOf(
+                agendaOrder(1, "2026-10-05T12:00:00", BookingStatus.IN_PROGRESS),
+            ),
+            clock = clockAt(2026, 10, 22, 9, 15),
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(ProviderHomeEvent.AgendaDateSelected(picked))
+        viewModel.onVisible()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as ProviderHomeUiState.Success
+        assertEquals(picked, state.selectedAgendaDate)
+        assertTrue(state.userPickedAgendaDate)
+    }
+
+    @Test
     fun `today and future stay sorted newest first`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             percent = 100,
@@ -240,8 +282,10 @@ class ProviderHomeViewModelTest {
         clock = clock,
     )
 
-    private fun fixedClock(): Clock {
-        val instant = ZonedDateTime.of(2026, 10, 21, 3, 17, 0, 0, DisplayDateTime.ARGENTINA).toInstant()
+    private fun fixedClock(): Clock = clockAt(2026, 10, 21, 3, 17)
+
+    private fun clockAt(year: Int, month: Int, day: Int, hour: Int, minute: Int): Clock {
+        val instant = ZonedDateTime.of(year, month, day, hour, minute, 0, 0, DisplayDateTime.ARGENTINA).toInstant()
         return Clock.fixed(instant, DisplayDateTime.ARGENTINA)
     }
 

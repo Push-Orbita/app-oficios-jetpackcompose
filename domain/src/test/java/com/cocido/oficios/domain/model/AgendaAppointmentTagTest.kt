@@ -100,8 +100,8 @@ class AgendaAppointmentTagTest {
     }
 
     @Test
-    fun `default selected date is today when it has bookings otherwise the nearest day`() {
-        val today = LocalDate.of(2026, 10, 21)
+    fun `default selected date is always today even with past bookings`() {
+        val today = LocalDate.of(2026, 10, 22)
         assertEquals(
             today,
             defaultAgendaSelectedDate(
@@ -110,23 +110,23 @@ class AgendaAppointmentTagTest {
             ),
         )
         assertEquals(
-            LocalDate.of(2026, 10, 5),
+            today,
             defaultAgendaSelectedDate(
                 dates = setOf(LocalDate.of(2026, 9, 25), LocalDate.of(2026, 10, 5)),
                 today = today,
             ),
         )
         assertEquals(
-            LocalDate.of(2026, 9, 25),
+            today,
             defaultAgendaSelectedDate(
                 dates = setOf(LocalDate.of(2026, 9, 25)),
                 today = today,
             ),
         )
         assertEquals(
-            LocalDate.of(2026, 10, 22),
+            today,
             defaultAgendaSelectedDate(
-                dates = setOf(LocalDate.of(2026, 9, 25), LocalDate.of(2026, 10, 22)),
+                dates = setOf(LocalDate.of(2026, 9, 25), LocalDate.of(2026, 10, 5)),
                 today = today,
             ),
         )
@@ -134,17 +134,17 @@ class AgendaAppointmentTagTest {
     }
 
     @Test
-    fun `month navigation selects today in current month or nearest booking in that month`() {
-        val today = LocalDate.of(2026, 10, 21)
+    fun `month navigation selects today in current month or same day number otherwise`() {
+        val today = LocalDate.of(2026, 10, 22)
         val dates = setOf(LocalDate.of(2026, 9, 25), LocalDate.of(2026, 9, 29), LocalDate.of(2026, 10, 5))
         assertEquals(
-            LocalDate.of(2026, 9, 29),
-            defaultAgendaDateInMonth(dates, YearMonth.of(2026, 9), today, fallbackDay = 21),
+            LocalDate.of(2026, 9, 22),
+            defaultAgendaDateInMonth(dates, YearMonth.of(2026, 9), today, fallbackDay = 22),
         )
-        assertEquals(today, defaultAgendaDateInMonth(dates, YearMonth.of(2026, 10), today, 21))
+        assertEquals(today, defaultAgendaDateInMonth(dates, YearMonth.of(2026, 10), today, 22))
         assertEquals(
-            LocalDate.of(2026, 11, 21),
-            defaultAgendaDateInMonth(dates, YearMonth.of(2026, 11), today, 21),
+            LocalDate.of(2026, 11, 22),
+            defaultAgendaDateInMonth(dates, YearMonth.of(2026, 11), today, 22),
         )
     }
 

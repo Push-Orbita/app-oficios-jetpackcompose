@@ -34,6 +34,8 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +87,8 @@ fun ProviderHomeScreen(
                             content = state.content,
                             unreadNotificationCount = unreadNotificationCount,
                             now = state.now,
+                            selectedAgendaDate = state.selectedAgendaDate,
+                            visibleAgendaMonth = state.visibleAgendaMonth,
                             onEvent = onEvent,
                         )
                     }
@@ -99,6 +103,8 @@ private fun ProviderHomeSuccessContent(
     content: ProviderHomeContent,
     unreadNotificationCount: Int,
     now: ZonedDateTime,
+    selectedAgendaDate: LocalDate,
+    visibleAgendaMonth: YearMonth,
     onEvent: (ProviderHomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,6 +142,10 @@ private fun ProviderHomeSuccessContent(
         ProviderAgendaSection(
             upcomingOrders = content.upcomingOrders,
             now = now,
+            selectedDate = selectedAgendaDate,
+            visibleMonth = visibleAgendaMonth,
+            onDateSelected = { onEvent(ProviderHomeEvent.AgendaDateSelected(it)) },
+            onMonthChange = { onEvent(ProviderHomeEvent.AgendaMonthChanged(it)) },
             hasAgendaConfigured = content.hasAgendaConfigured,
             onConfigureAgenda = { onEvent(ProviderHomeEvent.ConfigureAgendaClicked) },
             onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },

@@ -63,8 +63,10 @@ fun OficiosMonthCalendar(
     onMonthChange: (YearMonth) -> Unit,
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    today: LocalDate? = null,
     isDateEnabled: (LocalDate) -> Boolean = { true },
     isDateHighlighted: (LocalDate) -> Boolean = { false },
+    isDateMarked: (LocalDate) -> Boolean = { false },
 ) {
     val locale = Locale.forLanguageTag("es-AR")
     val firstOfMonth = month.atDay(1)
@@ -135,7 +137,9 @@ fun OficiosMonthCalendar(
                     DayCell(
                         day = date.dayOfMonth,
                         selected = selected,
+                        isToday = inMonth && date == today,
                         highlighted = inMonth && isDateHighlighted(date),
+                        marked = inMonth && isDateMarked(date),
                         enabled = enabled,
                         inMonth = inMonth,
                         onClick = { onDateSelected(date) },
@@ -211,7 +215,9 @@ private fun MonthNavButton(
 private fun DayCell(
     day: Int,
     selected: Boolean,
+    isToday: Boolean,
     highlighted: Boolean,
+    marked: Boolean,
     enabled: Boolean,
     inMonth: Boolean,
     onClick: () -> Unit,
@@ -223,6 +229,7 @@ private fun DayCell(
         else -> OficiosColorWhite
     }
     val clickable = enabled && inMonth
+    val dotColor = if (selected) OficiosColorBackground else OficiosColorWhite
     Box(
         modifier = Modifier
             .size(OficiosComponentSize.calendarDayCell)
@@ -231,6 +238,7 @@ private fun DayCell(
                 when {
                     selected -> Modifier.background(OficiosColorWhite)
                     highlighted -> Modifier.background(OficiosColorAction)
+                    isToday -> Modifier.border(1.dp, OficiosColorWhite, CircleShape)
                     else -> Modifier
                 },
             )
@@ -239,7 +247,7 @@ private fun DayCell(
     ) {
         Text(
             text = day.toString(),
-            style = if (selected || highlighted) {
+            style = if (selected || highlighted || isToday) {
                 MaterialTheme.typography.titleMedium
             } else {
                 MaterialTheme.typography.bodyLarge
@@ -247,6 +255,16 @@ private fun DayCell(
             color = textColor,
             textAlign = TextAlign.Center,
         )
+        if (marked && inMonth) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 3.dp)
+                    .size(4.dp)
+                    .clip(CircleShape)
+                    .background(dotColor),
+            )
+        }
     }
 }
 

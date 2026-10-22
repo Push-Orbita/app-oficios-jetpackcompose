@@ -31,10 +31,10 @@ import com.cocido.oficios.domain.model.agendaRubroLabel
 import com.cocido.oficios.domain.model.agendaTag
 import com.cocido.oficios.domain.model.agendaTimeLabel
 import com.cocido.oficios.domain.model.defaultAgendaDateInMonth
-import com.cocido.oficios.domain.model.defaultAgendaSelectedDate
 import com.cocido.oficios.domain.model.groupAgendaAppointments
 import com.cocido.oficios.domain.model.scheduledDate
 import com.cocido.oficios.feature.home.R
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
 
@@ -49,6 +49,10 @@ fun ProviderAgendaSection(
     onOrderClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     now: ZonedDateTime = ZonedDateTime.now(DisplayDateTime.ARGENTINA),
+    selectedDate: LocalDate? = null,
+    visibleMonth: YearMonth? = null,
+    onDateSelected: ((LocalDate) -> Unit)? = null,
+    onMonthChange: ((YearMonth) -> Unit)? = null,
     showTitle: Boolean = true,
     showViewFullAgenda: Boolean = true,
     hasAgendaConfigured: Boolean = true,
@@ -58,14 +62,12 @@ fun ProviderAgendaSection(
     val appointmentDates = remember(upcomingOrders) {
         upcomingOrders.mapNotNull { it.scheduledDate() }.toSet()
     }
-    var selectedDate by remember(upcomingOrders, today) {
-        mutableStateOf(defaultAgendaSelectedDate(upcomingOrders, today))
-    }
-    var visibleMonth by remember(selectedDate) {
-        mutableStateOf(YearMonth.from(selectedDate))
-    }
-    val dayOrders = remember(upcomingOrders, selectedDate) {
-        upcomingOrders.filter { it.scheduledDate() == selectedDate }
+    var internalDate by remember { mutableStateOf(today) }
+    var internalMonth by remember { mutableStateOf(YearMonth.from(today)) }
+    val currentDate = selectedDate ?: internalDate
+    val currentMonth = visibleMonth ?: internalMonth
+    val dayOrders = remember(upcomingOrders, currentDate) {
+        upcomingOrders.filter { it.scheduledDate() == currentDate }
     }
     val groups = remember(dayOrders, today) {
         groupAgendaAppointments(dayOrders, today)
@@ -87,22 +89,29 @@ fun ProviderAgendaSection(
                 )
             }
             OficiosMonthCalendar(
-                month = visibleMonth,
-                selectedDate = selectedDate,
+                month = currentMonth,
+                selectedDate = currentDate,
+                today = today,
                 onMonthChange = { month ->
-                    visibleMonth = month
-                    selectedDate = defaultAgendaDateInMonth(
-                        dates = appointmentDates,
+                    val date = defaultAgendaDateInMonth(
                         month = month,
                         today = today,
-                        fallbackDay = selectedDate.dayOfMonth,
+                        fallbackDay = currentDate.dayOfMonth,
                     )
+                    if (selectedDate == null) {
+                        internalMonth = month
+                        internalDate = date
+                    }
+                    onMonthChange?.invoke(month)
                 },
                 onDateSelected = { date ->
-                    selectedDate = date
-                    visibleMonth = YearMonth.from(date)
+                    if (selectedDate == null) {
+                        internalDate = date
+                        internalMonth = YearMonth.from(date)
+                    }
+                    onDateSelected?.invoke(date)
                 },
-                isDateHighlighted = { it in appointmentDates && it != selectedDate },
+                isDateMarked = { it in appointmentDates },
             )
             if (groups.isEmpty()) {
                 if (upcomingOrders.isEmpty()) {
@@ -137,7 +146,13 @@ fun ProviderAgendaSection(
                     }
                 } else {
                     Text(
-                        text = stringResource(R.string.provider_home_agenda_empty_day),
+                        text = stringResource(
+                            if (currentDate == today) {
+                                R.string.provider_home_agenda_empty_today
+                            } else {
+                                R.string.provider_home_agenda_empty_day
+                            },
+                        ),
                         style = MaterialTheme.typography.bodyLarge,
                         color = OficiosColorWhite,
                         modifier = Modifier.fillMaxWidth(),
