@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -44,7 +43,6 @@ fun CounterOfferScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .consumeWindowInsets(paddingValues)
-                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = OficiosSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
@@ -52,7 +50,7 @@ fun CounterOfferScreen(
                 Text(
                     text = stringResource(R.string.counter_offer_body),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 DateTimePickerButton(
                     label = stringResource(R.string.counter_offer_pick),
@@ -76,12 +74,14 @@ fun CounterOfferScreen(
                         imeAction = ImeAction.Done,
                     ),
                     keyboardActions = KeyboardActions(onDone = { onEvent(CounterOfferEvent.Submit) }),
+                    isError = uiState.priceError != null,
+                    supportingText = uiState.priceError,
                 )
                 OficiosButton(
                     text = stringResource(R.string.counter_offer_submit),
                     onClick = { onEvent(CounterOfferEvent.Submit) },
                     loading = uiState.isSubmitting,
-                    enabled = !uiState.isSubmitting,
+                    enabled = uiState.canSubmit && !uiState.isSubmitting,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Secondary,
                     size = OficiosButtonSize.Large,

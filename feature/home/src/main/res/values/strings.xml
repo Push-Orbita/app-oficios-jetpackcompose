@@ -437,6 +437,7 @@
     <string name="locations_primary_toggle">Usar como ubicación principal</string>
     <string name="create_order_favorite_address">Ubicación favorita</string>
     <string name="create_order_contact">Contacto</string>
+    <string name="create_order_pick_location">Seleccione un domicilio para continuar.</string>
     <string name="create_order_slots_loading">Cargando turnos disponibles…</string>
     <string name="create_order_slots_title">Turnos disponibles</string>
     <string name="create_order_no_slots">Este trabajador no publicó turnos para las próximas semanas. Puede proponer una fecha.</string>

@@ -67,7 +67,7 @@ fun OrderDetailRoute(
 
     // Reagendar/Puntuar navegan a otra pantalla y vuelven con popBackStack — el ViewModel de
     // esta ruta no se recrea, así que hay que refrescar manualmente al resumir.
-    ReloadOnResume { viewModel.onEvent(OrderDetailEvent.Retry) }
+    ReloadOnResume { viewModel.onEvent(OrderDetailEvent.Refresh) }
 
     // Cliente EN_CURSO: el código de finalización se renueva solo mientras la pantalla está visible.
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -87,6 +87,7 @@ fun OrderDetailRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 is OrderDetailEffect.ShowMessage -> toastController.showError(effect.message)
+                is OrderDetailEffect.ShowSuccess -> toastController.showSuccess(effect.message)
                 is OrderDetailEffect.NavigateToCounterOffer -> onNavigateToCounterOffer(effect.orderId)
                 is OrderDetailEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerId, effect.workerName)
                 is OrderDetailEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)

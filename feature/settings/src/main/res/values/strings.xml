@@ -33,7 +33,7 @@
     <string name="settings_delete_account_confirmation">Escriba ELIMINAR</string>
     <string name="settings_delete_account_submit">Eliminar mi cuenta</string>
     <string name="settings_delete_account_load_error">No pudimos consultar el estado de su cuenta</string>
-    <string name="settings_delete_account_grace_title">Tu baja está programada</string>
+    <string name="settings_delete_account_grace_title">Su baja está programada</string>
     <string name="settings_delete_account_grace_body">Vamos a eliminar su cuenta el %1$s (hora de Formosa). Si cambia de opinión, cancele la solicitud antes de esa fecha.</string>
     <string name="settings_delete_account_grace_body_generic">Su cuenta se va a eliminar en los próximos 3 días. Si cambia de opinión, cancele la solicitud ahora.</string>
     <string name="settings_delete_account_cancel">Cancelar la baja</string>
@@ -241,4 +241,5 @@
     <string name="commercial_local_number">Número</string>
     <string name="commercial_local_save">Guardar</string>
     <string name="commercial_local_confirm_pin">Confirmar y guardar</string>
+    <string name="commercial_local_map_title">Ubicación del local</string>
 </resources>

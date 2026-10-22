@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.common.contract.ImageUploadContract
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.crop.ImageCropRequest
@@ -26,6 +27,7 @@ fun PortfolioRoute(
     viewModel: PortfolioViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val toastController = LocalOficiosToastController.current
     RefreshOnResume(viewModel::onResume)
     val context = LocalContext.current
     val imagePicker = rememberImageSourcePicker(
@@ -75,7 +77,7 @@ fun PortfolioRoute(
         viewModel.effects.collect { effect ->
             when (effect) {
                 PortfolioEffect.NavigateBack -> onNavigateBack()
-                is PortfolioEffect.ShowMessage -> onShowMessage(effect.message)
+                is PortfolioEffect.ShowMessage -> toastController.showSuccess(effect.message)
             }
         }
     }

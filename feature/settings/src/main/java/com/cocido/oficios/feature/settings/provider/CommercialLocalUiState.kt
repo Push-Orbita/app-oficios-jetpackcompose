@@ -18,12 +18,15 @@ data class CommercialLocalUiState(
     val numero: String = "",
     val location: AddressLocationSnapshot = AddressLocationSnapshot(),
     val errorMessage: String? = null,
+    val barrioError: String? = null,
+    val streetError: String? = null,
+    val numberError: String? = null,
 ) {
     val latitud: Double? get() = location.latitude
     val longitud: Double? get() = location.longitude
     val locationPhase: AddressLocationPhase get() = location.phase
     val canSubmit: Boolean
-        get() = selectedBarrioId != null && calle.isNotBlank()
+        get() = selectedBarrioId != null && calle.isNotBlank() && numero.isNotBlank()
 }
 
 sealed interface CommercialLocalEvent {

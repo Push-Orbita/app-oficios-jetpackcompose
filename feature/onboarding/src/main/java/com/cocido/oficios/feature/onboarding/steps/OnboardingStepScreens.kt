@@ -118,7 +118,7 @@ fun OnboardingStepScaffold(
                     OficiosButton(
                         text = buttonText,
                         onClick = onSubmit,
-                        enabled = !isLoading,
+                        enabled = canSubmit && !isLoading,
                         loading = isLoading,
                         modifier = Modifier.fillMaxWidth(),
                         variant = submitVariant,

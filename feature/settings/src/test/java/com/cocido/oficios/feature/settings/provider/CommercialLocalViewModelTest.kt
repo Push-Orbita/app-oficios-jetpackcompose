@@ -76,7 +76,9 @@ class CommercialLocalViewModelTest {
         assertFalse(state.missingService)
         assertEquals("Centro", state.barrioQuery)
         assertEquals(7L, state.selectedBarrioId)
-        assertEquals("San Martín 123", state.calle)
+        assertEquals("San Martín", state.calle)
+        assertEquals("123", state.numero)
+        assertTrue(state.canSubmit)
     }
 
     @Test
@@ -224,10 +226,15 @@ class CommercialLocalViewModelTest {
         val viewModel = createViewModel(accounts)
         advanceUntilIdle()
         viewModel.onEvent(CommercialLocalEvent.CalleChanged(""))
+        viewModel.onEvent(CommercialLocalEvent.NumeroChanged(""))
         viewModel.onEvent(CommercialLocalEvent.Submit)
         advanceUntilIdle()
         assertEquals(null, accounts.replacedId)
-        assertEquals("Complete barrio, calle y número de su local.", viewModel.uiState.value.errorMessage)
+        val state = viewModel.uiState.value
+        assertEquals("Ingrese la calle.", state.streetError)
+        assertEquals("Ingrese la altura.", state.numberError)
+        assertEquals(null, state.errorMessage)
+        assertFalse(state.canSubmit)
     }
 
     private fun createViewModel(

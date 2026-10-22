@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -75,14 +76,14 @@ class CommercialLocalViewModel @Inject constructor(
                     calle = event.value,
                     errorMessage = null,
                     location = FormosaAddressGeocoding.invalidate(),
-                )
+                ).withAddressFieldErrors()
             }
             is CommercialLocalEvent.NumeroChanged -> update {
                 it.copy(
                     numero = event.value,
                     errorMessage = null,
                     location = FormosaAddressGeocoding.invalidate(),
-                )
+                ).withAddressFieldErrors()
             }
             is CommercialLocalEvent.MapLocationSelected -> update {
                 it.copy(
@@ -132,6 +133,7 @@ class CommercialLocalViewModel @Inject constructor(
                     targetService = service
                     paymentMethods = details.paymentMethods
                     val local = details.commercialLocal
+                    val (street, number) = DomicilioFieldValidation.splitStreetAndNumber(local?.street)
                     update {
                         it.copy(
                             isLoading = false,
@@ -140,11 +142,11 @@ class CommercialLocalViewModel @Inject constructor(
                             errorMessage = null,
                             barrioQuery = local?.barrioName.orEmpty(),
                             selectedBarrioId = local?.barrioId,
-                            calle = local?.street.orEmpty(),
-                            numero = "",
+                            calle = street,
+                            numero = number,
                             barrioOptions = emptyList(),
                             location = AddressLocationSnapshot(),
-                        )
+                        ).withAddressFieldErrors()
                     }
                 }
             }
@@ -181,7 +183,7 @@ class CommercialLocalViewModel @Inject constructor(
                 isSearchingBarrios = false,
                 errorMessage = null,
                 location = FormosaAddressGeocoding.invalidate(),
-            )
+            ).withAddressFieldErrors()
         }
     }
 
@@ -193,8 +195,9 @@ class CommercialLocalViewModel @Inject constructor(
             update { it.copy(missingService = true) }
             return
         }
-        if (barrioId == null || !state.canSubmit) {
-            update { it.copy(errorMessage = "Complete barrio, calle y número de su local.") }
+        val validated = state.withAddressFieldErrors(showBlank = true)
+        update { validated }
+        if (barrioId == null || !validated.canSubmit) {
             return
         }
         if (!state.location.canPersist) {
@@ -287,6 +290,23 @@ class CommercialLocalViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun CommercialLocalUiState.withAddressFieldErrors(
+        showBlank: Boolean = false,
+    ): CommercialLocalUiState {
+        val errors = DomicilioFieldValidation.validate(
+            barrioId = selectedBarrioId,
+            barrioQuery = barrioQuery,
+            street = calle,
+            number = numero,
+            showBlank = showBlank,
+        )
+        return copy(
+            barrioError = errors.barrioError,
+            streetError = errors.streetError,
+            numberError = errors.numberError,
+        )
     }
 
     private fun update(block: (CommercialLocalUiState) -> CommercialLocalUiState) = _uiState.update(block)

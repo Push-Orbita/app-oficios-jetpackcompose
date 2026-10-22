@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -107,16 +110,27 @@ private fun CommercialLocalForm(
             isLoading = state.isSearchingBarrios,
             onFocused = { onEvent(CommercialLocalEvent.BarrioFocused) },
             onSuggestionsDismissed = { onEvent(CommercialLocalEvent.BarrioSuggestionsDismissed) },
+            isError = state.barrioError != null,
+            supportingText = state.barrioError,
         )
         OficiosTextField(
             value = state.calle,
             onValueChange = { onEvent(CommercialLocalEvent.CalleChanged(it)) },
             label = stringResource(R.string.commercial_local_street),
+            isError = state.streetError != null,
+            supportingText = state.streetError,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
         OficiosTextField(
             value = state.numero,
             onValueChange = { onEvent(CommercialLocalEvent.NumeroChanged(it)) },
             label = stringResource(R.string.commercial_local_number),
+            isError = state.numberError != null,
+            supportingText = state.numberError,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done,
+            ),
         )
         OficiosAddressLocationPicker(
             latitude = state.location.latitude,
@@ -133,7 +147,7 @@ private fun CommercialLocalForm(
             onConfirmPin = { onEvent(CommercialLocalEvent.ConfirmPin) },
             locateOnMapLabel = state.location.locateOnMapLabel,
             confirmLabel = stringResource(R.string.commercial_local_confirm_pin),
-            title = "Ubicación del local",
+            title = stringResource(R.string.commercial_local_map_title),
             hint = state.location.message,
         )
         OficiosButton(
@@ -142,7 +156,7 @@ private fun CommercialLocalForm(
             modifier = Modifier.fillMaxWidth(),
             variant = OficiosButtonVariant.Secondary,
             size = OficiosButtonSize.Large,
-            enabled = !state.isSaving && !state.isGeocoding,
+            enabled = state.canSubmit && !state.isSaving && !state.isGeocoding,
             loading = state.isSaving || state.isGeocoding,
         )
     }

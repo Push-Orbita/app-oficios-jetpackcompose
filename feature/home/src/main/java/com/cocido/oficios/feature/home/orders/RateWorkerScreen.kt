@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -58,7 +57,6 @@ fun RateWorkerScreen(
                 is RateWorkerUiState.Form -> Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .imePadding()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = OficiosSpacing.md),
                     verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
@@ -71,17 +69,24 @@ fun RateWorkerScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                         Text(text = stringResource(R.string.rate_worker_quality), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                         StarSelector(selected = state.qualityStars, onSelect = { onEvent(RateWorkerEvent.QualitySelected(it)) })
+                        if (state.hasAttemptedSubmit && state.qualityStars == 0) {
+                            Text(
+                                text = stringResource(R.string.rate_worker_required),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                         Text(text = stringResource(R.string.rate_worker_punctuality), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                         StarSelector(selected = state.punctualityStars, onSelect = { onEvent(RateWorkerEvent.PunctualitySelected(it)) })
-                    }
-                    if (state.hasAttemptedSubmit && (state.qualityStars == 0 || state.punctualityStars == 0)) {
-                        Text(
-                            text = stringResource(R.string.rate_worker_required),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                        )
+                        if (state.hasAttemptedSubmit && state.punctualityStars == 0) {
+                            Text(
+                                text = stringResource(R.string.rate_worker_required),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                     }
                     OficiosTextField(
                         value = state.comment,
@@ -98,7 +103,7 @@ fun RateWorkerScreen(
                         text = stringResource(R.string.rate_worker_submit),
                         onClick = { onEvent(RateWorkerEvent.Submit) },
                         loading = state.isSubmitting,
-                        enabled = !state.isSubmitting,
+                        enabled = state.canSubmit && !state.isSubmitting,
                         modifier = Modifier.fillMaxWidth(),
                         variant = OficiosButtonVariant.Secondary,
                         size = OficiosButtonSize.Large,

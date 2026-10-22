@@ -165,7 +165,7 @@ private fun CreateOrderForm(
             WorkerMiniCard(state)
         }
 
-        if (!state.hasAgenda && state.subRubroOptions.size > 1) {
+        if (state.subRubroOptions.size > 1) {
             OficiosDropdownField(
                 value = state.subRubroOptions.firstOrNull { it.id == state.selectedSubRubroId }?.name.orEmpty(),
                 options = state.subRubroOptions.map { it.name },
@@ -179,51 +179,64 @@ private fun CreateOrderForm(
             )
         }
 
-        if (!state.hasAgenda) {
-            OficiosTextField(
-                value = state.description,
-                onValueChange = { onEvent(CreateOrderEvent.DescriptionChanged(it)) },
-                label = stringResource(R.string.create_order_description),
-                placeholder = stringResource(R.string.create_order_description_hint),
-                singleLine = false,
-                minLines = 3,
-                maxLines = 6,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onEvent(CreateOrderEvent.ContinueToSummary) }),
-            )
-        }
+        OficiosTextField(
+            value = state.description,
+            onValueChange = { onEvent(CreateOrderEvent.DescriptionChanged(it)) },
+            label = stringResource(R.string.create_order_description),
+            placeholder = stringResource(R.string.create_order_description_hint),
+            singleLine = false,
+            minLines = 3,
+            maxLines = 6,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onEvent(CreateOrderEvent.ContinueToSummary) }),
+        )
 
-        if (!state.hasAgenda) {
-            if (state.contactos.isEmpty()) {
-                OficiosInlineAlert(message = stringResource(R.string.create_order_profile_required))
-            } else {
-                Text(
-                    text = stringResource(R.string.create_order_location),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = OficiosColorWhite,
-                )
-                val selected = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }
-                OficiosTextField(
-                    value = selected?.displayLabel().orEmpty(),
-                    onValueChange = {},
-                    label = "",
-                    floatingLabel = false,
-                    readOnly = true,
-                    placeholder = stringResource(R.string.create_order_add_location),
-                    trailingContent = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
-                            contentDescription = stringResource(R.string.create_order_add_location),
-                            tint = OficiosColorWhite,
-                            modifier = Modifier
-                                .size(OficiosComponentSize.iconMd)
-                                .clickable { onEvent(CreateOrderEvent.AddLocation) },
-                        )
-                    },
-                    modifier = Modifier.clickable { onEvent(CreateOrderEvent.AddLocation) },
-                    isError = state.hasAttemptedContinue && state.selectedDomicilioId == null,
-                )
-            }
+        if (state.contactos.isEmpty() || state.domicilios.isEmpty()) {
+            OficiosInlineAlert(message = stringResource(R.string.create_order_profile_required))
+        } else {
+            Text(
+                text = stringResource(R.string.create_order_location),
+                style = MaterialTheme.typography.titleMedium,
+                color = OficiosColorWhite,
+            )
+            val selected = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }
+            OficiosTextField(
+                value = selected?.displayLabel().orEmpty(),
+                onValueChange = {},
+                label = stringResource(R.string.create_order_location),
+                readOnly = true,
+                placeholder = stringResource(R.string.create_order_add_location),
+                trailingContent = {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
+                        contentDescription = stringResource(R.string.create_order_add_location),
+                        tint = OficiosColorWhite,
+                        modifier = Modifier
+                            .size(OficiosComponentSize.iconMd)
+                            .clickable { onEvent(CreateOrderEvent.AddLocation) },
+                    )
+                },
+                modifier = Modifier.clickable { onEvent(CreateOrderEvent.AddLocation) },
+                isError = state.hasAttemptedContinue && state.selectedDomicilioId == null,
+                supportingText = if (state.hasAttemptedContinue && state.selectedDomicilioId == null) {
+                    stringResource(R.string.create_order_pick_location)
+                } else {
+                    null
+                },
+            )
+            OficiosDropdownField(
+                value = state.contactos.firstOrNull { it.id == state.selectedContactoId }
+                    ?.let { "${it.nombre} · ${it.telefonoWhatsapp}" }
+                    .orEmpty(),
+                options = state.contactos.map { "${it.nombre} · ${it.telefonoWhatsapp}" },
+                onOptionSelected = { label ->
+                    state.contactos.firstOrNull { "${it.nombre} · ${it.telefonoWhatsapp}" == label }?.let {
+                        onEvent(CreateOrderEvent.ContactoSelected(it.id))
+                    }
+                },
+                label = stringResource(R.string.create_order_contact),
+                isError = state.hasAttemptedContinue && state.selectedContactoId == null,
+            )
         }
 
         Text(
@@ -300,6 +313,13 @@ private fun CreateOrderForm(
                 text = stringResource(R.string.create_order_continue),
                 onClick = { onEvent(CreateOrderEvent.ContinueToSummary) },
                 variant = OficiosButtonVariant.Secondary,
+                enabled = CreateOrderSchedule.canContinue(
+                    selectedSubRubroId = state.selectedSubRubroId,
+                    selectedDomicilioId = state.selectedDomicilioId,
+                    selectedContactoId = state.selectedContactoId,
+                    selectedDate = state.selectedDate,
+                    selectedHour = state.selectedHour,
+                ),
             )
         }
     }
