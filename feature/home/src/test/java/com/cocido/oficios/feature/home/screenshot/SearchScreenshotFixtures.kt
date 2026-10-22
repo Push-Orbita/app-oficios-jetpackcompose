@@ -58,6 +58,7 @@ import com.cocido.oficios.domain.model.WorkerSubRubroOption
 import com.cocido.oficios.domain.model.WorkHoursSchedule
 import com.cocido.oficios.feature.home.agenda.AgendaConfigScreen
 import com.cocido.oficios.feature.home.agenda.AgendaConfigUiState
+import com.cocido.oficios.feature.home.agenda.AgendaDurationUnitMinutes
 import com.cocido.oficios.feature.home.orders.CreateOrderScreen
 import com.cocido.oficios.feature.home.orders.CreateOrderUiState
 import com.cocido.oficios.feature.home.orders.OrdersListScreen
@@ -425,8 +426,9 @@ internal fun SearchScreenshotAgendaConfig(
                 selectedSubRubroId = 1,
                 selectedSubRubroIds = setOf(1),
                 durationInput = "60",
-                selectedDays = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
-                selectedHours = setOf(8, 9, 10, 11, 16, 17, 18, 19, 20, 21),
+                durationUnit = AgendaDurationUnitMinutes,
+                intervalInput = "15",
+                intervalUnit = AgendaDurationUnitMinutes,
             ),
             onEvent = {},
             onNavigateBack = {},

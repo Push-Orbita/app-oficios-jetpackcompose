@@ -98,9 +98,9 @@ class AgendaRepositoryImpl @Inject constructor(
             remoteDataSource.createSesion(
                 subRubroId = params.subRubroId,
                 duracion = params.durationMinutes,
-                medidaDuracion = "minutos",
+                medidaDuracion = params.durationUnit,
                 intervalo = params.intervalMinutes?.toString(),
-                medidaIntervalo = params.intervalMinutes?.let { "minutos" },
+                medidaIntervalo = params.intervalMinutes?.let { params.intervalUnit ?: "minutos" },
             ).map { }.refreshCachedAgenda()
         }
 

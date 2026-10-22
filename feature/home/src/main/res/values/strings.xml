@@ -399,8 +399,12 @@
     <string name="agenda_config_empty_description">Configure sus rubros y sub-rubros para poder armar su agenda de turnos.</string>
     <string name="agenda_config_specialty">Especialidad</string>
     <string name="agenda_config_duration_title">Duración e intervalo de turnos</string>
-    <string name="agenda_config_duration">Duración del turno (minutos)</string>
-    <string name="agenda_config_interval">Intervalo entre turnos (minutos, opcional)</string>
+    <string name="agenda_config_duration">Duración del turno</string>
+    <string name="agenda_config_duration_unit">Unidad de duración</string>
+    <string name="agenda_config_interval">Intervalo entre turnos (opcional)</string>
+    <string name="agenda_config_interval_unit">Unidad de intervalo</string>
+    <string name="agenda_config_session_duration">%1$d %2$s por turno</string>
+    <string name="agenda_config_session_interval">Intervalo: %1$d %2$s</string>
     <string name="agenda_config_save">Guardar</string>
     <string name="agenda_config_saved">Configuraciones guardadas</string>
     <string name="agenda_config_delete_title">Eliminar configuración</string>

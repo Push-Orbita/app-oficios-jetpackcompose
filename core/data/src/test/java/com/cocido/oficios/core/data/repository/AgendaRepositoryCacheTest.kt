@@ -13,6 +13,7 @@ import com.cocido.oficios.core.network.api.agenda.dto.SlotTurnoAgendaDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotsAgrupadoPorTrabajadorDto
 import com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
+import com.cocido.oficios.domain.model.SaveAgendaSessionParams
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -68,6 +69,28 @@ class AgendaRepositoryCacheTest {
         assertNull(store.sessions.get())
     }
 
+    @Test
+    fun `save session posts duration interval and units from OpenAPI`() = runTest {
+        val api = FakeAgendaApi()
+        val repository = repository(api, AgendaStore(SessionCacheCoordinator()))
+        val result = repository.saveSession(
+            SaveAgendaSessionParams(
+                subRubroId = 10L,
+                durationMinutes = 2,
+                intervalMinutes = 15,
+                durationUnit = "horas",
+                intervalUnit = "minutos",
+            ),
+        )
+        assertTrue(result is AppResult.Success)
+        val body = api.lastCreateSesion
+        assertEquals(10L, body?.trabajadorOficioSubRubroId)
+        assertEquals(2, body?.duracion)
+        assertEquals("horas", body?.medidaDuracion)
+        assertEquals("15", body?.intervalo)
+        assertEquals("minutos", body?.medidaIntervalo)
+    }
+
     private fun repository(api: AgendaApi, store: AgendaStore) = AgendaRepositoryImpl(
         remoteDataSource = AgendaRemoteDataSource(api),
         dispatcherProvider = object : DispatcherProvider {
@@ -118,7 +141,11 @@ private class FakeAgendaApi(
 
     override suspend fun getSesionesPorSubRubro(subRubroId: Long) = sessions
 
-    override suspend fun createSesion(request: CreateSesionRequestDto) = sessions.first()
+    var lastCreateSesion: CreateSesionRequestDto? = null
+    override suspend fun createSesion(request: CreateSesionRequestDto): SesionDto {
+        lastCreateSesion = request
+        return sessions.first()
+    }
 
     override suspend fun deleteSesion(id: Long) {
         sessions = sessions.filterNot { it.id == id }

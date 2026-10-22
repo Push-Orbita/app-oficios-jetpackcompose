@@ -20,6 +20,8 @@ data class AgendaSessionConfig(
     val subRubroId: Long,
     val durationMinutes: Int,
     val intervalMinutes: Int?,
+    val durationUnit: String = "minutos",
+    val intervalUnit: String? = null,
 )
 
 /** Sub-rubro ofrecido por el trabajador logueado, con su trabajadorOficioSubRubroId real. */
@@ -49,4 +51,6 @@ data class SaveAgendaSessionParams(
     val subRubroId: Long,
     val durationMinutes: Int,
     val intervalMinutes: Int?,
+    val durationUnit: String = "minutos",
+    val intervalUnit: String? = null,
 )
