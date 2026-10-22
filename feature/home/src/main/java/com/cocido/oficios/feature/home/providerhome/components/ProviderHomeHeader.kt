@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.providerhome.components
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +21,6 @@ import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.component.layout.HomeUserIdentityColumn
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -72,12 +71,12 @@ fun ProviderHomeHeader(
                 modifier = Modifier
                     .size(OficiosComponentSize.avatarSm)
                     .clip(RoundedCornerShape(OficiosRadius.sm))
-                    .background(OficiosColorOutlineFill),
+                    .background(MaterialTheme.colorScheme.outline),
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.BellDot),
                     contentDescription = stringResource(R.string.home_notifications),
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }

@@ -43,10 +43,6 @@ import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTa
 import com.cocido.oficios.core.designsystem.component.interaction.oficiosMinTouchTarget
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -140,7 +136,7 @@ private fun MisUbicacionesPicker(
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
                     contentDescription = stringResource(R.string.locations_add_new),
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .size(OficiosComponentSize.iconMd)
                         .clickable { onEvent(MisUbicacionesEvent.AddClicked) },
@@ -159,12 +155,12 @@ private fun MisUbicacionesPicker(
                 Text(
                     text = stringResource(R.string.locations_mark_map),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorWhite,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.MapPinHouse),
                     contentDescription = stringResource(R.string.locations_mark_map),
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }
@@ -179,7 +175,7 @@ private fun MisUbicacionesPicker(
         Text(
             text = stringResource(R.string.locations_hint),
             style = MaterialTheme.typography.bodyMedium,
-            color = OficiosColorTextSecondaryAccessible,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
@@ -205,7 +201,7 @@ private fun LocationPickerList(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, OficiosColorOutlineFill, RoundedCornerShape(OficiosRadius.lg))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(OficiosRadius.lg))
             .padding(OficiosSpacing.s10),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
     ) {
@@ -215,7 +211,7 @@ private fun LocationPickerList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(OficiosRadius.sm))
-                    .background(if (selected) OficiosColorWhite else OficiosColorBackground)
+                    .background(if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.background)
                     .clickable { onSelected(domicilio.id) }
                     .padding(OficiosSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
@@ -228,7 +224,7 @@ private fun LocationPickerList(
                     } else {
                         MaterialTheme.typography.bodyLarge
                     },
-                    color = if (selected) OficiosColorBackground else OficiosColorWhite,
+                    color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
                 val favoriteLabel = stringResource(
@@ -242,9 +238,9 @@ private fun LocationPickerList(
                         imageVector = ImageVector.vectorResource(OficiosIcons.Star),
                         contentDescription = null,
                         tint = when {
-                            !domicilio.favorito -> OficiosColorWhite.copy(alpha = 0.45f)
-                            selected -> OficiosColorBackground
-                            else -> OficiosColorWhite
+                            !domicilio.favorito -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                            selected -> MaterialTheme.colorScheme.background
+                            else -> MaterialTheme.colorScheme.onSurface
                         },
                         modifier = Modifier.size(OficiosComponentSize.iconMd),
                     )
@@ -263,12 +259,12 @@ private fun LocationPickerList(
             Text(
                 text = stringResource(R.string.locations_add_new),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Icon(
                 imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
                 contentDescription = null,
-                tint = OficiosColorWhite,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
             )
         }

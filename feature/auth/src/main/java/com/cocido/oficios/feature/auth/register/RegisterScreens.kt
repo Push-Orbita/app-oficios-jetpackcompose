@@ -35,7 +35,6 @@ import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptAction
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphTitleStyle
-import com.cocido.oficios.core.designsystem.theme.OficiosColorDisabledText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -218,7 +217,7 @@ fun RegisterFormScreen(
         Text(
             text = stringResource(R.string.auth_register_email_hint),
             style = OficiosAuthGlyphBodyStyle,
-            color = OficiosColorDisabledText,
+            color = OficiosTheme.colors.disabled,
         )
         Spacer(Modifier.height(OficiosComponentSize.authRegisterHintToPassword))
         FieldAndCtaBlock(spacing = OficiosSpacing.md) {

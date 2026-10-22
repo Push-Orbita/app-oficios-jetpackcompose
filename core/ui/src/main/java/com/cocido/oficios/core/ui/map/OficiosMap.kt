@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.ui.map
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -41,10 +42,6 @@ import androidx.core.content.ContextCompat
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import kotlinx.coroutines.delay
@@ -119,7 +116,7 @@ fun OficiosLocationPicker(
         Text(
             text = "Toque el mapa o «Usar mi ubicación» para marcar la entrada. El GPS no se aplica solo.",
             style = MaterialTheme.typography.bodySmall,
-            color = OficiosColorSecondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Box(
             modifier = Modifier
@@ -166,7 +163,7 @@ fun OficiosLocationPicker(
                     Icon(
                         imageVector = Icons.Outlined.Place,
                         contentDescription = "Mapa no disponible",
-                        tint = OficiosColorWhite,
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         text = "No pudimos cargar el mapa. Use su ubicación actual para guardar el domicilio.",
@@ -204,7 +201,7 @@ fun OficiosLocationPicker(
                 "Ubicación confirmada · %.5f, %.5f".format(selected.latitude, selected.longitude)
             },
             style = MaterialTheme.typography.labelMedium,
-            color = if (selected == null) OficiosColorSecondaryText else OficiosColorAction,
+            color = if (selected == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
         )
     }
 }
@@ -270,7 +267,7 @@ fun OficiosAddressLocationPicker(
         Text(
             text = hint ?: "La ubicación se calcula a partir de la dirección. El GPS del teléfono no se usa.",
             style = MaterialTheme.typography.bodySmall,
-            color = OficiosColorSecondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (showMap) {
             Box(
@@ -325,7 +322,7 @@ fun OficiosAddressLocationPicker(
                         Icon(
                             imageVector = Icons.Outlined.Place,
                             contentDescription = "Mapa no disponible",
-                            tint = OficiosColorWhite,
+                            tint = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             text = "No pudimos cargar el mapa. Confirme la dirección escrita; no se usa el GPS.",
@@ -340,7 +337,7 @@ fun OficiosAddressLocationPicker(
                 Text(
                     text = "Pin · %.5f, %.5f".format(selected.latitude, selected.longitude),
                     style = MaterialTheme.typography.labelMedium,
-                    color = OficiosColorAction,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -475,10 +472,10 @@ fun OficiosTrackingMap(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             if (showDestinationLabel) {
-                Text("Destino", style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
+                Text("Destino", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (worker != null) {
-                Text("Ubicación actualizada", style = MaterialTheme.typography.labelMedium, color = OficiosColorSuccessText)
+                Text("Ubicación actualizada", style = MaterialTheme.typography.labelMedium, color = OficiosTheme.colors.success)
             }
         }
     }
@@ -502,7 +499,7 @@ private fun MapPlaceholder(
         Icon(
             imageVector = Icons.Outlined.Place,
             contentDescription = description,
-            tint = OficiosColorWhite,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(OficiosComponentSize.iconLg),
         )
         if (address.isNotBlank()) {

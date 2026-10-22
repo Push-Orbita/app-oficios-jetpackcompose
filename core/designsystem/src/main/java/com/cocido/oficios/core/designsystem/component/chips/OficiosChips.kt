@@ -30,9 +30,6 @@ import com.cocido.oficios.core.designsystem.component.cards.OrderStatus
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
 import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -127,14 +124,18 @@ fun OficiosSegmentChip(
             modifier = Modifier
                 .defaultMinSize(minHeight = OficiosComponentSize.buttonHeightSmall)
                 .clip(shape)
-                .background(if (selected) OficiosColorAction else Color.Transparent)
+                .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
                 .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
             )
         }
     }
@@ -256,8 +257,8 @@ private fun statusColors(status: OrderStatus): Pair<Color, Color> = when (status
         MaterialTheme.colorScheme.tertiary,
     )
     is OrderStatus.Confirmed, is OrderStatus.Approved -> Pair(
-        OficiosColorSuccess,
-        OficiosColorSuccess,
+        OficiosTheme.colors.success,
+        OficiosTheme.colors.success,
     )
     is OrderStatus.InReview -> Pair(
         MaterialTheme.colorScheme.onSurfaceVariant,

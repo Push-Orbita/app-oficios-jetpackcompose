@@ -29,7 +29,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -107,8 +106,8 @@ private fun CodeDigitBox(
 ) {
     val borderColor = when {
         isError -> MaterialTheme.colorScheme.error
-        isFilled -> OficiosColorOutlineFill
-        else -> OficiosColorOutlineFill.copy(alpha = 0.5f)
+        isFilled -> MaterialTheme.colorScheme.outline
+        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
     }
     
     Box(

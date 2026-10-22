@@ -54,8 +54,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
-import com.cocido.oficios.core.designsystem.theme.OficiosColorErrorBorder
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -151,17 +149,17 @@ fun OficiosTextField(
 
     val borderColor = when {
         !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled)
-        isError -> OficiosColorErrorBorder
+        isError -> MaterialTheme.colorScheme.error
         isFocused -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.outline
     }
     val labelColor = when {
-        !enabled -> OficiosColorMutedText
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         isError -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.onSurface
     }
     val valueColor = when {
-        !enabled -> OficiosColorMutedText
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         else -> MaterialTheme.colorScheme.onSurface
     }
     val containerColor = if (!enabled) {

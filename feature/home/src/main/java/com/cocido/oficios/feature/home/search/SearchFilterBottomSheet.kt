@@ -28,7 +28,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.AttentionModality
 import com.cocido.oficios.feature.home.R
@@ -48,7 +47,7 @@ fun SearchFilterBottomSheet(
     ModalBottomSheet(
         onDismissRequest = { onEvent(SearchResultsEvent.DismissFilters) },
         sheetState = sheetState,
-        containerColor = OficiosColorBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
         tonalElevation = 0.dp,
     ) {

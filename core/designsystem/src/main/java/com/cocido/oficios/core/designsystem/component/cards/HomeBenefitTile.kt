@@ -32,8 +32,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -55,8 +53,8 @@ fun HomeBenefitTile(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(OficiosColorOutlineFill, shape)
-            .border(1.dp, OficiosColorOutlineFill, shape)
+            .background(MaterialTheme.colorScheme.outline, shape)
+            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
             .padding(OficiosSpacing.md),
     ) {
         Text(
@@ -65,7 +63,7 @@ fun HomeBenefitTile(
                 lineBreak = LineBreak.Paragraph,
                 hyphens = Hyphens.None,
             ),
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
             overflow = TextOverflow.Clip,
             modifier = Modifier.fillMaxWidth(),
         )

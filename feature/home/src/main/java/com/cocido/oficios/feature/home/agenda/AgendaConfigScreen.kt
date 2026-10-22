@@ -35,7 +35,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.AgendaSessionConfig
 import com.cocido.oficios.feature.home.R
@@ -227,7 +226,7 @@ private fun SessionRow(session: AgendaSessionConfig, onDeleteClick: () -> Unit) 
                             session.intervalUnit ?: AgendaDurationUnitMinutes,
                         ),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = OficiosColorTextSecondaryAccessible,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

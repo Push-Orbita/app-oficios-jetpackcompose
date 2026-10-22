@@ -132,7 +132,7 @@ private fun OficiosBottomNavItem(
     val colorSpec = oficiosTween<Color>(OficiosMotion.DurationMedium)
     val contentColor by animateColorAsState(
         targetValue = if (selected) {
-            MaterialTheme.colorScheme.onSurface
+            OficiosTheme.colors.onIconContainer
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         },
@@ -140,7 +140,7 @@ private fun OficiosBottomNavItem(
         label = "BottomNavContentColor",
     )
     val indicatorColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
+        targetValue = if (selected) OficiosTheme.colors.iconContainer else Color.Transparent,
         animationSpec = colorSpec,
         label = "BottomNavIndicatorColor",
     )

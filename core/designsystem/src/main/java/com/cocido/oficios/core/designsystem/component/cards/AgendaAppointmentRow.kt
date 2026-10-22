@@ -30,11 +30,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -60,17 +55,17 @@ fun AgendaAppointmentRow(
     val highlighted = isNow
     val showSideLabel = isNow || isToday
     val sideLabel = if (isNow) nowLabel else todayLabel
-    val surface = if (highlighted) OficiosColorWhite else Color.Transparent
-    val titleColor = if (highlighted) OficiosColorBackground else OficiosColorWhite
-    val bodyColor = if (highlighted) OficiosColorBackground else OficiosColorTextSecondaryAccessible
-    val chevronColor = if (highlighted) OficiosColorBackground else OficiosColorWhite
+    val surface = if (highlighted) MaterialTheme.colorScheme.onSurface else Color.Transparent
+    val titleColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
+    val bodyColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurfaceVariant
+    val chevronColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
             .clip(shape)
             .background(surface, shape)
-            .border(1.dp, OficiosColorOutlineFill, shape)
+            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
             .clickable(onClick = onClick)
             .padding(end = OficiosSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
@@ -80,13 +75,13 @@ fun AgendaAppointmentRow(
                 modifier = Modifier
                     .width(OficiosComponentSize.agendaTodayBarWidth)
                     .fillMaxHeight()
-                    .background(OficiosColorAction),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = sideLabel,
                     style = MaterialTheme.typography.titleMedium,
-                    color = OficiosColorWhite,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier
@@ -99,7 +94,7 @@ fun AgendaAppointmentRow(
                 modifier = Modifier
                     .width(OficiosComponentSize.agendaDefaultBarWidth)
                     .fillMaxHeight()
-                    .background(OficiosColorOutlineFill),
+                    .background(MaterialTheme.colorScheme.outline),
             )
         }
         Column(

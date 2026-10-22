@@ -1,31 +1,32 @@
 # Design System
 
-El design system vive en `:core:designsystem`. El tema activo es navy v2 (`OficiosTheme`), no la paleta violeta ni los nombres `App*`.
+El design system vive en `:core:designsystem`. Hay **dos temas** (`OficiosTheme` + `OficiosTheme.colors`).
 
 ## Tema
 
 ```kotlin
-OficiosTheme {
-    // contenido
-}
+OficiosTheme { /* claro, default */ }
+OficiosTheme(darkTheme = true) { /* navy Figma Mode 1 */ }
+OficiosTheme.colors.success
 ```
 
-`OficiosTheme` configura `ColorScheme`, `OficiosTypography` y formas. El fondo de producto es `#00358B`.
+- **Claro (DEFAULT):** fondo hueso **`#F4F5F7`** (rango BBVA `#F5F5F2`–`#F4F5F7`), cards blancas, texto `#0D1B2A`. El azul de marca Figma `#00358B` solo en botones primarios, títulos destacados, links, círculos de ícono, chip/tab seleccionado e indicador del bottom nav.
+- **Oscuro:** el Mode 1 actual (`#00358B` full-bleed). No se altera.
+
+Preferencia en Ajustes → Apariencia (Claro / Oscuro / Según el sistema), persistida en DataStore. Default: Claro.
 
 ## Tokens
 
-| Token | Hex | Uso |
+Usar `MaterialTheme.colorScheme` y `OficiosTheme.colors`. Los primitivos `OficiosColor*` viven solo en `Color.kt` / `OficiosColors.kt` para armar los schemes.
+
+| Token semántico | Claro | Oscuro |
 |---|---|---|
-| `OficiosColorBackground` | `#00358B` | Fondo |
-| `OficiosColorOutlineFill` | `#004DA8` | Borde de cards |
-| `OficiosColorSecondaryText` | `#7F9AC5` | Texto secundario |
-| `OficiosColorAction` | `#006DEF` | CTA azul (jerarquía media) |
-| `OficiosColorWhite` | `#FFFFFF` | Texto y CTA de máxima énfasis |
-| `OficiosColorBrandMark` | `#006AF0` | Casco del logo (Figma `666:2`) |
-| `OficiosColorAccent` | `#F8AE1A` | Acento de UI, no el casco |
-| `OficiosSpacing` | 4–64dp | Padding y gaps |
-| `OficiosRadius` | 8 / 16dp | Botones y cards |
-| `OficiosComponentSize` | 36 / 48dp | Alto de botón compacto y de pantalla |
+| `background` | `#F4F5F7` | `#00358B` |
+| `surface` | `#FFFFFF` | `#00358B` |
+| `onSurface` | `#0D1B2A` | `#FFFFFF` |
+| `onSurfaceVariant` | `#4A5568` | `#8EABD4` |
+| `primary` | `#00358B` | `#006DEF` |
+| `success` | `#146C43` | `#B7E4C7` |
 
 Tipografía de Figma: DIN Pro y Satoshi. No están licenciadas en el repo; `Type.kt` usa `FontFamily.SansSerif` con los tamaños y pesos ya definidos. No inventar otra escala.
 
@@ -43,6 +44,6 @@ Tipografía de Figma: DIN Pro y Satoshi. No están licenciadas en el repo; `Type
 
 ## Reglas
 
-- No usar hex sueltos en features: tokens `OficiosColor*`.
+- No usar hex sueltos en features: `MaterialTheme.colorScheme` / `OficiosTheme.colors`.
 - No usar `AppTheme`, `AppButton` ni `AppSpacing` en código nuevo.
 - El acento dorado no pinta el casco de marca.

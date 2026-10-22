@@ -117,16 +117,12 @@ val OficiosColorSurface = OficiosColorBackground
 @Deprecated("Usar OficiosColorOutlineFill", ReplaceWith("OficiosColorOutlineFill"))
 val OficiosColorSurfaceVariant = OficiosColorOutlineFill
 
-// Light scheme primitivos — el handoff no define un modo claro (single "Mode 1"),
-// pero feature:settings ya expone un toggle System/Light/Dark; se arma una variante
-// clara coherente con la misma familia de color para no romper esa función existente.
-private val OficiosColorBackgroundLight = Color(0xFFF3F6FC)
-private val OficiosColorSurfaceLight = Color(0xFFFFFFFF)
-private val OficiosColorOutlineLight = Color(0xFFB9C9E4)
-private val OficiosColorOnSurfaceLight = OficiosColorBackground
-
 // ---------------------------------------------------------------------------
 // Color schemes
+//
+// Claro (DEFAULT): fondo hueso `#F4F5F7`, cards blancas, texto `#0D1B2A`.
+// El azul de marca Figma `#00358B` es `primary` (botones, títulos, chips, nav).
+// Oscuro: Mode 1 de Figma, navy full-bleed — no se altera.
 // ---------------------------------------------------------------------------
 
 internal val DarkColorScheme = darkColorScheme(
@@ -163,22 +159,34 @@ internal val DarkColorScheme = darkColorScheme(
 )
 
 internal val LightColorScheme = lightColorScheme(
-    background = OficiosColorBackgroundLight,
-    onBackground = OficiosColorOnSurfaceLight,
-    surface = OficiosColorSurfaceLight,
-    onSurface = OficiosColorOnSurfaceLight,
-    surfaceVariant = OficiosColorSurfaceLight,
-    onSurfaceVariant = OficiosColorOnSurfaceLight,
-    outline = OficiosColorOutlineLight,
-    outlineVariant = OficiosColorOutlineLight.copy(alpha = 0.5f),
-    primary = OficiosColorAction,
+    background = Color(0xFFF4F5F7),
+    onBackground = Color(0xFF0D1B2A),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF0D1B2A),
+    surfaceVariant = Color(0xFFEEF0F3),
+    onSurfaceVariant = Color(0xFF4A5568),
+    surfaceContainer = Color(0xFFEEF0F3),
+    surfaceContainerHigh = Color(0xFFEEF0F3),
+    outline = Color(0xFFE2E5EA),
+    outlineVariant = Color(0xFFD5D8DE),
+    primary = OficiosColorBackground,
     onPrimary = OficiosColorWhite,
-    primaryContainer = OficiosColorOutlineLight,
-    onPrimaryContainer = OficiosColorBackground,
+    primaryContainer = OficiosColorBackground,
+    onPrimaryContainer = OficiosColorWhite,
     secondary = OficiosColorBackground,
     onSecondary = OficiosColorWhite,
+    secondaryContainer = Color(0xFFEEF0F3),
+    onSecondaryContainer = OficiosColorBackground,
     tertiary = OficiosColorAccent,
-    onTertiary = OficiosColorWhite,
-    error = OficiosColorError,
+    onTertiary = OficiosColorBackground,
+    tertiaryContainer = Color(0xFFFFF3D6),
+    onTertiaryContainer = Color(0xFF8A5A00),
+    error = Color(0xFFC62828),
     onError = OficiosColorWhite,
+    errorContainer = Color(0xFFFDECEA),
+    onErrorContainer = Color(0xFFC62828),
+    scrim = Color(0x99000000),
+    inverseSurface = OficiosColorBackground,
+    inverseOnSurface = OficiosColorWhite,
+    inversePrimary = OficiosColorAction,
 )

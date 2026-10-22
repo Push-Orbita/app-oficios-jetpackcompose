@@ -41,12 +41,6 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAlertText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorDangerFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -92,46 +86,34 @@ fun OficiosButton(
         OficiosButtonSize.Large -> OficiosComponentSize.buttonHeightLarge
     }
 
+    val colors = OficiosTheme.colors
     val (containerColor, contentColor, border, shadowColor) = when (variant) {
-        // Botón primario — Figma home: fondo rgb(0,109,239), sombra 0px 4px 10px rgba(0,0,0,.15)
         OficiosButtonVariant.Primary -> ButtonColors(
-            container = OficiosColorAction,
-            content = OficiosColorWhite,
+            container = MaterialTheme.colorScheme.primary,
+            content = MaterialTheme.colorScheme.onPrimary,
             border = if (figmaAuthStroke) {
-                BorderStroke(1.dp, OficiosColorAlertText.copy(alpha = 0.5f))
+                BorderStroke(1.dp, colors.error.copy(alpha = 0.5f))
             } else {
                 BorderStroke(1.dp, Color.Transparent)
             },
-            shadow = if (figmaAuthStroke) {
-                Color(0xFFA32F56).copy(alpha = 0.15f)
-            } else {
-                Color.Black.copy(alpha = 0.15f)
-            },
+            shadow = Color.Black.copy(alpha = 0.15f),
         )
-        // Botón secundario — Figma: fondo blanco, borde #E2E2E2
         OficiosButtonVariant.Secondary -> ButtonColors(
-            container = OficiosColorWhite,
-            content = OficiosColorBackground,
-            border = BorderStroke(1.dp, Color(0xFFE2E2E2)),
-            shadow = if (figmaAuthStroke) {
-                Color.White.copy(alpha = 0.1f)
-            } else {
-                Color.Black.copy(alpha = 0.15f)
-            },
+            container = colors.inverseSurface,
+            content = colors.inverseOnSurface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            shadow = Color.Black.copy(alpha = 0.15f),
         )
-        // Botón outline — Figma: transparente + box-shadow inset 1px rgb(0,77,168)
         OficiosButtonVariant.Outlined -> ButtonColors(
             container = Color.Transparent,
             content = MaterialTheme.colorScheme.onSurface,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             shadow = Color.Transparent,
         )
-        // Cancelar: borde y texto en el rosa de alerta. El fill de error (#BA6380) sobre
-        // el azul de fondo no llega a AA (2.75); el texto de alerta sí (4.64).
         OficiosButtonVariant.OutlinedDanger -> ButtonColors(
             container = Color.Transparent,
-            content = OficiosColorAlertText,
-            border = BorderStroke(1.dp, OficiosColorAlertText),
+            content = colors.error,
+            border = BorderStroke(1.dp, colors.error),
             shadow = Color.Transparent,
         )
         OficiosButtonVariant.Ghost -> ButtonColors(
@@ -141,30 +123,30 @@ fun OficiosButton(
             shadow = Color.Transparent,
         )
         OficiosButtonVariant.Danger -> ButtonColors(
-            container = OficiosColorDangerFill,
-            content = OficiosColorWhite,
-            border = BorderStroke(1.dp, OficiosColorDangerFill),
+            container = colors.danger,
+            content = colors.onDanger,
+            border = BorderStroke(1.dp, colors.danger),
             shadow = Color.Black.copy(alpha = 0.15f),
         )
         OficiosButtonVariant.Success -> ButtonColors(
-            container = OficiosColorSuccess,
-            content = Color.White,
-            border = BorderStroke(1.dp, OficiosColorSuccess.copy(alpha = 0.5f)),
+            container = colors.success,
+            content = colors.onSuccess,
+            border = BorderStroke(1.dp, colors.success.copy(alpha = 0.5f)),
             shadow = Color.Black.copy(alpha = 0.15f),
         )
     }
 
     val isInteractive = enabled && !loading
     val (disabledContainerColor, disabledContentColor) = when (variant) {
-        OficiosButtonVariant.Primary -> OficiosColorAction.copy(alpha = OficiosAlpha.disabled) to
-            OficiosColorWhite.copy(alpha = OficiosAlpha.high)
+        OficiosButtonVariant.Primary -> MaterialTheme.colorScheme.primary.copy(alpha = OficiosAlpha.disabled) to
+            MaterialTheme.colorScheme.onPrimary.copy(alpha = OficiosAlpha.high)
         else -> containerColor.copy(alpha = OficiosAlpha.disabled) to
             contentColor.copy(alpha = OficiosAlpha.disabled)
     }
     val activeBorder = when {
         isInteractive -> border
         variant == OficiosButtonVariant.Secondary ->
-            BorderStroke(1.dp, Color(0xFFE2E2E2).copy(alpha = OficiosAlpha.disabled))
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled))
         else -> border
     }
 

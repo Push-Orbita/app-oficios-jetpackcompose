@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.screenshot
 
+import androidx.compose.material3.MaterialTheme
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,7 +17,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientHomeContent
@@ -139,8 +139,9 @@ internal fun SearchScreenshotHome(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
     emptyRecents: Boolean = false,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         HomeScreen(
             uiState = HomeUiState.Success(
                 ClientHomeContent(
@@ -224,8 +225,9 @@ internal fun SearchScreenshotResults(
 internal fun SearchScreenshotFicha(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         WorkerProfileScreen(
             uiState = previewState(withGallery = true, withReviews = true),
             onEvent = {},
@@ -241,8 +243,9 @@ internal val ProviderHomeScreenshotNow: ZonedDateTime =
 internal fun SearchScreenshotProviderHome(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         ProviderHomeScreen(
             uiState = ProviderHomeUiState.Success(
                 content = ProviderHomeContent(
@@ -587,13 +590,14 @@ internal fun SearchScreenshotNotifications(
 internal fun SearchScreenshotFrame(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    OficiosTheme {
+    OficiosTheme(darkTheme = darkTheme) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OficiosColorBackground),
+                .background(MaterialTheme.colorScheme.background),
         ) {
             Spacer(Modifier.fillMaxWidth().height(statusBar))
             Box(modifier = Modifier.weight(1f)) {

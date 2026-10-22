@@ -46,10 +46,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -197,7 +193,7 @@ private fun CreateOrderForm(
             Text(
                 text = stringResource(R.string.create_order_location),
                 style = MaterialTheme.typography.titleMedium,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             val selected = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }
             OficiosTextField(
@@ -210,7 +206,7 @@ private fun CreateOrderForm(
                     Icon(
                         imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
                         contentDescription = stringResource(R.string.create_order_add_location),
-                        tint = OficiosColorWhite,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .size(OficiosComponentSize.iconMd)
                             .clickable { onEvent(CreateOrderEvent.AddLocation) },
@@ -244,7 +240,7 @@ private fun CreateOrderForm(
                 if (state.hasAgenda) R.string.create_order_date else R.string.create_order_date_time,
             ),
             style = MaterialTheme.typography.titleMedium,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         OficiosMonthCalendar(
             month = state.visibleMonth,
@@ -265,14 +261,14 @@ private fun CreateOrderForm(
             Text(
                 text = stringResource(R.string.create_order_hours),
                 style = MaterialTheme.typography.titleMedium,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         if (state.isLoadingSlots) {
             Text(
                 text = stringResource(R.string.create_order_slots_loading),
                 style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
             state.slotsErrorMessage?.let { OficiosInlineAlert(message = it) }
@@ -401,7 +397,7 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
                     Text(
                         text = state.workerName,
                         style = MaterialTheme.typography.titleMedium,
-                        color = OficiosColorWhite,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     if (state.workerVerified) {
                         OficiosVerifiedBadge(contentDescription = null)
@@ -412,7 +408,7 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
             Icon(
                 imageVector = ImageVector.vectorResource(OficiosIcons.Heart),
                 contentDescription = null,
-                tint = OficiosColorWhite,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
             )
         }
@@ -428,7 +424,7 @@ private fun SummaryMap(domicilio: ClientDomicilio?) {
             .fillMaxWidth()
             .height(OficiosComponentSize.mapCardHeight)
             .clip(RoundedCornerShape(OficiosRadius.lg))
-            .border(1.dp, OficiosColorOutlineFill, RoundedCornerShape(OficiosRadius.lg)),
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(OficiosRadius.lg)),
         contentAlignment = Alignment.Center,
     ) {
         if (lat != null && lng != null) {
@@ -442,7 +438,7 @@ private fun SummaryMap(domicilio: ClientDomicilio?) {
             Icon(
                 imageVector = ImageVector.vectorResource(OficiosIcons.MapPinHouse),
                 contentDescription = stringResource(R.string.create_order_summary_address),
-                tint = OficiosColorSecondaryTextFigma,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(OficiosComponentSize.iconLg),
             )
         }
@@ -460,13 +456,13 @@ private fun SummaryInfoRow(icon: Int, label: String, value: String) {
             modifier = Modifier
                 .size(OficiosComponentSize.iconBox)
                 .clip(RoundedCornerShape(OficiosRadius.sm))
-                .background(OficiosColorOutlineFill),
+                .background(MaterialTheme.colorScheme.outline),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = ImageVector.vectorResource(icon),
                 contentDescription = null,
-                tint = OficiosColorWhite,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
             )
         }
@@ -474,12 +470,12 @@ private fun SummaryInfoRow(icon: Int, label: String, value: String) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.titleMedium,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

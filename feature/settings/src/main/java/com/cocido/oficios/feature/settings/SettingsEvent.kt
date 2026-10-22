@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings
 
+import com.cocido.oficios.domain.model.ThemeMode
+
 sealed interface SettingsEvent {
     data object Retry : SettingsEvent
     data object OpenPersonalData : SettingsEvent
@@ -11,6 +13,7 @@ sealed interface SettingsEvent {
     data object OpenHelp : SettingsEvent
     data object Logout : SettingsEvent
     data object NavigateBack : SettingsEvent
+    data class SetThemeMode(val mode: ThemeMode) : SettingsEvent
 }
 
 sealed interface SettingsEffect {

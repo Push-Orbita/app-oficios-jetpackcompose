@@ -51,7 +51,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosLocationPicker
@@ -209,7 +208,7 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
                 Text(contact.nombre, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                Text(contact.telefonoWhatsapp, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
+                Text(contact.telefonoWhatsapp, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = ImageVector.vectorResource(
@@ -221,7 +220,7 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
                     Text(
                         text = if (contact.telefonoVerificado) stringResource(R.string.client_data_whatsapp_verified) else stringResource(R.string.client_data_whatsapp_pending),
                         style = MaterialTheme.typography.labelMedium,
-                        color = OficiosColorSecondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -265,9 +264,9 @@ private fun DomicilioCard(domicilio: ClientDomicilio, onEvent: (ClientDataEvent)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                Text(detail.ifBlank { stringResource(R.string.client_data_no_street) }, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
+                Text(detail.ifBlank { stringResource(R.string.client_data_no_street) }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 domicilio.barrioName?.let {
-                    Text(it, style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
+                    Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             IconButton(onClick = { onEvent(ClientDataEvent.ToggleDomicilioFavorite(domicilio.id, !domicilio.favorito)) }) {

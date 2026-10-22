@@ -29,7 +29,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -165,7 +164,7 @@ private fun SupportHelpIcon(description: String) {
         Text(
             text = "?",
             style = OficiosAuthGlyphBodyStyle.copy(fontWeight = FontWeight.Bold),
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

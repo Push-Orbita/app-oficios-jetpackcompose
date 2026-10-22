@@ -61,8 +61,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.R
@@ -356,7 +354,7 @@ private fun CropToolButton(
     icon: Int? = null,
     selected: Boolean = false,
 ) {
-    val container = if (selected) OficiosColorAction else Color.Transparent
+    val container = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
     OficiosTouchTarget(
         onClick = onClick,
         modifier = modifier,
@@ -374,14 +372,14 @@ private fun CropToolButton(
                 Icon(
                     imageVector = rememberOficiosIcon(icon),
                     contentDescription = null,
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
             )
@@ -397,6 +395,7 @@ private fun CropOverlay(
     showGrid: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val handleColor = MaterialTheme.colorScheme.onSurface
     Canvas(
         modifier = modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
     ) {
@@ -415,7 +414,7 @@ private fun CropOverlay(
                 blendMode = BlendMode.Clear,
             )
             drawCircle(
-                color = OficiosColorWhite,
+                color = handleColor,
                 radius = minOf(width, height) / 2f,
                 center = Offset(left + width / 2f, top + height / 2f),
                 style = Stroke(width = 2.dp.toPx()),
@@ -428,7 +427,7 @@ private fun CropOverlay(
                 blendMode = BlendMode.Clear,
             )
             drawRect(
-                color = OficiosColorWhite,
+                color = handleColor,
                 topLeft = Offset(left, top),
                 size = Size(width, height),
                 style = Stroke(width = 2.dp.toPx()),
@@ -437,7 +436,7 @@ private fun CropOverlay(
         if (showGrid) {
             val thirdX = width / 3f
             val thirdY = height / 3f
-            val grid = OficiosColorWhite.copy(alpha = 0.7f)
+            val grid = handleColor.copy(alpha = 0.7f)
             val stroke = Stroke(width = 1.dp.toPx())
             drawLine(grid, Offset(left + thirdX, top), Offset(left + thirdX, bottom), strokeWidth = stroke.width)
             drawLine(grid, Offset(left + thirdX * 2, top), Offset(left + thirdX * 2, bottom), strokeWidth = stroke.width)
@@ -451,21 +450,21 @@ private fun CropOverlay(
         val cy = top + height / 2f
         fun corner(x: Float, y: Float) {
             drawRect(
-                color = OficiosColorWhite,
+                color = handleColor,
                 topLeft = Offset(x - handle / 2f, y - handle / 2f),
                 size = Size(handle, handle),
             )
         }
         fun edgeH(x: Float, y: Float) {
             drawRect(
-                color = OficiosColorWhite,
+                color = handleColor,
                 topLeft = Offset(x - edge / 2f, y - edgeThick / 2f),
                 size = Size(edge, edgeThick),
             )
         }
         fun edgeV(x: Float, y: Float) {
             drawRect(
-                color = OficiosColorWhite,
+                color = handleColor,
                 topLeft = Offset(x - edgeThick / 2f, y - edge / 2f),
                 size = Size(edgeThick, edge),
             )

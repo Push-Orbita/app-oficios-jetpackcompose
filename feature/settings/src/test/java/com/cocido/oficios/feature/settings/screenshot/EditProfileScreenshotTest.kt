@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.settings.screenshot
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.settings.provider.ProfessionalProfileScreen
 import com.cocido.oficios.feature.settings.provider.ProfessionalProfileUiState
@@ -59,15 +59,41 @@ class EditProfileScreenshotTest {
         }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun editProfileDark() {
+        assumeGoldenOrRecording(javaClass, "editProfileDark")
+        composeRule.setContent {
+            ScreenshotFrame(darkTheme = true) {
+                ProfessionalProfileScreen(
+                    uiState = ProfessionalProfileUiState(
+                        isLoading = false,
+                        oficiosLabel = "Albañil, Electricista",
+                        specializedLabel = "Albañilería general, Reparación de humedad, Revestimiento de Cerámicos y azulejos, Iluminación.",
+                        gallery = emptyList(),
+                        certificates = listOf(
+                            ProfileCertificateUi(1, "Curso", null, validated = true),
+                            ProfileCertificateUi(2, "Matrícula", null, validated = false),
+                        ),
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onRoot().captureRoboImage()
+    }
 }
 
 @Composable
-private fun ScreenshotFrame(content: @Composable () -> Unit) {
-    OficiosTheme {
+private fun ScreenshotFrame(
+    darkTheme: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    OficiosTheme(darkTheme = darkTheme) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OficiosColorBackground),
+                .background(MaterialTheme.colorScheme.background),
         ) {
             Spacer(Modifier.fillMaxWidth().height(52.dp))
             Box(modifier = Modifier.weight(1f)) { content() }

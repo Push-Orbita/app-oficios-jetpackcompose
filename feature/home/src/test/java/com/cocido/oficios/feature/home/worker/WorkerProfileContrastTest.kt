@@ -1,11 +1,8 @@
 package com.cocido.oficios.feature.home.worker
 
 import androidx.compose.ui.graphics.Color
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.DarkOficiosColors
+import com.cocido.oficios.core.designsystem.theme.LightOficiosColors
 import kotlin.math.pow
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -14,22 +11,24 @@ class WorkerProfileContrastTest {
 
     @Test
     fun `rubro and verified onSurface meet aa on the navy header`() {
-        val ratio = contrast(OficiosColorWhite, OficiosColorOutlineFill)
-        assertTrue("onSurface sobre surfaceContainer: $ratio", ratio >= 4.5)
+        val dark = DarkOficiosColors
+        val ratio = contrast(dark.onSurface, dark.surfaceVariant)
+        assertTrue("onSurface sobre surfaceVariant: $ratio", ratio >= 4.5)
     }
 
     @Test
-    fun `light header onSurface meets aa`() {
-        val ratio = contrast(OficiosColorBackground, OficiosColorWhite)
+    fun `light onSurface meets aa on bone background`() {
+        val light = LightOficiosColors
+        val ratio = contrast(light.onSurface, light.background)
         assertTrue("onSurface claro: $ratio", ratio >= 4.5)
     }
 
     @Test
-    fun `secondary text and gold accent stay below aa on the navy header`() {
-        val secondary = contrast(OficiosColorSecondaryText, OficiosColorOutlineFill)
-        val accent = contrast(OficiosColorAccent, OficiosColorOutlineFill)
-        assertTrue("secundario $secondary", secondary < 4.5)
-        assertTrue("acento $accent", accent < 4.5)
+    fun `secondary text meets aa on light and dark backgrounds`() {
+        val dark = contrast(DarkOficiosColors.onSurfaceVariant, DarkOficiosColors.background)
+        val light = contrast(LightOficiosColors.onSurfaceVariant, LightOficiosColors.background)
+        assertTrue("secundario oscuro $dark", dark >= 4.5)
+        assertTrue("secundario claro $light", light >= 4.5)
     }
 }
 

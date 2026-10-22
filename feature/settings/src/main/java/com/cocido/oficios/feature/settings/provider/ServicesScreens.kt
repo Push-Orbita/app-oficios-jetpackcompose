@@ -42,7 +42,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.domain.model.ManagedProviderService
@@ -152,7 +151,7 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                     if (service.subServices.any { it.servesAtLocal }) add(stringResource(R.string.services_at_local))
                     if (service.subServices.any { it.requiresTurns }) add(stringResource(R.string.services_with_turns))
                 }
-                Text(modalities.joinToString(" · ").ifBlank { stringResource(R.string.services_modality_unknown) }, style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+                Text(modalities.joinToString(" · ").ifBlank { stringResource(R.string.services_modality_unknown) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (service.workSchedule.isNotEmpty()) {
                     val days = dayOptions()
                     val scheduleLines = mutableListOf<String>()
@@ -169,13 +168,13 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                     Text(
                         scheduleLines.joinToString(),
                         style = MaterialTheme.typography.bodySmall,
-                        color = OficiosColorSecondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (service.isPrimary) {
-                    Text(stringResource(R.string.services_primary_locked), style = MaterialTheme.typography.labelSmall, color = OficiosColorSecondaryText)
+                    Text(stringResource(R.string.services_primary_locked), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
-                    Text(stringResource(R.string.services_tap_to_edit), style = MaterialTheme.typography.labelSmall, color = OficiosColorSecondaryText)
+                    Text(stringResource(R.string.services_tap_to_edit), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             if (!service.isPrimary) {
@@ -273,7 +272,7 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
             Text(
                 text = stringResource(R.string.services_primary_rubro_locked),
                 style = MaterialTheme.typography.bodySmall,
-                color = OficiosColorSecondaryText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         if (state.subRubros.isNotEmpty()) {
@@ -404,12 +403,12 @@ private fun ReviewStep(state: AddServiceUiState) {
                 Text(
                     if (state.localLatitude != null && state.localLongitude != null) stringResource(R.string.services_location_confirmed) else stringResource(R.string.services_location_pending),
                     style = MaterialTheme.typography.bodySmall,
-                    color = OficiosColorSecondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
     }
-    Text(stringResource(R.string.services_review_note), style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+    Text(stringResource(R.string.services_review_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable

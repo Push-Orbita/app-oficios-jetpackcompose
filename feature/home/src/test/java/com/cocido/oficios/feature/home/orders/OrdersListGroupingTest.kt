@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
 import androidx.compose.ui.graphics.Color
+import com.cocido.oficios.core.designsystem.theme.DarkOficiosColors
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
@@ -77,7 +78,7 @@ class OrdersListGroupingTest {
             ServiceRequestStatus.ACCEPTED to BookingStatus.FINISHED,
             ServiceRequestStatus.CANCELLED to BookingStatus.CANCELLED,
         ).forEach { (status, booking) ->
-            val visual = orderStatusVisual(status, booking)
+            val visual = orderStatusVisual(status, booking, DarkOficiosColors)
             val ratio = contrast(visual.content, visual.container)
             assertTrue("$status $booking $ratio", ratio >= 4.5)
         }

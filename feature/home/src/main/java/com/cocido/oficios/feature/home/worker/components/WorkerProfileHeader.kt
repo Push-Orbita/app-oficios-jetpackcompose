@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.worker.components
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +26,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.R as DsR
@@ -105,7 +104,7 @@ fun WorkerProfileHeader(
                             imageVector = ImageVector.vectorResource(OficiosIcons.Heart),
                             contentDescription = null,
                             tint = if (isFavorite) {
-                                OficiosColorAccent
+                                OficiosTheme.colors.accent
                             } else {
                                 MaterialTheme.colorScheme.onBackground
                             },
@@ -118,7 +117,7 @@ fun WorkerProfileHeader(
                 Text(
                     text = about,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorTextSecondaryAccessible,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             if (oficios.isNotEmpty()) {
@@ -172,7 +171,7 @@ private fun LabeledValue(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorTextSecondaryAccessible,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -188,7 +187,7 @@ fun WorkerFiveStarRow(rating: Float?) {
         Text(
             text = stringResource(DsR.string.ds_worker_no_rating),
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorTextSecondaryAccessible,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         return
     }
@@ -211,7 +210,7 @@ fun WorkerFiveStarRow(rating: Float?) {
                     else -> OficiosIcons.Star
                 }
                 val tint = if (filled > 0f) {
-                    OficiosColorAccent
+                    OficiosTheme.colors.accent
                 } else {
                     MaterialTheme.colorScheme.onBackground.copy(alpha = 0.35f)
                 }

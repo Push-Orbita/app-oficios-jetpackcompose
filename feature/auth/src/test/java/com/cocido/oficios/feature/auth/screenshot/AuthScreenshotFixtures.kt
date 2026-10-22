@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.auth.screenshot
 
+import androidx.compose.material3.MaterialTheme
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,7 +17,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.feature.auth.login.LOGIN_INVALID_CREDENTIALS_MESSAGE
 import com.cocido.oficios.feature.auth.login.LoginScreen
@@ -51,12 +51,12 @@ internal const val AUTH_SCREENSHOT_FIGMA_QUALIFIERS = "w440dp-h980dp-mdpi"
 internal const val AUTH_SCREENSHOT_PIXEL9_QUALIFIERS = "w427dp-h952dp-xxhdpi"
 
 @Composable
-internal fun AuthScreenshotSplash() {
-    OficiosTheme {
+internal fun AuthScreenshotSplash(darkTheme: Boolean = false) {
+    OficiosTheme(darkTheme = darkTheme) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OficiosColorBackground),
+                .background(MaterialTheme.colorScheme.background),
         ) {
             SplashScreen(uiState = SplashUiState.Loading, onRetry = {})
         }
@@ -67,8 +67,9 @@ internal fun AuthScreenshotSplash() {
 internal fun AuthScreenshotLogin(
     statusBar: Dp = AuthScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = AuthScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    AuthScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         LoginScreen(uiState = LoginUiState(canSubmit = true), onEvent = {})
     }
 }
@@ -140,13 +141,14 @@ internal fun AuthFontScaleOverride(
 internal fun AuthScreenshotFrame(
     statusBar: Dp = AuthScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = AuthScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    OficiosTheme {
+    OficiosTheme(darkTheme = darkTheme) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OficiosColorBackground),
+                .background(MaterialTheme.colorScheme.background),
         ) {
             Spacer(Modifier.fillMaxWidth().height(statusBar))
             Box(modifier = Modifier.weight(1f)) {

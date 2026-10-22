@@ -29,9 +29,6 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadg
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -124,7 +121,7 @@ fun WorkerCard(
                                     else -> OficiosIcons.Star
                                 }
                                 val tint = if (filled > 0f) {
-                                    OficiosColorAccent
+                                    OficiosTheme.colors.accent
                                 } else {
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
                                 }
@@ -140,7 +137,7 @@ fun WorkerCard(
                         Text(
                             text = stringResource(R.string.ds_worker_no_rating),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = OficiosColorSecondaryText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -150,7 +147,7 @@ fun WorkerCard(
             Text(
                 text = specialty,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(OficiosComponentSize.workerCardSpecialtyToActions))

@@ -61,4 +61,18 @@ class AuthScreenshotTest {
         composeRule.setContent { AuthScreenshotRegister() }
         composeRule.onRoot().captureRoboImage()
     }
+
+    @Test
+    fun splashDark() {
+        assumeGoldenOrRecording(javaClass, "splashDark")
+        composeRule.setContent { AuthScreenshotSplash(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun loginDark() {
+        assumeGoldenOrRecording(javaClass, "loginDark")
+        composeRule.setContent { AuthScreenshotLogin(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
 }

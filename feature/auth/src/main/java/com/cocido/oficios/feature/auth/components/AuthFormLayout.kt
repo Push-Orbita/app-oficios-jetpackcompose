@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandScale
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
 @Composable
@@ -42,7 +41,7 @@ fun AuthFormLayout(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorMutedText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )

@@ -37,7 +37,7 @@ fun OficiosCard(
     selected: Boolean = false,
     enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(OficiosSpacing.md),
-    containerColor: Color = MaterialTheme.colorScheme.background,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     /**
      * El contenido llena el alto de la card. Hace falta cuando hay
      * `height` / `heightIn(min)`: sin esto la card se encoge al wrap-content

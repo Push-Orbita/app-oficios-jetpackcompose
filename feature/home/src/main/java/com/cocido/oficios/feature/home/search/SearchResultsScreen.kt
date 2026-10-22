@@ -46,7 +46,6 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeletonLi
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkerSearchFilters
@@ -250,7 +249,7 @@ private fun SearchResultsHeader(
             Text(
             text = stringResource(R.string.home_search_contact_limit),
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorSecondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
         )
         }

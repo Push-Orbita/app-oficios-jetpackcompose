@@ -15,6 +15,36 @@ class ColorContrastTest {
     }
 
     @Test
+    fun lightOnSurfaceOnBoneMeetsAa() {
+        assertTrue(contrastRatio(LIGHT_ON_SURFACE, LIGHT_BG) >= 4.5)
+    }
+
+    @Test
+    fun lightSecondaryOnBoneMeetsAa() {
+        assertTrue(contrastRatio(LIGHT_SECONDARY, LIGHT_BG) >= 4.5)
+    }
+
+    @Test
+    fun navyOnBoneMeetsAa() {
+        assertTrue(contrastRatio(NAVY, LIGHT_BG) >= 4.5)
+    }
+
+    @Test
+    fun lightSuccessOnBoneMeetsAa() {
+        assertTrue(contrastRatio(LIGHT_SUCCESS, LIGHT_BG) >= 4.5)
+    }
+
+    @Test
+    fun lightWarningOnBoneMeetsAa() {
+        assertTrue(contrastRatio(LIGHT_WARNING, LIGHT_BG) >= 4.5)
+    }
+
+    @Test
+    fun lightErrorOnBoneMeetsAa() {
+        assertTrue(contrastRatio(LIGHT_ERROR, LIGHT_BG) >= 4.5)
+    }
+
+    @Test
     fun actionOnWhiteMeetsAa() {
         assertTrue(contrastRatio(ACTION, WHITE) >= 4.5)
     }
@@ -53,6 +83,12 @@ class ColorContrastTest {
     private companion object {
         const val WHITE = 0xFFFFFFFF
         const val NAVY = 0xFF00358B
+        const val LIGHT_BG = 0xFFF4F5F7
+        const val LIGHT_ON_SURFACE = 0xFF0D1B2A
+        const val LIGHT_SECONDARY = 0xFF4A5568
+        const val LIGHT_SUCCESS = 0xFF146C43
+        const val LIGHT_WARNING = 0xFF8A5A00
+        const val LIGHT_ERROR = 0xFFC62828
         const val ACTION = 0xFF006DEF
         const val SECONDARY = 0xFF8EABD4
         const val SECONDARY_FIGMA = 0xFF7F9AC5

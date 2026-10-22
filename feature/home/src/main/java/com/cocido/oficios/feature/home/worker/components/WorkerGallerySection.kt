@@ -24,8 +24,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -58,7 +56,7 @@ fun WorkerGallerySection(
             Text(
                 text = stringResource(R.string.home_worker_gallery_empty_title),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         } else {
@@ -99,7 +97,7 @@ private fun GalleryThumb(
             .size(OficiosComponentSize.profileMediaTile)
             .clip(shape)
             .background(MaterialTheme.colorScheme.background)
-            .border(1.dp, OficiosColorOutlineFill, shape)
+            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
             .semantics { this.contentDescription = contentDescription }
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {

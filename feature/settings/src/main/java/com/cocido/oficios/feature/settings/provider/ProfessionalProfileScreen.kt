@@ -37,9 +37,6 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingSta
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -101,13 +98,13 @@ private fun ProfessionalProfileForm(
         Text(
             text = stringResource(R.string.professional_profile_oficios),
             style = MaterialTheme.typography.titleMedium,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         ReadOnlyField(value = state.oficiosLabel, shape = fieldShape)
         Text(
             text = stringResource(R.string.professional_profile_specialized),
             style = MaterialTheme.typography.titleMedium,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         ReadOnlyField(value = state.specializedLabel, shape = fieldShape, minLines = 3)
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -121,7 +118,7 @@ private fun ProfessionalProfileForm(
         Text(
             text = stringResource(R.string.professional_profile_works),
             style = MaterialTheme.typography.headlineMedium,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         MediaRow(
             items = state.gallery.map { it.id to it.imageUrl },
@@ -131,7 +128,7 @@ private fun ProfessionalProfileForm(
         Text(
             text = stringResource(R.string.professional_profile_certificates),
             style = MaterialTheme.typography.headlineMedium,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             state.certificates.take(2).forEach { cert ->
@@ -167,13 +164,13 @@ private fun ReadOnlyField(
         modifier = Modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(OficiosColorOutlineFill)
+            .background(MaterialTheme.colorScheme.outline)
             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
     ) {
         Text(
             text = value.ifBlank { "—" },
             style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
             minLines = minLines,
             overflow = TextOverflow.Ellipsis,
         )
@@ -193,7 +190,7 @@ private fun MediaRow(
                 modifier = Modifier
                     .size(OficiosComponentSize.profileMediaTile)
                     .clip(shape)
-                    .background(OficiosColorOutlineFill),
+                    .background(MaterialTheme.colorScheme.outline),
             ) {
                 if (!url.isNullOrBlank()) {
                     AsyncImage(
@@ -218,7 +215,7 @@ private fun CertificateThumb(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(OficiosColorOutlineFill),
+            .background(MaterialTheme.colorScheme.outline),
     ) {
         if (!item.fileUrl.isNullOrBlank()) {
             AsyncImage(
@@ -232,7 +229,7 @@ private fun CertificateThumb(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(OficiosColorAction.copy(alpha = 0.92f))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.92f))
                 .padding(horizontal = OficiosSpacing.xs, vertical = OficiosSpacing.xxs),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
@@ -242,7 +239,7 @@ private fun CertificateThumb(
                     if (item.validated) OficiosIcons.CircleCheck else OficiosIcons.CircleDashed,
                 ),
                 contentDescription = null,
-                tint = OficiosColorWhite,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(OficiosComponentSize.iconSm),
             )
             Text(
@@ -254,7 +251,7 @@ private fun CertificateThumb(
                     },
                 ),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

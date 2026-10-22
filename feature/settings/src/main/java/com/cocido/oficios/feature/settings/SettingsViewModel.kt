@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.domain.usecase.auth.LogoutUseCase
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
+import com.cocido.oficios.domain.usecase.ObserveThemeModeUseCase
+import com.cocido.oficios.domain.usecase.SetThemeModeUseCase
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +22,8 @@ import kotlinx.coroutines.launch
 class SettingsViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val accountUseCases: AccountUseCases,
+    observeThemeModeUseCase: ObserveThemeModeUseCase,
+    private val setThemeModeUseCase: SetThemeModeUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -38,6 +42,11 @@ class SettingsViewModel @Inject constructor(
                 if (profile != null) {
                     _uiState.update { it.copy(isLoading = false, profile = profile, errorMessage = null) }
                 }
+            }
+        }
+        viewModelScope.launch {
+            observeThemeModeUseCase().collect { mode ->
+                _uiState.update { it.copy(themeMode = mode) }
             }
         }
         load()
@@ -63,6 +72,9 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.OpenHelp -> emitEffect(SettingsEffect.NavigateToHelp)
             SettingsEvent.Logout -> logout()
             SettingsEvent.NavigateBack -> Unit
+            is SettingsEvent.SetThemeMode -> viewModelScope.launch {
+                setThemeModeUseCase(event.mode)
+            }
         }
     }
 

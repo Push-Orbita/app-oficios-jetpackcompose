@@ -54,8 +54,6 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -234,7 +232,7 @@ private fun CertificateItem(item: WorkCertificateItem, disabled: Boolean, onEven
             Icon(Icons.Outlined.WorkspacePremium, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
             Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.portfolio_document_note), style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+                Text(stringResource(R.string.portfolio_document_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             IconButton(enabled = !disabled, onClick = { onEvent(PortfolioEvent.EditCertificate(item)) }) {
                 Icon(
@@ -290,7 +288,7 @@ private fun CertificateEditor(
                 stringResource(R.string.portfolio_file_formats)
             },
             style = MaterialTheme.typography.bodySmall,
-            color = OficiosColorSecondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
         OficiosButton(
@@ -316,7 +314,7 @@ private fun CertificateDropZone(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .dashedBorder(OficiosColorOutlineFill, OficiosRadius.lg)
+            .dashedBorder(MaterialTheme.colorScheme.outline, OficiosRadius.lg)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -335,7 +333,7 @@ private fun CertificateDropZone(
         Text(
             text = stringResource(R.string.portfolio_file_formats),
             style = MaterialTheme.typography.bodySmall,
-            color = OficiosColorSecondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -385,7 +383,7 @@ private fun CertificateFilePreview(
                 Text(
                     text = ImageUploadContract.formatByteSize(file.length()),
                     style = MaterialTheme.typography.bodySmall,
-                    color = OficiosColorSecondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             IconButton(enabled = enabled, onClick = onRemove) {

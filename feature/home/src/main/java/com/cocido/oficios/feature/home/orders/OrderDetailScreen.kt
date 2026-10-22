@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -85,12 +86,6 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.component.motion.oficiosShake
 import com.cocido.oficios.core.designsystem.component.motion.rememberOficiosRejectShake
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -627,14 +622,15 @@ private fun OrderClosedBanner(status: ServiceRequestStatus, bookingStatus: Booki
 
 @Composable
 private fun TimelineConnector(fill: () -> Float) {
+    val fillColor = MaterialTheme.colorScheme.onSurface
     Box(
         modifier = Modifier
             .padding(top = (OficiosComponentSize.iconMd - 2.dp) / 2)
             .width(OficiosSpacing.md)
             .height(2.dp)
-            .background(OficiosColorWhite.copy(alpha = 0.4f))
+            .background(fillColor.copy(alpha = 0.4f))
             .drawBehind {
-                drawRect(color = OficiosColorWhite, size = size.copy(width = size.width * fill()))
+                drawRect(color = fillColor, size = size.copy(width = size.width * fill()))
             },
     )
 }
@@ -665,27 +661,27 @@ private fun TimelineStep(
     val colorSpec = oficiosTween<Color>(OficiosMotion.DurationLong)
     val circle by animateColorAsState(
         targetValue = when (phase) {
-            OrderTimelinePhase.Done -> OficiosColorAction
-            OrderTimelinePhase.Current -> OficiosColorAccent
-            OrderTimelinePhase.Upcoming -> OficiosColorOutlineFill
+            OrderTimelinePhase.Done -> MaterialTheme.colorScheme.primary
+            OrderTimelinePhase.Current -> OficiosTheme.colors.accent
+            OrderTimelinePhase.Upcoming -> MaterialTheme.colorScheme.outline
         },
         animationSpec = colorSpec,
         label = "TimelineStepCircle",
     )
     val iconTint by animateColorAsState(
         targetValue = when (phase) {
-            OrderTimelinePhase.Done -> OficiosColorWhite
-            OrderTimelinePhase.Current -> OficiosColorBackground
-            OrderTimelinePhase.Upcoming -> OficiosColorWhite.copy(alpha = 0.72f)
+            OrderTimelinePhase.Done -> MaterialTheme.colorScheme.onSurface
+            OrderTimelinePhase.Current -> MaterialTheme.colorScheme.background
+            OrderTimelinePhase.Upcoming -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
         },
         animationSpec = colorSpec,
         label = "TimelineStepIcon",
     )
     val labelColor by animateColorAsState(
         targetValue = if (phase == OrderTimelinePhase.Upcoming) {
-            OficiosColorWhite.copy(alpha = 0.72f)
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
         } else {
-            OficiosColorWhite
+            MaterialTheme.colorScheme.onSurface
         },
         animationSpec = colorSpec,
         label = "TimelineStepLabel",
@@ -830,7 +826,7 @@ private fun OrderMapPlaceholder(
         Icon(
             imageVector = Icons.Outlined.Place,
             contentDescription = stringResource(R.string.orders_map_unavailable),
-            tint = OficiosColorWhite,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(OficiosComponentSize.iconLg),
         )
         Text(
@@ -843,7 +839,7 @@ private fun OrderMapPlaceholder(
             Text(
                 text = address,
                 style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }
@@ -870,25 +866,25 @@ private fun OrderDetailLabeledRow(
             modifier = Modifier
                 .size(OficiosComponentSize.iconBox)
                 .clip(RoundedCornerShape(OficiosRadius.sm))
-                .background(OficiosColorOutlineFill),
+                .background(MaterialTheme.colorScheme.outline),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = ImageVector.vectorResource(icon),
                 contentDescription = null,
-                tint = OficiosColorWhite,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(OficiosComponentSize.iconMd),
             )
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = MaterialTheme.typography.titleMedium, color = OficiosColorWhite)
-            Text(text = value, style = MaterialTheme.typography.bodyLarge, color = OficiosColorTextSecondaryAccessible)
+            Text(text = label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         trailing?.let { chip ->
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(OficiosRadius.sm))
-                    .background(OficiosColorOutlineFill)
+                    .background(MaterialTheme.colorScheme.outline)
                     .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
@@ -896,10 +892,10 @@ private fun OrderDetailLabeledRow(
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.Banknote),
                     contentDescription = null,
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
-                Text(text = chip, style = MaterialTheme.typography.titleMedium, color = OficiosColorWhite)
+                Text(text = chip, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -1024,7 +1020,7 @@ private fun RatingLine(label: String, stars: Int) {
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
-                    tint = OficiosColorAccent,
+                    tint = OficiosTheme.colors.accent,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }

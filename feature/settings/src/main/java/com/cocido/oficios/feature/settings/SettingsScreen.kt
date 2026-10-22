@@ -22,6 +22,8 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,11 +54,10 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWarning
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.domain.model.ThemeMode
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 
@@ -150,6 +151,14 @@ private fun SettingsContent(
             SettingsProfileCard(user = user, displayName = displayName)
         }
 
+        item { SettingsSectionTitle(stringResource(R.string.settings_theme_section)) }
+        item {
+            SettingsAppearanceCard(
+                selected = uiState.themeMode,
+                onSelect = { onEvent(SettingsEvent.SetThemeMode(it)) },
+            )
+        }
+
         item { SettingsSectionTitle(stringResource(R.string.settings_profile_section)) }
         item {
             SettingsActionRow(
@@ -241,7 +250,7 @@ private fun SettingsProfileCard(
         if (user.role == UserRole.PROVIDER) R.string.settings_provider_role else R.string.settings_client_role,
     )
     val verified = user.emailVerified
-    val statusColor = if (verified) OficiosColorSuccessText else OficiosColorWarning
+    val statusColor = if (verified) OficiosTheme.colors.success else OficiosTheme.colors.warning
     OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -268,7 +277,7 @@ private fun SettingsProfileCard(
                 Text(
                     text = user.email,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorSecondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -331,13 +340,13 @@ private fun SettingsActionRow(
                 iconRes != null -> Icon(
                     imageVector = ImageVector.vectorResource(iconRes),
                     contentDescription = null,
-                    tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(OficiosComponentSize.iconLg),
                 )
                 icon != null -> Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(OficiosComponentSize.iconLg),
                 )
             }
@@ -346,16 +355,61 @@ private fun SettingsActionRow(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (enabled) MaterialTheme.colorScheme.onSurface else OficiosColorSecondaryText,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(text = description, style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             if (enabled) {
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.ChevronRight),
                     contentDescription = null,
-                    tint = OficiosColorSecondaryText
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsAppearanceCard(
+    selected: ThemeMode,
+    onSelect: (ThemeMode) -> Unit,
+) {
+    val options = listOf(
+        ThemeMode.LIGHT to stringResource(R.string.settings_theme_light),
+        ThemeMode.DARK to stringResource(R.string.settings_theme_dark),
+        ThemeMode.SYSTEM to stringResource(R.string.settings_theme_system),
+    )
+    OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
+        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
+            options.forEach { (mode, label) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = OficiosComponentSize.listRowMinHeight)
+                        .clickable { onSelect(mode) }
+                        .semantics(mergeDescendants = true) { contentDescription = label },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = selected == mode,
+                        onClick = { onSelect(mode) },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary,
+                            unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    )
+                    Spacer(Modifier.width(OficiosSpacing.sm))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
         }
     }

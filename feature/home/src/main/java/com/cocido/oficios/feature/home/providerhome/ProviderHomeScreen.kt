@@ -25,7 +25,6 @@ import com.cocido.oficios.core.designsystem.component.cards.emphasizedBody
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.feature.home.R
@@ -163,7 +162,7 @@ private fun ProviderBenefitsSection(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.provider_home_benefits_title),
             style = MaterialTheme.typography.headlineLarge,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         HomeBenefitsRow(
             tiles = listOf(
@@ -203,7 +202,7 @@ private fun ProviderProfileCompletionSection(
         Text(
             text = stringResource(R.string.provider_home_complete_profile_title),
             style = MaterialTheme.typography.headlineLarge,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         ProfileProgressBar(percent = percent)
         Row(
@@ -237,7 +236,7 @@ private fun ProviderProfileCompletionSection(
             Text(
                 text = stringResource(R.string.provider_home_complete_profile_link),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable(onClick = onCompleteProfileLink),
             )

@@ -13,7 +13,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosProgress
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkerReputation
 import com.cocido.oficios.domain.model.WorkerReview
@@ -46,7 +45,7 @@ fun WorkerReviewsSection(
                 Text(
                     text = stringResource(R.string.home_worker_reviews_empty_title),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorTextSecondaryAccessible,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             else -> {
@@ -88,7 +87,7 @@ private fun ReviewCard(review: WorkerReview) {
                 Text(
                     text = date,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorTextSecondaryAccessible,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

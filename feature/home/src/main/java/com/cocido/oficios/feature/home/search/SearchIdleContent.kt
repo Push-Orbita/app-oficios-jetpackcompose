@@ -29,7 +29,6 @@ import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
 import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.CatalogOption
@@ -95,7 +94,7 @@ fun SearchIdleContent(
             Text(
                 text = stringResource(R.string.home_search_idle_empty_description),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -168,7 +167,7 @@ private fun SuggestionRow(
                 Text(
                     text = kindLabel,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorTextSecondaryAccessible,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -239,7 +238,7 @@ private fun RecentWorkerRow(
                 Text(
                     text = worker.specialtyLabel,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorTextSecondaryAccessible,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -288,7 +287,7 @@ fun ActiveSearchFiltersRow(
             Text(
                 text = stringResource(R.string.home_search_results_count, resultCount),
                 style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

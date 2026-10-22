@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.onboarding.steps
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,7 +57,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
 import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
 import com.cocido.oficios.core.ui.crop.ImageCropMode
@@ -525,7 +525,7 @@ private fun DniImageUploadCard(
                 ),
                 contentDescription = null,
                 modifier = Modifier.size(OficiosSpacing.lg),
-                tint = if (isLoaded) OficiosColorSuccess else MaterialTheme.colorScheme.primary,
+                tint = if (isLoaded) OficiosTheme.colors.success else MaterialTheme.colorScheme.primary,
             )
             Column(
                 modifier = Modifier.weight(1f),
@@ -547,7 +547,7 @@ private fun DniImageUploadCard(
                     },
                 ),
                 containerColor = if (isLoaded) {
-                    OficiosColorSuccess
+                    OficiosTheme.colors.success
                 } else {
                     MaterialTheme.colorScheme.surfaceVariant
                 },
@@ -1026,7 +1026,7 @@ fun ProviderIdentityStepScreen(
                     Text(
                         text = "Certificado seleccionado: ${uiState.certificatePath.substringAfterLast('/')}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = OficiosColorSuccess,
+                        color = OficiosTheme.colors.success,
                     )
                 }
             }

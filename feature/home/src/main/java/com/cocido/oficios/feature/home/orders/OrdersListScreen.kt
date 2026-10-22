@@ -44,7 +44,6 @@ import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.AgendaAppointmentTag
@@ -228,7 +227,7 @@ private fun OrdersListSuccess(
                                 Text(
                                     text = group.headerLabel,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = OficiosColorWhite,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                             }
                             items(group.items, key = { it.id }) { order ->
@@ -251,7 +250,7 @@ private fun OrdersListSuccess(
                                 Text(
                                     text = stringResource(R.string.orders_undated_group),
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = OficiosColorWhite,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                             }
                             items(undated, key = { it.id }) { order ->
@@ -356,12 +355,12 @@ private fun OrdersSortMenu(
                 Text(
                     text = selectedLabel,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorWhite,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.ChevronDown),
                     contentDescription = null,
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(16.dp),
                 )
             }
@@ -402,7 +401,7 @@ private fun OrdersSortMenuItem(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         onClick = onClick,
@@ -411,7 +410,7 @@ private fun OrdersSortMenuItem(
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.Check),
                     contentDescription = null,
-                    tint = OficiosColorWhite,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(18.dp),
                 )
             }

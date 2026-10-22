@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTextSecondaryAccessible
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.WorkCertificateItem
@@ -39,7 +38,7 @@ fun WorkerCertificatesSection(
             Text(
                 text = stringResource(R.string.home_worker_certificates_pending),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorTextSecondaryAccessible,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         } else {
@@ -48,7 +47,7 @@ fun WorkerCertificatesSection(
                 Text(
                     text = cert.name,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorTextSecondaryAccessible,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
                         .sizeIn(minHeight = OficiosComponentSize.buttonMinHeight)

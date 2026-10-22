@@ -20,7 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.core.designsystem.component.calendar.OficiosMonthCalendar
 import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.AgendaAppointmentTag
@@ -85,7 +84,7 @@ fun ProviderAgendaSection(
                 Text(
                     text = stringResource(R.string.provider_home_agenda_title),
                     style = MaterialTheme.typography.headlineLarge,
-                    color = OficiosColorWhite,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             OficiosMonthCalendar(
@@ -118,7 +117,7 @@ fun ProviderAgendaSection(
                     Text(
                         text = stringResource(R.string.agenda_bookings_empty_title),
                         style = MaterialTheme.typography.titleMedium,
-                        color = OficiosColorWhite,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
@@ -130,14 +129,14 @@ fun ProviderAgendaSection(
                             },
                         ),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = OficiosColorWhite,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     if (!hasAgendaConfigured && onConfigureAgenda != null) {
                         Text(
                             text = stringResource(R.string.provider_home_calendar_title),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = OficiosColorWhite,
+                            color = MaterialTheme.colorScheme.onSurface,
                             textDecoration = TextDecoration.Underline,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -154,7 +153,7 @@ fun ProviderAgendaSection(
                             },
                         ),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = OficiosColorWhite,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -163,7 +162,7 @@ fun ProviderAgendaSection(
                     Text(
                         text = group.headerLabel,
                         style = MaterialTheme.typography.titleMedium,
-                        color = OficiosColorWhite,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     group.items.forEach { order ->
                         val tag = order.agendaTag(now)
@@ -189,7 +188,7 @@ fun ProviderAgendaSection(
                 Text(
                     text = stringResource(R.string.provider_home_view_full_agenda),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OficiosColorWhite,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable(onClick = onViewFullAgenda),
                 )

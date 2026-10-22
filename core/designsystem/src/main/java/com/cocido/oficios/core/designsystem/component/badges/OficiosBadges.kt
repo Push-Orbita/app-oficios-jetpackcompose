@@ -29,8 +29,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -90,15 +88,15 @@ fun OficiosRoleChip(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(OficiosColorOutlineFill)
-            .border(BorderStroke(1.dp, OficiosColorWhite.copy(alpha = 0.35f)), shape)
+            .background(MaterialTheme.colorScheme.outline)
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)), shape)
             .padding(horizontal = OficiosSpacing.xs, vertical = OficiosSpacing.xxxs),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
         )
     }
