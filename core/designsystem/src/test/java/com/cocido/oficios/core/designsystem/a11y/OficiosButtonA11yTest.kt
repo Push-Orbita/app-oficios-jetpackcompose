@@ -195,24 +195,28 @@ class OficiosButtonA11yTest {
     }
 
     @Test
-    fun supportCardHelpBadgeTouchIs48WithoutInflatingVisual() {
+    fun supportCardHelpIconIsInsideCardAndContactStays48() {
         composeRule.setContent {
             OficiosTheme {
                 OficiosSupportCard(
-                    message = "Para cualquier consulta o duda de asistencia, contáctenos a nuestra línea de atención",
+                    message = "Para cualquier consulta o duda de asistencia, contáctenos a nuestra línea de atención.",
                     contactLabel = "Contactar",
                     onContactClick = {},
                 )
             }
         }
-        val node = composeRule.onNodeWithContentDescription("Ayuda").fetchSemanticsNode()
-        val density = node.layoutInfo.density.density
-        val heightDp = node.size.height / density
-        val widthDp = node.size.width / density
-        assertTrue("Help badge touch height=${heightDp}dp", heightDp >= 48f)
-        assertTrue("Help badge touch width=${widthDp}dp", widthDp >= 48f)
+        val icon = composeRule.onNodeWithContentDescription("Ayuda").fetchSemanticsNode()
+        val density = icon.layoutInfo.density.density
+        val heightDp = icon.size.height / density
+        val widthDp = icon.size.width / density
+        assertTrue("Help icon height=${heightDp}dp", heightDp in 31f..33f)
+        assertTrue("Help icon width=${widthDp}dp", widthDp in 31f..33f)
         composeRule.onNodeWithText("Contactar").assertIsDisplayed()
         composeRule.onNodeWithText("?").assertIsDisplayed()
+        val contactH = touchHeightDp("Contactar")
+        val contactW = touchWidthDp("Contactar")
+        assertTrue("Contactar height=${contactH}dp", contactH >= 48f)
+        assertTrue("Contactar width=${contactW}dp", contactW >= 48f)
     }
 
     @Test
