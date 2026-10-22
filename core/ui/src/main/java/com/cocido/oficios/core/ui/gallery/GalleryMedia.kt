@@ -23,6 +23,22 @@ fun mosaicSlice(total: Int, previewLimit: Int?): MosaicSlice {
     return MosaicSlice(visibleCount = visible, hiddenCount = total - visible)
 }
 
+enum class MosaicArrangement {
+    Single,
+    Pair,
+    FeaturedPlusTwo,
+    Grid2x2,
+    FeaturedPlusGrid,
+}
+
+fun mosaicArrangement(visibleCount: Int): MosaicArrangement = when (visibleCount) {
+    0, 1 -> MosaicArrangement.Single
+    2 -> MosaicArrangement.Pair
+    3 -> MosaicArrangement.FeaturedPlusTwo
+    4 -> MosaicArrangement.Grid2x2
+    else -> MosaicArrangement.FeaturedPlusGrid
+}
+
 fun String?.toGalleryMediaKind(): GalleryMediaKind {
     val path = orEmpty().substringBefore('?').substringBefore('#').lowercase()
     return if (path.endsWith(".pdf")) GalleryMediaKind.Pdf else GalleryMediaKind.Image

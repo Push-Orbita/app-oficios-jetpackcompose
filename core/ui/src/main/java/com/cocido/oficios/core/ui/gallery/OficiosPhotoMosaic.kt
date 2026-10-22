@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -76,41 +75,15 @@ fun OficiosPhotoMosaic(
                 )
             }
         } else {
-            GalleryTile(
-                media = visible[0],
-                index = 0,
-                featured = true,
-                overflowCount = if (visible.size == 1 && hidden > 0) hidden else 0,
-                onClick = { onItemClick(0) },
-                onDelete = onDelete?.let { action -> { action(0) } },
+            MosaicTiles(
+                visible = visible,
+                hidden = hidden,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
                 deleteLabel = deleteLabel,
-                onEdit = onEdit?.let { action -> { action(0) } },
+                onEdit = onEdit,
                 editLabel = editLabel,
             )
-            visible.drop(1).chunked(2).forEachIndexed { rowIndex, row ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                ) {
-                    row.forEachIndexed { col, media ->
-                        val index = 1 + rowIndex * 2 + col
-                        val isLastVisible = index == visible.lastIndex && hidden > 0
-                        GalleryTile(
-                            media = media,
-                            index = index,
-                            featured = false,
-                            overflowCount = if (isLastVisible) hidden else 0,
-                            onClick = { onItemClick(index) },
-                            onDelete = onDelete?.let { action -> { action(index) } },
-                            deleteLabel = deleteLabel,
-                            onEdit = onEdit?.let { action -> { action(index) } },
-                            editLabel = editLabel,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
-                }
-            }
         }
         if (hidden > 0 && seeAllLabel != null && onSeeAll != null) {
             Text(
@@ -123,6 +96,188 @@ fun OficiosPhotoMosaic(
             )
         }
     }
+}
+
+@Composable
+private fun MosaicTiles(
+    visible: List<GalleryMedia>,
+    hidden: Int,
+    onItemClick: (Int) -> Unit,
+    onDelete: ((Int) -> Unit)?,
+    deleteLabel: String?,
+    onEdit: ((Int) -> Unit)?,
+    editLabel: String?,
+) {
+    when (mosaicArrangement(visible.size)) {
+        MosaicArrangement.Single -> MosaicTileAt(
+            media = visible[0],
+            index = 0,
+            featured = true,
+            overflowCount = hidden,
+            onItemClick = onItemClick,
+            onDelete = onDelete,
+            deleteLabel = deleteLabel,
+            onEdit = onEdit,
+            editLabel = editLabel,
+        )
+        MosaicArrangement.Pair -> MosaicRow(
+            items = visible,
+            startIndex = 0,
+            hidden = hidden,
+            onItemClick = onItemClick,
+            onDelete = onDelete,
+            deleteLabel = deleteLabel,
+            onEdit = onEdit,
+            editLabel = editLabel,
+        )
+        MosaicArrangement.FeaturedPlusTwo -> {
+            MosaicTileAt(
+                media = visible[0],
+                index = 0,
+                featured = true,
+                overflowCount = 0,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
+                deleteLabel = deleteLabel,
+                onEdit = onEdit,
+                editLabel = editLabel,
+            )
+            MosaicRow(
+                items = visible.drop(1),
+                startIndex = 1,
+                hidden = hidden,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
+                deleteLabel = deleteLabel,
+                onEdit = onEdit,
+                editLabel = editLabel,
+            )
+        }
+        MosaicArrangement.Grid2x2 -> {
+            MosaicRow(
+                items = visible.take(2),
+                startIndex = 0,
+                hidden = 0,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
+                deleteLabel = deleteLabel,
+                onEdit = onEdit,
+                editLabel = editLabel,
+            )
+            MosaicRow(
+                items = visible.drop(2),
+                startIndex = 2,
+                hidden = hidden,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
+                deleteLabel = deleteLabel,
+                onEdit = onEdit,
+                editLabel = editLabel,
+            )
+        }
+        MosaicArrangement.FeaturedPlusGrid -> {
+            MosaicTileAt(
+                media = visible[0],
+                index = 0,
+                featured = true,
+                overflowCount = 0,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
+                deleteLabel = deleteLabel,
+                onEdit = onEdit,
+                editLabel = editLabel,
+            )
+            visible.drop(1).chunked(2).forEachIndexed { rowIndex, row ->
+                MosaicRow(
+                    items = row,
+                    startIndex = 1 + rowIndex * 2,
+                    hidden = hidden,
+                    fillLastIfOdd = true,
+                    onItemClick = onItemClick,
+                    onDelete = onDelete,
+                    deleteLabel = deleteLabel,
+                    onEdit = onEdit,
+                    editLabel = editLabel,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MosaicRow(
+    items: List<GalleryMedia>,
+    startIndex: Int,
+    hidden: Int,
+    onItemClick: (Int) -> Unit,
+    onDelete: ((Int) -> Unit)?,
+    deleteLabel: String?,
+    onEdit: ((Int) -> Unit)?,
+    editLabel: String?,
+    fillLastIfOdd: Boolean = true,
+) {
+    if (items.size == 1 && fillLastIfOdd) {
+        MosaicTileAt(
+            media = items[0],
+            index = startIndex,
+            featured = true,
+            overflowCount = hidden,
+            onItemClick = onItemClick,
+            onDelete = onDelete,
+            deleteLabel = deleteLabel,
+            onEdit = onEdit,
+            editLabel = editLabel,
+        )
+        return
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+    ) {
+        items.forEachIndexed { col, media ->
+            val index = startIndex + col
+            val isLastVisible = index == startIndex + items.lastIndex && hidden > 0 && col == items.lastIndex
+            MosaicTileAt(
+                media = media,
+                index = index,
+                featured = false,
+                overflowCount = if (isLastVisible) hidden else 0,
+                onItemClick = onItemClick,
+                onDelete = onDelete,
+                deleteLabel = deleteLabel,
+                onEdit = onEdit,
+                editLabel = editLabel,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun MosaicTileAt(
+    media: GalleryMedia,
+    index: Int,
+    featured: Boolean,
+    overflowCount: Int,
+    onItemClick: (Int) -> Unit,
+    onDelete: ((Int) -> Unit)?,
+    deleteLabel: String?,
+    onEdit: ((Int) -> Unit)?,
+    editLabel: String?,
+    modifier: Modifier = Modifier,
+) {
+    GalleryTile(
+        media = media,
+        index = index,
+        featured = featured,
+        overflowCount = overflowCount,
+        onClick = { onItemClick(index) },
+        onDelete = onDelete?.let { action -> { action(index) } },
+        deleteLabel = deleteLabel,
+        onEdit = onEdit?.let { action -> { action(index) } },
+        editLabel = editLabel,
+        modifier = modifier,
+    )
 }
 
 @Composable

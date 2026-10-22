@@ -32,4 +32,14 @@ class GalleryMediaTest {
         assertTrue(mosaicSlice(8, 5).hasOverflow)
         assertFalse(mosaicSlice(2, 5).hasOverflow)
     }
+
+    @Test
+    fun mosaicArrangementNeverLeavesAHalfSlot() {
+        assertEquals(MosaicArrangement.Single, mosaicArrangement(1))
+        assertEquals(MosaicArrangement.Pair, mosaicArrangement(2))
+        assertEquals(MosaicArrangement.FeaturedPlusTwo, mosaicArrangement(3))
+        assertEquals(MosaicArrangement.Grid2x2, mosaicArrangement(4))
+        assertEquals(MosaicArrangement.FeaturedPlusGrid, mosaicArrangement(5))
+        assertEquals(MosaicArrangement.FeaturedPlusGrid, mosaicArrangement(6))
+    }
 }
