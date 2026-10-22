@@ -52,11 +52,11 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.designsystem.theme.selectedContent
 import com.cocido.oficios.domain.model.ThemeMode
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
@@ -72,15 +72,15 @@ fun SettingsScreen(
     var confirmLogout by rememberSaveable { mutableStateOf(false) }
     OficiosScaffold(
         modifier = modifier,
-        topBar = {
-            if (showBackNavigation) {
+        topBar = if (showBackNavigation) {
+            {
                 OficiosBackTopBar(
                     title = stringResource(R.string.settings_title),
                     onBack = { onEvent(SettingsEvent.NavigateBack) },
                 )
-            } else {
-                OficiosRootTopBar(title = stringResource(R.string.settings_title))
             }
+        } else {
+            null
         },
         bottomBar = bottomBar,
     ) { paddingValues ->
@@ -106,6 +106,7 @@ fun SettingsScreen(
                     uiState = state,
                     onEvent = onEvent,
                     onRequestLogout = { confirmLogout = true },
+                    showInlineTitle = !showBackNavigation,
                 )
             }
         }
@@ -137,16 +138,31 @@ private fun SettingsContent(
     onEvent: (SettingsEvent) -> Unit,
     onRequestLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    showInlineTitle: Boolean = false,
 ) {
     val profile = uiState.profile ?: return
     val user = profile.user
     val displayName = "${user.firstName} ${user.lastName}".trim().ifBlank { user.email }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = OficiosSpacing.OficiosScreenPaddingAfterTopBar,
+        contentPadding = if (showInlineTitle) {
+            OficiosSpacing.OficiosScreenPadding
+        } else {
+            OficiosSpacing.OficiosScreenPaddingAfterTopBar
+        },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
+        if (showInlineTitle) {
+            item {
+                Text(
+                    text = stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
         item {
             SettingsProfileCard(user = user, displayName = displayName)
         }
@@ -408,7 +424,7 @@ private fun SettingsAppearanceCard(
                         text = label,
                         style = MaterialTheme.typography.titleMedium,
                         color = if (selected == mode) {
-                            MaterialTheme.colorScheme.primary
+                            OficiosTheme.colors.selectedContent(onFilledPrimary = false)
                         } else {
                             MaterialTheme.colorScheme.onSurface
                         },

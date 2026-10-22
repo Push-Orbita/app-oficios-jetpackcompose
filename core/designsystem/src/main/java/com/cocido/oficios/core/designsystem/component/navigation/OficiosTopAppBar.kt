@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -90,6 +91,7 @@ fun OficiosRootTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars)
             .heightIn(min = 64.dp)
             .padding(horizontal = OficiosSpacing.xl),

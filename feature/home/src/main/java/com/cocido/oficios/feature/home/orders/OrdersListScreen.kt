@@ -45,6 +45,8 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.designsystem.theme.selectedContent
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.AgendaAppointmentTag
 import com.cocido.oficios.domain.model.OrdersListFilter
@@ -231,7 +233,7 @@ private fun OrdersListSuccess(
                                 )
                             }
                             items(group.items, key = { it.id }) { order ->
-                                val tag = order.agendaTag(now)
+                                val tag = if (history) AgendaAppointmentTag.NONE else order.agendaTag(now)
                                 AgendaAppointmentRow(
                                     rubro = order.agendaRubroLabel(),
                                     address = order.addressLabel.ifBlank { order.counterpartName },
@@ -355,12 +357,12 @@ private fun OrdersSortMenu(
                 Text(
                     text = selectedLabel,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = OficiosTheme.colors.selectedContent(onFilledPrimary = false),
                 )
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.ChevronDown),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = OficiosTheme.colors.selectedContent(onFilledPrimary = false),
                     modifier = Modifier.size(16.dp),
                 )
             }
@@ -402,7 +404,7 @@ private fun OrdersSortMenuItem(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (selected) {
-                    MaterialTheme.colorScheme.primary
+                    OficiosTheme.colors.selectedContent(onFilledPrimary = false)
                 } else {
                     MaterialTheme.colorScheme.onSurface
                 },
@@ -414,7 +416,7 @@ private fun OrdersSortMenuItem(
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.Check),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = OficiosTheme.colors.selectedContent(onFilledPrimary = false),
                     modifier = Modifier.size(18.dp),
                 )
             }
