@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.OrdersListFilter
+import com.cocido.oficios.domain.model.OrdersListSortPrefs
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.OrderRepository
@@ -73,6 +74,13 @@ class OrdersListViewModel @Inject constructor(
             is OrdersListEvent.FilterSelected -> _uiState.update { state ->
                 if (state is OrdersListUiState.Success) state.copy(filter = event.filter) else state
             }
+            is OrdersListEvent.SortSelected -> _uiState.update { state ->
+                if (state is OrdersListUiState.Success) {
+                    state.copy(sortPrefs = state.sortPrefs.with(state.filter, event.sort))
+                } else {
+                    state
+                }
+            }
             is OrdersListEvent.OrderClicked -> emitEffect(OrdersListEffect.NavigateToOrderDetail(event.orderId))
             OrdersListEvent.SearchClicked -> emitEffect(OrdersListEffect.NavigateToSearch)
         }
@@ -114,6 +122,7 @@ class OrdersListViewModel @Inject constructor(
                         val next = OrdersListUiState.Success(
                             orders = ordersResult.data,
                             filter = retained?.filter ?: OrdersListFilter.ACTIVE,
+                            sortPrefs = retained?.sortPrefs ?: OrdersListSortPrefs(),
                             viewerRole = role ?: UserRole.UNKNOWN,
                         )
                         lastSuccess = next

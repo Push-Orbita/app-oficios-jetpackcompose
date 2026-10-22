@@ -26,10 +26,12 @@ class ProviderAgendaCellsTest {
             today = today,
         )
         assertEquals(2, groups.size)
-        assertEquals(2, groups[0].items.size)
-        assertEquals(true, groups[0].isToday)
-        assertEquals(false, groups[1].isToday)
-        assertEquals("4 de marzo", groups[0].headerLabel)
+        assertEquals("6 de marzo", groups[0].headerLabel)
+        assertEquals(false, groups[0].isToday)
+        assertEquals(1, groups[0].items.size)
+        assertEquals("4 de marzo", groups[1].headerLabel)
+        assertEquals(true, groups[1].isToday)
+        assertEquals(listOf(2L, 1L), groups[1].items.map { it.id })
     }
 
     private fun item(id: Long, sortKey: String) = ServiceOrderListItem(

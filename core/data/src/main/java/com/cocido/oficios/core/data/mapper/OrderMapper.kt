@@ -288,6 +288,7 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
         },
         workerId = trabajadorOficio?.id ?: 0L,
         bookingId = booking?.id?.takeIf { it != 0L },
+        // Listado OpenAPI: no hay fecha de solicitud/creación. Booking confirmado, si no el slot pedido.
         scheduledSortKey = booking?.inicioConfirmado ?: booking?.slotTurno?.inicio,
         scheduledEndKey = booking?.finConfirmado ?: booking?.slotTurno?.fin,
         scheduledDurationMinutes = booking?.slotTurno?.duracion,

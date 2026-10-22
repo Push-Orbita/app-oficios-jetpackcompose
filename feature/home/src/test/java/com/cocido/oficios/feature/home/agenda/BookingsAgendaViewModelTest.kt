@@ -57,7 +57,7 @@ class BookingsAgendaViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state is BookingsAgendaUiState.Success)
-        assertEquals(listOf(1L, 2L), (state as BookingsAgendaUiState.Success).orders.map { it.id })
+        assertEquals(listOf(2L, 1L), (state as BookingsAgendaUiState.Success).orders.map { it.id })
     }
 
     @Test

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
@@ -21,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.cards.AgendaAppointmentRow
 import com.cocido.oficios.core.designsystem.component.chips.OficiosSegmentChip
@@ -37,6 +40,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.model.AgendaAppointmentTag
 import com.cocido.oficios.domain.model.OrdersListFilter
+import com.cocido.oficios.domain.model.OrdersListSort
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.agendaRubroLabel
@@ -154,6 +158,7 @@ private fun OrdersListSuccess(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         OrdersFilterRow(selected = state.filter, onSelected = { onEvent(OrdersListEvent.FilterSelected(it)) })
+        OrdersSortRow(selected = state.sort, onSelected = { onEvent(OrdersListEvent.SortSelected(it)) })
         val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
             onEvent(OrdersListEvent.Refresh)
         }
@@ -197,7 +202,7 @@ private fun OrdersListSuccess(
                     val groups = groupAgendaAppointments(
                         visibleOrders,
                         today,
-                        newestFirst = history,
+                        sort = current.sort,
                     )
                     val undated = visibleOrders.filter { it.scheduledDate() == null }
                     LazyColumn(
@@ -275,6 +280,30 @@ private fun LazyItemScope.PlaceholderPage(
         contentAlignment = Alignment.Center,
         content = content,
     )
+}
+
+@Composable
+private fun OrdersSortRow(selected: OrdersListSort, onSelected: (OrdersListSort) -> Unit) {
+    val sortDescription = stringResource(R.string.orders_sort_content_description)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = OficiosSpacing.xl, vertical = OficiosSpacing.xxs)
+            .selectableGroup()
+            .semantics { contentDescription = sortDescription },
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm, Alignment.End),
+    ) {
+        OficiosSegmentChip(
+            label = stringResource(R.string.orders_sort_newest),
+            selected = selected == OrdersListSort.NEWEST_FIRST,
+            onClick = { onSelected(OrdersListSort.NEWEST_FIRST) },
+        )
+        OficiosSegmentChip(
+            label = stringResource(R.string.orders_sort_oldest),
+            selected = selected == OrdersListSort.OLDEST_FIRST,
+            onClick = { onSelected(OrdersListSort.OLDEST_FIRST) },
+        )
+    }
 }
 
 @Composable

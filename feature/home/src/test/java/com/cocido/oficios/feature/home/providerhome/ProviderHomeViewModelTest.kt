@@ -97,7 +97,7 @@ class ProviderHomeViewModelTest {
         advanceUntilIdle()
 
         val content = successContent(viewModel)
-        assertEquals(listOf(1L, 2L, 3L, 4L), content.upcomingOrders.map { it.id })
+        assertEquals(listOf(4L, 3L, 2L, 1L), content.upcomingOrders.map { it.id })
     }
 
     @Test
@@ -187,7 +187,7 @@ class ProviderHomeViewModelTest {
     }
 
     @Test
-    fun `today and future stay sorted ascending`() = runTest(testDispatcher) {
+    fun `today and future stay sorted newest first`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             percent = 100,
             upcoming = listOf(
@@ -198,7 +198,7 @@ class ProviderHomeViewModelTest {
         advanceUntilIdle()
 
         val content = successContent(viewModel)
-        assertEquals(listOf(1L, 2L), content.upcomingOrders.map { it.id })
+        assertEquals(listOf(2L, 1L), content.upcomingOrders.map { it.id })
     }
 
     private fun successContent(viewModel: ProviderHomeViewModel): ProviderHomeContent {

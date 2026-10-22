@@ -78,7 +78,7 @@ class AgendaAppointmentTagTest {
     }
 
     @Test
-    fun `home agenda keeps open past bookings with today and future sorted ascending`() {
+    fun `home agenda keeps open past bookings with today and future sorted newest first`() {
         val now = nowInArgentina(clock)
         val filtered = upcomingAgendaAppointments(
             orders = listOf(
@@ -90,13 +90,13 @@ class AgendaAppointmentTagTest {
             ),
             now = now,
         )
-        assertEquals(listOf(1L, 4L, 3L, 2L), filtered.map { it.id })
+        assertEquals(listOf(2L, 3L, 4L, 1L), filtered.map { it.id })
         val groups = groupAgendaAppointments(filtered, now.toLocalDate())
         assertEquals(
-            listOf("25 de septiembre", "5 de octubre", "21 de octubre", "22 de octubre"),
+            listOf("22 de octubre", "21 de octubre", "5 de octubre", "25 de septiembre"),
             groups.map { it.headerLabel },
         )
-        assertEquals(LocalDate.of(2026, 9, 25), groups[0].date)
+        assertEquals(LocalDate.of(2026, 10, 22), groups[0].date)
     }
 
     @Test

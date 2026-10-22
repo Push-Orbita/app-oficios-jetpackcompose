@@ -59,10 +59,7 @@ fun upcomingAgendaAppointments(
         .filter { item ->
             item.scheduledDate() != null && !item.isHistoryOrder(now)
         }
-        .sortedWith(
-            compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
-                .thenBy { it.id },
-        )
+        .sortedWith(ordersListComparator(OrdersListSort.NEWEST_FIRST))
 }
 
 /** Día inicial del calendario: hoy si tiene pedidos; si no, el más cercano. */

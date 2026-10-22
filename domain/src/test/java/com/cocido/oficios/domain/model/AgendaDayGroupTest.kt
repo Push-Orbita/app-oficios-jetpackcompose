@@ -21,26 +21,27 @@ class AgendaDayGroupTest {
             today = today,
         )
         assertEquals(3, groups.size)
-        assertEquals("4 de marzo", groups[0].headerLabel)
-        assertTrue(groups[0].isToday)
+        assertEquals("17 de marzo", groups[0].headerLabel)
+        assertFalse(groups[0].isToday)
         assertEquals("6 de marzo", groups[1].headerLabel)
         assertFalse(groups[1].isToday)
-        assertEquals("17 de marzo", groups[2].headerLabel)
-        assertEquals("13:30hs", groups[0].items[0].agendaTimeLabel())
-        assertEquals("Albañilería", groups[0].items[0].agendaRubroLabel())
+        assertEquals("4 de marzo", groups[2].headerLabel)
+        assertTrue(groups[2].isToday)
+        assertEquals("13:30hs", groups[2].items[0].agendaTimeLabel())
+        assertEquals("Albañilería", groups[2].items[0].agendaRubroLabel())
     }
 
     @Test
-    fun `newestFirst puts recent days first`() {
+    fun `oldest first puts earlier days first`() {
         val groups = groupAgendaAppointments(
             orders = listOf(
                 order(1, "Albañilería", "2026-03-04T13:30:00"),
                 order(2, "Albañilería", "2026-03-17T09:30:00"),
             ),
             today = today,
-            newestFirst = true,
+            sort = OrdersListSort.OLDEST_FIRST,
         )
-        assertEquals(listOf("17 de marzo", "4 de marzo"), groups.map { it.headerLabel })
+        assertEquals(listOf("4 de marzo", "17 de marzo"), groups.map { it.headerLabel })
     }
 
     @Test

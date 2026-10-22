@@ -102,6 +102,37 @@ enum class OrdersListFilter {
     HISTORY,
 }
 
+enum class OrdersListSort {
+    NEWEST_FIRST,
+    OLDEST_FIRST,
+}
+
+data class OrdersListSortPrefs(
+    val active: OrdersListSort = OrdersListSort.NEWEST_FIRST,
+    val history: OrdersListSort = OrdersListSort.NEWEST_FIRST,
+) {
+    fun forFilter(filter: OrdersListFilter): OrdersListSort = when (filter) {
+        OrdersListFilter.ACTIVE -> active
+        OrdersListFilter.HISTORY -> history
+    }
+
+    fun with(filter: OrdersListFilter, sort: OrdersListSort): OrdersListSortPrefs = when (filter) {
+        OrdersListFilter.ACTIVE -> copy(active = sort)
+        OrdersListFilter.HISTORY -> copy(history = sort)
+    }
+}
+
+fun ordersListComparator(sort: OrdersListSort): Comparator<ServiceOrderListItem> {
+    val missingDatesLast = compareBy<ServiceOrderListItem> { it.scheduledSortKey == null }
+    val byBookingDate = when (sort) {
+        OrdersListSort.NEWEST_FIRST ->
+            compareByDescending<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
+        OrdersListSort.OLDEST_FIRST ->
+            compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
+    }
+    return missingDatesLast.then(byBookingDate).thenByDescending { it.id }
+}
+
 /**
  * Historial: solicitud cancelada/expirada, booking FINALIZADA/CANCELADA,
  * o PENDIENTE/CONTRAPROPUESTA/CONFIRMADA cuya franja ya terminó.
@@ -121,10 +152,6 @@ fun ServiceOrderListItem.isElapsedUnstartedSlot(now: ZonedDateTime): Boolean {
     val end = agendaSlotEndExclusive(now.zone) ?: return false
     return !now.isBefore(end)
 }
-
-/** LLEGUE en el tracking deja el pedido en la misma UI que EN_CURSO: el código de finalización. */
-private fun ServiceOrderListItem.isPendingFirst(): Boolean =
-    status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER
 
 /** Precio a mostrar: contrapropuesta pendiente o la ya aceptada. No hay monto ni medio de pago en el booking. */
 fun ServiceOrder.displayPrice(): Double? = pendingCounterOffer?.proposedPrice ?: acceptedPrice
@@ -179,19 +206,12 @@ fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
 fun List<ServiceOrderListItem>.arrangedFor(
     filter: OrdersListFilter,
     now: ZonedDateTime,
+    sort: OrdersListSort = OrdersListSort.NEWEST_FIRST,
 ): List<ServiceOrderListItem> {
     val matching = filter { item ->
         if (filter == OrdersListFilter.HISTORY) item.isHistoryOrder(now) else !item.isHistoryOrder(now)
     }
-    return if (filter == OrdersListFilter.ACTIVE) {
-        matching.sortedWith(
-            compareBy<ServiceOrderListItem> { !it.isPendingFirst() }
-                .thenByDescending(nullsLast()) { it.scheduledSortKey }
-                .thenByDescending { it.id },
-        )
-    } else {
-        matching.sortedWith(compareByDescending(nullsLast()) { it.scheduledSortKey })
-    }
+    return matching.sortedWith(ordersListComparator(sort))
 }
 
 data class CreateServiceRequestParams(
