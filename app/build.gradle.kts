@@ -51,6 +51,20 @@ android {
         buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("prod") {
+            dimension = "environment"
+            isDefault = true
+            resValue("string", "app_name", "Oficios")
+        }
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Oficios DEV")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
