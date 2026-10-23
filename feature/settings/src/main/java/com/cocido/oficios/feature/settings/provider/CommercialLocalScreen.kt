@@ -1,24 +1,17 @@
 package com.cocido.oficios.feature.settings.provider
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -29,7 +22,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
@@ -92,14 +84,15 @@ private fun CommercialLocalForm(
     state: CommercialLocalUiState,
     onEvent: (CommercialLocalEvent) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md)
-            .widthIn(max = OficiosComponentSize.contentMaxWidth),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    OficiosFormColumn(
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.commercial_local_save),
+                onPrimary = { onEvent(CommercialLocalEvent.Submit) },
+                primaryEnabled = state.canSubmit && !state.isSaving && !state.isGeocoding,
+                primaryLoading = state.isSaving || state.isGeocoding,
+            )
+        },
     ) {
         if (state.errorMessage != null) {
             OficiosInlineAlert(message = state.errorMessage, modifier = Modifier.fillMaxWidth())
@@ -144,6 +137,7 @@ private fun CommercialLocalForm(
             pinDraggable = state.location.pinDraggable,
             showLocateOnMap = state.location.showLocateOnMap,
             showConfirm = state.location.showConfirm,
+            confirmed = state.location.confirmed,
             isGeocoding = state.isGeocoding,
             onLocateOnMap = { onEvent(CommercialLocalEvent.LocateOnMap) },
             onPinChanged = { latitude, longitude ->
@@ -154,15 +148,6 @@ private fun CommercialLocalForm(
             confirmLabel = stringResource(R.string.commercial_local_confirm_pin),
             title = stringResource(R.string.commercial_local_map_title),
             hint = state.location.message,
-        )
-        OficiosButton(
-            text = stringResource(R.string.commercial_local_save),
-            onClick = { onEvent(CommercialLocalEvent.Submit) },
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-            enabled = state.canSubmit && !state.isSaving && !state.isGeocoding,
-            loading = state.isSaving || state.isGeocoding,
         )
     }
 }

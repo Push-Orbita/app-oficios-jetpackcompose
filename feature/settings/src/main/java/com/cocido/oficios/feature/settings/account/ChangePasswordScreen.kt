@@ -2,17 +2,11 @@ package com.cocido.oficios.feature.settings.account
 
 import com.cocido.oficios.feature.settings.R
 import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -21,9 +15,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
@@ -32,7 +25,6 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateConte
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 
@@ -81,13 +73,15 @@ private fun ChangePasswordForm(
     onEvent: (ChangePasswordEvent) -> Unit,
 ) {
     val confirmFocus = remember { FocusRequester() }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md)
-            .widthIn(max = OficiosComponentSize.contentMaxWidth),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.change_password_submit),
+                onPrimary = { onEvent(ChangePasswordEvent.Submit) },
+                primaryEnabled = state.canSubmit && !state.isSubmitting,
+                primaryLoading = state.isSubmitting,
+            )
+        },
     ) {
         Text(
             text = stringResource(R.string.change_password_intro),
@@ -114,14 +108,5 @@ private fun ChangePasswordForm(
             keyboardActions = KeyboardActions(onDone = { onEvent(ChangePasswordEvent.Submit) }),
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = stringResource(R.string.change_password_submit),
-            onClick = { onEvent(ChangePasswordEvent.Submit) },
-            loading = state.isSubmitting,
-            enabled = state.canSubmit && !state.isSubmitting,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-        )
     }
 }

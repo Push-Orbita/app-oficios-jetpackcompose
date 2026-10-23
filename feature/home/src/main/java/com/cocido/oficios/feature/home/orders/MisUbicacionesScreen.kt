@@ -4,17 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,9 +26,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
@@ -128,12 +124,17 @@ private fun MisUbicacionesPicker(
     modifier: Modifier = Modifier,
 ) {
     val selected = state.domicilios.firstOrNull { it.id == state.selectedId }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.OficiosScreenPadding),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
+    OficiosFormColumn(
+        modifier = modifier,
+        contentPadding = OficiosSpacing.OficiosScreenPadding,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.locations_save),
+                onPrimary = { onEvent(MisUbicacionesEvent.Confirm) },
+                primaryEnabled = state.selectedId != null && !state.isSaving,
+                primaryLoading = state.isSaving,
+            )
+        },
     ) {
         OficiosTextField(
             value = selected?.pickerLabel().orEmpty(),
@@ -188,15 +189,6 @@ private fun MisUbicacionesPicker(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            OficiosButton(
-                text = stringResource(R.string.locations_save),
-                onClick = { onEvent(MisUbicacionesEvent.Confirm) },
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Small,
-                enabled = state.selectedId != null && !state.isSaving,
-            )
-        }
     }
 }
 
@@ -287,12 +279,17 @@ private fun MisUbicacionesAddForm(
     onEvent: (MisUbicacionesEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.OficiosScreenPadding),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
+    OficiosFormColumn(
+        modifier = modifier,
+        contentPadding = OficiosSpacing.OficiosScreenPadding,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.locations_save),
+                onPrimary = { onEvent(MisUbicacionesEvent.SaveNew) },
+                primaryEnabled = state.canSaveNew && !state.isSaving && !state.isGeocoding,
+                primaryLoading = state.isSaving || state.isGeocoding,
+            )
+        },
     ) {
         OficiosAutocompleteField(
             value = state.barrioQuery,
@@ -333,6 +330,7 @@ private fun MisUbicacionesAddForm(
             pinDraggable = state.location.pinDraggable,
             showLocateOnMap = state.location.showLocateOnMap,
             showConfirm = state.location.showConfirm,
+            confirmed = state.location.confirmed,
             isGeocoding = state.isGeocoding,
             onLocateOnMap = { onEvent(MisUbicacionesEvent.LocateOnMap) },
             onPinChanged = { latitude, longitude ->
@@ -357,15 +355,5 @@ private fun MisUbicacionesAddForm(
             label = stringResource(R.string.locations_primary_toggle),
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            OficiosButton(
-                text = stringResource(R.string.locations_save),
-                onClick = { onEvent(MisUbicacionesEvent.SaveNew) },
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Small,
-                loading = state.isSaving || state.isGeocoding,
-                enabled = state.canSaveNew && !state.isSaving && !state.isGeocoding,
-            )
-        }
     }
 }

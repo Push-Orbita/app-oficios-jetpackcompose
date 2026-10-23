@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -27,6 +25,8 @@ import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
@@ -234,9 +234,31 @@ internal fun AddServiceUiState.phase(): OficiosContentPhase = when {
 
 @Composable
 private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = when {
+                    state.step != AddServiceStep.REVIEW -> stringResource(R.string.services_continue)
+                    state.isEditing -> stringResource(R.string.services_save_changes)
+                    else -> stringResource(R.string.services_publish)
+                },
+                onPrimary = {
+                    onEvent(if (state.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next)
+                },
+                backLabel = if (state.step != AddServiceStep.TRADE) {
+                    stringResource(R.string.services_back)
+                } else {
+                    null
+                },
+                onBack = if (state.step != AddServiceStep.TRADE) {
+                    { onEvent(AddServiceEvent.Previous) }
+                } else {
+                    null
+                },
+                primaryEnabled = !state.isSaving,
+                primaryLoading = state.isSaving,
+            )
+        },
     ) {
         Text(stringResource(R.string.services_step_counter, state.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
         Text(stepTitle(state.step, state.isEditing), style = MaterialTheme.typography.headlineSmall)
@@ -249,25 +271,6 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
             AddServiceStep.REVIEW -> ReviewStep(state)
         }
         state.errorMessage?.let { OficiosInlineAlert(it) }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            if (state.step != AddServiceStep.TRADE) {
-                OficiosButton(stringResource(R.string.services_back), { onEvent(AddServiceEvent.Previous) }, Modifier.weight(1f), OficiosButtonVariant.Outlined)
-            }
-            OficiosButton(
-                text = when {
-                    state.step != AddServiceStep.REVIEW -> stringResource(R.string.services_continue)
-                    state.isEditing -> stringResource(R.string.services_save_changes)
-                    else -> stringResource(R.string.services_publish)
-                },
-                onClick = { onEvent(if (state.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next) },
-                modifier = Modifier.weight(1f),
-                loading = state.isSaving,
-                enabled = !state.isSaving,
-                variant = OficiosButtonVariant.Primary,
-                size = OficiosButtonSize.Large,
-            )
-        }
-        Column(Modifier.padding(bottom = OficiosSpacing.lg)) {}
     }
 }
 
@@ -359,6 +362,7 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             pinDraggable = state.localLocation.pinDraggable,
             showLocateOnMap = state.localLocation.showLocateOnMap,
             showConfirm = state.localLocation.showConfirm,
+            confirmed = state.localLocation.confirmed,
             isGeocoding = state.isGeocoding,
             onLocateOnMap = { onEvent(AddServiceEvent.LocateOnMap) },
             onPinChanged = { latitude, longitude ->
@@ -386,7 +390,14 @@ private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             }
         }
     }
-    OficiosButton(stringResource(R.string.services_add_slot), { onEvent(AddServiceEvent.AddTimeSlot) }, Modifier.fillMaxWidth(), OficiosButtonVariant.Outlined, leadingIcon = Icons.Outlined.Add)
+    OficiosButton(
+        text = stringResource(R.string.services_add_slot),
+        onClick = { onEvent(AddServiceEvent.AddTimeSlot) },
+        modifier = Modifier.fillMaxWidth(),
+        variant = OficiosButtonVariant.Tonal,
+        size = OficiosButtonSize.Form,
+        leadingIcon = Icons.Outlined.Add,
+    )
 }
 
 @Composable

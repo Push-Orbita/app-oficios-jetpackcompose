@@ -244,8 +244,9 @@ fun RegisterTradeScreen(
                         OficiosButton(
                             text = stringResource(R.string.auth_continue),
                             onClick = { onEvent(RegisterTradeEvent.Continue) },
-                            variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Large,
+                            variant = OficiosButtonVariant.Primary,
+                            size = OficiosButtonSize.Form,
+                            modifier = Modifier.fillMaxWidth(),
                             enabled = !uiState.isLoading,
                             loading = uiState.isLoading,
                         )

@@ -16,8 +16,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -35,8 +33,9 @@ import androidx.compose.ui.res.vectorResource
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
@@ -306,12 +305,20 @@ private fun ContactEditor(
 ) {
     val phoneFocus = remember { FocusRequester() }
     val emailFocus = remember { FocusRequester() }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        modifier = modifier,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = if (uiState.editingId == null) {
+                    stringResource(R.string.client_data_save_verify)
+                } else {
+                    stringResource(R.string.client_data_save_changes)
+                },
+                onPrimary = { onEvent(ClientDataEvent.SaveContact) },
+                primaryEnabled = uiState.canSaveContact && !uiState.isSaving,
+                primaryLoading = uiState.isSaving,
+            )
+        },
     ) {
         Text(
             stringResource(R.string.client_data_phone_hint),
@@ -358,15 +365,6 @@ private fun ContactEditor(
             label = stringResource(R.string.client_data_primary_contact_toggle),
         )
         uiState.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = if (uiState.editingId == null) stringResource(R.string.client_data_save_verify) else stringResource(R.string.client_data_save_changes),
-            onClick = { onEvent(ClientDataEvent.SaveContact) },
-            loading = uiState.isSaving,
-            enabled = uiState.canSaveContact && !uiState.isSaving,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-        )
     }
 }
 
@@ -382,12 +380,16 @@ private fun DomicilioEditor(
     val floorFocus = remember { FocusRequester() }
     val apartmentFocus = remember { FocusRequester() }
     val towerFocus = remember { FocusRequester() }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        modifier = modifier,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.client_data_save_address),
+                onPrimary = { onEvent(ClientDataEvent.SaveDomicilio) },
+                primaryEnabled = uiState.canSaveDomicilio && !uiState.isSaving,
+                primaryLoading = uiState.isSaving,
+            )
+        },
     ) {
         Text(
             stringResource(R.string.client_data_address_hint),
@@ -489,14 +491,5 @@ private fun DomicilioEditor(
             label = stringResource(R.string.client_data_primary_address_toggle),
         )
         uiState.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = stringResource(R.string.client_data_save_address),
-            onClick = { onEvent(ClientDataEvent.SaveDomicilio) },
-            loading = uiState.isSaving,
-            enabled = uiState.canSaveDomicilio && !uiState.isSaving,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-        )
     }
 }

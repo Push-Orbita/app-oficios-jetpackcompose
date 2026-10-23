@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,8 +30,8 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.calendar.HourChipState
 import com.cocido.oficios.core.designsystem.component.calendar.OficiosHourGrid
 import com.cocido.oficios.core.designsystem.component.calendar.OficiosMonthCalendar
@@ -150,12 +148,22 @@ private fun CreateOrderForm(
     today: LocalDate,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.OficiosScreenPadding),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
+    OficiosFormColumn(
+        modifier = modifier,
+        contentPadding = OficiosSpacing.OficiosScreenPadding,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.create_order_continue),
+                onPrimary = { onEvent(CreateOrderEvent.ContinueToSummary) },
+                primaryEnabled = CreateOrderSchedule.canContinue(
+                    selectedSubRubroId = state.selectedSubRubroId,
+                    selectedDomicilioId = state.selectedDomicilioId,
+                    selectedContactoId = state.selectedContactoId,
+                    selectedDate = state.selectedDate,
+                    selectedHour = state.selectedHour,
+                ),
+            )
+        },
     ) {
         if (state.hasAgenda) {
             WorkerMiniCard(state)
@@ -301,23 +309,6 @@ private fun CreateOrderForm(
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            OficiosButton(
-                text = stringResource(R.string.create_order_continue),
-                onClick = { onEvent(CreateOrderEvent.ContinueToSummary) },
-                variant = OficiosButtonVariant.Secondary,
-                enabled = CreateOrderSchedule.canContinue(
-                    selectedSubRubroId = state.selectedSubRubroId,
-                    selectedDomicilioId = state.selectedDomicilioId,
-                    selectedContactoId = state.selectedContactoId,
-                    selectedDate = state.selectedDate,
-                    selectedHour = state.selectedHour,
-                ),
-            )
-        }
     }
 }
 
@@ -329,12 +320,19 @@ private fun CreateOrderSummary(
 ) {
     val domicilio = state.domicilios.firstOrNull { it.id == state.selectedDomicilioId }
     val visit = CreateOrderSchedule.visitDateTime(state.selectedDate, state.selectedHour)
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.OficiosScreenPadding),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
+    OficiosFormColumn(
+        modifier = modifier,
+        contentPadding = OficiosSpacing.OficiosScreenPadding,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.create_order_submit),
+                onPrimary = { onEvent(CreateOrderEvent.Submit) },
+                backLabel = stringResource(R.string.create_order_edit),
+                onBack = { onEvent(CreateOrderEvent.EditRequest) },
+                primaryEnabled = !state.isSubmitting,
+                primaryLoading = state.isSubmitting,
+            )
+        },
     ) {
         SummaryMap(domicilio)
 
@@ -354,23 +352,6 @@ private fun CreateOrderSummary(
             value = visit?.format(VISIT_FORMATTER).orEmpty(),
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md, Alignment.End),
-        ) {
-            OficiosButton(
-                text = stringResource(R.string.create_order_edit),
-                onClick = { onEvent(CreateOrderEvent.EditRequest) },
-                variant = OficiosButtonVariant.Primary,
-            )
-            OficiosButton(
-                text = stringResource(R.string.create_order_submit),
-                onClick = { onEvent(CreateOrderEvent.Submit) },
-                loading = state.isSubmitting,
-                enabled = !state.isSubmitting,
-                variant = OficiosButtonVariant.Secondary,
-            )
-        }
     }
 }
 

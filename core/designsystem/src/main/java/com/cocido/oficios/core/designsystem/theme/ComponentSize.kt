@@ -6,6 +6,8 @@ object OficiosComponentSize {
     /** Altura de inputs — Figma h-48 px-16 py-12 r8 borde 1px */
     val textFieldHeight = 48.dp
     val minTouchTarget = 48.dp
+    /** Wizards y formularios: Atrás / Continuar / Guardar en barra fija. */
+    val buttonHeightForm = 48.dp
     val buttonHeightLarge = 52.dp
     val buttonHeightMedium = 44.dp
     val buttonHeightSmall = 36.dp

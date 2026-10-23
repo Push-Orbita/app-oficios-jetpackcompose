@@ -50,6 +50,7 @@ import com.cocido.oficios.core.designsystem.theme.oficiosTween
 enum class OficiosButtonVariant {
     Primary,
     Secondary,
+    Tonal,
     Outlined,
     OutlinedDanger,
     Ghost,
@@ -61,6 +62,8 @@ enum class OficiosButtonSize {
     Small,
     Medium,
     Large,
+    /** 48 dp. Barra fija de wizards/formularios. */
+    Form,
 }
 
 @Composable
@@ -84,6 +87,7 @@ fun OficiosButton(
         OficiosButtonSize.Small -> OficiosComponentSize.buttonHeightSmall
         OficiosButtonSize.Medium -> OficiosComponentSize.buttonHeightMedium
         OficiosButtonSize.Large -> OficiosComponentSize.buttonHeightLarge
+        OficiosButtonSize.Form -> OficiosComponentSize.buttonHeightForm
     }
 
     val colors = OficiosTheme.colors
@@ -103,6 +107,12 @@ fun OficiosButton(
             content = colors.inverseOnSurface,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             shadow = Color.Black.copy(alpha = 0.15f),
+        )
+        OficiosButtonVariant.Tonal -> ButtonColors(
+            container = colors.tonalContainer,
+            content = colors.onTonal,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            shadow = Color.Transparent,
         )
         OficiosButtonVariant.Outlined -> ButtonColors(
             container = Color.Transparent,
@@ -338,6 +348,21 @@ private fun OutlinedDangerButtonPreview() {
                 text = "Rechazar",
                 onClick = {},
                 variant = OficiosButtonVariant.OutlinedDanger,
+            )
+        }
+    }
+}
+
+@Preview(name = "Tonal Button", showBackground = true, backgroundColor = 0xFFF4F5F7)
+@Composable
+private fun TonalButtonPreview() {
+    OficiosTheme {
+        Box(Modifier.size(280.dp, 60.dp), contentAlignment = Alignment.Center) {
+            OficiosButton(
+                text = "Confirmar ubicación",
+                onClick = {},
+                variant = OficiosButtonVariant.Tonal,
+                size = OficiosButtonSize.Form,
             )
         }
     }

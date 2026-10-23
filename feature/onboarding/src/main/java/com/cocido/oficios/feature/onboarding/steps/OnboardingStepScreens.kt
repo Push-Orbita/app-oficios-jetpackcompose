@@ -43,6 +43,7 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.inputs.LocalScrollViewportHeightPx
@@ -86,8 +87,8 @@ fun OnboardingStepScaffold(
     isLoading: Boolean = false,
     canSubmit: Boolean = true,
     submitText: String? = null,
-    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
-    submitSize: OficiosButtonSize = OficiosButtonSize.Large,
+    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Primary,
+    submitSize: OficiosButtonSize = OficiosButtonSize.Form,
     showSubmitButton: Boolean = true,
     itemSpacing: Dp = OficiosSpacing.md,
     onSubmit: () -> Unit,
@@ -106,23 +107,26 @@ fun OnboardingStepScaffold(
                     .padding(padding)
                     .consumeWindowInsets(padding)
                     .imePadding()
-                    .onSizeChanged { viewportHeightPx = it.height }
-                    .verticalScroll(rememberScrollState())
-                    .padding(OficiosSpacing.md),
-                verticalArrangement = Arrangement.spacedBy(itemSpacing),
+                    .onSizeChanged { viewportHeightPx = it.height },
             ) {
-                Text(text = title, style = MaterialTheme.typography.headlineSmall)
-                if (error != null) OficiosInlineAlert(message = error)
-                content()
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(OficiosSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(itemSpacing),
+                ) {
+                    Text(text = title, style = MaterialTheme.typography.headlineSmall)
+                    if (error != null) OficiosInlineAlert(message = error)
+                    content()
+                }
                 if (showSubmitButton) {
-                    OficiosButton(
-                        text = buttonText,
-                        onClick = onSubmit,
-                        enabled = canSubmit && !isLoading,
-                        loading = isLoading,
-                        modifier = Modifier.fillMaxWidth(),
-                        variant = submitVariant,
-                        size = submitSize,
+                    OficiosFormActionsBar(
+                        primaryLabel = buttonText,
+                        onPrimary = onSubmit,
+                        primaryEnabled = canSubmit && !isLoading,
+                        primaryLoading = isLoading,
                     )
                 }
             }
@@ -817,6 +821,7 @@ fun ProviderLocalStepScreen(
             pinDraggable = uiState.location.pinDraggable,
             showLocateOnMap = uiState.location.showLocateOnMap,
             showConfirm = uiState.location.showConfirm,
+            confirmed = uiState.location.confirmed,
             isGeocoding = uiState.isGeocoding,
             onLocateOnMap = onLocateOnMap,
             onPinChanged = onMapLocationSelected,

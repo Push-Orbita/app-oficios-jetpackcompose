@@ -131,8 +131,8 @@ fun VerifyEmailStepScreen(
                 enabled = !uiState.isLoading && uiState.canSubmit,
                 loading = uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Form,
             )
         }
     }

@@ -22,9 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -93,8 +91,9 @@ private fun AgendaConfigContent(
         return
     }
 
+    Column(modifier = modifier.fillMaxSize()) {
     LazyColumn(
-        modifier = modifier,
+        modifier = Modifier.weight(1f).fillMaxWidth(),
         contentPadding = OficiosSpacing.OficiosScreenPadding,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
@@ -158,15 +157,6 @@ private fun AgendaConfigContent(
                         onOptionSelected = { onEvent(AgendaConfigEvent.IntervalUnitChanged(it)) },
                         label = stringResource(R.string.agenda_config_interval_unit),
                     )
-                    OficiosButton(
-                        text = stringResource(R.string.agenda_config_save),
-                        onClick = { onEvent(AgendaConfigEvent.Save) },
-                        enabled = !uiState.isSaving,
-                        loading = uiState.isSaving,
-                        modifier = Modifier.fillMaxWidth(),
-                        variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Large,
-                    )
                 }
             }
         }
@@ -185,6 +175,13 @@ private fun AgendaConfigContent(
                 )
             }
         }
+    }
+        OficiosFormActionsBar(
+            primaryLabel = stringResource(R.string.agenda_config_save),
+            onPrimary = { onEvent(AgendaConfigEvent.Save) },
+            primaryEnabled = !uiState.isSaving,
+            primaryLoading = uiState.isSaving,
+        )
     }
 
     if (uiState.sessionPendingDeleteId != null) {

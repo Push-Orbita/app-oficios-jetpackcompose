@@ -105,8 +105,8 @@ fun RateWorkerScreen(
                         loading = state.isSubmitting,
                         enabled = state.canSubmit && !state.isSubmitting,
                         modifier = Modifier.fillMaxWidth(),
-                        variant = OficiosButtonVariant.Secondary,
-                        size = OficiosButtonSize.Large,
+                        variant = OficiosButtonVariant.Primary,
+                        size = OficiosButtonSize.Form,
                     )
                 }
                 is RateWorkerUiState.Submitted -> OficiosAnimatedSuccessOverlay(

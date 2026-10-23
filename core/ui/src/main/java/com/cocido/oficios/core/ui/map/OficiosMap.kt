@@ -208,6 +208,8 @@ fun OficiosAddressLocationPicker(
     modifier: Modifier = Modifier,
     locateOnMapLabel: String = "Ubicar mi local en el mapa",
     confirmLabel: String = "Confirmar ubicación",
+    confirmedLabel: String = "Ubicación confirmada",
+    confirmed: Boolean = false,
     title: String = "Ubicación exacta",
     hint: String? = null,
 ) {
@@ -307,7 +309,8 @@ fun OficiosAddressLocationPicker(
                 onClick = onLocateOnMap,
                 enabled = !isGeocoding,
                 loading = isGeocoding,
-                variant = OficiosButtonVariant.Secondary,
+                variant = OficiosButtonVariant.Tonal,
+                size = OficiosButtonSize.Form,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -320,8 +323,15 @@ fun OficiosAddressLocationPicker(
                     onConfirmPin()
                 },
                 enabled = !isGeocoding && (selected != null || pinDraggable),
-                variant = OficiosButtonVariant.Primary,
+                variant = OficiosButtonVariant.Tonal,
+                size = OficiosButtonSize.Form,
                 modifier = Modifier.fillMaxWidth(),
+            )
+        } else if (confirmed && selected != null) {
+            Text(
+                text = "$confirmedLabel · %.5f, %.5f".format(selected.latitude, selected.longitude),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
     }

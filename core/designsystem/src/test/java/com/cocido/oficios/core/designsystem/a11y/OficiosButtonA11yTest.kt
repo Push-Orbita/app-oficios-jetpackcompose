@@ -59,6 +59,31 @@ class OficiosButtonA11yTest {
     }
 
     @Test
+    fun formButtonVisualHeightIs48dp() {
+        var visualHeightDp = 0f
+        composeRule.setContent {
+            OficiosTheme {
+                val density = LocalDensity.current
+                OficiosButton(
+                    text = "Continuar",
+                    onClick = {},
+                    size = OficiosButtonSize.Form,
+                    modifier = Modifier.onGloballyPositioned { coords ->
+                        visualHeightDp = coords.size.height / density.density
+                    },
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            assertTrue(
+                "Form visual height=${visualHeightDp}dp should be 48 dp",
+                visualHeightDp in 47f..49f,
+            )
+        }
+        assertTrue("Form touch height=${touchHeightDp("Continuar")}dp", touchHeightDp("Continuar") >= 48f)
+    }
+
+    @Test
     fun mediumButtonTouchTargetAtLeast48dp() {
         composeRule.setContent {
             OficiosTheme {

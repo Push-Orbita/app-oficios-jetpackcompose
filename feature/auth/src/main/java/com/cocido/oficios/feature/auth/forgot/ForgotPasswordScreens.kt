@@ -179,8 +179,8 @@ fun ResetPasswordScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState.canSubmit && !uiState.isLoading,
                 loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Form,
             )
         }
         OficiosButton(

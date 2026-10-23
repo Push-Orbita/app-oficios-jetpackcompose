@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.AttachFile
@@ -44,8 +42,9 @@ import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.border.dashedBorder
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -286,9 +285,16 @@ private fun CertificateEditor(
     onPickCertificateFile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        modifier = modifier,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.portfolio_save),
+                onPrimary = { onEvent(PortfolioEvent.SaveCertificate) },
+                primaryEnabled = state.canSaveCertificate,
+                primaryLoading = state.isSaving,
+            )
+        },
     ) {
         Text(stringResource(R.string.portfolio_certificate_hint), style = MaterialTheme.typography.bodyMedium)
         OficiosTextField(
@@ -323,15 +329,6 @@ private fun CertificateEditor(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         state.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = stringResource(R.string.portfolio_save),
-            onClick = { onEvent(PortfolioEvent.SaveCertificate) },
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-            loading = state.isSaving,
-            enabled = state.canSaveCertificate,
-        )
     }
 }
 
