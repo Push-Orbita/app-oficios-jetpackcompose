@@ -94,8 +94,12 @@ object OficiosComponentSize {
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    /** Splash: isotipo plano Figma `666:2` a 164dp de ancho (alto = ancho × 736/403). */
-    val authLogoIconWidthSplash = 164.dp
+    /**
+     * Splash Compose = isotipo del splash de sistema (canvas 288dp, círculo 192dp).
+     * Alto 152dp (diagonal ~173dp) para que no salte de tamaño al fade.
+     */
+    val authLogoIconHeightSplash = 152.dp
+    val authLogoIconWidthSplash = 83.dp
     /** Gap layout logo→wordmark en splash. El lockup se centra en el área segura. */
     val authSplashLogoWordmarkGap = 23.dp
     val authWordmarkHeight = 36.dp

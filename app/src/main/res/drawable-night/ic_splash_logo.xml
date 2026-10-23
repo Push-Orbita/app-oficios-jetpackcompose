@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Icono del splash de sistema (oscuro): isotipo Figma sobre navy. -->
+<!--
+    Splash de sistema (tema oscuro), sin icon background:
+    canvas 288dp, círculo visible 192dp. Isotipo plano (Figma 666:2)
+    casco azul + pin blanco, contraste sobre navy #00358B.
+-->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/oficios_splash_background" />
+    <item>
+        <shape android:shape="rectangle">
+            <size
+                android:width="@dimen/oficios_splash_icon_canvas"
+                android:height="@dimen/oficios_splash_icon_canvas" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
     <item
-        android:width="120dp"
-        android:height="192dp"
+        android:width="@dimen/oficios_splash_isotype_width"
+        android:height="@dimen/oficios_splash_isotype_height"
         android:gravity="center"
         android:drawable="@drawable/ic_oficios_logotipo" />
 </layer-list>

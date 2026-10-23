@@ -16,9 +16,6 @@ enum class OficiosBrandScale {
     Splash,
 }
 
-/** Figma isotipo plano `666:2` (403×736). */
-private const val LogoAspectHeightOverWidth = 736f / 403f
-
 /**
  * Bloque de marca vertical: isotipo plano (casco azul + pin blanco) y
  * wordmark "Oficios Formosa". El lockup combinado vive en
@@ -35,7 +32,7 @@ fun OficiosBrandBlock(
     }
     val iconHeight: Dp = when (scale) {
         OficiosBrandScale.Compact -> OficiosComponentSize.authLogoIconHeightCompact
-        OficiosBrandScale.Splash -> iconWidth * LogoAspectHeightOverWidth
+        OficiosBrandScale.Splash -> OficiosComponentSize.authLogoIconHeightSplash
     }
     val wordmarkHeight = when (scale) {
         OficiosBrandScale.Compact -> OficiosComponentSize.authWordmarkHeight

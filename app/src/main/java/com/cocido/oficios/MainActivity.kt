@@ -31,7 +31,12 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { SplashGate.keepOnScreen }
         splashScreen.setOnExitAnimationListener { splashView ->
             OficiosSystemBars.applyFromPreferences(this)
-            splashView.remove()
+            // Fade (sin zoom): el isotipo Compose tiene el mismo alto que el de sistema.
+            splashView.view.animate()
+                .alpha(0f)
+                .setDuration(SPLASH_EXIT_FADE_MS)
+                .withEndAction { splashView.remove() }
+                .start()
         }
         super.onCreate(savedInstanceState)
         OficiosSystemBars.applyFromPreferences(this)
@@ -57,5 +62,9 @@ class MainActivity : ComponentActivity() {
             }
         }
         pushNavigationCoordinator.publishRoute(route)
+    }
+
+    private companion object {
+        const val SPLASH_EXIT_FADE_MS = 250L
     }
 }

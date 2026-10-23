@@ -9,10 +9,11 @@
         <item name="android:windowLightNavigationBar">true</item>
     </style>
 
+    <!-- Theme.SplashScreen (no IconBackground): canvas 288dp / círculo 192dp en API 31+ y en compat 26–30. -->
     <style name="Theme.Oficios.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/oficios_splash_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/oficios_splash_background</item>
+        <!-- Sin icon background: círculo visible 192dp (con background baja a 160dp). -->
         <item name="postSplashScreenTheme">@style/Theme.Oficios</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
