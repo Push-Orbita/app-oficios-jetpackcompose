@@ -10,4 +10,5 @@
     <string name="ds_worker_rating">Calificación %1$.1f de 5</string>
     <string name="ds_autocomplete_no_results">No se encontraron barrios</string>
     <string name="ds_autocomplete_loading">Buscando barrios</string>
+    <string name="ds_support_help">Ayuda</string>
 </resources>

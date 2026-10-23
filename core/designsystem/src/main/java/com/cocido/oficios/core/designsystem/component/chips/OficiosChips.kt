@@ -3,19 +3,14 @@ package com.cocido.oficios.core.designsystem.component.chips
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,20 +19,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.SubcomposeAsyncImage
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.cards.OrderStatus
 import com.cocido.oficios.core.designsystem.component.feedback.rememberOficiosHaptics
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.core.designsystem.theme.selectedContent
 
 // ---------------------------------------------------------------------------
 // OficiosChip — chip básico de etiqueta/selección
@@ -55,41 +52,49 @@ fun OficiosChip(
     onClick: (() -> Unit)? = null,
 ) {
     val haptics = rememberOficiosHaptics()
-    val clickModifier = if (onClick != null) {
-        Modifier.clickable {
-            haptics.tick()
-            onClick()
-        }
-    } else {
-        Modifier
-    }
-
-    Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(containerColor)
-            .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
-            .then(clickModifier)
-            .padding(horizontal = OficiosSpacing.sm, vertical = verticalPadding),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+    val visual = @Composable {
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.extraSmall)
+                .background(containerColor)
+                .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
+                .padding(horizontal = OficiosSpacing.sm, vertical = verticalPadding),
+            contentAlignment = Alignment.Center,
         ) {
-            if (leadingIcon != null) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null,
-                    tint = contentColor,
-                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+            ) {
+                if (leadingIcon != null) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = Modifier.size(OficiosComponentSize.iconSm),
+                    )
+                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor,
                 )
             }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = contentColor,
-            )
+        }
+    }
+    if (onClick != null) {
+        OficiosTouchTarget(
+            onClick = {
+                haptics.tick()
+                onClick()
+            },
+            modifier = modifier,
+            accessibilityText = label,
+        ) {
+            visual()
+        }
+    } else {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            visual()
         }
     }
 }
@@ -108,28 +113,38 @@ fun OficiosSegmentChip(
 ) {
     val haptics = rememberOficiosHaptics()
     val shape = RoundedCornerShape(OficiosRadius.sm)
-    Box(
-        modifier = modifier
-            .defaultMinSize(minHeight = OficiosComponentSize.buttonHeightSmall)
-            .clip(shape)
-            .background(if (selected) OficiosColorAction else Color.Transparent)
-            .clickable {
-                haptics.tick()
-                onClick()
-            }
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
-        contentAlignment = Alignment.Center,
+    OficiosTouchTarget(
+        onClick = {
+            haptics.tick()
+            onClick()
+        },
+        modifier = modifier,
+        accessibilityText = label,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = OficiosColorWhite,
-        )
+        Box(
+            modifier = Modifier
+                .defaultMinSize(minHeight = OficiosComponentSize.buttonHeightSmall)
+                .clip(shape)
+                .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (selected) {
+                    OficiosTheme.colors.selectedContent(onFilledPrimary = true)
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+            )
+        }
     }
 }
 
 // ---------------------------------------------------------------------------
-// OficiosFilterChip — chip con estado seleccionado/no seleccionado
+// OficiosFilterChip — Rubros / filtros. Visual ~36–40 dp, 14 sp, px 16.
+// El touch 48 dp es overlay ([OficiosTouchTarget]), no infla el layout.
 // ---------------------------------------------------------------------------
 
 @Composable
@@ -138,38 +153,74 @@ fun OficiosFilterChip(
     selected: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    leadingIcon: ImageVector? = null,
+    iconUrl: String? = null,
 ) {
     val containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer
-    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val contentColor = if (selected) {
+        OficiosTheme.colors.selectedContent(onFilledPrimary = true)
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
     val haptics = rememberOficiosHaptics()
+    val shape = RoundedCornerShape(OficiosRadius.sm)
 
-    Row(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(containerColor)
-            .border(BorderStroke(1.dp, borderColor), MaterialTheme.shapes.extraSmall)
-            .clickable {
-                haptics.tick()
-                onToggle()
-            }
-            .padding(horizontal = OficiosSpacing.sm, vertical = OficiosSpacing.xxxs),
-        verticalAlignment = Alignment.CenterVertically,
+    OficiosTouchTarget(
+        onClick = {
+            haptics.tick()
+            onToggle()
+        },
+        modifier = modifier,
+        accessibilityText = label,
     ) {
-        if (selected) {
-            Icon(
-                imageVector = ImageVector.vectorResource(OficiosIcons.CircleCheck),
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(OficiosComponentSize.iconSm),
+        Row(
+            modifier = Modifier
+                .defaultMinSize(minHeight = OficiosComponentSize.filterChipHeight)
+                .clip(shape)
+                .background(containerColor)
+                .border(BorderStroke(1.dp, borderColor), shape)
+                .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+        ) {
+            when {
+                selected -> Icon(
+                    imageVector = ImageVector.vectorResource(OficiosIcons.CircleCheck),
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                )
+                !iconUrl.isNullOrBlank() -> SubcomposeAsyncImage(
+                    model = iconUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                    loading = {},
+                    error = {
+                        if (leadingIcon != null) {
+                            Icon(
+                                imageVector = leadingIcon,
+                                contentDescription = null,
+                                tint = contentColor,
+                                modifier = Modifier.size(OficiosComponentSize.iconSm),
+                            )
+                        }
+                    },
+                )
+                leadingIcon != null -> Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(OficiosComponentSize.iconSm),
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                color = contentColor,
             )
-            Spacer(Modifier.width(OficiosSpacing.xxxs))
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = contentColor,
-        )
     }
 }
 
@@ -211,8 +262,8 @@ private fun statusColors(status: OrderStatus): Pair<Color, Color> = when (status
         MaterialTheme.colorScheme.tertiary,
     )
     is OrderStatus.Confirmed, is OrderStatus.Approved -> Pair(
-        OficiosColorSuccess,
-        OficiosColorSuccess,
+        OficiosTheme.colors.success,
+        OficiosTheme.colors.success,
     )
     is OrderStatus.InReview -> Pair(
         MaterialTheme.colorScheme.onSurfaceVariant,
@@ -249,7 +300,6 @@ private fun ChipsPreview() {
                 OficiosFilterChip(label = "Activo", selected = true, onToggle = {})
                 OficiosFilterChip(label = "Inactivo", selected = false, onToggle = {})
             }
-            Spacer(Modifier.height(OficiosSpacing.xs))
             Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                 OficiosStatusChip(OrderStatus.Pending)
                 OficiosStatusChip(OrderStatus.Confirmed)

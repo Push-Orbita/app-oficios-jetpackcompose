@@ -1,10 +1,10 @@
 package com.cocido.oficios.core.designsystem.component.buttons
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -32,20 +32,25 @@ fun OficiosIconButton(
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     iconSize: Dp = OficiosComponentSize.iconMd,
 ) {
-    Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(containerColor)
-            .clickable(onClick = onClick)
-            .padding(OficiosSpacing.xs),
-        contentAlignment = Alignment.Center,
+    OficiosTouchTarget(
+        onClick = onClick,
+        modifier = modifier,
+        accessibilityContentDescription = contentDescription,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            tint = tint,
-            modifier = Modifier.size(iconSize),
-        )
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .background(containerColor)
+                .padding(OficiosSpacing.xs),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(iconSize),
+            )
+        }
     }
 }
 

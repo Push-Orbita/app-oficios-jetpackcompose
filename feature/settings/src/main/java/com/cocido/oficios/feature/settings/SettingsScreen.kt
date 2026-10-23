@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
+import com.cocido.oficios.core.designsystem.component.badges.OficiosRoleChip
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -49,12 +51,11 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 
 @Composable
@@ -68,15 +69,16 @@ fun SettingsScreen(
     var confirmLogout by rememberSaveable { mutableStateOf(false) }
     OficiosScaffold(
         modifier = modifier,
-        topBar = {
-            if (showBackNavigation) {
+        topBar = if (showBackNavigation) {
+            {
                 OficiosBackTopBar(
                     title = stringResource(R.string.settings_title),
                     onBack = { onEvent(SettingsEvent.NavigateBack) },
+                    actions = { SettingsConfigurationIconButton(onClick = { onEvent(SettingsEvent.OpenConfiguration) }) },
                 )
-            } else {
-                OficiosTopAppBar(title = stringResource(R.string.settings_title))
             }
+        } else {
+            null
         },
         bottomBar = bottomBar,
     ) { paddingValues ->
@@ -102,6 +104,7 @@ fun SettingsScreen(
                     uiState = state,
                     onEvent = onEvent,
                     onRequestLogout = { confirmLogout = true },
+                    showInlineTitle = !showBackNavigation,
                 )
             }
         }
@@ -133,71 +136,39 @@ private fun SettingsContent(
     onEvent: (SettingsEvent) -> Unit,
     onRequestLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    showInlineTitle: Boolean = false,
 ) {
     val profile = uiState.profile ?: return
     val user = profile.user
     val displayName = "${user.firstName} ${user.lastName}".trim().ifBlank { user.email }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = OficiosSpacing.OficiosScreenPaddingAfterTopBar,
+        contentPadding = if (showInlineTitle) {
+            OficiosSpacing.OficiosScreenPadding
+        } else {
+            OficiosSpacing.OficiosScreenPaddingAfterTopBar
+        },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
-        item {
-            OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OficiosAvatar(
-                        name = displayName,
-                        imageUrl = user.profilePhotoUrl,
-                        size = OficiosComponentSize.avatarSettings,
-                        showBorder = true,
+        if (showInlineTitle) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_title),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f),
                     )
-                    Spacer(Modifier.width(OficiosSpacing.md))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = displayName,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            text = user.email,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = OficiosColorSecondaryText,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
-                        ) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(
-                                    if (user.emailVerified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert
-                                ),
-                                contentDescription = null,
-                                tint = if (user.emailVerified) OficiosColorSuccess else OficiosColorSecondaryText,
-                                modifier = Modifier.size(OficiosComponentSize.iconSm),
-                            )
-                            Text(
-                                text = stringResource(
-                                    if (user.emailVerified) R.string.settings_verified_email else R.string.settings_pending_email,
-                                ),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = OficiosColorSecondaryText,
-                            )
-                        }
-                        Text(
-                            text = stringResource(
-                                if (user.role == UserRole.PROVIDER) R.string.settings_provider_role else R.string.settings_client_role,
-                            ),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    SettingsConfigurationIconButton(onClick = { onEvent(SettingsEvent.OpenConfiguration) })
                 }
             }
+        }
+        item {
+            SettingsProfileCard(user = user, displayName = displayName)
         }
 
         item { SettingsSectionTitle(stringResource(R.string.settings_profile_section)) }
@@ -283,6 +254,86 @@ private fun SettingsContent(
 }
 
 @Composable
+private fun SettingsProfileCard(
+    user: User,
+    displayName: String,
+) {
+    val roleLabel = stringResource(
+        if (user.role == UserRole.PROVIDER) R.string.settings_provider_role else R.string.settings_client_role,
+    )
+    val verified = user.emailVerified
+    val statusColor = if (verified) OficiosTheme.colors.success else OficiosTheme.colors.warning
+    OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        ) {
+            OficiosAvatar(
+                name = displayName,
+                imageUrl = user.profilePhotoUrl,
+                size = OficiosComponentSize.avatarSettings,
+                showBorder = true,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            ) {
+                Text(
+                    text = displayName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                OficiosRoleChip(label = roleLabel)
+                Text(
+                    text = user.email,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(
+                            if (verified) OficiosIcons.ShieldCheck else OficiosIcons.CircleAlert,
+                        ),
+                        contentDescription = null,
+                        tint = statusColor,
+                        modifier = Modifier.size(OficiosComponentSize.iconSm),
+                    )
+                    Text(
+                        text = stringResource(
+                            if (verified) R.string.settings_verified_email else R.string.settings_pending_email,
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = statusColor,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsConfigurationIconButton(onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(OficiosComponentSize.minTouchTarget),
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(OficiosIcons.Settings),
+            contentDescription = stringResource(R.string.settings_configuration),
+            tint = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.size(OficiosComponentSize.iconMd),
+        )
+    }
+}
+
+@Composable
 private fun SettingsSectionTitle(title: String) {
     Text(
         text = title,
@@ -316,13 +367,13 @@ private fun SettingsActionRow(
                 iconRes != null -> Icon(
                     imageVector = ImageVector.vectorResource(iconRes),
                     contentDescription = null,
-                    tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(OficiosComponentSize.iconLg),
                 )
                 icon != null -> Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (enabled) MaterialTheme.colorScheme.primary else OficiosColorSecondaryText,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(OficiosComponentSize.iconLg),
                 )
             }
@@ -331,15 +382,19 @@ private fun SettingsActionRow(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (enabled) MaterialTheme.colorScheme.onSurface else OficiosColorSecondaryText,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(text = description, style = MaterialTheme.typography.bodySmall, color = OficiosColorSecondaryText)
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             if (enabled) {
                 Icon(
                     imageVector = ImageVector.vectorResource(OficiosIcons.ChevronRight),
                     contentDescription = null,
-                    tint = OficiosColorSecondaryText
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

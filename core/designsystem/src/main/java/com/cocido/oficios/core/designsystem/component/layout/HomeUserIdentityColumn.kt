@@ -17,7 +17,8 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadg
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
 /**
- * Nombre Bold 16 + badge-check (Figma 221:990). A fontScale ≥ 1.3 el badge baja de línea.
+ * Nombre Bold 16 + badge-check (Figma 221:990). Hasta 3 líneas; el check
+ * no compite por ancho con un chip de rol.
  */
 @Composable
 fun HomeUserIdentityColumn(
@@ -39,7 +40,7 @@ fun HomeUserIdentityColumn(
                 text = userName,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 2,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
             if (isVerified) {
@@ -50,14 +51,14 @@ fun HomeUserIdentityColumn(
             }
         } else {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xss),
             ) {
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
                 )

@@ -2,6 +2,8 @@ package com.cocido.oficios.domain.model
 
 import com.cocido.oficios.core.common.time.DisplayDateTime
 import java.time.Clock
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -34,6 +36,12 @@ fun ServiceOrderListItem.agendaSlotEndExclusive(clockZone: ZoneId = DisplayDateT
  * Sin etiqueta: pasado o futuro.
  */
 fun ServiceOrderListItem.agendaTag(now: ZonedDateTime): AgendaAppointmentTag {
+    if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) {
+        return AgendaAppointmentTag.NONE
+    }
+    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED) {
+        return AgendaAppointmentTag.NONE
+    }
     val zone = now.zone
     val start = agendaSlotStart(zone) ?: return AgendaAppointmentTag.NONE
     if (start.toLocalDate() != now.toLocalDate()) return AgendaAppointmentTag.NONE
@@ -43,19 +51,50 @@ fun ServiceOrderListItem.agendaTag(now: ZonedDateTime): AgendaAppointmentTag {
     return if (inSlot || inProgressToday) AgendaAppointmentTag.NOW else AgendaAppointmentTag.TODAY
 }
 
-/** Agenda del Inicio: solo hoy en adelante, orden ascendente. Sin fecha no entra. */
+/**
+ * Agenda del trabajador (home y agenda completa): pedidos con fecha que siguen
+ * activos. Incluye EN_CAMINO / EN_CURSO aunque el día ya haya pasado — el trabajo
+ * no se cerró. No incluye historial ni ítems sin fecha.
+ */
 fun upcomingAgendaAppointments(
     orders: List<ServiceOrderListItem>,
     now: ZonedDateTime,
 ): List<ServiceOrderListItem> {
-    val today = now.toLocalDate()
     return orders
         .filter { item ->
-            val date = item.scheduledDate() ?: return@filter false
-            !date.isBefore(today)
+            item.scheduledDate() != null && !item.isHistoryOrder(now)
         }
-        .sortedWith(
-            compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
-                .thenBy { it.id },
-        )
+        .sortedWith(ordersListComparator(OrdersListSort.NEWEST_FIRST))
+}
+
+/** Día inicial del calendario de agenda: siempre hoy. Los pedidos no roban la selección. */
+@Suppress("UNUSED_PARAMETER")
+fun defaultAgendaSelectedDate(
+    orders: List<ServiceOrderListItem>,
+    today: LocalDate,
+): LocalDate = defaultAgendaSelectedDate(today = today)
+
+@Suppress("UNUSED_PARAMETER")
+fun defaultAgendaSelectedDate(
+    dates: Set<LocalDate>,
+    today: LocalDate,
+): LocalDate = defaultAgendaSelectedDate(today = today)
+
+fun defaultAgendaSelectedDate(today: LocalDate): LocalDate = today
+
+@Suppress("UNUSED_PARAMETER")
+fun defaultAgendaDateInMonth(
+    dates: Set<LocalDate>,
+    month: YearMonth,
+    today: LocalDate,
+    fallbackDay: Int,
+): LocalDate = defaultAgendaDateInMonth(month, today, fallbackDay)
+
+fun defaultAgendaDateInMonth(
+    month: YearMonth,
+    today: LocalDate,
+    fallbackDay: Int,
+): LocalDate {
+    if (YearMonth.from(today) == month) return today
+    return month.atDay(fallbackDay.coerceIn(1, month.lengthOfMonth()))
 }

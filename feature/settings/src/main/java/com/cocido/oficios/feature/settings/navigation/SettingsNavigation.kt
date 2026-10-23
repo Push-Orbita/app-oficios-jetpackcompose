@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.cocido.oficios.feature.settings.SettingsRoute
+import com.cocido.oficios.feature.settings.configuration.ConfigurationRoute
 import com.cocido.oficios.feature.settings.account.ChangePasswordRoute
 import com.cocido.oficios.feature.settings.account.DeleteAccountRoute
 import com.cocido.oficios.feature.settings.account.PersonalDataRoute
@@ -38,9 +39,13 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
             onNavigateToTerms = onNavigateToTerms,
             onNavigateToHelp = onNavigateToHelp,
+            onNavigateToConfiguration = { navController.navigate(SettingsDestination.configuration) },
             showBackNavigation = false,
             bottomBar = bottomBar,
         )
+    }
+    composable(SettingsDestination.configuration) {
+        ConfigurationRoute(onNavigateBack = { navController.popBackStack() })
     }
     composable(SettingsDestination.personalData) {
         PersonalDataRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)

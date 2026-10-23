@@ -1,5 +1,7 @@
 package com.cocido.oficios.core.designsystem.component.feedback
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -13,9 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessContainer
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -79,8 +78,8 @@ fun OficiosSnackbarHost(
 private fun snackbarColors(variant: OficiosSnackbarVariant): Pair<Color, Color> {
     val scheme = androidx.compose.material3.MaterialTheme.colorScheme
     return when (variant) {
-        OficiosSnackbarVariant.Success -> OficiosColorSuccessContainer to OficiosColorSuccessText
-        OficiosSnackbarVariant.Error -> scheme.error to OficiosColorWhite
+        OficiosSnackbarVariant.Success -> OficiosTheme.colors.successContainer to OficiosTheme.colors.success
+        OficiosSnackbarVariant.Error -> scheme.error to MaterialTheme.colorScheme.onSurface
         OficiosSnackbarVariant.Info -> scheme.inverseSurface to scheme.inverseOnSurface
     }
 }

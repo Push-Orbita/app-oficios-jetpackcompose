@@ -18,14 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import com.cocido.oficios.core.designsystem.component.cards.HomeBenefitTile
+import com.cocido.oficios.core.designsystem.component.cards.HomeBenefitsRow
 import com.cocido.oficios.core.designsystem.component.cards.ProfileMilestoneTile
 import com.cocido.oficios.core.designsystem.component.cards.ProfileProgressBar
 import com.cocido.oficios.core.designsystem.component.cards.emphasizedBody
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.feature.home.R
@@ -34,6 +33,8 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.providerhome.components.ProviderAgendaSection
 import com.cocido.oficios.feature.home.providerhome.components.ProviderHomeHeader
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +69,7 @@ fun ProviderHomeScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         OficiosErrorState(
-                            title = stringResource(R.string.home_error_title),
+                            title = stringResource(R.string.home_provider_error_title),
                             description = state.message,
                             onRetry = { onEvent(ProviderHomeEvent.Retry) },
                             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -85,6 +86,8 @@ fun ProviderHomeScreen(
                             content = state.content,
                             unreadNotificationCount = unreadNotificationCount,
                             now = state.now,
+                            selectedAgendaDate = state.selectedAgendaDate,
+                            visibleAgendaMonth = state.visibleAgendaMonth,
                             onEvent = onEvent,
                         )
                     }
@@ -99,6 +102,8 @@ private fun ProviderHomeSuccessContent(
     content: ProviderHomeContent,
     unreadNotificationCount: Int,
     now: ZonedDateTime,
+    selectedAgendaDate: LocalDate,
+    visibleAgendaMonth: YearMonth,
     onEvent: (ProviderHomeEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,13 +141,13 @@ private fun ProviderHomeSuccessContent(
         ProviderAgendaSection(
             upcomingOrders = content.upcomingOrders,
             now = now,
-            onViewFullAgenda = {
-                if (content.hasAgendaConfigured) {
-                    onEvent(ProviderHomeEvent.ViewFullAgendaClicked)
-                } else {
-                    onEvent(ProviderHomeEvent.ConfigureAgendaClicked)
-                }
-            },
+            selectedDate = selectedAgendaDate,
+            visibleMonth = visibleAgendaMonth,
+            onDateSelected = { onEvent(ProviderHomeEvent.AgendaDateSelected(it)) },
+            onMonthChange = { onEvent(ProviderHomeEvent.AgendaMonthChanged(it)) },
+            hasAgendaConfigured = content.hasAgendaConfigured,
+            onConfigureAgenda = { onEvent(ProviderHomeEvent.ConfigureAgendaClicked) },
+            onViewFullAgenda = { onEvent(ProviderHomeEvent.ViewFullAgendaClicked) },
             onOrderClick = { onEvent(ProviderHomeEvent.OrderClicked(it)) },
         )
     }
@@ -157,34 +162,24 @@ private fun ProviderBenefitsSection(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.provider_home_benefits_title),
             style = MaterialTheme.typography.headlineLarge,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
-        ) {
-            HomeBenefitTile(
-                text = emphasizedBody(
+        HomeBenefitsRow(
+            tiles = listOf(
+                emphasizedBody(
                     stringResource(R.string.provider_home_benefit_services),
                     stringResource(R.string.provider_home_benefit_services_emphasis),
                 ),
-                modifier = Modifier.weight(1f),
-            )
-            HomeBenefitTile(
-                text = emphasizedBody(
+                emphasizedBody(
                     stringResource(R.string.provider_home_benefit_reach),
                     stringResource(R.string.provider_home_benefit_reach_emphasis),
                 ),
-                modifier = Modifier.weight(1f),
-            )
-            HomeBenefitTile(
-                text = emphasizedBody(
+                emphasizedBody(
                     stringResource(R.string.provider_home_benefit_efficient),
                     stringResource(R.string.provider_home_benefit_efficient_emphasis),
                 ),
-                modifier = Modifier.weight(1f),
-            )
-        }
+            ),
+        )
     }
 }
 
@@ -207,7 +202,7 @@ private fun ProviderProfileCompletionSection(
         Text(
             text = stringResource(R.string.provider_home_complete_profile_title),
             style = MaterialTheme.typography.headlineLarge,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         ProfileProgressBar(percent = percent)
         Row(
@@ -241,7 +236,7 @@ private fun ProviderProfileCompletionSection(
             Text(
                 text = stringResource(R.string.provider_home_complete_profile_link),
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable(onClick = onCompleteProfileLink),
             )

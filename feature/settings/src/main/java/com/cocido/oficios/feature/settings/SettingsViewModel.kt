@@ -30,8 +30,24 @@ class SettingsViewModel @Inject constructor(
 
     private val _effects = Channel<SettingsEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
     init {
+        viewModelScope.launch {
+            accountUseCases.profile.collect { profile ->
+                if (profile != null) {
+                    _uiState.update { it.copy(isLoading = false, profile = profile, errorMessage = null) }
+                }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
         load()
     }
 
@@ -45,6 +61,7 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.OpenDeleteAccount -> emitEffect(SettingsEffect.NavigateToDeleteAccount)
             SettingsEvent.OpenTerms -> emitEffect(SettingsEffect.NavigateToTerms)
             SettingsEvent.OpenHelp -> emitEffect(SettingsEffect.NavigateToHelp)
+            SettingsEvent.OpenConfiguration -> emitEffect(SettingsEffect.NavigateToConfiguration)
             SettingsEvent.Logout -> logout()
             SettingsEvent.NavigateBack -> Unit
         }
@@ -52,7 +69,10 @@ class SettingsViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val keepContent = _uiState.value.profile != null
+            _uiState.update {
+                it.copy(isLoading = !keepContent, errorMessage = null)
+            }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> _uiState.update {
                     it.copy(isLoading = false, profile = result.data, errorMessage = null)

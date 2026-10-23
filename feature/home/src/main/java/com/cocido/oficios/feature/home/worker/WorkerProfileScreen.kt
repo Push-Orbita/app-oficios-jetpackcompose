@@ -1,7 +1,5 @@
 package com.cocido.oficios.feature.home.worker
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosSkeleton
@@ -45,12 +44,17 @@ import com.cocido.oficios.domain.model.WorkerSpecialty
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
+import com.cocido.oficios.core.ui.gallery.OficiosGalleryViewer
+import com.cocido.oficios.core.ui.intent.openRemoteDocument
 import com.cocido.oficios.feature.home.worker.components.WorkerCertificatesSection
 import com.cocido.oficios.feature.home.worker.components.WorkerGallerySection
 import com.cocido.oficios.feature.home.worker.components.WorkerGalleryViewer
 import com.cocido.oficios.feature.home.worker.components.WorkerProfileHeader
 import com.cocido.oficios.feature.home.worker.components.WorkerReviewsSection
+import com.cocido.oficios.feature.home.worker.components.isPresentableCertificate
+import com.cocido.oficios.feature.home.worker.components.toGalleryMedia
 
+/** Ficha trabajador — fuente de verdad Flujos `613:460` / `453:343`. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkerProfileScreen(
@@ -76,15 +80,26 @@ fun WorkerProfileScreen(
         OficiosStateContent(targetState = uiState, modifier = Modifier.padding(paddingValues)) { state ->
             when (state) {
                 WorkerProfileUiState.Loading -> WorkerProfileSkeleton(
+                    onBack = { onEvent(WorkerProfileEvent.Back) },
                     modifier = Modifier.fillMaxSize(),
                 )
                 is WorkerProfileUiState.Error -> {
-                    OficiosErrorState(
-                        title = stringResource(R.string.home_worker_profile_error_title),
-                        description = state.message,
-                        modifier = Modifier.fillMaxSize(),
-                        onRetry = { onEvent(WorkerProfileEvent.Retry) },
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(OficiosSpacing.OficiosScreenPadding),
+                    ) {
+                        OficiosScreenTitle(
+                            title = stringResource(R.string.home_worker_profile_title),
+                            onNavigateBack = { onEvent(WorkerProfileEvent.Back) },
+                        )
+                        OficiosErrorState(
+                            title = stringResource(R.string.home_worker_profile_error_title),
+                            description = state.message,
+                            modifier = Modifier.fillMaxSize(),
+                            onRetry = { onEvent(WorkerProfileEvent.Retry) },
+                        )
+                    }
                 }
                 is WorkerProfileUiState.Success -> {
                     PullToRefreshBox(
@@ -127,8 +142,10 @@ private fun WorkerProfileContent(
     onReport: () -> Unit,
 ) {
     val context = LocalContext.current
-    var viewerIndex by rememberSaveable { mutableStateOf(-1) }
-    val photos = uiState.profile.gallery.filter { !it.imageUrl.isNullOrBlank() }
+    var photoViewerIndex by rememberSaveable { mutableStateOf(-1) }
+    var certViewerIndex by rememberSaveable { mutableStateOf(-1) }
+    val photos = uiState.profile.gallery
+    val certificates = uiState.profile.certificates.filter { it.name.isPresentableCertificate() }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,24 +160,32 @@ private fun WorkerProfileContent(
         )
         WorkerProfileHeader(
             profile = uiState.profile,
-            onFavoriteClick = { onEvent(WorkerProfileEvent.FavoriteClicked) },
+            onFavoriteClick = if (uiState.isSelf) {
+                null
+            } else {
+                { onEvent(WorkerProfileEvent.FavoriteClicked) }
+            },
             isFavorite = uiState.isFavorite,
-            canFavorite = uiState.canFavorite,
-            showRate = true,
-            onHireClick = { onEvent(WorkerProfileEvent.HireClicked) },
-            onRateClick = { onEvent(WorkerProfileEvent.RateClicked) },
+            canFavorite = uiState.canFavorite && !uiState.isSelf,
+            showRate = !uiState.isSelf,
+            onHireClick = if (uiState.isSelf) {
+                null
+            } else {
+                { onEvent(WorkerProfileEvent.HireClicked) }
+            },
+            onRateClick = if (uiState.isSelf) {
+                null
+            } else {
+                { onEvent(WorkerProfileEvent.RateClicked) }
+            },
         )
         WorkerGallerySection(
-            gallery = uiState.profile.gallery,
-            onPhotoClick = { viewerIndex = it },
+            gallery = photos,
+            onPhotoClick = { photoViewerIndex = it },
         )
         WorkerCertificatesSection(
             certificates = uiState.profile.certificates,
-            onOpen = { url ->
-                runCatching {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                }
-            },
+            onOpen = { _, index -> certViewerIndex = index },
         )
         WorkerReviewsSection(
             reviews = uiState.reviews,
@@ -173,24 +198,41 @@ private fun WorkerProfileContent(
             text = stringResource(R.string.home_worker_report_profile),
             onClick = onReport,
             variant = OficiosButtonVariant.Primary,
+            size = OficiosButtonSize.Small,
             leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
         )
     }
-    if (viewerIndex >= 0 && photos.isNotEmpty()) {
+    if (photoViewerIndex >= 0 && photos.isNotEmpty()) {
         WorkerGalleryViewer(
             photos = photos,
-            initialIndex = viewerIndex,
-            onClose = { viewerIndex = -1 },
+            initialIndex = photoViewerIndex,
+            onClose = { photoViewerIndex = -1 },
+            onOpenExternal = { openRemoteDocument(context, it) },
+        )
+    }
+    if (certViewerIndex >= 0 && certificates.isNotEmpty()) {
+        OficiosGalleryViewer(
+            items = certificates.map { it.toGalleryMedia() },
+            initialIndex = certViewerIndex,
+            onClose = { certViewerIndex = -1 },
+            onOpenExternal = { openRemoteDocument(context, it) },
         )
     }
 }
 
 @Composable
-private fun WorkerProfileSkeleton(modifier: Modifier = Modifier) {
+private fun WorkerProfileSkeleton(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier.padding(OficiosSpacing.OficiosScreenPadding),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
+        OficiosScreenTitle(
+            title = stringResource(R.string.home_worker_profile_title),
+            onNavigateBack = onBack,
+        )
         OficiosSkeleton(
             modifier = Modifier
                 .fillMaxWidth()
@@ -276,7 +318,7 @@ internal fun previewState(withGallery: Boolean, withReviews: Boolean): WorkerPro
                     punctualityScore = 5,
                     comment = "Excelente profesional",
                     clientLabel = "María",
-                    reviewedAt = "25/02/2025, 08:27:46",
+                    reviewedAt = "25/02/2025, 08:27",
                 ),
             )
         } else {

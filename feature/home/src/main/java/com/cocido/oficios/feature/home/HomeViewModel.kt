@@ -9,8 +9,6 @@ import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.GetClientHomeUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
-import com.cocido.oficios.domain.usecase.search.GetRecentSearchesUseCase
-import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -27,8 +25,6 @@ import kotlinx.coroutines.launch
 class HomeViewModel @Inject constructor(
     private val getClientHomeUseCase: GetClientHomeUseCase,
     private val trackRecentSearchUseCase: TrackRecentSearchUseCase,
-    private val getRecentSearchesUseCase: GetRecentSearchesUseCase,
-    private val observeRecentSearchesUseCase: ObserveRecentSearchesUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
@@ -45,21 +41,25 @@ class HomeViewModel @Inject constructor(
     private var loadGeneration = 0
 
     init {
-        observeRecents()
+        viewModelScope.launch {
+            getUnreadNotificationCountUseCase.unreadCount.collect { count ->
+                if (count != null) _unreadNotificationCount.value = count
+            }
+        }
         loadHome()
         refreshUnreadCount()
     }
 
     fun onVisible() {
         refreshUnreadCount()
-        refreshRecents()
+        loadHome(silent = true)
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.Retry -> loadHome()
             HomeEvent.Refresh -> loadHome(refreshing = true)
-            HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
+            HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearchResults())
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
@@ -138,43 +138,20 @@ class HomeViewModel @Inject constructor(
     private fun onSearchSubmitted(query: String) {
         val trimmed = query.trim()
         if (trimmed.isEmpty()) {
-            emitEffect(HomeEffect.NavigateToSearch)
+            emitEffect(HomeEffect.NavigateToSearchResults())
             return
         }
         emitEffect(HomeEffect.NavigateToSearchResults(query = trimmed))
     }
 
-    private fun observeRecents() {
-        viewModelScope.launch {
-            observeRecentSearchesUseCase().collect { recents ->
-                applyRecents(recents)
-            }
-        }
-    }
-
-    fun refreshRecents() {
-        viewModelScope.launch {
-            applyRecents(getRecentSearchesUseCase())
-        }
-    }
-
-    private fun applyRecents(recents: List<RecentSearchEntry>) {
-        _uiState.update { state ->
-            if (state is HomeUiState.Success) {
-                state.copy(content = state.content.copy(recentSearches = recents.take(RECENT_LIMIT)))
-            } else {
-                state
-            }
-        }
-    }
-
-    private fun loadHome(refreshing: Boolean = false) {
+    private fun loadHome(refreshing: Boolean = false, silent: Boolean = false) {
         val generation = ++loadGeneration
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             val previous = _uiState.value
             try {
                 when {
+                    silent -> Unit
                     refreshing && previous is HomeUiState.Success ->
                         _uiState.value = previous.copy(isRefreshing = true)
                     refreshing && previous is HomeUiState.Error ->
@@ -219,7 +196,4 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch { _effects.send(effect) }
     }
 
-    private companion object {
-        const val RECENT_LIMIT = 3
-    }
 }

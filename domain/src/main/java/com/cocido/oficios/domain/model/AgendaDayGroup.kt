@@ -41,26 +41,28 @@ fun groupAgendaAppointments(
     orders: List<ServiceOrderListItem>,
     today: LocalDate,
     locale: Locale = Locale.forLanguageTag("es-AR"),
+    sort: OrdersListSort = OrdersListSort.NEWEST_FIRST,
 ): List<AgendaDayGroup> {
     val grouped = linkedMapOf<LocalDate, MutableList<ServiceOrderListItem>>()
     orders.forEach { item ->
         val date = item.scheduledDate() ?: return@forEach
         grouped.getOrPut(date) { mutableListOf() }.add(item)
     }
-    return grouped.entries
-        .sortedBy { it.key }
-        .map { (date, items) ->
-            val month = date.month.getDisplayName(TextStyle.FULL, locale).lowercase(locale)
-            AgendaDayGroup(
-                date = date,
-                headerLabel = "${date.dayOfMonth} de $month",
-                isToday = date == today,
-                items = items.sortedWith(
-                    compareBy<ServiceOrderListItem> { it.scheduledSortKey.orEmpty() }
-                        .thenBy { it.id },
-                ),
-            )
-        }
+    val dates = if (sort == OrdersListSort.NEWEST_FIRST) {
+        grouped.entries.sortedByDescending { it.key }
+    } else {
+        grouped.entries.sortedBy { it.key }
+    }
+    return dates.map { (date, items) ->
+        val month = date.month.getDisplayName(TextStyle.FULL, locale).lowercase(locale)
+        val sortedItems = items.sortedWith(ordersListComparator(sort))
+        AgendaDayGroup(
+            date = date,
+            headerLabel = "${date.dayOfMonth} de $month",
+            isToday = date == today,
+            items = sortedItems,
+        )
+    }
 }
 
 private fun LocalTime.toAgendaClock(): String =

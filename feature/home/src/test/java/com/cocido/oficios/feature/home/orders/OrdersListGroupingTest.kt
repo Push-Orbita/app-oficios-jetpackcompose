@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
 import androidx.compose.ui.graphics.Color
+import com.cocido.oficios.core.designsystem.theme.DarkOficiosColors
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.ServiceOrderListItem
@@ -20,14 +21,14 @@ class OrdersListGroupingTest {
     private val nowBeforeSlots = ZonedDateTime.of(2026, 9, 20, 8, 0, 0, 0, DisplayDateTime.ARGENTINA)
 
     @Test
-    fun `activos quedan primero por fecha y el historial al reves`() {
+    fun `activos e historial ordenan más reciente primero`() {
         val items = listOf(
             item(1, ServiceRequestStatus.ACCEPTED, BookingStatus.CONFIRMED, "2026-09-28T10:00:00Z"),
             item(2, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
             item(3, ServiceRequestStatus.PENDING, null, "2026-09-26T10:00:00Z"),
             item(4, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
         )
-        assertEquals(listOf(3L, 1L), items.arrangedFor(OrdersListFilter.ACTIVE, nowBeforeSlots).map { it.id })
+        assertEquals(listOf(1L, 3L), items.arrangedFor(OrdersListFilter.ACTIVE, nowBeforeSlots).map { it.id })
         assertEquals(listOf(4L, 2L), items.arrangedFor(OrdersListFilter.HISTORY, nowBeforeSlots).map { it.id })
     }
 
@@ -41,7 +42,7 @@ class OrdersListGroupingTest {
             item(17, ServiceRequestStatus.CANCELLED, BookingStatus.CANCELLED, "2026-09-21T10:00:00Z"),
             item(18, ServiceRequestStatus.ACCEPTED, BookingStatus.FINISHED, "2026-09-20T10:00:00Z"),
         )
-        assertEquals(listOf(6L, 15L, 11L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, nowBeforeSlots).map { it.id })
+        assertEquals(listOf(15L, 11L, 6L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, nowBeforeSlots).map { it.id })
         assertEquals(listOf(17L, 18L), items.arrangedFor(OrdersListFilter.HISTORY, nowBeforeSlots).map { it.id })
     }
 
@@ -77,7 +78,7 @@ class OrdersListGroupingTest {
             ServiceRequestStatus.ACCEPTED to BookingStatus.FINISHED,
             ServiceRequestStatus.CANCELLED to BookingStatus.CANCELLED,
         ).forEach { (status, booking) ->
-            val visual = orderStatusVisual(status, booking)
+            val visual = orderStatusVisual(status, booking, DarkOficiosColors)
             val ratio = contrast(visual.content, visual.container)
             assertTrue("$status $booking $ratio", ratio >= 4.5)
         }

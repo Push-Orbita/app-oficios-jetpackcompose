@@ -64,6 +64,7 @@ data class ProviderRubroFullRequest(
     val servesAtLocal: Boolean,
     val workDays: List<String>,
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
+    val weeklyAvailability: WeeklyAvailability? = null,
     val requiresTurns: Boolean = false,
     val domicilioLocal: ProviderLocalDomicilioRequest? = null,
     val paymentMethods: List<String> = emptyList(),
@@ -71,7 +72,8 @@ data class ProviderRubroFullRequest(
 
 data class ProviderLocalDomicilioRequest(
     val barrioId: Long,
-    val calle: String,
+    val calle: String? = null,
+    val numero: String? = null,
     val nombre: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,

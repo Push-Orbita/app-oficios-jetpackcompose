@@ -33,6 +33,8 @@ class GetNotificationsUseCase @Inject constructor(
 class GetUnreadNotificationCountUseCase @Inject constructor(
     private val notificationsRepository: NotificationsRepository,
 ) {
+    val unreadCount get() = notificationsRepository.unreadCount
+
     fun lastKnown(): Int? = notificationsRepository.cachedUnreadCount()
 
     suspend operator fun invoke(): AppResult<Int> =

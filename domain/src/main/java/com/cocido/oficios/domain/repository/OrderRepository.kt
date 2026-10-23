@@ -6,10 +6,20 @@ import com.cocido.oficios.domain.model.ServiceOrder
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.GeoPoint
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+private val EmptyClientOrders: StateFlow<List<ServiceOrderListItem>?> =
+    MutableStateFlow<List<ServiceOrderListItem>?>(null).asStateFlow()
+private val EmptyWorkerOrders: StateFlow<List<ServiceOrderListItem>?> =
+    MutableStateFlow<List<ServiceOrderListItem>?>(null).asStateFlow()
 
 interface OrderRepository {
     val ordersChanged: SharedFlow<Unit>
+    val clientOrders: StateFlow<List<ServiceOrderListItem>?> get() = EmptyClientOrders
+    val workerOrders: StateFlow<List<ServiceOrderListItem>?> get() = EmptyWorkerOrders
     suspend fun createServiceRequest(params: CreateServiceRequestParams): AppResult<Long>
     suspend fun getClientOrders(): AppResult<List<ServiceOrderListItem>>
     suspend fun getWorkerOrders(): AppResult<List<ServiceOrderListItem>>

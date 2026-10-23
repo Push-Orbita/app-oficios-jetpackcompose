@@ -30,8 +30,32 @@ class PortfolioViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<PortfolioEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
-    init { load() }
+    init {
+        viewModelScope.launch {
+            accountUseCases.providerDetails.collect { details ->
+                if (details != null) {
+                    update {
+                        it.copy(
+                            isLoading = false,
+                            gallery = details.gallery,
+                            certificates = details.certificates,
+                        )
+                    }
+                }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
 
     fun onEvent(event: PortfolioEvent) {
         when (event) {
@@ -42,7 +66,16 @@ class PortfolioViewModel @Inject constructor(
             is PortfolioEvent.EditCertificate -> editCertificate(event.item)
             PortfolioEvent.CloseCertificateEditor -> closeEditor()
             is PortfolioEvent.CertificateNameChanged -> update { it.copy(certificateName = event.value, errorMessage = null) }
-            is PortfolioEvent.CertificateFileSelected -> update { it.copy(certificateFilePath = event.path, errorMessage = null) }
+            is PortfolioEvent.CertificateFileSelected -> update {
+                it.copy(
+                    certificateFilePath = event.path,
+                    certificateFileName = event.displayName,
+                    errorMessage = null,
+                )
+            }
+            PortfolioEvent.CertificateFileCleared -> update {
+                it.copy(certificateFilePath = null, certificateFileName = null, errorMessage = null)
+            }
             PortfolioEvent.SaveCertificate -> saveCertificate()
             is PortfolioEvent.RequestDelete -> update { it.copy(pendingDelete = event.target) }
             PortfolioEvent.ConfirmDelete -> deletePending()
@@ -51,7 +84,12 @@ class PortfolioViewModel @Inject constructor(
     }
 
     private fun load() = viewModelScope.launch {
-        update { it.copy(isLoading = true, errorMessage = null) }
+        update {
+            it.copy(
+                isLoading = it.gallery.isEmpty() && it.certificates.isEmpty(),
+                errorMessage = null,
+            )
+        }
         val (certificateResult, galleryResult) = coroutineScope {
             val certificates = async { accountUseCases.getCertificates() }
             val gallery = async { accountUseCases.getGallery() }
@@ -84,7 +122,7 @@ class PortfolioViewModel @Inject constructor(
         update { it.copy(isSaving = true, errorMessage = null) }
         when (val result = accountUseCases.uploadGallery(listOf(path))) {
             is AppResult.Success -> {
-                update { it.copy(isSaving = false, gallery = it.gallery + result.data) }
+                update { it.copy(isSaving = false) }
                 emit(PortfolioEffect.ShowMessage("Foto agregada a su galería."))
             }
             is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
@@ -97,13 +135,22 @@ class PortfolioViewModel @Inject constructor(
             editingCertificateId = item?.id,
             certificateName = item?.name.orEmpty(),
             certificateFilePath = null,
+            certificateFileName = null,
             currentCertificateUrl = item?.fileUrl,
             errorMessage = null,
         )
     }
 
     private fun closeEditor() = update {
-        it.copy(certificateEditorVisible = false, editingCertificateId = null, certificateName = "", certificateFilePath = null, currentCertificateUrl = null, errorMessage = null)
+        it.copy(
+            certificateEditorVisible = false,
+            editingCertificateId = null,
+            certificateName = "",
+            certificateFilePath = null,
+            certificateFileName = null,
+            currentCertificateUrl = null,
+            errorMessage = null,
+        )
     }
 
     private fun saveCertificate() {

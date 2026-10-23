@@ -24,7 +24,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRegisterTradeTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -245,8 +244,9 @@ fun RegisterTradeScreen(
                         OficiosButton(
                             text = stringResource(R.string.auth_continue),
                             onClick = { onEvent(RegisterTradeEvent.Continue) },
-                            variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Large,
+                            variant = OficiosButtonVariant.Primary,
+                            size = OficiosButtonSize.Form,
+                            modifier = Modifier.fillMaxWidth(),
                             enabled = !uiState.isLoading,
                             loading = uiState.isLoading,
                         )
@@ -317,7 +317,7 @@ private fun RegisterTradeSpecializationsSection(
                 Text(
                     text = stringResource(R.string.auth_register_trade_loading_specializations),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             options.forEach { option ->

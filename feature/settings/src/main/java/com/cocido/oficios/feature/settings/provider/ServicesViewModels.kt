@@ -5,19 +5,32 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.ManagedProviderService
+import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
-import com.cocido.oficios.domain.model.expandedDays
+import com.cocido.oficios.domain.model.TimeRangeValidation
+import com.cocido.oficios.domain.model.WeeklyAvailability
+import com.cocido.oficios.domain.model.addRange
+import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.removeRange
+import com.cocido.oficios.domain.model.toWeeklyAvailability
+import com.cocido.oficios.domain.model.withToggledDay
+import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -36,8 +49,33 @@ class ServicesViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<ServicesEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
-    init { load() }
+    init {
+        viewModelScope.launch {
+            accountUseCases.providerDetails.collect { details ->
+                if (details != null) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isDeleting = false,
+                            services = details.services,
+                            errorMessage = null,
+                        )
+                    }
+                }
+            }
+        }
+        load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
 
     fun onEvent(event: ServicesEvent) {
         when (event) {
@@ -53,7 +91,8 @@ class ServicesViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            val keepContent = _uiState.value.services.isNotEmpty()
+            _uiState.update { it.copy(isLoading = !keepContent, errorMessage = null) }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> _uiState.update {
                     it.copy(
@@ -103,7 +142,8 @@ class AddServiceViewModel @Inject constructor(
     private val getRubros: GetRubrosByCategoryUseCase,
     private val getSubRubros: GetSubRubrosByRubroUseCase,
     private val searchBarrios: SearchBarriosUseCase,
-    private val getCurrentLocation: GetCurrentLocationUseCase,
+    private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
+    private val availabilityUseCases: AvailabilityUseCases,
 ) : ViewModel() {
     private val editingServiceId: Long? = savedStateHandle.get<Long>("serviceId")?.takeIf { it > 0L }
     private val _uiState = MutableStateFlow(AddServiceUiState())
@@ -142,6 +182,7 @@ class AddServiceViewModel @Inject constructor(
                         localBarrioQuery = event.option.label,
                         localBarrioSuggestions = emptyList(),
                         isSearchingBarrios = false,
+                        localLocation = FormosaAddressGeocoding.invalidate(),
                     )
                 }
             }
@@ -149,16 +190,28 @@ class AddServiceViewModel @Inject constructor(
                 barrioSearchJob?.cancel()
                 update { it.copy(localBarrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
-            is AddServiceEvent.LocalStreetChanged -> update { it.copy(localStreet = event.value) }
-            is AddServiceEvent.LocalMapLocationSelected -> update {
-                it.copy(localLatitude = event.latitude, localLongitude = event.longitude, errorMessage = null)
+            is AddServiceEvent.LocalStreetChanged -> update {
+                it.copy(localStreet = event.value, localLocation = FormosaAddressGeocoding.invalidate())
             }
-            AddServiceEvent.UseCurrentLocation -> useCurrentLocation()
-            AddServiceEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
+            is AddServiceEvent.LocalNumberChanged -> update {
+                it.copy(localNumber = event.value, localLocation = FormosaAddressGeocoding.invalidate())
+            }
+            is AddServiceEvent.LocalMapLocationSelected -> update {
+                it.copy(
+                    localLocation = FormosaAddressGeocoding.pinMoved(it.localLocation, event.latitude, event.longitude),
+                    errorMessage = null,
+                )
+            }
+            AddServiceEvent.LocateOnMap -> update {
+                val next = FormosaAddressGeocoding.openMap(it.localLocation)
+                it.copy(localLocation = next)
+            }
+            AddServiceEvent.ConfirmPin -> update {
+                val confirmed = FormosaAddressGeocoding.confirmPin(it.localLocation)
+                it.copy(localLocation = confirmed)
             }
             is AddServiceEvent.WorkDayToggled -> update {
-                it.copy(workDays = it.workDays.toggled(event.day, event.checked), errorMessage = null)
+                it.withWeek(it.weeklyAvailability.withToggledDay(event.day, event.checked))
             }
             is AddServiceEvent.TimeFromChanged -> changeSlot(event.index) { copy(from = event.value) }
             is AddServiceEvent.TimeToChanged -> changeSlot(event.index) { copy(to = event.value) }
@@ -170,6 +223,22 @@ class AddServiceViewModel @Inject constructor(
                     listOf(RegisterTradeTimeSlotDraft("09:00", "18:00"))
                 })
             }
+            is AddServiceEvent.IncludeSunday -> update {
+                it.withWeek(it.weeklyAvailability.copy(includeSunday = event.included))
+            }
+            is AddServiceEvent.WeekDayToggled -> update {
+                it.withWeek(it.weeklyAvailability.withToggledDay(event.day, event.enabled))
+            }
+            is AddServiceEvent.WeekRangeFrom -> update {
+                it.withWeek(it.weeklyAvailability.changeRange(event.day, event.index, from = event.value))
+            }
+            is AddServiceEvent.WeekRangeTo -> update {
+                it.withWeek(it.weeklyAvailability.changeRange(event.day, event.index, to = event.value))
+            }
+            is AddServiceEvent.AddWeekRange -> update { it.withWeek(it.weeklyAvailability.addRange(event.day)) }
+            is AddServiceEvent.RemoveWeekRange -> update {
+                it.withWeek(it.weeklyAvailability.removeRange(event.day, event.index))
+            }
             is AddServiceEvent.PaymentToggled -> update {
                 it.copy(paymentMethods = it.paymentMethods.toggled(event.method, event.checked), errorMessage = null)
             }
@@ -178,10 +247,18 @@ class AddServiceViewModel @Inject constructor(
     }
 
     private fun loadCategories() = viewModelScope.launch {
-        update { it.copy(isLoading = true, errorMessage = null) }
+        update { it.copy(isLoading = true, loadFailed = false, errorMessage = null) }
         when (val result = getCategories()) {
-            is AppResult.Success -> update { it.copy(isLoading = false, categories = result.data) }
-            is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+            is AppResult.Success -> update {
+                it.copy(isLoading = false, loadFailed = false, categories = result.data)
+            }
+            is AppResult.Error -> update {
+                it.copy(
+                    isLoading = false,
+                    loadFailed = it.categories.isEmpty(),
+                    errorMessage = result.error.userMessage(),
+                )
+            }
         }
     }
 
@@ -212,13 +289,17 @@ class AddServiceViewModel @Inject constructor(
             AddServiceStep.MODALITY -> when {
                 !state.servesAtClientHome && !state.servesAtLocal -> "Elija al menos una modalidad de atención."
                 state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Complete el barrio y la calle de su local."
-                state.servesAtLocal && (state.localLatitude == null || state.localLongitude == null) -> "Marque la entrada de su local en el mapa."
+                state.servesAtLocal && !state.localLocation.canPersist -> {
+                    if (state.localLocation.phase == AddressLocationPhase.Idle) {
+                        resolveLocalFromAddress()
+                    }
+                    state.localLocation.message ?: "Confirme la ubicación de su local."
+                }
                 else -> null
             }
             AddServiceStep.SCHEDULE -> when {
-                state.workDays.isEmpty() -> "Elija al menos un día de trabajo."
-                state.timeSlots.any { !it.isValidRange() } -> "Revise los horarios: la hora de fin debe ser posterior al inicio."
-                else -> null
+                state.weeklyAvailability.activeDays.isEmpty() -> "Elija al menos un día de trabajo."
+                else -> TimeRangeValidation.validateWeek(state.weeklyAvailability)
             }
             AddServiceStep.PAYMENT -> if (state.paymentMethods.isEmpty()) "Elija al menos un medio de cobro." else null
             AddServiceStep.REVIEW -> null
@@ -241,18 +322,20 @@ class AddServiceViewModel @Inject constructor(
             update { it.copy(isSaving = true, errorMessage = null) }
             val local = if (state.servesAtLocal) ProviderLocalDomicilioRequest(
                 barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccione el barrio de su local.") },
-                calle = state.localStreet.trim(),
+                calle = state.localStreet.trim().ifBlank { null },
+                numero = state.localNumber.trim().ifBlank { null },
                 nombre = state.localName.trim().ifBlank { null },
-                latitud = GeoCoordinates.roundForApi(state.localLatitude),
-                longitud = GeoCoordinates.roundForApi(state.localLongitude),
+                latitud = GeoCoordinates.roundForApi(state.localLocation.latitude),
+                longitud = GeoCoordinates.roundForApi(state.localLocation.longitude),
             ) else null
             val request = ProviderRubroFullRequest(
                 rubroId = rubroId,
                 subRubroIds = state.selectedSubRubroIds.toList(),
                 servesAtClientHome = state.servesAtClientHome,
                 servesAtLocal = state.servesAtLocal,
-                workDays = state.workDays.toList(),
+                workDays = state.weeklyAvailability.activeDays,
                 timeSlots = state.timeSlots,
+                weeklyAvailability = state.weeklyAvailability,
                 requiresTurns = state.requiresTurns,
                 domicilioLocal = local,
                 paymentMethods = state.paymentMethods.toList(),
@@ -267,11 +350,14 @@ class AddServiceViewModel @Inject constructor(
                 accountUseCases.addService(request)
             }
             when (result) {
-                is AppResult.Success -> emit(
-                    AddServiceEffect.Saved(
-                        if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
-                    ),
-                )
+                is AppResult.Success -> {
+                    syncWeeklyAvailability(rubroId, state.weeklyAvailability)
+                    emit(
+                        AddServiceEffect.Saved(
+                            if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
+                        ),
+                    )
+                }
                 is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
             }
         }
@@ -296,19 +382,43 @@ class AddServiceViewModel @Inject constructor(
         )
     }
 
-    private fun useCurrentLocation() {
+    private fun resolveLocalFromAddress() {
+        val state = _uiState.value
+        if (state.isGeocoding) return
         viewModelScope.launch {
-            update { it.copy(isLocating = true, errorMessage = null) }
-            when (val result = getCurrentLocation()) {
-                is AppResult.Success -> update {
+            update {
+                it.copy(
+                    isGeocoding = true,
+                    localLocation = it.localLocation.copy(phase = AddressLocationPhase.Geocoding),
+                    errorMessage = null,
+                )
+            }
+            when (
+                val result = geocodeLocalAddress(
+                    LocalAddressQuery(
+                        street = state.localStreet,
+                        number = state.localNumber,
+                        neighborhood = state.localBarrioQuery,
+                    ),
+                )
+            ) {
+                is AppResult.Error -> update {
                     it.copy(
-                        isLocating = false,
-                        localLatitude = result.data.latitude,
-                        localLongitude = result.data.longitude,
+                        isGeocoding = false,
+                        localLocation = AddressLocationSnapshot(
+                            phase = AddressLocationPhase.NeedsMap,
+                            message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                        ),
                     )
                 }
-                is AppResult.Error -> update {
-                    it.copy(isLocating = false, errorMessage = result.error.userMessage())
+                is AppResult.Success -> {
+                    val snapshot = FormosaAddressGeocoding.snapshotFor(result.data)
+                    update {
+                        it.copy(
+                            isGeocoding = false,
+                            localLocation = snapshot,
+                        )
+                    }
                 }
             }
         }
@@ -321,38 +431,79 @@ class AddServiceViewModel @Inject constructor(
     private fun loadForEdit() {
         val serviceId = editingServiceId ?: return
         viewModelScope.launch {
-            update { it.copy(isLoading = true, errorMessage = null, isEditing = true, editingServiceId = serviceId) }
+            update {
+                it.copy(
+                    isLoading = true,
+                    loadFailed = false,
+                    errorMessage = null,
+                    isEditing = true,
+                    editingServiceId = serviceId,
+                )
+            }
             when (val profileResult = accountUseCases.getProfile()) {
-                is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = profileResult.error.userMessage()) }
+                is AppResult.Error -> update {
+                    it.copy(
+                        isLoading = false,
+                        loadFailed = true,
+                        errorMessage = profileResult.error.userMessage(),
+                    )
+                }
                 is AppResult.Success -> {
                     val details = profileResult.data.providerDetails
                     val service = details?.services?.firstOrNull { it.id == serviceId }
                     if (service == null) {
-                        update { it.copy(isLoading = false, errorMessage = "No encontramos ese servicio.") }
+                        update {
+                            it.copy(
+                                isLoading = false,
+                                loadFailed = true,
+                                errorMessage = "No encontramos ese servicio.",
+                            )
+                        }
                         return@launch
                     }
-                    applyService(service, details.paymentMethods.toSet())
+                    applyService(service, details.paymentMethods.toSet(), details.commercialLocal)
                 }
             }
         }
     }
 
-    private suspend fun applyService(service: ManagedProviderService, payments: Set<String>) {
+    private suspend fun applyService(
+        service: ManagedProviderService,
+        payments: Set<String>,
+        commercialLocal: ProviderCommercialLocal? = null,
+    ) {
         val subRubros = when (val result = getSubRubros(service.rubroId)) {
             is AppResult.Success -> result.data
             is AppResult.Error -> {
-                update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+                update {
+                    it.copy(
+                        isLoading = false,
+                        loadFailed = true,
+                        errorMessage = result.error.userMessage(),
+                    )
+                }
                 return
             }
         }
-        val workDays = service.workSchedule.flatMap { it.expandedDays() }.toSet()
-        val timeSlots = service.workSchedule
-            .flatMap { schedule -> schedule.ranges.map { RegisterTradeTimeSlotDraft(it.from, it.to) } }
+        val fallbackWeek = service.workSchedule.toWeeklyAvailability()
+        val week = service.subServices.firstOrNull()?.id?.let { subRubroId ->
+            when (val result = availabilityUseCases.getWeekly(subRubroId)) {
+                is AppResult.Success -> result.data
+                is AppResult.Error -> fallbackWeek
+            }
+        } ?: fallbackWeek
+        val workDays = week.activeDays.toSet()
+        val timeSlots = week.days
+            .flatMap { day -> day.ranges.map { RegisterTradeTimeSlotDraft(it.start, it.end) } }
             .distinct()
             .ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) }
+        val servesAtLocal = service.subServices.any { sub -> sub.servesAtLocal }
+        val (street, numberFromStreet) = DomicilioFieldValidation.splitStreetAndNumber(commercialLocal?.street)
+        val number = commercialLocal?.number?.trim().orEmpty().ifBlank { numberFromStreet }
         update {
             it.copy(
                 isLoading = false,
+                loadFailed = false,
                 isEditing = true,
                 editingServiceId = service.id,
                 isPrimaryService = service.isPrimary,
@@ -361,13 +512,33 @@ class AddServiceViewModel @Inject constructor(
                 selectedSubRubroIds = service.subServices.map { sub -> sub.catalogSubRubroId }.toSet(),
                 subRubros = subRubros,
                 servesAtClientHome = service.subServices.any { sub -> sub.servesAtClientHome },
-                servesAtLocal = service.subServices.any { sub -> sub.servesAtLocal },
+                servesAtLocal = servesAtLocal,
                 requiresTurns = service.subServices.any { sub -> sub.requiresTurns },
+                localName = commercialLocal?.name.orEmpty(),
+                localBarrioId = if (servesAtLocal) commercialLocal?.barrioId else it.localBarrioId,
+                localBarrioQuery = if (servesAtLocal) commercialLocal?.barrioName.orEmpty() else it.localBarrioQuery,
+                localStreet = if (servesAtLocal) street else it.localStreet,
+                localNumber = if (servesAtLocal) number else it.localNumber,
                 workDays = workDays.ifEmpty { it.workDays },
                 timeSlots = timeSlots,
+                weeklyAvailability = week,
                 paymentMethods = payments.ifEmpty { it.paymentMethods },
                 errorMessage = null,
             )
+        }
+    }
+
+    private suspend fun syncWeeklyAvailability(rubroId: Long, week: WeeklyAvailability) {
+        val details = when (val result = accountUseCases.getProfile()) {
+            is AppResult.Success -> result.data.providerDetails
+            is AppResult.Error -> return
+        } ?: return
+        val service = details.services
+            .filter { it.rubroId == rubroId }
+            .maxByOrNull { it.id }
+            ?: return
+        service.subServices.forEach { sub ->
+            availabilityUseCases.replaceWeekly(sub.id, week)
         }
     }
 
@@ -376,4 +547,12 @@ class AddServiceViewModel @Inject constructor(
 }
 
 private fun <T> Set<T>.toggled(value: T, checked: Boolean) = if (checked) this + value else this - value
-private fun RegisterTradeTimeSlotDraft.isValidRange() = from.matches(Regex("\\d{2}:\\d{2}")) && to.matches(Regex("\\d{2}:\\d{2}")) && from < to
+private fun AddServiceUiState.withWeek(week: WeeklyAvailability) = copy(
+    weeklyAvailability = week,
+    workDays = week.activeDays.toSet(),
+    timeSlots = week.days
+        .flatMap { day -> day.ranges.map { RegisterTradeTimeSlotDraft(it.start, it.end) } }
+        .distinct()
+        .ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
+    errorMessage = null,
+)

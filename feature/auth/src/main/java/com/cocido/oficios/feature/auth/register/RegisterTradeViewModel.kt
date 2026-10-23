@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.auth.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -166,7 +167,7 @@ class RegisterTradeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingCatalog = false,
-                            catalogError = result.error.message,
+                            catalogError = result.error.userMessage(),
                         ).validated()
                     }
                 }
@@ -191,7 +192,7 @@ class RegisterTradeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingTrades = false,
-                            catalogError = result.error.message,
+                            catalogError = result.error.userMessage(),
                         ).validated()
                     }
                 }
@@ -216,7 +217,7 @@ class RegisterTradeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingSpecializations = false,
-                            catalogError = result.error.message,
+                            catalogError = result.error.userMessage(),
                         ).validated()
                     }
                 }

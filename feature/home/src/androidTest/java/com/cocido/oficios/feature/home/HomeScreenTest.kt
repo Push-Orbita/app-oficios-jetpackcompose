@@ -56,7 +56,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun home_successShowsSearchAndVoice() {
+    fun home_successShowsSearchEntry() {
         composeTestRule.setContent {
             OficiosTheme {
                 HomeScreen(
@@ -78,7 +78,6 @@ class HomeScreenTest {
             }
         }
         composeTestRule.onNodeWithText("¿Qué oficio está buscando?").assertIsDisplayed()
-        composeTestRule.onNodeWithContentDescription("Buscar por voz").assertIsDisplayed()
         composeTestRule.onNodeWithText("Hogar").assertIsDisplayed()
     }
 }

@@ -51,6 +51,20 @@ class AgendaApiIntegrationTest {
     }
 
     @Test
+    fun `slots disponibles with fecha query`() = runTest {
+        server.enqueueJson(200, "[]")
+        api.getSlotsDisponibles(
+            subRubroId = 10L,
+            fechaDesde = "2026-10-26",
+            fechaHasta = "2026-10-26",
+            fecha = "2026-10-26",
+        )
+        val request = server.takeRequest()
+        assertEquals("2026-10-26", request.requestUrl?.queryParameter("fecha"))
+        assertEquals("2026-10-26", request.requestUrl?.queryParameter("fechaDesde"))
+    }
+
+    @Test
     fun `slots disponibles empty`() = runTest {
         server.enqueueJson(200, "[]")
         assertTrue(api.getSlotsDisponibles(10L, "2026-10-25", "2026-10-31").isEmpty())

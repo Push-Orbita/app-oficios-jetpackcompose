@@ -10,6 +10,7 @@ data class ProviderCommercialLocal(
     val barrioId: Long? = null,
     val barrioName: String? = null,
     val street: String? = null,
+    val number: String? = null,
     val name: String? = null,
 )
 

@@ -17,7 +17,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCodeInput
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.steps.OnboardingStepScaffold
@@ -89,7 +88,7 @@ fun VerifyEmailStepScreen(
             Text(
                 text = stringResource(R.string.onboarding_step_verify_email_spam_hint),
                 style = MaterialTheme.typography.bodySmall,
-                color = OficiosColorMutedText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         
@@ -132,8 +131,8 @@ fun VerifyEmailStepScreen(
                 enabled = !uiState.isLoading && uiState.canSubmit,
                 loading = uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Form,
             )
         }
     }

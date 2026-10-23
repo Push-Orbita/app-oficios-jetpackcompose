@@ -7,5 +7,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="oficios_splash_background">#FF00358B</color>
+    <!-- Default claro: hueso #F4F5F7 (rango BBVA #F5F5F2–#F4F5F7). -->
+    <color name="oficios_splash_background">#FFF4F5F7</color>
 </resources>

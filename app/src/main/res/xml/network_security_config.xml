@@ -7,5 +7,6 @@
     </base-config>
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">apioficios.pushsoftware.com.ar</domain>
+        <domain includeSubdomains="true">apioficiosdev.pushsoftware.com.ar</domain>
     </domain-config>
 </network-security-config>

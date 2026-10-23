@@ -78,6 +78,7 @@
     <string name="auth_register_trade_payment_efectivo">Efectivo</string>
     <string name="auth_register_trade_payment_transferencia">Transferencia</string>
     <string name="auth_register_trade_payment_mercadopago">Mercado Pago</string>
+    <string name="splash_error_title">No pudimos iniciar</string>
     <string name="auth_register_trade_retry_catalog">Reintentar carga</string>
     <string name="auth_register_trade_loading_specializations">Cargando especializaciones…</string>
 </resources>

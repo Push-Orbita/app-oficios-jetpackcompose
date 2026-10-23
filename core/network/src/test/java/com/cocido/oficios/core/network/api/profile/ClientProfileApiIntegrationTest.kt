@@ -75,4 +75,18 @@ class ClientProfileApiIntegrationTest {
         assertEquals("POST", request.method)
         assertEquals("/contacto", request.path)
     }
+
+    @Test
+    fun `delete contacto 200 plain text is success`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "text/plain")
+                .setBody("Contacto eliminado correctamente"),
+        )
+        api.deleteContacto(11L)
+        val request = server.takeRequest()
+        assertEquals("DELETE", request.method)
+        assertEquals("/contacto/11", request.path)
+    }
 }

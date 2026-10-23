@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="onboarding_client_error_title">No pudimos cargar su perfil</string>
+    <string name="onboarding_provider_error_title">No pudimos cargar su perfil profesional</string>
+    <string name="onboarding_status_error_title">No pudimos cargar el estado de su perfil</string>
+    <string name="onboarding_gate_error_title">No pudimos continuar</string>
+    <string name="onboarding_gate_go_login">Ir a iniciar sesión</string>
     <string name="onboarding_client_title">Complete su perfil</string>
     <string name="onboarding_client_subtitle">Necesita estos datos para contratar servicios</string>
     <string name="onboarding_provider_title">Configure su perfil profesional</string>
@@ -55,9 +60,9 @@
     <string name="onboarding_step_contact_domicilio_contact_hint">Guarde su contacto para recibir notificaciones sobre sus servicios.</string>
     <string name="onboarding_step_contact_domicilio_address_section">Su domicilio</string>
     <string name="onboarding_step_contact_nombre_label">Nombre</string>
-    <string name="onboarding_step_contact_whatsapp_label">WhatsApp</string>
-    <string name="onboarding_step_contact_whatsapp_hint">11 dígitos con el 9</string>
-    <string name="onboarding_step_contact_email_label">Email (opcional)</string>
+    <string name="onboarding_step_contact_whatsapp_label">Celular (WhatsApp)</string>
+    <string name="onboarding_step_contact_whatsapp_hint">Ingrese el número local, con el 9 de móvil. El +54 ya está indicado.</string>
+    <string name="onboarding_step_contact_email_label">Correo (opcional)</string>
     <string name="onboarding_step_piso_label">Piso</string>
     <string name="onboarding_step_departamento_label">Dpto.</string>
     <string name="onboarding_step_dni_front_section">Frente del D.N.I.</string>
@@ -78,7 +83,7 @@
     <string name="onboarding_step_professional_title">Información profesional</string>
     <string name="onboarding_step_professional_description_label">Descripción</string>
     <string name="onboarding_step_professional_experience_label">Experiencia</string>
-    <string name="onboarding_step_rubros_title">Elegí tu categoría</string>
+    <string name="onboarding_step_rubros_title">Elija su categoría</string>
     <string name="onboarding_step_rubros_category_label">Categoría</string>
     <string name="onboarding_step_rubros_trade_label">Rubro</string>
     <string name="onboarding_step_rubros_select_placeholder">Seleccionar</string>

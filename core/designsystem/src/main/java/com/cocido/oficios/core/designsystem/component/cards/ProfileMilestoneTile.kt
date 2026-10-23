@@ -26,9 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.border.dashedBorder
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosProgressPercentStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
@@ -51,18 +48,18 @@ fun ProfileProgressBar(
             .fillMaxWidth()
             .height(OficiosComponentSize.profileProgressHeight)
             .clip(shape)
-            .dashedBorder(OficiosColorOutlineFill, OficiosRadius.lg),
+            .dashedBorder(MaterialTheme.colorScheme.outline, OficiosRadius.lg),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(clamped / 100f)
                 .fillMaxHeight()
-                .background(OficiosColorOutlineFill),
+                .background(MaterialTheme.colorScheme.outline),
         )
         Text(
             text = "$clamped%",
             style = OficiosProgressPercentStyle,
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = OficiosSpacing.md),
@@ -86,12 +83,12 @@ fun ProfileMilestoneTile(
         modifier = modifier
             .aspectRatio(1f)
             .clip(shape)
-            .background(if (done) OficiosColorOutlineFill else OficiosColorBackground, shape)
+            .background(if (done) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.background, shape)
             .then(
                 if (done) {
-                    Modifier.border(1.dp, OficiosColorOutlineFill, shape)
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outline, shape)
                 } else {
-                    Modifier.dashedBorder(OficiosColorOutlineFill, OficiosRadius.lg)
+                    Modifier.dashedBorder(MaterialTheme.colorScheme.outline, OficiosRadius.lg)
                 },
             )
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
@@ -101,7 +98,7 @@ fun ProfileMilestoneTile(
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = if (done) FontWeight.Normal else FontWeight.Bold,
             ),
-            color = OficiosColorWhite,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(OficiosSpacing.md),
@@ -111,7 +108,7 @@ fun ProfileMilestoneTile(
                 if (done) OficiosIcons.CircleCheck else OficiosIcons.CircleDashed,
             ),
             contentDescription = null,
-            tint = OficiosColorWhite,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(OficiosSpacing.xs)
@@ -129,8 +126,8 @@ private fun ProfileMilestonePreview() {
         ) {
             ProfileProgressBar(percent = 80)
             Row {
-                ProfileMilestoneTile("Agrega fotos a tu galería", done = true, modifier = Modifier.weight(1f))
-                ProfileMilestoneTile("Agrega tu local comercial", done = false, modifier = Modifier.weight(1f))
+                ProfileMilestoneTile("Agregue fotos a su galería", done = true, modifier = Modifier.weight(1f))
+                ProfileMilestoneTile("Agregue su local comercial", done = false, modifier = Modifier.weight(1f))
             }
         }
     }

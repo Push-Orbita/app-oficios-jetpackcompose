@@ -43,6 +43,7 @@ data class ProviderDomicilioDto(
     val id: Long? = null,
     val barrioId: Long? = null,
     val calle: String? = null,
+    val numero: String? = null,
     val nombre: String? = null,
     val barrio: BarrioDto? = null,
 )

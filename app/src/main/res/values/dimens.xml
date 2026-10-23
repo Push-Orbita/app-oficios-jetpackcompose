@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ / compat sin icon background: canvas 288dp, círculo visible 192dp. -->
+    <dimen name="oficios_splash_icon_canvas">288dp</dimen>
+    <!-- Isotipo centrado; diagonal 83×152 ≈ 173dp &lt; 192dp, con margen. -->
+    <dimen name="oficios_splash_isotype_width">83dp</dimen>
+    <dimen name="oficios_splash_isotype_height">152dp</dimen>
+    <!-- Outline 114×201: mismo alto, ancho para no achatar el vector. -->
+    <dimen name="oficios_splash_isotype_outline_width">86dp</dimen>
+</resources>

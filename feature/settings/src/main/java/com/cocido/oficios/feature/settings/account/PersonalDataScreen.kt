@@ -8,12 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -27,8 +23,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
@@ -39,6 +36,7 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 
 @Composable
 fun PersonalDataScreen(
@@ -47,9 +45,13 @@ fun PersonalDataScreen(
     onRequestPhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = uiState.hasUnsavedChanges,
+        onConfirmExit = { onEvent(PersonalDataEvent.Back) },
+    )
     OficiosScaffold(
         modifier = modifier,
-        topBar = { OficiosBackTopBar(title = stringResource(R.string.personal_data_title), onBack = { onEvent(PersonalDataEvent.Back) }) },
+        topBar = { OficiosBackTopBar(title = stringResource(R.string.personal_data_title), onBack = handleBack) },
     ) { padding ->
         OficiosStateContent(
             targetState = uiState,
@@ -86,15 +88,15 @@ private fun PersonalDataForm(
 ) {
     val lastNameFocus = remember { FocusRequester() }
     val emailFocus = remember { FocusRequester() }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md)
-            .widthIn(max = OficiosComponentSize.contentMaxWidth),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    OficiosFormColumn(
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.personal_data_save),
+                onPrimary = { onEvent(PersonalDataEvent.Save) },
+                primaryEnabled = state.canSave && !state.isSaving,
+                primaryLoading = state.isSaving,
+            )
+        },
     ) {
         Text(
             text = stringResource(R.string.personal_data_intro),
@@ -162,14 +164,5 @@ private fun PersonalDataForm(
             modifier = Modifier.focusRequester(emailFocus),
         )
         state.errorMessage?.let { OficiosInlineAlert(message = it) }
-        OficiosButton(
-            text = stringResource(R.string.personal_data_save),
-            onClick = { onEvent(PersonalDataEvent.Save) },
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-            loading = state.isSaving,
-            enabled = !state.isSaving,
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }

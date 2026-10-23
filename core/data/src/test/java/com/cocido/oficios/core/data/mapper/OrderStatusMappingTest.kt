@@ -36,7 +36,7 @@ class OrderStatusMappingTest {
         ).map { it.toListItem(isWorkerViewing = true) }
 
         val now = ZonedDateTime.of(2026, 9, 1, 8, 0, 0, 0, DisplayDateTime.ARGENTINA)
-        assertEquals(listOf(6L, 15L, 11L, 9L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, now).map { it.id })
+        assertEquals(listOf(15L, 11L, 9L, 6L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, now).map { it.id })
         assertEquals(listOf(18L, 17L), items.arrangedFor(OrdersListFilter.HISTORY, now).map { it.id })
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 11L }.bookingStatus)
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 15L }.bookingStatus)

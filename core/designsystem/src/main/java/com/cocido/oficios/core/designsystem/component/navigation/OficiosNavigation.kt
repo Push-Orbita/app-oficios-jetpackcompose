@@ -1,23 +1,21 @@
 package com.cocido.oficios.core.designsystem.component.navigation
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,12 +28,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,9 +45,9 @@ import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
 import com.cocido.oficios.core.designsystem.theme.OficiosBottomNavLabelStyle
+import com.cocido.oficios.core.designsystem.theme.OficiosColors
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosMotion
-import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.core.designsystem.theme.oficiosTween
@@ -65,12 +66,13 @@ data class OficiosNavItem(
 // ---------------------------------------------------------------------------
 // OficiosBottomNavigationBar
 //
-// Figma: border-top 1px #004DA8, p16 gap16, icon-box 40 r8 (fondo #004DA8
-//        si seleccionado), label Satoshi Medium 16sp blanco, sin escala animada.
+// Claro (BBVA): íconos y labels siempre primary. Seleccionado = círculo 48dp
+//        1:1 con ícono 24 blanco; el label sigue primary. Oscuro: estilo navy
+//        actual, indicador circular. Sin pastilla ni ripple ovalado.
 //
 // Items según Figma:
 //   - Inicio (house)
-//   - Mis pedidos (scroll-text o receipt-text) 
+//   - Mis pedidos (scroll-text o receipt-text)
 //   - Favoritos (heart) — oculto para trabajadores
 //   - Perfil (user)
 //
@@ -129,54 +131,54 @@ private fun OficiosBottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val colors = OficiosTheme.colors
     val colorSpec = oficiosTween<Color>(OficiosMotion.DurationMedium)
-    val contentColor by animateColorAsState(
-        targetValue = if (selected) {
-            MaterialTheme.colorScheme.onSurface
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
+    val iconTint by animateColorAsState(
+        targetValue = bottomNavIconTint(selected, colors),
         animationSpec = colorSpec,
-        label = "BottomNavContentColor",
+        label = "BottomNavIconTint",
+    )
+    val labelColor by animateColorAsState(
+        targetValue = bottomNavLabelColor(selected, colors),
+        animationSpec = colorSpec,
+        label = "BottomNavLabelColor",
     )
     val indicatorColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
+        targetValue = if (selected) colors.iconContainer else Color.Transparent,
         animationSpec = colorSpec,
         label = "BottomNavIndicatorColor",
     )
-    val indicatorWidth by animateDpAsState(
-        targetValue = if (selected) IndicatorWidthSelected else OficiosComponentSize.iconMd,
-        animationSpec = oficiosTween(OficiosMotion.DurationMedium),
-        label = "BottomNavIndicatorWidth",
-    )
-    val iconScale by animateFloatAsState(
-        targetValue = if (selected) SelectedIconScale else 1f,
-        animationSpec = oficiosTween(OficiosMotion.DurationMedium),
-        label = "BottomNavIconScale",
-    )
+    val interactionSource = remember { MutableInteractionSource() }
 
     Column(
         modifier = modifier
             .semantics(mergeDescendants = true) {}
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
             .padding(vertical = OficiosSpacing.xxs),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            modifier = Modifier.size(width = IndicatorWidthSelected, height = IndicatorHeight),
+            modifier = Modifier
+                .size(OficiosComponentSize.bottomNavIndicator)
+                .testTag(if (selected) BottomNavSelectedIndicatorTag else BottomNavIndicatorTag),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = Modifier
-                    .size(width = indicatorWidth, height = IndicatorHeight)
-                    .background(color = indicatorColor, shape = RoundedCornerShape(OficiosRadius.pill)),
+                    .matchParentSize()
+                    .clip(CircleShape)
+                    .background(indicatorColor, CircleShape),
             )
             OficiosNotificationBadge(count = item.badgeCount) {
                 Icon(
                     imageVector = ImageVector.vectorResource(item.iconRes),
                     contentDescription = null,
-                    tint = contentColor,
+                    tint = iconTint,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }
@@ -184,8 +186,10 @@ private fun OficiosBottomNavItem(
         Spacer(Modifier.height(OficiosSpacing.xxxs))
         BottomNavLabel(
             text = item.label,
-            color = contentColor,
-            baseStyle = OficiosBottomNavLabelStyle, // Satoshi Medium 16sp
+            color = labelColor,
+            baseStyle = OficiosBottomNavLabelStyle.copy(
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = OficiosSpacing.xxxs),
@@ -193,9 +197,20 @@ private fun OficiosBottomNavItem(
     }
 }
 
-private val IndicatorHeight = OficiosComponentSize.iconMd + OficiosSpacing.xs
-private val IndicatorWidthSelected = OficiosComponentSize.iconMd + OficiosSpacing.md * 2
-private const val SelectedIconScale = 1.08f
+internal const val BottomNavSelectedIndicatorTag = "bottomNavSelectedIndicator"
+internal const val BottomNavIndicatorTag = "bottomNavIndicator"
+
+internal fun bottomNavIconTint(selected: Boolean, colors: OficiosColors): Color = when {
+    selected -> colors.onIconContainer
+    colors.isDark -> colors.onSurfaceVariant
+    else -> colors.primary
+}
+
+internal fun bottomNavLabelColor(selected: Boolean, colors: OficiosColors): Color = when {
+    colors.isDark && selected -> colors.selectedOnSurface
+    colors.isDark -> colors.onSurfaceVariant
+    else -> colors.primary
+}
 
 @Composable
 private fun BottomNavLabel(
@@ -233,9 +248,9 @@ private fun BottomNavLabel(
 // Previews
 // ---------------------------------------------------------------------------
 
-@Preview(name = "Bottom Navigation Cliente", showBackground = true, backgroundColor = 0xFF00358B)
+@Preview(name = "Bottom Navigation Cliente claro", showBackground = true, backgroundColor = 0xFFF4F5F7)
 @Composable
-private fun BottomNavClientePreview() {
+private fun BottomNavClienteLightPreview() {
     OficiosTheme {
         val items = listOf(
             OficiosNavItem("home", "Inicio", OficiosIcons.House),
@@ -244,14 +259,32 @@ private fun BottomNavClientePreview() {
             OficiosNavItem("profile", "Perfil", OficiosIcons.User),
         )
         OficiosBottomNavigationBar(
-            currentRoute = "orders",
+            currentRoute = "home",
             items = items,
             onItemSelected = {},
         )
     }
 }
 
-@Preview(name = "Bottom Navigation Trabajador", showBackground = true, backgroundColor = 0xFF00358B)
+@Preview(name = "Bottom Navigation Cliente oscuro", showBackground = true, backgroundColor = 0xFF00358B)
+@Composable
+private fun BottomNavClientePreview() {
+    OficiosTheme(darkTheme = true) {
+        val items = listOf(
+            OficiosNavItem("home", "Inicio", OficiosIcons.House),
+            OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
+            OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
+            OficiosNavItem("profile", "Perfil", OficiosIcons.User),
+        )
+        OficiosBottomNavigationBar(
+            currentRoute = "home",
+            items = items,
+            onItemSelected = {},
+        )
+    }
+}
+
+@Preview(name = "Bottom Navigation Trabajador", showBackground = true, backgroundColor = 0xFFF4F5F7)
 @Composable
 private fun BottomNavTrabajadorPreview() {
     OficiosTheme {

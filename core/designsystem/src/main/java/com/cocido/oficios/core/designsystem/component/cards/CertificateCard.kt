@@ -19,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -64,7 +62,7 @@ fun CertificateCard(
                         Text(
                             text = issuedBy,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = OficiosColorMutedText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     if (expiryDate != null) {
@@ -72,14 +70,14 @@ fun CertificateCard(
                             Icon(
                                 imageVector = Icons.Outlined.CalendarToday,
                                 contentDescription = null,
-                                tint = OficiosColorMutedText,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(OficiosComponentSize.iconSm),
                             )
                             Spacer(Modifier.width(OficiosSpacing.xxxs))
                             Text(
                                 text = "Vence: $expiryDate",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = OficiosColorMutedText,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -90,7 +88,7 @@ fun CertificateCard(
                 Icon(
                     imageVector = Icons.Default.Verified,
                     contentDescription = "Verificado",
-                    tint = OficiosColorSuccess,
+                    tint = OficiosTheme.colors.success,
                     modifier = Modifier.size(OficiosComponentSize.iconMd),
                 )
             }

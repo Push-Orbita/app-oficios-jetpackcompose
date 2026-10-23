@@ -7,6 +7,7 @@ import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.ProviderAccountDetails
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RequestAccountDeletionParams
@@ -15,8 +16,24 @@ import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.model.WorkCertificateItem
 import com.cocido.oficios.domain.model.WorkGalleryItem
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+private val EmptyAccountProfile: StateFlow<AccountProfile?> = MutableStateFlow<AccountProfile?>(null).asStateFlow()
+private val EmptyProviderDetails: StateFlow<ProviderAccountDetails?> =
+    MutableStateFlow<ProviderAccountDetails?>(null).asStateFlow()
+private val EmptyDomicilios: StateFlow<List<ClientDomicilio>?> =
+    MutableStateFlow<List<ClientDomicilio>?>(null).asStateFlow()
+private val EmptyContactos: StateFlow<List<ClientContacto>?> =
+    MutableStateFlow<List<ClientContacto>?>(null).asStateFlow()
 
 interface AccountRepository {
+    val profile: StateFlow<AccountProfile?> get() = EmptyAccountProfile
+    val providerDetails: StateFlow<ProviderAccountDetails?> get() = EmptyProviderDetails
+    val domicilios: StateFlow<List<ClientDomicilio>?> get() = EmptyDomicilios
+    val contactos: StateFlow<List<ClientContacto>?> get() = EmptyContactos
+
     suspend fun getProfile(): AppResult<AccountProfile>
     suspend fun updateProfile(request: UpdateAccountProfileRequest): AppResult<AccountProfile>
     suspend fun changePassword(email: String, password: String, confirmation: String): AppResult<Unit>

@@ -4,11 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
+import com.cocido.oficios.core.designsystem.theme.DarkOficiosColors
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 
 fun statusDisplayLabel(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int =
-    orderStatusVisual(status, bookingStatus).labelRes
+    orderStatusVisual(status, bookingStatus, DarkOficiosColors).labelRes
 
 @Composable
 fun ServiceOrderStatusLabel(

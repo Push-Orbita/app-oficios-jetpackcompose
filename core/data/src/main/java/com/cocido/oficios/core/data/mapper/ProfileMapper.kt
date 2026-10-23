@@ -19,6 +19,7 @@ import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.toReplaceDays
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 
@@ -80,7 +81,15 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
             requiereTurnos = requiresTurns,
         )
     },
-    diasLaborales = workDays.map { day ->
+    diasLaborales = weeklyAvailability?.toReplaceDays()?.map { day ->
+        CreateDiaLaboralRequestDto(
+            diaInicio = day.day,
+            diaFin = day.day,
+            horariosLaborales = day.ranges.map { range ->
+                CreateHorarioLaboralRequestDto(horaInicio = range.start, horaFin = range.end)
+            }.ifEmpty { listOf(CreateHorarioLaboralRequestDto("09:00", "18:00")) },
+        )
+    } ?: workDays.map { day ->
         CreateDiaLaboralRequestDto(
             diaInicio = day,
             diaFin = day,
@@ -90,7 +99,8 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
     domicilioLocal = domicilioLocal?.let {
         CreateDomicilioLocalRequestDto(
             barrioId = it.barrioId,
-            calle = it.calle,
+            calle = it.calle?.trim()?.ifBlank { null },
+            numero = it.numero?.trim()?.ifBlank { null },
             nombre = it.nombre,
             latitud = it.latitud,
             longitud = it.longitud,

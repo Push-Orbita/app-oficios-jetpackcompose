@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cocido.oficios.core.designsystem.theme.OficiosElevation
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -37,7 +38,7 @@ fun OficiosCard(
     selected: Boolean = false,
     enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(OficiosSpacing.md),
-    containerColor: Color = MaterialTheme.colorScheme.background,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     /**
      * El contenido llena el alto de la card. Hace falta cuando hay
      * `height` / `heightIn(min)`: sin esto la card se encoge al wrap-content
@@ -73,7 +74,9 @@ fun OficiosCard(
             shape = MaterialTheme.shapes.large,
             colors = cardColors,
             border = BorderStroke(1.dp, borderColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = if (OficiosTheme.colors.isDark) 0.dp else OficiosElevation.sm,
+            ),
         ) {
             body()
         }
@@ -83,7 +86,9 @@ fun OficiosCard(
             shape = MaterialTheme.shapes.large,
             colors = cardColors,
             border = BorderStroke(1.dp, borderColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = if (OficiosTheme.colors.isDark) 0.dp else OficiosElevation.sm,
+            ),
         ) {
             body()
         }

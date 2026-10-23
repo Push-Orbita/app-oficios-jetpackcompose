@@ -9,7 +9,15 @@ sealed interface CounterOfferUiState {
         val price: String = "",
         val isSubmitting: Boolean = false,
         val hasAttemptedSubmit: Boolean = false,
-    ) : CounterOfferUiState
+    ) : CounterOfferUiState {
+        val priceError: String?
+            get() = if (price.isNotBlank() && price.toDoubleOrNull() == null) {
+                "Ingrese un monto válido."
+            } else {
+                null
+            }
+        val canSubmit: Boolean get() = dateTime != null && priceError == null
+    }
 }
 
 sealed interface CounterOfferEvent {

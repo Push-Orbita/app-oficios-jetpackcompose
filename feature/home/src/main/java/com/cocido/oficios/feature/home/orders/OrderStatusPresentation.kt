@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.orders
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
@@ -10,13 +11,8 @@ import androidx.compose.material.icons.outlined.EventAvailable
 import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.SwapHoriz
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorActionContainer
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorErrorContainer
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccessContainer
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
+import com.cocido.oficios.core.designsystem.theme.OficiosColors
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.feature.home.R
@@ -37,14 +33,24 @@ data class OrderStatusVisual(
     val content: Color,
 )
 
-fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus?): OrderStatusVisual {
+@Composable
+fun orderStatusVisual(
+    status: ServiceRequestStatus,
+    bookingStatus: BookingStatus?,
+): OrderStatusVisual = orderStatusVisual(status, bookingStatus, OficiosTheme.colors)
+
+fun orderStatusVisual(
+    status: ServiceRequestStatus,
+    bookingStatus: BookingStatus?,
+    colors: OficiosColors,
+): OrderStatusVisual {
     if (status == ServiceRequestStatus.CANCELLED || bookingStatus == BookingStatus.CANCELLED) {
         return OrderStatusVisual(
             labelRes = R.string.orders_status_cancelled,
             explanationRes = R.string.orders_explain_cancelled,
             icon = Icons.Outlined.Cancel,
-            container = OficiosColorErrorContainer,
-            content = OficiosColorWhite,
+            container = colors.errorContainer,
+            content = colors.onError,
         )
     }
     if (status == ServiceRequestStatus.EXPIRED) {
@@ -52,8 +58,8 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
             labelRes = R.string.orders_status_expired,
             explanationRes = R.string.orders_explain_expired,
             icon = Icons.Outlined.Cancel,
-            container = OficiosColorErrorContainer,
-            content = OficiosColorWhite,
+            container = colors.errorContainer,
+            content = colors.onError,
         )
     }
     if (status == ServiceRequestStatus.COUNTER_OFFER) {
@@ -61,8 +67,8 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
             labelRes = R.string.orders_status_counter,
             explanationRes = R.string.orders_explain_counter,
             icon = Icons.Outlined.SwapHoriz,
-            container = OficiosColorAccent,
-            content = OficiosColorBackground,
+            container = colors.accent,
+            content = colors.onWarning,
         )
     }
     if (status == ServiceRequestStatus.PENDING || bookingStatus == null || bookingStatus == BookingStatus.PENDING) {
@@ -70,8 +76,8 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
             labelRes = R.string.orders_status_pending,
             explanationRes = R.string.orders_explain_pending,
             icon = Icons.Outlined.HourglassEmpty,
-            container = OficiosColorAccent,
-            content = OficiosColorBackground,
+            container = colors.accent,
+            content = colors.onWarning,
         )
     }
     return when (bookingStatus) {
@@ -79,29 +85,29 @@ fun orderStatusVisual(status: ServiceRequestStatus, bookingStatus: BookingStatus
             labelRes = R.string.orders_status_confirmed,
             explanationRes = R.string.orders_explain_confirmed,
             icon = Icons.Outlined.EventAvailable,
-            container = OficiosColorAction,
-            content = OficiosColorWhite,
+            container = colors.primary,
+            content = colors.onPrimary,
         )
         BookingStatus.EN_ROUTE -> OrderStatusVisual(
             labelRes = R.string.orders_status_en_route,
             explanationRes = R.string.orders_explain_en_route,
             icon = Icons.AutoMirrored.Outlined.DirectionsWalk,
-            container = OficiosColorActionContainer,
-            content = OficiosColorWhite,
+            container = colors.primaryContainer,
+            content = colors.onPrimaryContainer,
         )
         BookingStatus.IN_PROGRESS -> OrderStatusVisual(
             labelRes = R.string.orders_status_in_progress,
             explanationRes = R.string.orders_explain_in_progress,
             icon = Icons.Outlined.Schedule,
-            container = OficiosColorSuccessContainer,
-            content = OficiosColorWhite,
+            container = colors.successContainer,
+            content = colors.onSuccess,
         )
         BookingStatus.FINISHED -> OrderStatusVisual(
             labelRes = R.string.orders_status_finished,
             explanationRes = R.string.orders_explain_finished,
             icon = Icons.Outlined.CheckCircle,
-            container = OficiosColorWhite,
-            content = OficiosColorBackground,
+            container = colors.inverseSurface,
+            content = colors.inverseOnSurface,
         )
         BookingStatus.PENDING, BookingStatus.CANCELLED -> error("cubierto arriba")
     }
@@ -193,8 +199,8 @@ fun orderScreenTitleRes(status: ServiceRequestStatus, bookingStatus: BookingStat
     status == ServiceRequestStatus.EXPIRED -> R.string.orders_title_cancelled
     status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER ->
         R.string.orders_title_pending
-    bookingStatus == BookingStatus.IN_PROGRESS || bookingStatus == BookingStatus.FINISHED ->
-        R.string.orders_title_finish
+    bookingStatus == BookingStatus.FINISHED -> R.string.orders_title_detail
+    bookingStatus == BookingStatus.IN_PROGRESS -> R.string.orders_title_finish
     else -> R.string.orders_title_confirmed
 }
 
@@ -202,5 +208,6 @@ fun cancelledByLabelRes(cancelledBy: String?): Int? = when (cancelledBy?.upperca
     "CLIENTE" -> R.string.orders_cancelled_by_client
     "TRABAJADOR" -> R.string.orders_cancelled_by_worker
     "SISTEMA" -> R.string.orders_cancelled_by_system
+    "ADMIN" -> R.string.orders_cancelled_by_support
     else -> null
 }

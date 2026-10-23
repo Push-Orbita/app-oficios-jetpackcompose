@@ -5,12 +5,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,8 +16,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -39,8 +33,9 @@ import androidx.compose.ui.res.vectorResource
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
-import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
@@ -55,10 +50,10 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosLocationPicker
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientDomicilio
 
@@ -72,14 +67,19 @@ fun ClientDataScreen(
         ClientDataMode.CONTACT -> if (uiState.editingId == null) stringResource(R.string.client_data_new_contact) else stringResource(R.string.client_data_edit_contact)
         ClientDataMode.DOMICILIO -> if (uiState.editingId == null) stringResource(R.string.client_data_new_address) else stringResource(R.string.client_data_edit_address)
     }
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = uiState.hasUnsavedEditorChanges,
+        enabled = uiState.mode != ClientDataMode.LIST,
+        onConfirmExit = {
+            if (uiState.mode == ClientDataMode.LIST) onEvent(ClientDataEvent.Back)
+            else onEvent(ClientDataEvent.CloseEditor)
+        },
+    )
     OficiosScaffold(
         topBar = {
             OficiosBackTopBar(
                 title = title,
-                onBack = {
-                    if (uiState.mode == ClientDataMode.LIST) onEvent(ClientDataEvent.Back)
-                    else onEvent(ClientDataEvent.CloseEditor)
-                },
+                onBack = handleBack,
             )
         },
     ) { padding ->
@@ -213,7 +213,7 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
                 Text(contact.nombre, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                Text(contact.telefonoWhatsapp, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
+                Text(contact.telefonoWhatsapp, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = ImageVector.vectorResource(
@@ -225,7 +225,7 @@ private fun ContactCard(contact: ClientContacto, onEvent: (ClientDataEvent) -> U
                     Text(
                         text = if (contact.telefonoVerificado) stringResource(R.string.client_data_whatsapp_verified) else stringResource(R.string.client_data_whatsapp_pending),
                         style = MaterialTheme.typography.labelMedium,
-                        color = OficiosColorSecondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -269,9 +269,9 @@ private fun DomicilioCard(domicilio: ClientDomicilio, onEvent: (ClientDataEvent)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                Text(detail.ifBlank { stringResource(R.string.client_data_no_street) }, style = MaterialTheme.typography.bodyMedium, color = OficiosColorSecondaryText)
+                Text(detail.ifBlank { stringResource(R.string.client_data_no_street) }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 domicilio.barrioName?.let {
-                    Text(it, style = MaterialTheme.typography.labelMedium, color = OficiosColorSecondaryText)
+                    Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             IconButton(onClick = { onEvent(ClientDataEvent.ToggleDomicilioFavorite(domicilio.id, !domicilio.favorito)) }) {
@@ -305,14 +305,20 @@ private fun ContactEditor(
 ) {
     val phoneFocus = remember { FocusRequester() }
     val emailFocus = remember { FocusRequester() }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .consumeWindowInsets(WindowInsets.safeDrawing)
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        modifier = modifier,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = if (uiState.editingId == null) {
+                    stringResource(R.string.client_data_save_verify)
+                } else {
+                    stringResource(R.string.client_data_save_changes)
+                },
+                onPrimary = { onEvent(ClientDataEvent.SaveContact) },
+                primaryEnabled = uiState.canSaveContact && !uiState.isSaving,
+                primaryLoading = uiState.isSaving,
+            )
+        },
     ) {
         Text(
             stringResource(R.string.client_data_phone_hint),
@@ -323,6 +329,8 @@ private fun ContactEditor(
             value = uiState.contactName,
             onValueChange = { onEvent(ClientDataEvent.ContactNameChanged(it)) },
             label = stringResource(R.string.client_data_contact_name),
+            isError = uiState.contactNameError != null,
+            supportingText = uiState.contactNameError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { phoneFocus.requestFocus() }),
         )
@@ -331,7 +339,9 @@ private fun ContactEditor(
             onValueChange = { onEvent(ClientDataEvent.ContactPhoneChanged(it)) },
             selectedCountry = PhoneCountryOptions.ARGENTINA,
             label = stringResource(R.string.client_data_whatsapp),
-            supportingText = "11 dígitos con el 9",
+            isError = uiState.contactPhoneError != null,
+            supportingText = uiState.contactPhoneError
+                ?: "Ingrese el número local, con el 9 de móvil.",
             numberModifier = Modifier.focusRequester(phoneFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
@@ -341,6 +351,8 @@ private fun ContactEditor(
             onValueChange = { onEvent(ClientDataEvent.ContactEmailChanged(it)) },
             label = stringResource(R.string.client_data_alt_email),
             modifier = Modifier.focusRequester(emailFocus),
+            isError = uiState.contactEmailError != null,
+            supportingText = uiState.contactEmailError,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Done,
@@ -353,15 +365,6 @@ private fun ContactEditor(
             label = stringResource(R.string.client_data_primary_contact_toggle),
         )
         uiState.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = if (uiState.editingId == null) stringResource(R.string.client_data_save_verify) else stringResource(R.string.client_data_save_changes),
-            onClick = { onEvent(ClientDataEvent.SaveContact) },
-            loading = uiState.isSaving,
-            enabled = !uiState.isSaving,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-        )
     }
 }
 
@@ -377,14 +380,16 @@ private fun DomicilioEditor(
     val floorFocus = remember { FocusRequester() }
     val apartmentFocus = remember { FocusRequester() }
     val towerFocus = remember { FocusRequester() }
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .consumeWindowInsets(WindowInsets.safeDrawing)
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+    OficiosFormColumn(
+        modifier = modifier,
+        footer = {
+            OficiosFormActionsBar(
+                primaryLabel = stringResource(R.string.client_data_save_address),
+                onPrimary = { onEvent(ClientDataEvent.SaveDomicilio) },
+                primaryEnabled = uiState.canSaveDomicilio && !uiState.isSaving,
+                primaryLoading = uiState.isSaving,
+            )
+        },
     ) {
         Text(
             stringResource(R.string.client_data_address_hint),
@@ -411,6 +416,8 @@ private fun DomicilioEditor(
             onFocused = { onEvent(ClientDataEvent.BarrioFocused) },
             onSuggestionsDismissed = { onEvent(ClientDataEvent.BarrioSuggestionsDismissed) },
             modifier = Modifier.focusRequester(barrioFocus),
+            isError = uiState.addressBarrioError != null,
+            supportingText = uiState.addressBarrioError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { streetFocus.requestFocus() }),
         )
@@ -419,6 +426,8 @@ private fun DomicilioEditor(
             onValueChange = { onEvent(ClientDataEvent.StreetChanged(it)) },
             label = stringResource(R.string.client_data_street),
             modifier = Modifier.focusRequester(streetFocus),
+            isError = uiState.addressStreetError != null,
+            supportingText = uiState.addressStreetError,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { numberFocus.requestFocus() }),
         )
@@ -427,6 +436,8 @@ private fun DomicilioEditor(
             onValueChange = { onEvent(ClientDataEvent.NumberChanged(it)) },
             label = stringResource(R.string.client_data_number),
             modifier = Modifier.focusRequester(numberFocus),
+            isError = uiState.addressNumberError != null,
+            supportingText = uiState.addressNumberError,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next,
@@ -480,14 +491,5 @@ private fun DomicilioEditor(
             label = stringResource(R.string.client_data_primary_address_toggle),
         )
         uiState.errorMessage?.let { OficiosInlineAlert(it) }
-        OficiosButton(
-            text = stringResource(R.string.client_data_save_address),
-            onClick = { onEvent(ClientDataEvent.SaveDomicilio) },
-            loading = uiState.isSaving,
-            enabled = !uiState.isSaving,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Secondary,
-            size = OficiosButtonSize.Large,
-        )
     }
 }
