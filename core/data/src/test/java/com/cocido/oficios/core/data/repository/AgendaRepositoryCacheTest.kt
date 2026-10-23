@@ -120,6 +120,7 @@ private class FakeAgendaApi(
         subRubroId: Long,
         fechaDesde: String,
         fechaHasta: String,
+        fecha: String?,
     ) = slots
 
     override suspend fun searchSlots(

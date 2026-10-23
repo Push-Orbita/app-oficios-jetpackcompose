@@ -15,4 +15,6 @@ class AvailabilityUseCases @Inject constructor(
     suspend fun createBlock(params: CreateAgendaBlockParams) = repository.createBlock(params)
     suspend fun deleteBlock(subRubroId: Long, blockId: Long) =
         repository.deleteBlock(subRubroId, blockId)
+    suspend fun getDay(workerId: Long, date: String, subRubroId: Long) =
+        repository.getDayAvailability(workerId, date, subRubroId)
 }

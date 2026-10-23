@@ -12,7 +12,7 @@ data class TrabajadorOficioSubRubroAgendaDto(
 
 @Serializable
 data class SlotTurnoAgendaDto(
-    val id: Long,
+    val id: Long = 0,
     val trabajadorOficioSubRubro: TrabajadorOficioSubRubroAgendaDto? = null,
     val inicio: String,
     val fin: String,

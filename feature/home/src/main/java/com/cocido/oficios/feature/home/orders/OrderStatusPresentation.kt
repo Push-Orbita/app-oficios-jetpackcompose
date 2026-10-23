@@ -208,5 +208,6 @@ fun cancelledByLabelRes(cancelledBy: String?): Int? = when (cancelledBy?.upperca
     "CLIENTE" -> R.string.orders_cancelled_by_client
     "TRABAJADOR" -> R.string.orders_cancelled_by_worker
     "SISTEMA" -> R.string.orders_cancelled_by_system
+    "ADMIN" -> R.string.orders_cancelled_by_support
     else -> null
 }

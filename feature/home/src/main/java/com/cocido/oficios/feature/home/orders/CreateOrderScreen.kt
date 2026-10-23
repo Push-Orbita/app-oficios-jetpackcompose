@@ -259,13 +259,12 @@ private fun CreateOrderForm(
                 CreateOrderSchedule.isDateEnabled(date, today, state.workDayKeys)
             },
             isDateHighlighted = { date ->
-                state.hasAgenda && state.availableSlots.any { slot ->
-                    slot.start.toLocalDate() == date
-                }
+                val slots = state.monthSlots.ifEmpty { state.availableSlots }
+                slots.any { slot -> slot.isSelectable && slot.start.toLocalDate() == date }
             },
         )
 
-        if (state.hasAgenda) {
+        if (state.hasAgenda || state.dayHasAvailability != null) {
             Text(
                 text = stringResource(R.string.create_order_hours),
                 style = MaterialTheme.typography.titleMedium,
@@ -280,9 +279,11 @@ private fun CreateOrderForm(
             )
         } else {
             state.slotsErrorMessage?.let { OficiosInlineAlert(message = it) }
-            val availableHours = CreateOrderSchedule.availableHoursForDate(
-                state.availableSlots,
-                state.selectedDate,
+            val selectableHours = CreateOrderSchedule.selectableHours(
+                slots = state.availableSlots,
+                date = state.selectedDate,
+                ranges = state.dayRanges,
+                dayHasAvailability = state.dayHasAvailability,
             )
             OficiosHourGrid(
                 selectedHour = state.selectedHour,
@@ -290,8 +291,7 @@ private fun CreateOrderForm(
                     hourChipState(
                         hour = hour,
                         selectedHour = state.selectedHour,
-                        hasAgenda = state.hasAgenda,
-                        availableHours = availableHours,
+                        selectableHours = selectableHours,
                         selectedDate = state.selectedDate,
                     )
                 },
@@ -351,6 +351,7 @@ private fun CreateOrderSummary(
             label = stringResource(R.string.create_order_summary_visit),
             value = visit?.format(VISIT_FORMATTER).orEmpty(),
         )
+        state.submitErrorMessage?.let { OficiosInlineAlert(message = it) }
 
     }
 }
@@ -484,16 +485,15 @@ private fun summaryDetail(state: CreateOrderUiState.Success): String {
 private fun hourChipState(
     hour: LocalTime,
     selectedHour: LocalTime?,
-    hasAgenda: Boolean,
-    availableHours: Set<Int>,
+    selectableHours: Set<Int>?,
     selectedDate: LocalDate?,
 ): HourChipState {
     if (selectedHour != null && hour.hour == selectedHour.hour) return HourChipState.Selected
     if (selectedDate == null) return HourChipState.Unavailable
-    return if (hasAgenda) {
-        if (hour.hour in availableHours) HourChipState.Available else HourChipState.Unavailable
-    } else {
+    return if (selectableHours == null || hour.hour in selectableHours) {
         HourChipState.Available
+    } else {
+        HourChipState.Unavailable
     }
 }
 

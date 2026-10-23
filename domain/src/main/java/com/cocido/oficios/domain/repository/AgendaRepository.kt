@@ -30,6 +30,10 @@ interface AgendaRepository {
         fromIso: String,
         toIso: String,
     ): AppResult<List<AgendaSlot>>
+    suspend fun getAvailableSlotsForDate(
+        subRubroId: Long,
+        date: String,
+    ): AppResult<List<AgendaSlot>> = getAvailableSlots(subRubroId, date, date)
     suspend fun getSlotsForSubRubro(
         subRubroId: Long,
         fromIso: String? = null,

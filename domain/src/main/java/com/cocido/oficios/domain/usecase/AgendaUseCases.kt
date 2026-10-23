@@ -16,6 +16,8 @@ class AgendaUseCases @Inject constructor(
 
     suspend fun getAvailableSlots(subRubroId: Long, fromIso: String, toIso: String) =
         repository.getAvailableSlots(subRubroId, fromIso, toIso)
+    suspend fun getAvailableSlotsForDate(subRubroId: Long, date: String) =
+        repository.getAvailableSlotsForDate(subRubroId, date)
     suspend fun getSlotsForSubRubro(subRubroId: Long, fromIso: String? = null, toIso: String? = null) =
         repository.getSlotsForSubRubro(subRubroId, fromIso, toIso)
     suspend fun createSlot(params: CreateAgendaSlotParams) = repository.createSlot(params)

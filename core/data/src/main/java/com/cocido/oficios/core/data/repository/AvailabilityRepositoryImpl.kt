@@ -45,4 +45,12 @@ class AvailabilityRepositoryImpl @Inject constructor(
         withContext(dispatcherProvider.io) {
             remote.deleteBlock(subRubroId, blockId)
         }
+
+    override suspend fun getDayAvailability(
+        workerId: Long,
+        date: String,
+        subRubroId: Long,
+    ) = withContext(dispatcherProvider.io) {
+        remote.getDayAvailability(workerId, date, subRubroId).map { it.toDomain() }
+    }
 }

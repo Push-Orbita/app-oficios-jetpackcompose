@@ -45,6 +45,16 @@ class AgendaRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun getAvailableSlotsForDate(
+        subRubroId: Long,
+        date: String,
+    ): AppResult<List<AgendaSlot>> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.getSlotsDisponibles(subRubroId, date, date, date).map { slots ->
+                slots.map { it.toDomain() }
+            }
+        }
+
     override suspend fun getSlotsForSubRubro(
         subRubroId: Long,
         fromIso: String?,

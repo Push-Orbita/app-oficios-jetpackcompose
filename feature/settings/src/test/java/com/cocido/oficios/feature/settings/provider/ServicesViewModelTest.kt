@@ -224,6 +224,8 @@ private class FakeAvailabilityRepository : AvailabilityRepository {
     override suspend fun createBlock(params: CreateAgendaBlockParams) =
         AppResult.Success(AgendaBlock(id = 1, date = params.date))
     override suspend fun deleteBlock(subRubroId: Long, blockId: Long) = AppResult.Success(Unit)
+    override suspend fun getDayAvailability(workerId: Long, date: String, subRubroId: Long) =
+        AppResult.Error(AppError.Unknown("unused"))
 }
 
 private fun sampleService(atLocal: Boolean = false) = ManagedProviderService(

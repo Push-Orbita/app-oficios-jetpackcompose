@@ -13,7 +13,11 @@ data class AgendaSlot(
     val status: AgendaSlotStatus,
     val autoAcceptance: Boolean,
     val bookingId: Long? = null,
-)
+) {
+    /** Turnos ocupados sin slot propio llegan con id=0; no se pueden reservar. */
+    val isSelectable: Boolean
+        get() = id > 0L && status == AgendaSlotStatus.DISPONIBLE
+}
 
 data class AgendaSessionConfig(
     val id: Long,

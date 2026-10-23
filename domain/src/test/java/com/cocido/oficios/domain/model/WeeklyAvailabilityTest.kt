@@ -66,6 +66,16 @@ class WeeklyAvailabilityTest {
     }
 
     @Test
+    fun hoursCoveredIncludesStartExcludesEnd() {
+        val hours = TimeRangeValidation.hoursCovered(
+            listOf(TimeRange("08:00", "12:00"), TimeRange("16:30", "20:00")),
+        )
+        assertEquals(setOf(8, 9, 10, 11, 17, 18, 19), hours)
+        assertFalse(12 in hours)
+        assertFalse(16 in hours)
+    }
+
+    @Test
     fun blockValidationRequiresBothHoursOrNeither() {
         assertNull(TimeRangeValidation.validateBlock("2026-12-24", null, null))
         assertEquals(

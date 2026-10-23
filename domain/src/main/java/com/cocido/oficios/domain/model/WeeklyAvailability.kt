@@ -94,6 +94,19 @@ object TimeRangeValidation {
         return null
     }
 
+    fun hoursCovered(ranges: List<TimeRange>): Set<Int> {
+        val hours = mutableSetOf<Int>()
+        for (range in ranges) {
+            val start = parseMinutes(range.start) ?: continue
+            val end = parseMinutes(range.end) ?: continue
+            for (hour in 0..23) {
+                val hourStart = hour * 60
+                if (hourStart >= start && hourStart < end) hours += hour
+            }
+        }
+        return hours
+    }
+
     fun validateBlock(date: String, start: String?, end: String?): String? {
         if (!date.matches(Regex("""\d{4}-\d{2}-\d{2}"""))) {
             return "Indique la fecha en formato AAAA-MM-DD."

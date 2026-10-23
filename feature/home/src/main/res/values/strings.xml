@@ -269,6 +269,7 @@
     <string name="orders_cancelled_by_client">Lo canceló el cliente</string>
     <string name="orders_cancelled_by_worker">Lo canceló el trabajador</string>
     <string name="orders_cancelled_by_system">Lo canceló el sistema</string>
+    <string name="orders_cancelled_by_support">Cancelado por soporte</string>
     <string name="orders_cancel">Cancelar</string>
     <string name="orders_cancel_title">Cancelar pedido</string>
     <string name="orders_cancel_message">¿Seguro que quiere cancelar este pedido?</string>
@@ -485,6 +486,7 @@
     <string name="create_order_slots_loading">Cargando turnos disponibles…</string>
     <string name="create_order_slots_title">Turnos disponibles</string>
     <string name="create_order_no_slots">Este trabajador no publicó turnos para las próximas semanas. Puede proponer una fecha.</string>
+    <string name="create_order_day_unavailable">Ese día no tiene disponibilidad.</string>
     <string name="create_order_propose">Proponer otra fecha y hora</string>
     <string name="create_order_pick_slot">Seleccione un día y una hora para continuar</string>
     <string name="create_order_date_time">Fecha y hora</string>
