@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
  * títulos destacados, links, círculos de ícono, chip/tab seleccionado y el
  * bottom nav (íconos/labels siempre primary; seleccionado = círculo 48dp).
  * El fondo claro es hueso **`#F4F5F7`** (rango BBVA `#F5F5F2`–`#F4F5F7`).
+ * Cards, inputs, listas, menús, sheets y diálogos usan **`surface` blanco `#FFFFFF`**.
  * El tema oscuro replica el Mode 1 actual de Figma.
  */
 @Immutable
@@ -72,7 +73,7 @@ val OficiosLightError = Color(0xFFC62828)
 val LightOficiosColors = OficiosColors(
     background = OficiosLightBackground,
     surface = Color.White,
-    surfaceVariant = OficiosLightSurfaceVariant,
+    surfaceVariant = Color.White,
     onBackground = OficiosLightOnSurface,
     onSurface = OficiosLightOnSurface,
     onSurfaceVariant = OficiosLightOnSurfaceVariant,

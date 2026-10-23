@@ -162,11 +162,9 @@ fun OficiosTextField(
         !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         else -> MaterialTheme.colorScheme.onSurface
     }
-    val containerColor = if (!enabled) {
-        MaterialTheme.colorScheme.surfaceVariant
-    } else {
-        Color.Transparent
-    }
+    val containerColor = MaterialTheme.colorScheme.surface.copy(
+        alpha = if (enabled) 1f else OficiosAlpha.disabled,
+    )
 
     val showValueEllipsis = value.isNotEmpty() && (readOnly || !isFocused)
     val displayedValue = remember(value, visualTransformation) {

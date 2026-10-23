@@ -47,8 +47,8 @@ fun SearchFilterBottomSheet(
     ModalBottomSheet(
         onDismissRequest = { onEvent(SearchResultsEvent.DismissFilters) },
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         tonalElevation = 0.dp,
     ) {
         Column(

@@ -1,6 +1,7 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -81,6 +82,7 @@ fun OficiosSearchField(
             .fillMaxWidth()
             .heightIn(min = OficiosComponentSize.textFieldHeight)
             .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.surface)
             .border(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 shape = MaterialTheme.shapes.small,

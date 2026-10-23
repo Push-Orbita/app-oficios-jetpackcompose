@@ -121,6 +121,8 @@ fun rememberImageSourcePicker(
         ModalBottomSheet(
             onDismissRequest = { showSheet = false },
             sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
             Column(
                 modifier = Modifier

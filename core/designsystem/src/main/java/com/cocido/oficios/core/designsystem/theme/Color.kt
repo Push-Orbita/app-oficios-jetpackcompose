@@ -120,7 +120,8 @@ val OficiosColorSurfaceVariant = OficiosColorOutlineFill
 // ---------------------------------------------------------------------------
 // Color schemes
 //
-// Claro (DEFAULT): fondo hueso `#F4F5F7`, cards blancas, texto `#0D1B2A`.
+// Claro (DEFAULT): fondo hueso `#F4F5F7`; surface/surfaceContainer* blancos `#FFFFFF`
+// (cards, inputs, listas, menús, sheets, diálogos). Texto `#0D1B2A`.
 // El azul de marca Figma `#00358B` es `primary` (botones, títulos, chips, nav).
 // Oscuro: Mode 1 de Figma, navy full-bleed — no se altera.
 // ---------------------------------------------------------------------------
@@ -132,8 +133,13 @@ internal val DarkColorScheme = darkColorScheme(
     onSurface = OficiosColorWhite,
     surfaceVariant = OficiosColorOutlineFill,
     onSurfaceVariant = OficiosColorSecondaryText,
+    surfaceBright = OficiosColorOutlineFill,
+    surfaceDim = OficiosColorBackground,
+    surfaceContainerLowest = OficiosColorOutlineFill,
+    surfaceContainerLow = OficiosColorOutlineFill,
     surfaceContainer = OficiosColorOutlineFill,
     surfaceContainerHigh = OficiosColorOutlineFill,
+    surfaceContainerHighest = OficiosColorOutlineFill,
     outline = OficiosColorOutlineFill,
     outlineVariant = OficiosColorOutlineFillVariant,
     primary = OficiosColorAction,
@@ -163,10 +169,15 @@ internal val LightColorScheme = lightColorScheme(
     onBackground = Color(0xFF0D1B2A),
     surface = Color(0xFFFFFFFF),
     onSurface = Color(0xFF0D1B2A),
-    surfaceVariant = Color(0xFFEEF0F3),
+    surfaceVariant = Color(0xFFFFFFFF),
     onSurfaceVariant = Color(0xFF4A5568),
-    surfaceContainer = Color(0xFFEEF0F3),
-    surfaceContainerHigh = Color(0xFFEEF0F3),
+    surfaceBright = Color(0xFFFFFFFF),
+    surfaceDim = Color(0xFFF4F5F7),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFFFFFFF),
+    surfaceContainer = Color(0xFFFFFFFF),
+    surfaceContainerHigh = Color(0xFFFFFFFF),
+    surfaceContainerHighest = Color(0xFFFFFFFF),
     outline = Color(0xFFE2E5EA),
     outlineVariant = Color(0xFFD5D8DE),
     primary = OficiosColorBackground,
@@ -175,7 +186,7 @@ internal val LightColorScheme = lightColorScheme(
     onPrimaryContainer = OficiosColorWhite,
     secondary = OficiosColorBackground,
     onSecondary = OficiosColorWhite,
-    secondaryContainer = Color(0xFFEEF0F3),
+    secondaryContainer = Color(0xFFFFFFFF),
     onSecondaryContainer = OficiosColorBackground,
     tertiary = OficiosColorAccent,
     onTertiary = OficiosColorBackground,
