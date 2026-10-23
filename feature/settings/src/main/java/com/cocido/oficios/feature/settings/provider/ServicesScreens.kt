@@ -38,15 +38,18 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.categories.CategoryGridItem
 import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
-import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleDayUi
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleEditor
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleRangeUi
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
+import com.cocido.oficios.domain.model.WeeklyAvailability
 
 @Composable
 fun ServicesScreen(uiState: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
@@ -378,25 +381,15 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
 
 @Composable
 private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    Text(stringResource(R.string.services_days), style = MaterialTheme.typography.titleMedium)
-    dayOptions().forEach { (id, label) -> OficiosCheckbox(id in state.workDays, { onEvent(AddServiceEvent.WorkDayToggled(id, it)) }, label, compactRow = true) }
-    Text(stringResource(R.string.services_hours), style = MaterialTheme.typography.titleMedium)
-    state.timeSlots.forEachIndexed { index, slot ->
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
-            OficiosDropdownField(slot.from, TIME_OPTIONS, { onEvent(AddServiceEvent.TimeFromChanged(index, it)) }, stringResource(R.string.services_from), Modifier.weight(1f))
-            OficiosDropdownField(slot.to, TIME_OPTIONS, { onEvent(AddServiceEvent.TimeToChanged(index, it)) }, stringResource(R.string.services_to), Modifier.weight(1f))
-            if (state.timeSlots.size > 1) IconButton(onClick = { onEvent(AddServiceEvent.RemoveTimeSlot(index)) }) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = stringResource(R.string.services_remove_slot))
-            }
-        }
-    }
-    OficiosButton(
-        text = stringResource(R.string.services_add_slot),
-        onClick = { onEvent(AddServiceEvent.AddTimeSlot) },
-        modifier = Modifier.fillMaxWidth(),
-        variant = OficiosButtonVariant.Tonal,
-        size = OficiosButtonSize.Form,
-        leadingIcon = Icons.Outlined.Add,
+    WeeklyScheduleEditor(
+        days = state.weeklyAvailability.toEditorDays(dayOptions().toMap()),
+        includeSunday = state.weeklyAvailability.includeSunday,
+        onIncludeSundayChange = { onEvent(AddServiceEvent.IncludeSunday(it)) },
+        onToggleDay = { day, enabled -> onEvent(AddServiceEvent.WeekDayToggled(day, enabled)) },
+        onRangeFromChanged = { day, index, value -> onEvent(AddServiceEvent.WeekRangeFrom(day, index, value)) },
+        onRangeToChanged = { day, index, value -> onEvent(AddServiceEvent.WeekRangeTo(day, index, value)) },
+        onAddRange = { onEvent(AddServiceEvent.AddWeekRange(it)) },
+        onRemoveRange = { day, index -> onEvent(AddServiceEvent.RemoveWeekRange(day, index)) },
     )
 }
 
@@ -414,8 +407,12 @@ private fun ReviewStep(state: AddServiceUiState) {
             Text(buildList { if (state.servesAtClientHome) add(stringResource(R.string.services_at_home)); if (state.servesAtLocal) add(stringResource(R.string.services_at_local)); if (state.requiresTurns) add(stringResource(R.string.services_with_turns)) }.joinToString(" · "))
             val days = dayOptions()
             val payments = paymentOptions()
-            Text(state.workDays.joinToString { id -> days.firstOrNull { it.first == id }?.second ?: id })
-            Text(state.timeSlots.joinToString { "${it.from}–${it.to}" })
+            Text(
+                state.weeklyAvailability.days.filter { it.ranges.isNotEmpty() }.joinToString { day ->
+                    val label = days.firstOrNull { it.first == day.day }?.second ?: day.day
+                    "$label ${day.ranges.joinToString { "${it.start}–${it.end}" }}"
+                },
+            )
             Text(state.paymentMethods.joinToString { id -> payments.firstOrNull { it.first == id }?.second ?: id })
             if (state.servesAtLocal) {
                 Text(
@@ -450,7 +447,18 @@ private fun stepDescription(step: AddServiceStep, isEditing: Boolean) = when (st
     AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_body)
 }
 
-private val TIME_OPTIONS = buildList { for (hour in 0..23) for (minute in listOf(0, 30)) add("%02d:%02d".format(hour, minute)) }
+private fun WeeklyAvailability.toEditorDays(labels: Map<String, String>): List<WeeklyScheduleDayUi> {
+    val keys = if (includeSunday) WeeklyAvailability.ALL_DAYS else WeeklyAvailability.WEEKDAYS
+    return keys.map { key ->
+        val ranges = rangesOn(key)
+        WeeklyScheduleDayUi(
+            key = key,
+            label = labels[key] ?: key,
+            enabled = ranges.isNotEmpty(),
+            ranges = ranges.map { WeeklyScheduleRangeUi(it.start, it.end) },
+        )
+    }
+}
 
 @Composable
 private fun dayOptions() = listOf(

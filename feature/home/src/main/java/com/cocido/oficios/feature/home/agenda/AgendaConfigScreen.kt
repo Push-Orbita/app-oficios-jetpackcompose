@@ -22,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
@@ -113,6 +116,13 @@ private fun AgendaConfigContent(
                     )
                 }
             }
+            OficiosButton(
+                text = stringResource(R.string.agenda_availability_open),
+                onClick = { onEvent(AgendaConfigEvent.OpenAvailability) },
+                modifier = Modifier.fillMaxWidth(),
+                variant = OficiosButtonVariant.Tonal,
+                size = OficiosButtonSize.Form,
+            )
             uiState.oficioError?.let { error ->
                 Text(
                     text = error,

@@ -74,9 +74,11 @@ sealed interface AgendaConfigEvent {
     data class RequestDeleteSession(val sessionId: Long) : AgendaConfigEvent
     data object ConfirmDeleteSession : AgendaConfigEvent
     data object DismissDeleteSession : AgendaConfigEvent
+    data object OpenAvailability : AgendaConfigEvent
 }
 
 sealed interface AgendaConfigEffect {
     data class ShowMessage(val message: String) : AgendaConfigEffect
     data class ShowError(val message: String) : AgendaConfigEffect
+    data object NavigateToAvailability : AgendaConfigEffect
 }

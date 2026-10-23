@@ -4,6 +4,7 @@ import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.WeeklyAvailability
 
 data class ServicesUiState(
     val isLoading: Boolean = true,
@@ -57,6 +58,7 @@ data class AddServiceUiState(
     val isGeocoding: Boolean = false,
     val workDays: Set<String> = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
     val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+    val weeklyAvailability: WeeklyAvailability = WeeklyAvailability.default(),
     val paymentMethods: Set<String> = emptySet(),
     val errorMessage: String? = null,
     val isEditing: Boolean = false,
@@ -113,6 +115,12 @@ sealed interface AddServiceEvent {
     data class TimeToChanged(val index: Int, val value: String) : AddServiceEvent
     data object AddTimeSlot : AddServiceEvent
     data class RemoveTimeSlot(val index: Int) : AddServiceEvent
+    data class IncludeSunday(val included: Boolean) : AddServiceEvent
+    data class WeekDayToggled(val day: String, val enabled: Boolean) : AddServiceEvent
+    data class WeekRangeFrom(val day: String, val index: Int, val value: String) : AddServiceEvent
+    data class WeekRangeTo(val day: String, val index: Int, val value: String) : AddServiceEvent
+    data class AddWeekRange(val day: String) : AddServiceEvent
+    data class RemoveWeekRange(val day: String, val index: Int) : AddServiceEvent
     data class PaymentToggled(val method: String, val checked: Boolean) : AddServiceEvent
     data object Save : AddServiceEvent
 }

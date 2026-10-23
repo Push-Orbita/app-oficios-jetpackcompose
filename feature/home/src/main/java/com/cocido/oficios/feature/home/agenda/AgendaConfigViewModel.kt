@@ -91,6 +91,9 @@ class AgendaConfigViewModel @Inject constructor(
             }
             AgendaConfigEvent.ConfirmDeleteSession -> confirmDeleteSession()
             AgendaConfigEvent.DismissDeleteSession -> updateSuccess { it.copy(sessionPendingDeleteId = null) }
+            AgendaConfigEvent.OpenAvailability -> viewModelScope.launch {
+                _effects.emit(AgendaConfigEffect.NavigateToAvailability)
+            }
         }
     }
 

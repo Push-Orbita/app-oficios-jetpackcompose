@@ -36,4 +36,10 @@
     <string name="gallery_pdf_cd">Documento PDF</string>
     <string name="gallery_delete">Eliminar</string>
     <string name="gallery_edit">Editar</string>
+    <string name="weekly_schedule_include_sunday">Incluir domingo</string>
+    <string name="weekly_schedule_from">Desde</string>
+    <string name="weekly_schedule_to">Hasta</string>
+    <string name="weekly_schedule_add_range">Agregar franja</string>
+    <string name="weekly_schedule_remove_range">Quitar franja</string>
+    <string name="weekly_schedule_hint">Puede cargar varias franjas por día (por ejemplo 08:00–12:00 y 16:00–20:00). El domingo solo se envía si lo incluye.</string>
 </resources>

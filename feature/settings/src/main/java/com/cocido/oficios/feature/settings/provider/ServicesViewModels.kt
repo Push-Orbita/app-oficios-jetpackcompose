@@ -15,7 +15,14 @@ import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
-import com.cocido.oficios.domain.model.expandedDays
+import com.cocido.oficios.domain.model.TimeRangeValidation
+import com.cocido.oficios.domain.model.WeeklyAvailability
+import com.cocido.oficios.domain.model.addRange
+import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.removeRange
+import com.cocido.oficios.domain.model.toWeeklyAvailability
+import com.cocido.oficios.domain.model.withToggledDay
+import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
@@ -136,6 +143,7 @@ class AddServiceViewModel @Inject constructor(
     private val getSubRubros: GetSubRubrosByRubroUseCase,
     private val searchBarrios: SearchBarriosUseCase,
     private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
+    private val availabilityUseCases: AvailabilityUseCases,
 ) : ViewModel() {
     private val editingServiceId: Long? = savedStateHandle.get<Long>("serviceId")?.takeIf { it > 0L }
     private val _uiState = MutableStateFlow(AddServiceUiState())
@@ -203,7 +211,7 @@ class AddServiceViewModel @Inject constructor(
                 it.copy(localLocation = confirmed)
             }
             is AddServiceEvent.WorkDayToggled -> update {
-                it.copy(workDays = it.workDays.toggled(event.day, event.checked), errorMessage = null)
+                it.withWeek(it.weeklyAvailability.withToggledDay(event.day, event.checked))
             }
             is AddServiceEvent.TimeFromChanged -> changeSlot(event.index) { copy(from = event.value) }
             is AddServiceEvent.TimeToChanged -> changeSlot(event.index) { copy(to = event.value) }
@@ -214,6 +222,22 @@ class AddServiceViewModel @Inject constructor(
                 it.copy(timeSlots = it.timeSlots.filterIndexed { index, _ -> index != event.index }.ifEmpty {
                     listOf(RegisterTradeTimeSlotDraft("09:00", "18:00"))
                 })
+            }
+            is AddServiceEvent.IncludeSunday -> update {
+                it.withWeek(it.weeklyAvailability.copy(includeSunday = event.included))
+            }
+            is AddServiceEvent.WeekDayToggled -> update {
+                it.withWeek(it.weeklyAvailability.withToggledDay(event.day, event.enabled))
+            }
+            is AddServiceEvent.WeekRangeFrom -> update {
+                it.withWeek(it.weeklyAvailability.changeRange(event.day, event.index, from = event.value))
+            }
+            is AddServiceEvent.WeekRangeTo -> update {
+                it.withWeek(it.weeklyAvailability.changeRange(event.day, event.index, to = event.value))
+            }
+            is AddServiceEvent.AddWeekRange -> update { it.withWeek(it.weeklyAvailability.addRange(event.day)) }
+            is AddServiceEvent.RemoveWeekRange -> update {
+                it.withWeek(it.weeklyAvailability.removeRange(event.day, event.index))
             }
             is AddServiceEvent.PaymentToggled -> update {
                 it.copy(paymentMethods = it.paymentMethods.toggled(event.method, event.checked), errorMessage = null)
@@ -274,9 +298,8 @@ class AddServiceViewModel @Inject constructor(
                 else -> null
             }
             AddServiceStep.SCHEDULE -> when {
-                state.workDays.isEmpty() -> "Elija al menos un día de trabajo."
-                state.timeSlots.any { !it.isValidRange() } -> "Revise los horarios: la hora de fin debe ser posterior al inicio."
-                else -> null
+                state.weeklyAvailability.activeDays.isEmpty() -> "Elija al menos un día de trabajo."
+                else -> TimeRangeValidation.validateWeek(state.weeklyAvailability)
             }
             AddServiceStep.PAYMENT -> if (state.paymentMethods.isEmpty()) "Elija al menos un medio de cobro." else null
             AddServiceStep.REVIEW -> null
@@ -310,8 +333,9 @@ class AddServiceViewModel @Inject constructor(
                 subRubroIds = state.selectedSubRubroIds.toList(),
                 servesAtClientHome = state.servesAtClientHome,
                 servesAtLocal = state.servesAtLocal,
-                workDays = state.workDays.toList(),
+                workDays = state.weeklyAvailability.activeDays,
                 timeSlots = state.timeSlots,
+                weeklyAvailability = state.weeklyAvailability,
                 requiresTurns = state.requiresTurns,
                 domicilioLocal = local,
                 paymentMethods = state.paymentMethods.toList(),
@@ -326,11 +350,14 @@ class AddServiceViewModel @Inject constructor(
                 accountUseCases.addService(request)
             }
             when (result) {
-                is AppResult.Success -> emit(
-                    AddServiceEffect.Saved(
-                        if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
-                    ),
-                )
+                is AppResult.Success -> {
+                    syncWeeklyAvailability(rubroId, state.weeklyAvailability)
+                    emit(
+                        AddServiceEffect.Saved(
+                            if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
+                        ),
+                    )
+                }
                 is AppResult.Error -> update { it.copy(isSaving = false, errorMessage = result.error.userMessage()) }
             }
         }
@@ -458,9 +485,16 @@ class AddServiceViewModel @Inject constructor(
                 return
             }
         }
-        val workDays = service.workSchedule.flatMap { it.expandedDays() }.toSet()
-        val timeSlots = service.workSchedule
-            .flatMap { schedule -> schedule.ranges.map { RegisterTradeTimeSlotDraft(it.from, it.to) } }
+        val fallbackWeek = service.workSchedule.toWeeklyAvailability()
+        val week = service.subServices.firstOrNull()?.id?.let { subRubroId ->
+            when (val result = availabilityUseCases.getWeekly(subRubroId)) {
+                is AppResult.Success -> result.data
+                is AppResult.Error -> fallbackWeek
+            }
+        } ?: fallbackWeek
+        val workDays = week.activeDays.toSet()
+        val timeSlots = week.days
+            .flatMap { day -> day.ranges.map { RegisterTradeTimeSlotDraft(it.start, it.end) } }
             .distinct()
             .ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) }
         val servesAtLocal = service.subServices.any { sub -> sub.servesAtLocal }
@@ -487,9 +521,24 @@ class AddServiceViewModel @Inject constructor(
                 localNumber = if (servesAtLocal) number else it.localNumber,
                 workDays = workDays.ifEmpty { it.workDays },
                 timeSlots = timeSlots,
+                weeklyAvailability = week,
                 paymentMethods = payments.ifEmpty { it.paymentMethods },
                 errorMessage = null,
             )
+        }
+    }
+
+    private suspend fun syncWeeklyAvailability(rubroId: Long, week: WeeklyAvailability) {
+        val details = when (val result = accountUseCases.getProfile()) {
+            is AppResult.Success -> result.data.providerDetails
+            is AppResult.Error -> return
+        } ?: return
+        val service = details.services
+            .filter { it.rubroId == rubroId }
+            .maxByOrNull { it.id }
+            ?: return
+        service.subServices.forEach { sub ->
+            availabilityUseCases.replaceWeekly(sub.id, week)
         }
     }
 
@@ -498,4 +547,12 @@ class AddServiceViewModel @Inject constructor(
 }
 
 private fun <T> Set<T>.toggled(value: T, checked: Boolean) = if (checked) this + value else this - value
-private fun RegisterTradeTimeSlotDraft.isValidRange() = from.matches(Regex("\\d{2}:\\d{2}")) && to.matches(Regex("\\d{2}:\\d{2}")) && from < to
+private fun AddServiceUiState.withWeek(week: WeeklyAvailability) = copy(
+    weeklyAvailability = week,
+    workDays = week.activeDays.toSet(),
+    timeSlots = week.days
+        .flatMap { day -> day.ranges.map { RegisterTradeTimeSlotDraft(it.start, it.end) } }
+        .distinct()
+        .ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
+    errorMessage = null,
+)

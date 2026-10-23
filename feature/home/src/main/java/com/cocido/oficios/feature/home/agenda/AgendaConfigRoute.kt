@@ -13,6 +13,7 @@ import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 fun AgendaConfigRoute(
     onNavigateBack: () -> Unit,
     onShowMessage: (String) -> Unit,
+    onNavigateToAvailability: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: AgendaConfigViewModel = hiltViewModel(),
 ) {
@@ -25,6 +26,7 @@ fun AgendaConfigRoute(
             when (effect) {
                 is AgendaConfigEffect.ShowMessage -> toastController.showSuccess(effect.message)
                 is AgendaConfigEffect.ShowError -> toastController.showError(effect.message)
+                AgendaConfigEffect.NavigateToAvailability -> onNavigateToAvailability()
             }
         }
     }

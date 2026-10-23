@@ -2,6 +2,7 @@ package com.cocido.oficios.core.network.test
 
 import com.cocido.oficios.core.network.api.account.WorkGalleryApi
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
+import com.cocido.oficios.core.network.api.availability.AvailabilityApi
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.catalog.CatalogApi
 import com.cocido.oficios.core.network.api.notifications.NotificationsApi
@@ -82,6 +83,9 @@ object NetworkTestFactory {
 
     fun createAgendaApi(server: MockWebServer, timeoutMs: Long = 10_000): AgendaApi =
         createRetrofit(server, timeoutMs).create(AgendaApi::class.java)
+
+    fun createAvailabilityApi(server: MockWebServer, timeoutMs: Long = 10_000): AvailabilityApi =
+        createRetrofit(server, timeoutMs).create(AvailabilityApi::class.java)
 
     fun createWorkGalleryApi(server: MockWebServer, timeoutMs: Long = 10_000): WorkGalleryApi =
         createRetrofit(server, timeoutMs).create(WorkGalleryApi::class.java)

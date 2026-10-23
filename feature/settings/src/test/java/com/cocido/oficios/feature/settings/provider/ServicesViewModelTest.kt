@@ -35,6 +35,11 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.model.AgendaBlock
+import com.cocido.oficios.domain.model.CreateAgendaBlockParams
+import com.cocido.oficios.domain.model.WeeklyAvailability
+import com.cocido.oficios.domain.repository.AvailabilityRepository
+import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -206,7 +211,19 @@ class AddServiceViewModelTest {
         getSubRubros = GetSubRubrosByRubroUseCase(catalog),
         searchBarrios = SearchBarriosUseCase(catalog),
         geocodeLocalAddress = GeocodeLocalAddressUseCase(FakeLocationRepository()),
+        availabilityUseCases = AvailabilityUseCases(FakeAvailabilityRepository()),
     )
+}
+
+private class FakeAvailabilityRepository : AvailabilityRepository {
+    override suspend fun getWeeklyAvailability(subRubroId: Long) =
+        AppResult.Success(WeeklyAvailability.default())
+    override suspend fun replaceWeeklyAvailability(subRubroId: Long, week: WeeklyAvailability) =
+        AppResult.Success(week)
+    override suspend fun listBlocks(subRubroId: Long) = AppResult.Success(emptyList<AgendaBlock>())
+    override suspend fun createBlock(params: CreateAgendaBlockParams) =
+        AppResult.Success(AgendaBlock(id = 1, date = params.date))
+    override suspend fun deleteBlock(subRubroId: Long, blockId: Long) = AppResult.Success(Unit)
 }
 
 private fun sampleService(atLocal: Boolean = false) = ManagedProviderService(
