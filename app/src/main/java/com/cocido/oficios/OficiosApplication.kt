@@ -14,15 +14,15 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @HiltAndroidApp
-class OficiosApplication : Application() {
+open class OficiosApplication : Application() {
 
     @Inject lateinit var userPreferencesRepository: UserPreferencesRepository
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun attachBaseContext(base: Context) {
-        ThemeNightMode.applyFromPreferences(base)
         super.attachBaseContext(base)
+        ThemeNightMode.applyFromPreferences(base)
     }
 
     override fun onCreate() {
