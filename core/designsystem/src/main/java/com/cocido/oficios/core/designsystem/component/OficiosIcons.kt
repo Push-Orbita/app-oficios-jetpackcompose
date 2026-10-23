@@ -94,6 +94,7 @@ object OficiosIcons {
     // Varios
     @DrawableRes val Asterisk = R.drawable.ic_lucide_asterisk
     @DrawableRes val Key = R.drawable.ic_lucide_key
+    @DrawableRes val Settings = R.drawable.ic_lucide_settings
     @DrawableRes val BatteryLow = R.drawable.ic_lucide_battery_low
     @DrawableRes val Signal = R.drawable.ic_lucide_signal
     @DrawableRes val Wifi = R.drawable.ic_lucide_wifi

@@ -13,7 +13,7 @@ OficiosTheme.colors.success
 - **Claro (DEFAULT):** fondo hueso **`#F4F5F7`** (rango BBVA `#F5F5F2`–`#F4F5F7`), cards blancas, texto `#0D1B2A`. El azul de marca Figma `#00358B` solo en botones primarios, títulos destacados, links, círculos de ícono, chip/tab seleccionado e indicador del bottom nav.
 - **Oscuro:** el Mode 1 actual (`#00358B` full-bleed). No se altera.
 
-Preferencia en Ajustes → Apariencia (Claro / Oscuro / Según el sistema), persistida en DataStore. Default: Claro.
+Preferencia en Ajustes → Configuración → Tema (Claro / Oscuro / Según el sistema), persistida en DataStore. Default: Claro.
 
 ## Tokens
 

@@ -21,9 +21,8 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,8 +55,6 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
-import com.cocido.oficios.core.designsystem.theme.selectedContent
-import com.cocido.oficios.domain.model.ThemeMode
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 
@@ -77,6 +74,7 @@ fun SettingsScreen(
                 OficiosBackTopBar(
                     title = stringResource(R.string.settings_title),
                     onBack = { onEvent(SettingsEvent.NavigateBack) },
+                    actions = { SettingsConfigurationIconButton(onClick = { onEvent(SettingsEvent.OpenConfiguration) }) },
                 )
             }
         } else {
@@ -155,24 +153,22 @@ private fun SettingsContent(
     ) {
         if (showInlineTitle) {
             item {
-                Text(
-                    text = stringResource(R.string.settings_title),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_title),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f),
+                    )
+                    SettingsConfigurationIconButton(onClick = { onEvent(SettingsEvent.OpenConfiguration) })
+                }
             }
         }
         item {
             SettingsProfileCard(user = user, displayName = displayName)
-        }
-
-        item { SettingsSectionTitle(stringResource(R.string.settings_theme_section)) }
-        item {
-            SettingsAppearanceCard(
-                selected = uiState.themeMode,
-                onSelect = { onEvent(SettingsEvent.SetThemeMode(it)) },
-            )
         }
 
         item { SettingsSectionTitle(stringResource(R.string.settings_profile_section)) }
@@ -323,6 +319,21 @@ private fun SettingsProfileCard(
 }
 
 @Composable
+private fun SettingsConfigurationIconButton(onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(OficiosComponentSize.minTouchTarget),
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(OficiosIcons.Settings),
+            contentDescription = stringResource(R.string.settings_configuration),
+            tint = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.size(OficiosComponentSize.iconMd),
+        )
+    }
+}
+
+@Composable
 private fun SettingsSectionTitle(title: String) {
     Text(
         text = title,
@@ -385,51 +396,6 @@ private fun SettingsActionRow(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsAppearanceCard(
-    selected: ThemeMode,
-    onSelect: (ThemeMode) -> Unit,
-) {
-    val options = listOf(
-        ThemeMode.LIGHT to stringResource(R.string.settings_theme_light),
-        ThemeMode.DARK to stringResource(R.string.settings_theme_dark),
-        ThemeMode.SYSTEM to stringResource(R.string.settings_theme_system),
-    )
-    OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-            options.forEach { (mode, label) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = OficiosComponentSize.listRowMinHeight)
-                        .clickable { onSelect(mode) }
-                        .semantics(mergeDescendants = true) { contentDescription = label },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadioButton(
-                        selected = selected == mode,
-                        onClick = { onSelect(mode) },
-                        colors = RadioButtonDefaults.colors(
-                            selectedColor = MaterialTheme.colorScheme.primary,
-                            unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        ),
-                    )
-                    Spacer(Modifier.width(OficiosSpacing.sm))
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = if (selected == mode) {
-                            OficiosTheme.colors.selectedContent(onFilledPrimary = false)
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    )
-                }
             }
         }
     }

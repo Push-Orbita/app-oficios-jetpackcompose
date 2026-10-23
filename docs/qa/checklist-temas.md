@@ -3,7 +3,7 @@
 **Rama / PR:** `cursor/qa-fixes-figma-ee07` · PR #22  
 **Tema claro:** fondo hueso `#F4F5F7`, cards blancas, texto navy/casi negro, azul de marca `#00358B` en CTA, títulos destacados, links, círculos de ícono, chip/tab seleccionado y bottom nav (todos los ítems primary; seleccionado = círculo 48dp con ícono blanco).  
 **Tema oscuro:** Mode 1 actual de Figma (`#00358B` full).  
-**Selector:** Ajustes → Apariencia → Claro (default) / Oscuro / Según el sistema (DataStore, sin restart, sin flash).  
+**Selector:** Ajustes → engranaje Configuración → Tema → Claro (default) / Oscuro / Según el sistema (DataStore, sin restart, sin flash).  
 **Roborazzi:** opt-in `-Proborazzi.test.record=true`; sin golden el test se omite. Gate JVM: `assembleDebug`, `testDebugUnitTest`, `lintDebug`, `:domain:test`.
 
 | Pantalla | Claro | Oscuro | Cómo se revisó |
@@ -22,7 +22,8 @@
 | Mis pedidos | OK | OK | Tokens + `ordersList` / `ordersListDark` |
 | Detalle pedido / contrapropuesta | OK | OK | Tokens + `orderDetail` / `orderDetailDark` |
 | Calificación | OK | OK | Tokens (`OficiosTheme.colors` / `colorScheme`) |
-| Ajustes + Apariencia | OK | OK | Tokens + `settingsAppearance` / `settingsAppearanceDark` |
+| Ajustes | OK | OK | Tokens; engranaje Configuración (48 dp) a la derecha del título |
+| Configuración → Tema | OK | OK | Tokens + `settingsAppearance` / `settingsAppearanceDark`; radios compactos en card blanca |
 | Editar perfil / portfolio (galerías) | OK | OK | Tokens + `editProfile` / `editProfileDark` + mosaico |
 | Mapas (ubicación local / domicilios) | OK | OK | Tokens + camera gating ola 1 (sin Maps factory antes de `onMapLoaded`) |
 | Diálogos, toasts, bottom sheets, cropper | OK | OK | Tokens DS (`OficiosDialog`, alerts, sheets) |

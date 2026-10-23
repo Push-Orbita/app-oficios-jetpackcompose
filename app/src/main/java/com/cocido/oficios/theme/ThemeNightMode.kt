@@ -8,7 +8,7 @@ import com.cocido.oficios.core.datastore.ThemeModePreferences
 import com.cocido.oficios.domain.model.ThemeMode
 
 /**
- * Aplica el night mode del proceso según Apariencia **antes** de inflar Activity,
+ * Aplica el night mode del proceso según Configuración → Tema **antes** de inflar Activity,
  * para que values / values-night del splash de sistema coincidan con la preferencia
  * y no con el tema del teléfono.
  *

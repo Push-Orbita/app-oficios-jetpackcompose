@@ -5,7 +5,7 @@ import com.cocido.oficios.domain.model.ThemeMode
 import com.cocido.oficios.domain.model.parseThemeMode
 
 /**
- * Espejo síncrono de la preferencia de Apariencia. DataStore no se puede leer
+ * Espejo síncrono de la preferencia de Configuración → Tema. DataStore no se puede leer
  * en [android.app.Application.attachBaseContext] sin bloquear el primer frame;
  * SharedPreferences sí, y alimenta night mode + system bars del arranque en frío.
  *
