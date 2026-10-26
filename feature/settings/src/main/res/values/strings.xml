@@ -220,6 +220,7 @@
     <string name="services_step_schedule_title">¿Cuándo trabaja?</string>
     <string name="services_step_payment_title">¿Cómo cobra?</string>
     <string name="services_step_review_title">Revise su nuevo servicio</string>
+    <string name="services_step_review_title_edit">Revise su servicio</string>
     <string name="services_step_trade_body">Elija el oficio y todas las especialidades que realmente realiza.</string>
     <string name="services_step_modality_body">Puede ir al domicilio del cliente, atender en un local o usar ambas modalidades.</string>
     <string name="services_step_schedule_body">Defina una disponibilidad habitual; los turnos concretos se administran desde Agenda.</string>

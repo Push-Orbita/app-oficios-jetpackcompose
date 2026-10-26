@@ -434,7 +434,9 @@ private fun stepTitle(step: AddServiceStep, isEditing: Boolean) = when (step) {
     AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_title)
     AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_title)
     AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_title)
-    AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_title)
+    AddServiceStep.REVIEW -> stringResource(
+        if (isEditing) R.string.services_step_review_title_edit else R.string.services_step_review_title,
+    )
 }
 @Composable
 private fun stepDescription(step: AddServiceStep, isEditing: Boolean) = when (step) {
