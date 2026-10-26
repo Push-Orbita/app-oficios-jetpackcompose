@@ -2,7 +2,8 @@
 <!--
     Splash de sistema (tema oscuro), sin icon background:
     canvas 288dp, círculo visible 192dp. Isotipo plano (Figma 666:2)
-    casco azul + pin blanco, contraste sobre navy #00358B.
+    casco azul + pin blanco a 71×130 (insets 108.5/79), contraste
+    sobre navy #00358B.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
@@ -17,5 +18,9 @@
         android:width="@dimen/oficios_splash_isotype_width"
         android:height="@dimen/oficios_splash_isotype_height"
         android:gravity="center"
+        android:left="@dimen/oficios_splash_isotype_inset_horizontal"
+        android:top="@dimen/oficios_splash_isotype_inset_vertical"
+        android:right="@dimen/oficios_splash_isotype_inset_horizontal"
+        android:bottom="@dimen/oficios_splash_isotype_inset_vertical"
         android:drawable="@drawable/ic_oficios_logotipo" />
 </layer-list>

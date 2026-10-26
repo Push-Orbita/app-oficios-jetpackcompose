@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+ / compat sin icon background: canvas 288dp, círculo visible 192dp. -->
+    <!-- Android 12+ / compat sin icon background: canvas 288dp, círculo visible 192dp.
+         Con icon background el círculo baja a 160dp; el isotipo también debe caber ahí. -->
     <dimen name="oficios_splash_icon_canvas">288dp</dimen>
-    <!-- Isotipo centrado; diagonal 83×152 ≈ 173dp &lt; 192dp, con margen. -->
-    <dimen name="oficios_splash_isotype_width">83dp</dimen>
-    <dimen name="oficios_splash_isotype_height">152dp</dimen>
-    <!-- Outline 114×201: mismo alto, ancho para no achatar el vector. -->
-    <dimen name="oficios_splash_isotype_outline_width">86dp</dimen>
+    <!--
+        Alto 130dp (no 152): el vector es edge-to-edge y el pin es ancho abajo.
+        152×86 tiene diagonal 175 &lt; 192, pero las esquinas quedan a 87dp del centro
+        y salen del círculo de 160dp (radio 80). En lanot el borde inferior se cortaba.
+        Outline 114×201 → 74×130. Plano 110×201 → 71×130.
+        Esquina 74×130: ~75dp del centro, cabe en radio 80 y en radio 96.
+    -->
+    <dimen name="oficios_splash_isotype_width">71dp</dimen>
+    <dimen name="oficios_splash_isotype_height">130dp</dimen>
+    <dimen name="oficios_splash_isotype_outline_width">74dp</dimen>
+    <!-- Insets sobre canvas 288 para que el logo no llene el canvas si width/height se ignora. -->
+    <dimen name="oficios_splash_isotype_inset_vertical">79dp</dimen>
+    <dimen name="oficios_splash_isotype_inset_horizontal_outline">107dp</dimen>
+    <dimen name="oficios_splash_isotype_inset_horizontal">108.5dp</dimen>
 </resources>

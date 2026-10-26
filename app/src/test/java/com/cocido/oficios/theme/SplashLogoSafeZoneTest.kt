@@ -61,16 +61,27 @@ class SplashLogoSafeZoneTest {
     }
 
     @Test
-    fun isotypeFitsInside192dpCircle() {
+    fun isotypeFitsInside160dpCircle() {
         val app = RuntimeEnvironment.getApplication()
-        val width = app.resources.getDimension(R.dimen.oficios_splash_isotype_outline_width)
-        val height = app.resources.getDimension(R.dimen.oficios_splash_isotype_height)
         val density = app.resources.displayMetrics.density
-        val widthDp = width / density
-        val heightDp = height / density
-        val diagonal = sqrt(widthDp * widthDp + heightDp * heightDp)
-        assertTrue("diagonal $diagonal dp debe caber en el círculo de 192dp", diagonal < 192f)
-        assertEquals(152f, heightDp, 0.51f)
+        val widthDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_outline_width) / density
+        val filledWidthDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_width) / density
+        val heightDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_height) / density
+        val canvasDp = app.resources.getDimension(R.dimen.oficios_splash_icon_canvas) / density
+        val insetVDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_inset_vertical) / density
+        val insetOutlineHDp =
+            app.resources.getDimension(R.dimen.oficios_splash_isotype_inset_horizontal_outline) / density
+        val halfDiagonal = sqrt(widthDp * widthDp + heightDp * heightDp) / 2f
+        assertEquals(130f, heightDp, 0.51f)
+        assertEquals(74f, widthDp, 0.51f)
+        assertEquals(71f, filledWidthDp, 0.51f)
+        assertEquals(canvasDp - 2f * insetVDp, heightDp, 0.51f)
+        assertEquals(canvasDp - 2f * insetOutlineHDp, widthDp, 0.51f)
+        // Radio 80 = círculo 160dp (con icon background). 192/2=96 es más holgado.
+        assertTrue(
+            "esquina del isotipo a $halfDiagonal dp del centro debe caber en radio 80",
+            halfDiagonal < 80f,
+        )
     }
 
     @Test
@@ -87,6 +98,9 @@ class SplashLogoSafeZoneTest {
             assertFalse(path, lower.contains("yellow"))
             assertTrue(path, xml.contains("ic_oficios_logotipo"))
             assertTrue(path, xml.contains("oficios_splash_icon_canvas"))
+            assertTrue(path, xml.contains("oficios_splash_isotype_inset_vertical"))
+            assertTrue(path, xml.contains("android:left="))
+            assertTrue(path, xml.contains("android:top="))
         }
     }
 
