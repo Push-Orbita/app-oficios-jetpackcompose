@@ -501,7 +501,7 @@ class AddServiceViewModel @Inject constructor(
         val (street, numberFromStreet) = DomicilioFieldValidation.splitStreetAndNumber(commercialLocal?.street)
         val number = commercialLocal?.number?.trim().orEmpty().ifBlank { numberFromStreet }
         update {
-            it.copy(
+            val next = it.copy(
                 isLoading = false,
                 loadFailed = false,
                 isEditing = true,
@@ -525,6 +525,7 @@ class AddServiceViewModel @Inject constructor(
                 paymentMethods = payments.ifEmpty { it.paymentMethods },
                 errorMessage = null,
             )
+            next.copy(editBaseline = next.formSnapshot())
         }
     }
 

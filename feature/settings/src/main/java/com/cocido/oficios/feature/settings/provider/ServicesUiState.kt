@@ -65,6 +65,7 @@ data class AddServiceUiState(
     val editingServiceId: Long? = null,
     val isPrimaryService: Boolean = false,
     val lockedRubroName: String = "",
+    val editBaseline: AddServiceFormSnapshot? = null,
 ) {
     val selectedCategoryLabel get() = categories.firstOrNull { it.id == selectedCategoryId }?.label.orEmpty()
     val selectedRubroLabel get() = rubros.firstOrNull { it.id == selectedRubroId }?.label.orEmpty()
@@ -79,15 +80,43 @@ data class AddServiceUiState(
             categories.isNotEmpty()
         }
     val hasUnsavedChanges: Boolean
-        get() = !isEditing && (
+        get() = if (isEditing) {
+            editBaseline != null && formSnapshot() != editBaseline
+        } else {
             selectedCategoryId != null ||
                 localName.isNotBlank() ||
                 localBarrioQuery.isNotBlank() ||
                 localStreet.isNotBlank() ||
                 localNumber.isNotBlank() ||
                 paymentMethods.isNotEmpty()
-            )
+        }
+
+    fun formSnapshot() = AddServiceFormSnapshot(
+        selectedSubRubroIds = selectedSubRubroIds,
+        servesAtClientHome = servesAtClientHome,
+        servesAtLocal = servesAtLocal,
+        requiresTurns = requiresTurns,
+        localName = localName,
+        localBarrioId = localBarrioId,
+        localStreet = localStreet,
+        localNumber = localNumber,
+        weeklyAvailability = weeklyAvailability,
+        paymentMethods = paymentMethods,
+    )
 }
+
+data class AddServiceFormSnapshot(
+    val selectedSubRubroIds: Set<Long>,
+    val servesAtClientHome: Boolean,
+    val servesAtLocal: Boolean,
+    val requiresTurns: Boolean,
+    val localName: String,
+    val localBarrioId: Long?,
+    val localStreet: String,
+    val localNumber: String,
+    val weeklyAvailability: WeeklyAvailability,
+    val paymentMethods: Set<String>,
+)
 
 sealed interface AddServiceEvent {
     data object Retry : AddServiceEvent

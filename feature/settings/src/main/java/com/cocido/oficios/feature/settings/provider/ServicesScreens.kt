@@ -192,6 +192,7 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
 
 @Composable
 fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    // Intra-wizard: Back vuelve al paso anterior. Descartar solo al salir del Paso 1.
     val leavingForm = uiState.step == AddServiceStep.TRADE
     val handleBack = rememberConfirmDiscardBackHandler(
         hasUnsavedChanges = leavingForm && uiState.hasUnsavedChanges,

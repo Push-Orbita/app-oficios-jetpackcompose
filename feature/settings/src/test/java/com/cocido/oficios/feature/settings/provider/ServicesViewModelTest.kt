@@ -199,6 +199,15 @@ class AddServiceViewModelTest {
         assertTrue(effects.any { it is AddServiceEffect.Saved && it.message == "Servicio actualizado." })
     }
 
+    @Test
+    fun `edit is dirty only after a real change`() = runTest(testDispatcher) {
+        val viewModel = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = 11L)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.hasUnsavedChanges)
+        viewModel.onEvent(AddServiceEvent.RequiresTurnsChanged(true))
+        assertTrue(viewModel.uiState.value.hasUnsavedChanges)
+    }
+
     private fun addViewModel(
         accounts: FakeAccountRepository,
         catalog: FakeCatalogRepository,
