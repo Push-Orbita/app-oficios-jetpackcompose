@@ -66,6 +66,10 @@ data class AddServiceUiState(
     val isPrimaryService: Boolean = false,
     val lockedRubroName: String = "",
     val editBaseline: AddServiceFormSnapshot? = null,
+    val editorSpecialties: List<CatalogOption> = emptyList(),
+    val editorSourceSubId: Long? = null,
+    val availabilityDrafts: Map<Long, WeeklyAvailability> = emptyMap(),
+    val canDisableTurns: Boolean = true,
 ) {
     val selectedCategoryLabel get() = categories.firstOrNull { it.id == selectedCategoryId }?.label.orEmpty()
     val selectedRubroLabel get() = rubros.firstOrNull { it.id == selectedRubroId }?.label.orEmpty()
@@ -91,6 +95,15 @@ data class AddServiceUiState(
                 paymentMethods.isNotEmpty()
         }
 
+    val editorSpecialtyName: String
+        get() = editorSpecialties.firstOrNull { it.id == editorSourceSubId }?.label.orEmpty()
+
+    fun availabilitySnapshot(): Map<Long, WeeklyAvailability> {
+        val drafts = availabilityDrafts.toMutableMap()
+        editorSourceSubId?.let { drafts[it] = weeklyAvailability }
+        return drafts
+    }
+
     fun formSnapshot() = AddServiceFormSnapshot(
         selectedSubRubroIds = selectedSubRubroIds,
         servesAtClientHome = servesAtClientHome,
@@ -100,8 +113,9 @@ data class AddServiceUiState(
         localBarrioId = localBarrioId,
         localStreet = localStreet,
         localNumber = localNumber,
-        weeklyAvailability = weeklyAvailability,
+        weeklyAvailability = if (isEditing) WeeklyAvailability.default() else weeklyAvailability,
         paymentMethods = paymentMethods,
+        availabilityBySubId = availabilitySnapshot(),
     )
 }
 
@@ -116,6 +130,7 @@ data class AddServiceFormSnapshot(
     val localNumber: String,
     val weeklyAvailability: WeeklyAvailability,
     val paymentMethods: Set<String>,
+    val availabilityBySubId: Map<Long, WeeklyAvailability> = emptyMap(),
 )
 
 sealed interface AddServiceEvent {
@@ -151,6 +166,7 @@ sealed interface AddServiceEvent {
     data class AddWeekRange(val day: String) : AddServiceEvent
     data class RemoveWeekRange(val day: String, val index: Int) : AddServiceEvent
     data class PaymentToggled(val method: String, val checked: Boolean) : AddServiceEvent
+    data class EditorSpecialtySelected(val id: Long) : AddServiceEvent
     data object Save : AddServiceEvent
 }
 

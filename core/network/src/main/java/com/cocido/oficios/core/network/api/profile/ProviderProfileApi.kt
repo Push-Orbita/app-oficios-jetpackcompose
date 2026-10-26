@@ -3,9 +3,6 @@ package com.cocido.oficios.core.network.api.profile
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorPerfilEstadoDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubrubrosRequestDto
-import com.cocido.oficios.core.network.api.profile.dto.CreateTrabajadorOficioSubRubroRequestDto
-import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioSubRubroCreatedDto
-import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorOficioSubRubroWorkerDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -35,18 +32,4 @@ interface ProviderProfileApi {
 
     @DELETE("trabajador-oficio-rubro/{id}")
     suspend fun deleteRubro(@Path("id") id: Long)
-
-    @POST("trabajador-oficio-sub-rubro")
-    suspend fun createSubRubro(
-        @Body request: CreateTrabajadorOficioSubRubroRequestDto,
-    ): TrabajadorOficioSubRubroCreatedDto
-
-    @PATCH("trabajador-oficio-sub-rubro/{id}")
-    suspend fun updateSubRubro(
-        @Path("id") id: Long,
-        @Body request: UpdateTrabajadorOficioSubRubroWorkerDto,
-    ): TrabajadorOficioSubRubroCreatedDto
-
-    @DELETE("trabajador-oficio-sub-rubro/{id}")
-    suspend fun deleteSubRubro(@Path("id") id: Long)
 }

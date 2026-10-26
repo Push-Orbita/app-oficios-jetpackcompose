@@ -38,6 +38,12 @@ data class ManagedProviderService(
     val isPrimary: Boolean,
     val subServices: List<ManagedProviderSubService>,
     val workSchedule: List<ManagedWorkSchedule>,
+    val specialtySchedules: List<ManagedSpecialtySchedule> = emptyList(),
+)
+
+data class ManagedSpecialtySchedule(
+    val name: String,
+    val workSchedule: List<ManagedWorkSchedule>,
 )
 
 data class ManagedProviderSubService(

@@ -95,7 +95,7 @@ class ServicesViewModelTest {
         val availability = FakeAvailabilityRepository(
             weeksBySub = mapOf(
                 1L to mondayWeek("14:00", "18:00"),
-                2L to mondayWeek("14:00", "18:00"),
+                2L to mondayWeek("10:00", "12:00"),
             ),
         )
         val viewModel = ServicesViewModel(
@@ -103,10 +103,13 @@ class ServicesViewModelTest {
             AvailabilityUseCases(availability),
         )
         advanceUntilIdle()
-        val schedule = viewModel.uiState.value.services.single().workSchedule
-        assertEquals("LUNES", schedule.single().dayFrom)
-        assertEquals("14:00", schedule.single().ranges.single().from)
-        assertEquals("18:00", schedule.single().ranges.single().to)
+        val service = viewModel.uiState.value.services.single()
+        assertEquals(2, service.specialtySchedules.size)
+        assertEquals("Reparación de cañerías", service.specialtySchedules[0].name)
+        assertEquals("14:00", service.specialtySchedules[0].workSchedule.single().ranges.single().from)
+        assertEquals("Instalación de sanitarios", service.specialtySchedules[1].name)
+        assertEquals("10:00", service.specialtySchedules[1].workSchedule.single().ranges.single().from)
+        assertEquals("14:00", service.workSchedule.single().ranges.single().from)
     }
 }
 
@@ -233,6 +236,46 @@ class AddServiceViewModelTest {
     }
 
     @Test
+    fun `edit ignores destildar when turns are locked`() = runTest(testDispatcher) {
+        val accounts = FakeAccountRepository(requiresTurns = true)
+        val viewModel = addViewModel(accounts, FakeCatalogRepository(), serviceId = 11L)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.requiresTurns)
+        assertFalse(viewModel.uiState.value.canDisableTurns)
+        viewModel.onEvent(AddServiceEvent.RequiresTurnsChanged(false))
+        assertTrue(viewModel.uiState.value.requiresTurns)
+        assertFalse(viewModel.uiState.value.hasUnsavedChanges)
+    }
+
+    @Test
+    fun `edit ignores adding a specialty`() = runTest(testDispatcher) {
+        val viewModel = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = 11L)
+        advanceUntilIdle()
+        assertEquals(setOf(21L, 22L), viewModel.uiState.value.selectedSubRubroIds)
+        viewModel.onEvent(AddServiceEvent.SubRubroToggled(23L, true))
+        assertEquals(setOf(21L, 22L), viewModel.uiState.value.selectedSubRubroIds)
+    }
+
+    @Test
+    fun `edit schedule selector keeps the other specialty week`() = runTest(testDispatcher) {
+        val first = mondayWeek("14:00", "18:00")
+        val second = mondayWeek("09:00", "18:00")
+        val viewModel = addViewModel(
+            FakeAccountRepository(),
+            FakeCatalogRepository(),
+            serviceId = 11L,
+            availability = FakeAvailabilityRepository(weeksBySub = mapOf(1L to first, 2L to second)),
+        )
+        advanceUntilIdle()
+        assertEquals(1L, viewModel.uiState.value.editorSourceSubId)
+        assertEquals(first, viewModel.uiState.value.weeklyAvailability)
+        viewModel.onEvent(AddServiceEvent.EditorSpecialtySelected(2L))
+        assertEquals(2L, viewModel.uiState.value.editorSourceSubId)
+        assertEquals(second, viewModel.uiState.value.weeklyAvailability)
+        assertFalse(viewModel.uiState.value.hasUnsavedChanges)
+    }
+
+    @Test
     fun `save in edit does not put the same week on every specialty`() = runTest(testDispatcher) {
         val first = mondayWeek("14:00", "18:00")
         val second = mondayWeek("09:00", "18:00")
@@ -296,14 +339,14 @@ private class FakeAvailabilityRepository(
         AppResult.Error(AppError.Unknown("unused"))
 }
 
-private fun sampleService(atLocal: Boolean = false) = ManagedProviderService(
+private fun sampleService(atLocal: Boolean = false, requiresTurns: Boolean = false) = ManagedProviderService(
     id = 11L,
     rubroId = 2L,
     rubroName = "Plomería",
     isPrimary = true,
     subServices = listOf(
-        ManagedProviderSubService(1, 21L, "Reparación de cañerías", true, atLocal, false),
-        ManagedProviderSubService(2, 22L, "Instalación de sanitarios", true, atLocal, false),
+        ManagedProviderSubService(1, 21L, "Reparación de cañerías", true, atLocal, requiresTurns),
+        ManagedProviderSubService(2, 22L, "Instalación de sanitarios", true, atLocal, requiresTurns),
     ),
     workSchedule = listOf(
         ManagedWorkSchedule(
@@ -316,6 +359,7 @@ private fun sampleService(atLocal: Boolean = false) = ManagedProviderService(
 
 private class FakeAccountRepository(
     private val localService: Boolean = false,
+    private val requiresTurns: Boolean = false,
 ) : AccountRepository {
     var replacedId: Long? = null
     var replacedPrimary: Boolean? = null
@@ -331,7 +375,7 @@ private class FakeAccountRepository(
                 description = null,
                 experience = null,
                 paymentMethods = listOf("EFECTIVO"),
-                services = listOf(sampleService(atLocal = localService)),
+                services = listOf(sampleService(atLocal = localService, requiresTurns = requiresTurns)),
                 gallery = emptyList(),
                 certificates = emptyList(),
                 commercialLocal = if (localService) {

@@ -28,6 +28,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormColumn
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
@@ -48,6 +49,7 @@ import com.cocido.oficios.core.ui.schedule.WeeklyScheduleDayUi
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleEditor
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleRangeUi
 import com.cocido.oficios.domain.model.ManagedProviderService
+import com.cocido.oficios.domain.model.ManagedWorkSchedule
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.WeeklyAvailability
 
@@ -156,21 +158,21 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                     if (service.subServices.any { it.requiresTurns }) add(stringResource(R.string.services_with_turns))
                 }
                 Text(modalities.joinToString(" · ").ifBlank { stringResource(R.string.services_modality_unknown) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (service.workSchedule.isNotEmpty()) {
-                    val days = dayOptions()
-                    val scheduleLines = mutableListOf<String>()
-                    for (schedule in service.workSchedule) {
-                        val from = days.firstOrNull { it.first == schedule.dayFrom }?.second ?: schedule.dayFrom
-                        val to = days.firstOrNull { it.first == schedule.dayTo }?.second ?: schedule.dayTo
-                        val label = if (schedule.dayFrom != schedule.dayTo) {
-                            stringResource(R.string.services_day_range, from, to.lowercase())
-                        } else {
-                            from
+                val days = dayOptions()
+                if (service.specialtySchedules.size > 1) {
+                    for (specialty in service.specialtySchedules) {
+                        val hours = formatWorkSchedule(specialty.workSchedule, days)
+                        if (hours.isNotBlank()) {
+                            Text(
+                                stringResource(R.string.services_specialty_hours, specialty.name, hours),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
-                        scheduleLines += "$label ${schedule.ranges.joinToString { "${it.from}–${it.to}" }}"
                     }
+                } else if (service.workSchedule.isNotEmpty()) {
                     Text(
-                        scheduleLines.joinToString(),
+                        formatWorkSchedule(service.workSchedule, days),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -289,16 +291,23 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (state.subRubros.isNotEmpty()) {
-            Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
-            state.subRubros.forEach { option ->
-                OficiosCheckbox(
-                    option.id in state.selectedSubRubroIds,
-                    { onEvent(AddServiceEvent.SubRubroToggled(option.id, it)) },
-                    option.label,
-                )
+        Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
+        val published = state.subRubros.filter { it.id in state.selectedSubRubroIds }
+        if (published.isEmpty()) {
+            Text(
+                stringResource(R.string.services_no_specialties),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        } else {
+            published.forEach { option ->
+                Text(option.label, style = MaterialTheme.typography.bodyLarge)
             }
         }
+        Text(
+            stringResource(R.string.services_specialties_edit_locked),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         return
     }
     Text(
@@ -341,10 +350,15 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
 private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
     OficiosCheckbox(state.servesAtClientHome, { onEvent(AddServiceEvent.ClientHomeChanged(it)) }, stringResource(R.string.services_client_home))
     OficiosCheckbox(state.servesAtLocal, { onEvent(AddServiceEvent.LocalChanged(it)) }, stringResource(R.string.services_local))
-    OficiosCheckbox(state.requiresTurns, { onEvent(AddServiceEvent.RequiresTurnsChanged(it)) }, stringResource(R.string.services_requires_turns))
-    if (state.isEditing) {
+    OficiosCheckbox(
+        checked = state.requiresTurns,
+        onCheckedChange = { onEvent(AddServiceEvent.RequiresTurnsChanged(it)) },
+        label = stringResource(R.string.services_requires_turns),
+        enabled = !state.isEditing || state.canDisableTurns,
+    )
+    if (state.isEditing && !state.canDisableTurns) {
         Text(
-            stringResource(R.string.services_requires_turns_edit_hint),
+            stringResource(R.string.services_requires_turns_locked),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -389,6 +403,25 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
 
 @Composable
 private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    if (state.isEditing && state.editorSpecialties.isNotEmpty()) {
+        if (state.editorSpecialties.size > 1) {
+            Text(stringResource(R.string.services_schedule_pick_specialty), style = MaterialTheme.typography.titleMedium)
+            state.editorSpecialties.forEach { option ->
+                OficiosFilterChip(
+                    label = option.label,
+                    selected = option.id == state.editorSourceSubId,
+                    onToggle = { onEvent(AddServiceEvent.EditorSpecialtySelected(option.id)) },
+                )
+            }
+        }
+        if (state.editorSpecialtyName.isNotBlank()) {
+            Text(
+                stringResource(R.string.services_schedule_for_specialty, state.editorSpecialtyName),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
     WeeklyScheduleEditor(
         days = state.weeklyAvailability.toEditorDays(dayOptions().toMap()),
         includeSunday = state.weeklyAvailability.includeSunday,
@@ -415,10 +448,15 @@ private fun ReviewStep(state: AddServiceUiState) {
             Text(buildList { if (state.servesAtClientHome) add(stringResource(R.string.services_at_home)); if (state.servesAtLocal) add(stringResource(R.string.services_at_local)); if (state.requiresTurns) add(stringResource(R.string.services_with_turns)) }.joinToString(" · "))
             val days = dayOptions()
             val payments = paymentOptions()
+            val hours = state.weeklyAvailability.days.filter { it.ranges.isNotEmpty() }.joinToString { day ->
+                val label = days.firstOrNull { it.first == day.day }?.second ?: day.day
+                "$label ${day.ranges.joinToString { "${it.start}–${it.end}" }}"
+            }
             Text(
-                state.weeklyAvailability.days.filter { it.ranges.isNotEmpty() }.joinToString { day ->
-                    val label = days.firstOrNull { it.first == day.day }?.second ?: day.day
-                    "$label ${day.ranges.joinToString { "${it.start}–${it.end}" }}"
+                if (state.isEditing && state.editorSpecialtyName.isNotBlank() && hours.isNotBlank()) {
+                    stringResource(R.string.services_specialty_hours, state.editorSpecialtyName, hours)
+                } else {
+                    hours
                 },
             )
             Text(state.paymentMethods.joinToString { id -> payments.firstOrNull { it.first == id }?.second ?: id })
@@ -452,9 +490,30 @@ private fun stepDescription(step: AddServiceStep, isEditing: Boolean) = when (st
         if (isEditing) R.string.services_edit_trade_hint else R.string.services_step_trade_body,
     )
     AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_body)
-    AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_body)
+    AddServiceStep.SCHEDULE -> stringResource(
+        if (isEditing) R.string.services_step_schedule_body_edit else R.string.services_step_schedule_body,
+    )
     AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_body)
     AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_body)
+}
+
+@Composable
+private fun formatWorkSchedule(
+    schedules: List<ManagedWorkSchedule>,
+    days: List<Pair<String, String>>,
+): String {
+    val lines = mutableListOf<String>()
+    for (schedule in schedules) {
+        val from = days.firstOrNull { it.first == schedule.dayFrom }?.second ?: schedule.dayFrom
+        val to = days.firstOrNull { it.first == schedule.dayTo }?.second ?: schedule.dayTo
+        val label = if (schedule.dayFrom != schedule.dayTo) {
+            stringResource(R.string.services_day_range, from, to.lowercase())
+        } else {
+            from
+        }
+        lines += "$label ${schedule.ranges.joinToString { "${it.from}–${it.to}" }}"
+    }
+    return lines.joinToString()
 }
 
 private fun WeeklyAvailability.toEditorDays(labels: Map<String, String>): List<WeeklyScheduleDayUi> {

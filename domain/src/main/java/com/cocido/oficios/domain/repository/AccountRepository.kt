@@ -55,11 +55,13 @@ interface AccountRepository {
     suspend fun addProviderService(request: ProviderRubroFullRequest): AppResult<Unit>
     suspend fun deleteProviderService(id: Long): AppResult<Unit>
     /**
-     * Si el rubro ya existe, se actualiza en sitio: alta/baja de subrubros,
-     * `PATCH` de `requiereTurnos` / modalidad, `POST`/`DELETE` `/sesion` y
-     * medios de cobro. No hay PATCH full: no se hace POST `/full` ni DELETE
-     * del rubro. Recreate (POST y recién entonces DELETE del id viejo) solo
-     * si no hay rubro en cache. Un POST 4xx/5xx no borra nada.
+     * Si el rubro ya existe, se actualiza en sitio con lo que el contrato
+     * del trabajador sí expone: `POST /sesion` (solo si pide turnos) y
+     * medios de cobro. No hay PATCH de `requiereTurnos` ni alta/baja de
+     * subrubros: no se inventa `PATCH`/`POST`/`DELETE` de
+     * `trabajador-oficio-sub-rubro` ni se borra `/sesion` al destildar.
+     * Recreate (POST y recién entonces DELETE del id viejo) solo si no hay
+     * rubro en cache. Un POST 4xx/5xx no borra nada.
      */
     suspend fun replaceProviderService(
         existingId: Long,

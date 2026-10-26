@@ -1,6 +1,5 @@
 package com.cocido.oficios.core.data.repository
 
-import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.data.cache.ClientProfileStore
 import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
@@ -46,9 +45,6 @@ import com.cocido.oficios.core.network.api.profile.dto.CreateContactoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateContactoResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateDomicilioRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubrubrosRequestDto
-import com.cocido.oficios.core.network.api.profile.dto.CreateTrabajadorOficioSubRubroRequestDto
-import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioSubRubroCreatedDto
-import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorOficioSubRubroWorkerDto
 import com.cocido.oficios.core.network.api.profile.dto.EnviarCodigoTelefonoResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.MisContactosResponseDto
 import com.cocido.oficios.core.network.api.profile.dto.MisDomiciliosResponseDto
@@ -184,9 +180,6 @@ class AccountRepositoryCacheTest {
         val api = RecordingProviderProfileApi(createSucceeds = true)
         val agenda = RecordingAgendaApi()
         authApi.rubros = listOf(existingRubroDto())
-        api.onUpdateSubRubro = { _, body ->
-            authApi.rubros = listOf(existingRubroDto(requiresTurns = body.requiereTurnos == true))
-        }
         accountApi.currentUser = providerUser()
         repository = repositoryWith(providerApi = api, agendaApi = agenda)
         assertTrue(repository.getProfile() is AppResult.Success)
@@ -195,17 +188,14 @@ class AccountRepositoryCacheTest {
         assertEquals(0, api.createFullCalls)
         assertEquals(emptyList<Long>(), api.deletedIds)
         assertEquals(1, agenda.createSesionCalls)
-        assertEquals(true, repository.providerDetails.value?.services?.single()?.subServices?.single()?.requiresTurns)
+        assertEquals(emptyList<Long>(), agenda.deletedSesionIds)
     }
 
     @Test
-    fun `destildar turnos patches subrubro and deletes sesion without deleting rubro`() = runTest {
+    fun `destildar does not delete sesion nor invent a subrubro patch`() = runTest {
         val api = RecordingProviderProfileApi(createSucceeds = true)
         val agenda = RecordingAgendaApi()
         authApi.rubros = listOf(existingRubroDto(requiresTurns = true))
-        api.onUpdateSubRubro = { _, body ->
-            authApi.rubros = listOf(existingRubroDto(requiresTurns = body.requiereTurnos == true))
-        }
         agenda.sessions = listOf(
             com.cocido.oficios.core.network.api.agenda.dto.SesionDto(
                 id = 7L,
@@ -225,69 +215,27 @@ class AccountRepositoryCacheTest {
         assertTrue(result is AppResult.Success)
         assertEquals(0, api.createFullCalls)
         assertEquals(emptyList<Long>(), api.deletedIds)
-        assertEquals(1, api.updatedSubRubros.size)
-        assertEquals(false, api.updatedSubRubros.single().second.requiereTurnos)
-        assertEquals(listOf(7L), agenda.deletedSesionIds)
-        assertEquals(false, repository.providerDetails.value?.services?.single()?.subServices?.single()?.requiresTurns)
+        assertEquals(0, agenda.createSesionCalls)
+        assertEquals(emptyList<Long>(), agenda.deletedSesionIds)
+        assertEquals(true, repository.providerDetails.value?.services?.single()?.subServices?.single()?.requiresTurns)
     }
 
     @Test
-    fun `destildar warns when server still requires turns`() = runTest {
-        val api = RecordingProviderProfileApi(createSucceeds = true)
-        authApi.rubros = listOf(existingRubroDto(requiresTurns = true))
-        accountApi.currentUser = providerUser()
-        repository = repositoryWith(providerApi = api, agendaApi = RecordingAgendaApi())
-        assertTrue(repository.getProfile() is AppResult.Success)
-        val result = repository.replaceProviderService(
-            11L,
-            true,
-            sampleReplaceRequest().copy(requiresTurns = false),
-        )
-        assertTrue(result is AppResult.Error)
-        val error = (result as AppResult.Error).error
-        assertTrue(error is AppError.Validation)
-        assertTrue(error.message.contains("no permite desactivar"))
-        assertEquals(false, api.updatedSubRubros.single().second.requiereTurnos)
-        assertEquals(0, api.createFullCalls)
-        assertEquals(emptyList<Long>(), api.deletedIds)
-    }
-
-    @Test
-    fun `adding a specialty posts alta without deleting the rubro`() = runTest {
+    fun `extra specialty ids on edit do not invent a subrubro post`() = runTest {
         val api = RecordingProviderProfileApi(createSucceeds = true)
         authApi.rubros = listOf(existingRubroDto())
-        api.onCreateSubRubro = { request ->
-            val current = authApi.rubros.single()
-            authApi.rubros = listOf(
-                current.copy(
-                    subRubros = current.subRubros + com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioSubRubroFullDto(
-                        id = 99L,
-                        subRubro = com.cocido.oficios.core.network.api.catalog.dto.SubRubroDto(
-                            id = request.subRubroId,
-                            nombre = "Nueva",
-                        ),
-                        lugarDomicilio = request.lugarDomicilio,
-                        lugarLocal = request.lugarLocal,
-                        requiereTurnos = request.requiereTurnos,
-                    ),
-                ),
-            )
-        }
         accountApi.currentUser = providerUser()
         repository = repositoryWith(providerApi = api, agendaApi = RecordingAgendaApi())
         assertTrue(repository.getProfile() is AppResult.Success)
         val result = repository.replaceProviderService(
             11L,
             true,
-            sampleReplaceRequest().copy(subRubroIds = listOf(100, 200)),
+            sampleReplaceRequest().copy(subRubroIds = listOf(100, 200), requiresTurns = false),
         )
         assertTrue(result is AppResult.Success)
         assertEquals(0, api.createFullCalls)
         assertEquals(emptyList<Long>(), api.deletedIds)
-        assertEquals(1, api.createdSubRubros.size)
-        assertEquals(200L, api.createdSubRubros.single().subRubroId)
-        assertEquals(11L, api.createdSubRubros.single().trabajadorOficioRubroId)
-        assertEquals(setOf(100L, 200L), repository.providerDetails.value?.services?.single()?.subServices?.map { it.catalogSubRubroId }?.toSet())
+        assertEquals(listOf(100L), repository.providerDetails.value?.services?.single()?.subServices?.map { it.catalogSubRubroId })
     }
 
     private fun repositoryWith(
@@ -512,12 +460,6 @@ private class RecordingProviderProfileApi(
 ) : ProviderProfileApi {
     var createFullCalls = 0
     val deletedIds = mutableListOf<Long>()
-    val createdSubRubros = mutableListOf<CreateTrabajadorOficioSubRubroRequestDto>()
-    val updatedSubRubros = mutableListOf<Pair<Long, UpdateTrabajadorOficioSubRubroWorkerDto>>()
-    val deletedSubRubroIds = mutableListOf<Long>()
-    var nextCreatedSubId = 99L
-    var onUpdateSubRubro: ((Long, UpdateTrabajadorOficioSubRubroWorkerDto) -> Unit)? = null
-    var onCreateSubRubro: ((CreateTrabajadorOficioSubRubroRequestDto) -> Unit)? = null
 
     override suspend fun updateProfile(request: UpdateTrabajadorPerfilProfesionalRequestDto) = unused()
     override suspend fun createRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) {
@@ -528,29 +470,6 @@ private class RecordingProviderProfileApi(
     override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
     override suspend fun deleteRubro(id: Long) {
         deletedIds += id
-    }
-    override suspend fun createSubRubro(
-        request: CreateTrabajadorOficioSubRubroRequestDto,
-    ): TrabajadorOficioSubRubroCreatedDto {
-        createdSubRubros += request
-        onCreateSubRubro?.invoke(request)
-        val created = TrabajadorOficioSubRubroCreatedDto(
-            id = nextCreatedSubId,
-            requiereTurnos = request.requiereTurnos,
-        )
-        nextCreatedSubId += 1
-        return created
-    }
-    override suspend fun updateSubRubro(
-        id: Long,
-        request: UpdateTrabajadorOficioSubRubroWorkerDto,
-    ): TrabajadorOficioSubRubroCreatedDto {
-        updatedSubRubros += id to request
-        onUpdateSubRubro?.invoke(id, request)
-        return TrabajadorOficioSubRubroCreatedDto(id = id, requiereTurnos = request.requiereTurnos ?: false)
-    }
-    override suspend fun deleteSubRubro(id: Long) {
-        deletedSubRubroIds += id
     }
 }
 
@@ -566,14 +485,6 @@ private class UnusedProviderProfileApi : ProviderProfileApi {
     override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
     override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
     override suspend fun deleteRubro(id: Long) = unused()
-    override suspend fun createSubRubro(
-        request: CreateTrabajadorOficioSubRubroRequestDto,
-    ): TrabajadorOficioSubRubroCreatedDto = unused()
-    override suspend fun updateSubRubro(
-        id: Long,
-        request: UpdateTrabajadorOficioSubRubroWorkerDto,
-    ): TrabajadorOficioSubRubroCreatedDto = unused()
-    override suspend fun deleteSubRubro(id: Long) = unused()
 }
 
 private class UnusedWorkCertificateApi : WorkCertificateApi {

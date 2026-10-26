@@ -38,29 +38,6 @@ data class CreateSesionItemRequestDto(
 )
 
 @Serializable
-data class CreateTrabajadorOficioSubRubroRequestDto(
-    val trabajadorOficioRubroId: Long,
-    val subRubroId: Long,
-    val lugarDomicilio: Boolean,
-    val lugarLocal: Boolean,
-    val requiereTurnos: Boolean = false,
-    val sesion: CreateSesionItemRequestDto? = null,
-)
-
-@Serializable
-data class UpdateTrabajadorOficioSubRubroWorkerDto(
-    val lugarDomicilio: Boolean? = null,
-    val lugarLocal: Boolean? = null,
-    val requiereTurnos: Boolean? = null,
-)
-
-@Serializable
-data class TrabajadorOficioSubRubroCreatedDto(
-    val id: Long = 0,
-    val requiereTurnos: Boolean = false,
-)
-
-@Serializable
 data class CreateDiaLaboralRequestDto(
     val diaInicio: String,
     val diaFin: String,

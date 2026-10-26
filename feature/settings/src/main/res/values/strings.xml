@@ -175,11 +175,11 @@
     <string name="services_at_local">En local</string>
     <string name="services_with_turns">Con turnos</string>
     <string name="services_modality_unknown">Modalidad sin informar</string>
-    <string name="services_primary_locked">El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar especialidades, modalidad y horarios.</string>
-    <string name="services_tap_to_edit">Toque para editar especialidades, modalidad y horarios.</string>
+    <string name="services_primary_locked">El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar modalidad y horarios.</string>
+    <string name="services_tap_to_edit">Toque para editar modalidad y horarios.</string>
     <string name="services_edit_title">Editar servicio</string>
     <string name="services_edit_trade_title">Especialidades</string>
-    <string name="services_edit_trade_hint">El oficio queda fijo. Puede actualizar las especialidades que ofrece.</string>
+    <string name="services_edit_trade_hint">El oficio y las especialidades quedan fijos al publicar.</string>
     <string name="services_primary_rubro_locked">Rubro principal: no se puede cambiar.</string>
     <string name="services_save_changes">Guardar cambios</string>
     <string name="services_delete_action">Eliminar %1$s</string>
@@ -200,7 +200,11 @@
     <string name="services_client_home">Voy al domicilio del cliente</string>
     <string name="services_local">Atiendo en mi local</string>
     <string name="services_requires_turns">Este servicio requiere turno</string>
-    <string name="services_requires_turns_edit_hint">Al guardar se actualiza en el servidor. Si no se puede desactivar, se le avisará.</string>
+    <string name="services_requires_turns_locked">Un servicio publicado con turnos no se puede pasar a sin turnos desde la app.</string>
+    <string name="services_specialties_edit_locked">Las especialidades se eligen al publicar el servicio. Para sumar otra, agregue un servicio nuevo.</string>
+    <string name="services_specialty_hours">%1$s: %2$s</string>
+    <string name="services_schedule_pick_specialty">Especialidad de estos horarios</string>
+    <string name="services_schedule_for_specialty">Horarios de %1$s. El resto se edita eligiendo otra especialidad o desde Agenda.</string>
     <string name="services_local_address">Dirección del local</string>
     <string name="services_local_name">Nombre del local (opcional)</string>
     <string name="services_local_name_hint">Ej: Taller Centro</string>
@@ -225,6 +229,7 @@
     <string name="services_step_trade_body">Elija el oficio y todas las especialidades que realmente realiza.</string>
     <string name="services_step_modality_body">Puede ir al domicilio del cliente, atender en un local o usar ambas modalidades.</string>
     <string name="services_step_schedule_body">Defina una disponibilidad habitual; los turnos concretos se administran desde Agenda.</string>
+    <string name="services_step_schedule_body_edit">La semana que edite se guarda solo en la especialidad elegida. El resto se cambia desde el selector o desde Agenda.</string>
     <string name="services_step_payment_body">Muestre de antemano qué medios de cobro acepta.</string>
     <string name="services_step_review_body">Esta información será visible para los clientes.</string>
     <string name="services_day_monday">Lunes</string>

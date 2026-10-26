@@ -7,7 +7,6 @@ import com.cocido.oficios.core.data.cache.CachedValue
 import com.cocido.oficios.core.data.cache.ClientProfileStore
 import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
 import com.cocido.oficios.core.data.mapper.toAccountDetails
-import com.cocido.oficios.core.data.mapper.toCreateSubRubroDto
 import com.cocido.oficios.core.data.mapper.toDomain
 import com.cocido.oficios.core.data.mapper.toDomainItem
 import com.cocido.oficios.core.data.mapper.toDomainUser
@@ -19,7 +18,6 @@ import com.cocido.oficios.core.data.remote.ProviderProfileRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkCertificateRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkGalleryRemoteDataSource
 import com.cocido.oficios.core.data.session.SessionManager
-import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorOficioSubRubroWorkerDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import com.cocido.oficios.domain.model.AccountDeletionRequest
 import com.cocido.oficios.domain.model.AccountProfile
@@ -28,7 +26,6 @@ import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ManagedProviderSubService
 import com.cocido.oficios.domain.model.ProviderAccountDetails
-import com.cocido.oficios.domain.model.planSubRubroEdits
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RequestAccountDeletionParams
@@ -241,43 +238,6 @@ class AccountRepositoryImpl @Inject constructor(
         existing: ManagedProviderService,
         request: ProviderRubroFullRequest,
     ): AppResult<Unit> {
-        val plan = planSubRubroEdits(existing.subServices, request.subRubroIds)
-        for (catalogId in plan.toCreateCatalogIds) {
-            when (
-                val created = providerRemote.createSubRubro(
-                    request.toCreateSubRubroDto(existing.id, catalogId),
-                ).ignoreMissingSubRubroEndpoint()
-            ) {
-                is AppResult.Error -> return created
-                is AppResult.Success -> Unit
-            }
-        }
-        for (id in plan.toDeleteIds) {
-            when (val deleted = providerRemote.deleteSubRubro(id).ignoreMissingSubRubroEndpoint()) {
-                is AppResult.Error -> return deleted
-                is AppResult.Success -> Unit
-            }
-        }
-        for (sub in plan.toKeep) {
-            val modalityChanged = sub.servesAtClientHome != request.servesAtClientHome ||
-                sub.servesAtLocal != request.servesAtLocal
-            val turnsChanged = sub.requiresTurns != request.requiresTurns
-            if (modalityChanged || turnsChanged) {
-                when (
-                    val updated = providerRemote.updateSubRubro(
-                        sub.id,
-                        UpdateTrabajadorOficioSubRubroWorkerDto(
-                            lugarDomicilio = request.servesAtClientHome,
-                            lugarLocal = request.servesAtLocal,
-                            requiereTurnos = request.requiresTurns,
-                        ),
-                    ).ignoreMissingSubRubroEndpoint()
-                ) {
-                    is AppResult.Error -> return updated
-                    is AppResult.Success -> Unit
-                }
-            }
-        }
         if (request.paymentMethods.isNotEmpty()) {
             when (
                 val payments = providerRemote.updateProfessionalInfo(
@@ -288,76 +248,36 @@ class AccountRepositoryImpl @Inject constructor(
                 is AppResult.Success -> Unit
             }
         }
-        return when (val refreshed = refreshProviderDetails()) {
-            is AppResult.Error -> refreshed.map { }
-            is AppResult.Success -> {
-                val current = refreshed.data.services.firstOrNull { it.id == existing.id }
-                    ?: return AppResult.Error(AppError.Unknown("No encontramos ese servicio."))
-                when (val sessions = syncSessionsForEdit(current.subServices, request.requiresTurns)) {
-                    is AppResult.Error -> sessions
-                    is AppResult.Success -> when (val verified = refreshProviderDetails()) {
-                        is AppResult.Error -> verified.map { }
-                        is AppResult.Success -> verifyPersistedEdit(verified.data, existing.id, request)
-                    }
-                }
+        if (request.requiresTurns) {
+            when (val sessions = ensureSesiones(existing.subServices)) {
+                is AppResult.Error -> return sessions
+                is AppResult.Success -> Unit
             }
         }
+        return refreshProviderDetails().map { }
     }
 
-    private suspend fun syncSessionsForEdit(
+    private suspend fun ensureSesiones(
         subs: List<ManagedProviderSubService>,
-        requiresTurns: Boolean,
     ): AppResult<Unit> {
         for (sub in subs.filter { it.id > 0L }) {
             when (val sessions = agendaRemote.getSesionesPorSubRubro(sub.id)) {
                 is AppResult.Error -> return sessions.map { }
-                is AppResult.Success -> if (requiresTurns) {
-                    if (sessions.data.isEmpty()) {
-                        when (
-                            val created = agendaRemote.createSesion(
-                                subRubroId = sub.id,
-                                duracion = DEFAULT_TURN_DURATION_MINUTES,
-                                medidaDuracion = DEFAULT_TURN_DURATION_UNIT,
-                                intervalo = DEFAULT_TURN_INTERVAL,
-                                medidaIntervalo = DEFAULT_TURN_DURATION_UNIT,
-                            )
-                        ) {
-                            is AppResult.Error -> return created.map { }
-                            is AppResult.Success -> Unit
-                        }
-                    }
-                } else {
-                    for (session in sessions.data) {
-                        when (val deleted = agendaRemote.deleteSesion(session.id)) {
-                            is AppResult.Error -> return deleted.map { }
-                            is AppResult.Success -> Unit
-                        }
+                is AppResult.Success -> if (sessions.data.isEmpty()) {
+                    when (
+                        val created = agendaRemote.createSesion(
+                            subRubroId = sub.id,
+                            duracion = DEFAULT_TURN_DURATION_MINUTES,
+                            medidaDuracion = DEFAULT_TURN_DURATION_UNIT,
+                            intervalo = DEFAULT_TURN_INTERVAL,
+                            medidaIntervalo = DEFAULT_TURN_DURATION_UNIT,
+                        )
+                    ) {
+                        is AppResult.Error -> return created.map { }
+                        is AppResult.Success -> Unit
                     }
                 }
             }
-        }
-        return AppResult.Success(Unit)
-    }
-
-    private fun verifyPersistedEdit(
-        details: ProviderAccountDetails,
-        serviceId: Long,
-        request: ProviderRubroFullRequest,
-    ): AppResult<Unit> {
-        val service = details.services.firstOrNull { it.id == serviceId }
-            ?: return AppResult.Error(AppError.Unknown("No encontramos ese servicio."))
-        if (!request.requiresTurns && service.subServices.any { it.requiresTurns }) {
-            return AppResult.Error(
-                AppError.Validation(
-                    "El servidor no permite desactivar los turnos de un servicio ya publicado.",
-                ),
-            )
-        }
-        val persisted = service.subServices.map { it.catalogSubRubroId }.toSet()
-        if (request.subRubroIds.any { it !in persisted }) {
-            return AppResult.Error(
-                AppError.Validation("No se pudieron agregar las especialidades nuevas. Intente de nuevo."),
-            )
         }
         return AppResult.Success(Unit)
     }
@@ -508,15 +428,6 @@ class AccountRepositoryImpl @Inject constructor(
 
     private suspend fun refreshContactos() {
         getClientContactos()
-    }
-}
-
-private fun AppResult<*>.ignoreMissingSubRubroEndpoint(): AppResult<Unit> = when (this) {
-    is AppResult.Success -> AppResult.Success(Unit)
-    is AppResult.Error -> if (error is AppError.NotFound) {
-        AppResult.Success(Unit)
-    } else {
-        map { }
     }
 }
 

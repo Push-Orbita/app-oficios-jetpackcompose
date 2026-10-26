@@ -7,10 +7,12 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.AddressLocationSnapshot
+import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.ManagedProviderService
+import com.cocido.oficios.domain.model.ManagedSpecialtySchedule
 import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
@@ -20,7 +22,6 @@ import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.domain.model.addRange
 import com.cocido.oficios.domain.model.availabilityPutsForEdit
 import com.cocido.oficios.domain.model.changeRange
-import com.cocido.oficios.domain.model.mergedForDisplay
 import com.cocido.oficios.domain.model.removeRange
 import com.cocido.oficios.domain.model.toManagedSchedules
 import com.cocido.oficios.domain.model.toWeeklyAvailability
@@ -142,17 +143,23 @@ class ServicesViewModel @Inject constructor(
     private suspend fun enrichSchedules(
         services: List<ManagedProviderService>,
     ): List<ManagedProviderService> = services.map { service ->
-        val weeks = service.subServices.mapNotNull { sub ->
+        val specialtySchedules = service.subServices.mapNotNull { sub ->
             if (sub.id <= 0L) return@mapNotNull null
             when (val result = availabilityUseCases.getWeekly(sub.id)) {
-                is AppResult.Success -> result.data
+                is AppResult.Success -> ManagedSpecialtySchedule(
+                    name = sub.name,
+                    workSchedule = result.data.toManagedSchedules(),
+                )
                 is AppResult.Error -> null
             }
         }
-        if (weeks.isEmpty()) {
+        if (specialtySchedules.isEmpty()) {
             service
         } else {
-            service.copy(workSchedule = weeks.mergedForDisplay().toManagedSchedules())
+            service.copy(
+                workSchedule = specialtySchedules.first().workSchedule,
+                specialtySchedules = specialtySchedules,
+            )
         }
     }
 
@@ -177,7 +184,6 @@ class AddServiceViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
     private var barrioSearchJob: Job? = null
     private var originalAvailabilityBySubId: Map<Long, WeeklyAvailability> = emptyMap()
-    private var editorSourceSubId: Long? = null
 
     init {
         if (editingServiceId != null) loadForEdit() else loadCategories()
@@ -192,11 +198,22 @@ class AddServiceViewModel @Inject constructor(
             is AddServiceEvent.CategorySelected -> if (!_uiState.value.isEditing) selectCategory(event.id)
             is AddServiceEvent.RubroSelected -> if (!_uiState.value.isEditing) selectRubro(event.id)
             is AddServiceEvent.SubRubroToggled -> update {
-                it.copy(selectedSubRubroIds = it.selectedSubRubroIds.toggled(event.id, event.checked), errorMessage = null)
+                if (it.isEditing) {
+                    it
+                } else {
+                    it.copy(selectedSubRubroIds = it.selectedSubRubroIds.toggled(event.id, event.checked), errorMessage = null)
+                }
             }
             is AddServiceEvent.ClientHomeChanged -> update { it.copy(servesAtClientHome = event.checked, errorMessage = null) }
             is AddServiceEvent.LocalChanged -> update { it.copy(servesAtLocal = event.checked, errorMessage = null) }
-            is AddServiceEvent.RequiresTurnsChanged -> update { it.copy(requiresTurns = event.checked) }
+            is AddServiceEvent.RequiresTurnsChanged -> update {
+                if (!event.checked && !it.canDisableTurns) {
+                    it
+                } else {
+                    it.copy(requiresTurns = event.checked)
+                }
+            }
+            is AddServiceEvent.EditorSpecialtySelected -> selectEditorSpecialty(event.id)
             is AddServiceEvent.LocalNameChanged -> update { it.copy(localName = event.value) }
             is AddServiceEvent.LocalBarrioChanged -> searchBarrio(event.value)
             AddServiceEvent.LocalBarrioFocused ->
@@ -523,8 +540,12 @@ class AddServiceViewModel @Inject constructor(
             }
         }
         originalAvailabilityBySubId = original
-        editorSourceSubId = service.subServices.firstOrNull { it.id > 0L }?.id
+        val editorSourceSubId = service.subServices.firstOrNull { it.id > 0L }?.id
         val week = editorSourceSubId?.let { original[it] } ?: fallbackWeek
+        val editorSpecialties = service.subServices
+            .filter { sub -> sub.id > 0L }
+            .map { sub -> CatalogOption(sub.id, sub.name) }
+        val canDisableTurns = service.subServices.none { sub -> sub.requiresTurns }
         val workDays = week.activeDays.toSet()
         val timeSlots = week.days
             .flatMap { day -> day.ranges.map { RegisterTradeTimeSlotDraft(it.start, it.end) } }
@@ -556,6 +577,10 @@ class AddServiceViewModel @Inject constructor(
                 timeSlots = timeSlots,
                 weeklyAvailability = week,
                 paymentMethods = payments.ifEmpty { it.paymentMethods },
+                editorSpecialties = editorSpecialties,
+                editorSourceSubId = editorSourceSubId,
+                availabilityDrafts = original,
+                canDisableTurns = canDisableTurns,
                 errorMessage = null,
             )
             next.copy(editBaseline = next.formSnapshot())
@@ -571,14 +596,30 @@ class AddServiceViewModel @Inject constructor(
             .filter { it.rubroId == rubroId }
             .maxByOrNull { it.id }
             ?: return
+        val state = _uiState.value
         val puts = availabilityPutsForEdit(
             persistedSubIds = service.subServices.map { sub -> sub.id },
             originalBySubId = originalAvailabilityBySubId,
-            editorSourceSubId = editorSourceSubId,
+            editorSourceSubId = state.editorSourceSubId,
             wizardWeek = week,
+            draftBySubId = state.availabilityDrafts,
         )
         for (put in puts) {
             availabilityUseCases.replaceWeekly(put.subRubroId, put.week)
+        }
+    }
+
+    private fun selectEditorSpecialty(id: Long) {
+        val state = _uiState.value
+        if (!state.isEditing || id == state.editorSourceSubId) return
+        val drafts = state.availabilityDrafts.toMutableMap()
+        state.editorSourceSubId?.let { drafts[it] = state.weeklyAvailability }
+        val nextWeek = drafts[id] ?: originalAvailabilityBySubId[id] ?: WeeklyAvailability.default()
+        update {
+            it.withWeek(nextWeek).copy(
+                editorSourceSubId = id,
+                availabilityDrafts = drafts,
+            )
         }
     }
 
