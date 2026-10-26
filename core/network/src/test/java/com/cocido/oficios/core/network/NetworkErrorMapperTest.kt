@@ -160,14 +160,20 @@ class NetworkErrorMapperTest {
     }
 
     @Test
-    fun `va01 generic message becomes a useful photo format hint`() {
+    fun `va01 generic message keeps backend copy not photo hint`() {
         val body = """{"code":"VA01","message":"Datos de entrada no válidos."}"""
         val error = httpError(400, body).toNetworkAppError()
         assertTrue(error is AppError.Validation)
-        assertEquals(
-            "El archivo no es un JPG, PNG, WEBP o GIF válido. Elija otra foto.",
-            error.message,
-        )
+        assertEquals("Datos de entrada no válidos.", error.message)
+        assertTrue("JPG" !in error.message)
+    }
+
+    @Test
+    fun `va01 without message uses form copy`() {
+        val body = """{"code":"VA01"}"""
+        val error = httpError(400, body).toNetworkAppError()
+        assertEquals("Revise los datos ingresados", error.message)
+        assertTrue("JPG" !in error.message)
     }
 
     @Test

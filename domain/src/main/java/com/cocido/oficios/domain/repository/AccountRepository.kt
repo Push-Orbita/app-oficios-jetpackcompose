@@ -54,8 +54,10 @@ interface AccountRepository {
     suspend fun addProviderService(request: ProviderRubroFullRequest): AppResult<Unit>
     suspend fun deleteProviderService(id: Long): AppResult<Unit>
     /**
-     * No hay PATCH atómico de especialidades/modalidad/`diasLaborales`.
-     * Recrea el rubro: DELETE + POST `/full` (principal) o `/full/secundario`.
+     * No hay PATCH atómico de especialidades/modalidad/`diasLaborales`/`sesion`.
+     * Intenta POST `/full` o `/full/secundario` y solo borra el anterior si el alta
+     * respondió 2xx. Si el contrato impide coexistir (un principal / rubroId único),
+     * recrea y restaura el snapshot si el POST nuevo falla.
      */
     suspend fun replaceProviderService(
         existingId: Long,

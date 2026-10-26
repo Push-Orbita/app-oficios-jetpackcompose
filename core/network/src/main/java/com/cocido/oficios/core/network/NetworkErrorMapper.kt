@@ -192,16 +192,12 @@ private val knownBackendMessages = mapOf(
     "COMPLETION_CODE_RATE_LIMITED" to "Espere un momento para reenviar el código.",
     "DB02" to "El servicio no está disponible en este momento. Intente más tarde.",
     "SE01" to "El servicio no está disponible en este momento. Intente más tarde.",
-    "VA01" to "El archivo no es un JPG, PNG, WEBP o GIF válido. Elija otra foto.",
+    "VA01" to "Revise los datos ingresados",
 )
 
 private fun messageForBackendCode(code: String?, parsed: String?): String? {
     if (code == "VA01") {
-        val useful = parsed?.takeIf {
-            it.isNotBlank() &&
-                !it.equals("Datos de entrada no válidos.", ignoreCase = true)
-        }
-        return useful ?: knownBackendMessages["VA01"]
+        return parsed?.takeIf { it.isNotBlank() } ?: knownBackendMessages["VA01"]
     }
     knownBackendMessages[code]?.let { return it }
     if (code?.startsWith("DB") == true || code?.startsWith("SE") == true) {

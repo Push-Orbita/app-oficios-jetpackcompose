@@ -26,6 +26,15 @@ data class CreateSubrubroRequestDto(
     val lugarDomicilio: Boolean,
     val lugarLocal: Boolean,
     val requiereTurnos: Boolean = false,
+    val sesion: CreateSesionItemRequestDto? = null,
+)
+
+@Serializable
+data class CreateSesionItemRequestDto(
+    val duracion: Int,
+    val medidaDuracion: String,
+    val intervalo: String? = null,
+    val medidaIntervalo: String? = null,
 )
 
 @Serializable

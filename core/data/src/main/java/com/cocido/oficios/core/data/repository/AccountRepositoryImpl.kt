@@ -22,8 +22,10 @@ import com.cocido.oficios.domain.model.AccountProfile
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderAccountDetails
+import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.toRubroFullRequest
 import com.cocido.oficios.domain.model.RequestAccountDeletionParams
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
@@ -213,16 +215,65 @@ class AccountRepositoryImpl @Inject constructor(
         isPrimary: Boolean,
         request: ProviderRubroFullRequest,
     ): AppResult<Unit> {
+        val snapshot = snapshotExistingService(existingId)
+        when (val createdFirst = createRubro(isPrimary, request)) {
+            is AppResult.Success -> {
+                when (val deleted = providerRemote.deleteRubro(existingId)) {
+                    is AppResult.Error -> return deleted
+                    is AppResult.Success -> Unit
+                }
+                return createdFirst.map { Unit }.also { refreshProviderDetails() }
+            }
+            is AppResult.Error -> {
+                if (!isRubroCoexistenceConflict(createdFirst.error)) {
+                    return createdFirst.map { Unit }
+                }
+            }
+        }
+        // OpenAPI: un solo principal y rubroId único. El POST no puede coexistir
+        // con el rubro actual; solo entonces se recrea. Si el POST nuevo falla,
+        // se restaura el snapshot para no perder el servicio.
         when (val deleted = providerRemote.deleteRubro(existingId)) {
             is AppResult.Error -> return deleted
             is AppResult.Success -> Unit
         }
-        val created = if (isPrimary) {
-            providerRemote.createRubroFull(request.toDto())
-        } else {
-            providerRemote.createSecondaryRubroFull(request.toDto())
+        return when (val created = createRubro(isPrimary, request)) {
+            is AppResult.Success -> created.map { Unit }.also { refreshProviderDetails() }
+            is AppResult.Error -> {
+                if (snapshot != null) {
+                    createRubro(isPrimary, snapshot)
+                }
+                refreshProviderDetails()
+                created
+            }
         }
-        return created.map { Unit }.also { if (it is AppResult.Success) refreshProviderDetails() }
+    }
+
+    private suspend fun createRubro(
+        isPrimary: Boolean,
+        request: ProviderRubroFullRequest,
+    ) = if (isPrimary) {
+        providerRemote.createRubroFull(request.toDto())
+    } else {
+        providerRemote.createSecondaryRubroFull(request.toDto())
+    }
+
+    private fun snapshotExistingService(existingId: Long): ProviderRubroFullRequest? {
+        val details = providerDetailsCache.get() ?: return null
+        val service = details.services.firstOrNull { it.id == existingId } ?: return null
+        val domicilio = details.commercialLocal?.let { local ->
+            val barrioId = local.barrioId ?: return@let null
+            ProviderLocalDomicilioRequest(
+                barrioId = barrioId,
+                calle = local.street,
+                numero = local.number,
+                nombre = local.name,
+            )
+        }
+        return service.toRubroFullRequest(
+            paymentMethods = details.paymentMethods,
+            domicilioLocal = domicilio.takeIf { service.subServices.any { sub -> sub.servesAtLocal } },
+        )
     }
 
     override suspend fun getCertificates() = refreshProviderDetails().map { it.certificates }
@@ -350,4 +401,15 @@ class AccountRepositoryImpl @Inject constructor(
     private suspend fun refreshContactos() {
         getClientContactos()
     }
+}
+
+private fun isRubroCoexistenceConflict(error: AppError): Boolean {
+    if (error is AppError.Conflict || error is AppError.Validation) return true
+    val text = error.message.lowercase()
+    return "rubro principal" in text ||
+        "full/secundario" in text ||
+        "ya tiene un rubro" in text ||
+        "mismo rubro" in text ||
+        "rubroid" in text ||
+        "duplicad" in text
 }
