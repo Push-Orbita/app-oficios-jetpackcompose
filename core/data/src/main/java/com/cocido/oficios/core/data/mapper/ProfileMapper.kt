@@ -8,6 +8,7 @@ import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubru
 import com.cocido.oficios.core.network.api.profile.dto.CreateHorarioLaboralRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateSesionItemRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateSubrubroRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.CreateTrabajadorOficioSubRubroRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateContactoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateDomicilioRequestDto
@@ -109,6 +110,18 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
         )
     },
     metodosPago = paymentMethods.takeIf { it.isNotEmpty() },
+)
+
+fun ProviderRubroFullRequest.toCreateSubRubroDto(
+    trabajadorOficioRubroId: Long,
+    catalogSubRubroId: Long,
+) = CreateTrabajadorOficioSubRubroRequestDto(
+    trabajadorOficioRubroId = trabajadorOficioRubroId,
+    subRubroId = catalogSubRubroId,
+    lugarDomicilio = servesAtClientHome,
+    lugarLocal = servesAtLocal,
+    requiereTurnos = requiresTurns,
+    sesion = if (requiresTurns) defaultTurnSession() else null,
 )
 
 private fun defaultTurnSession() = CreateSesionItemRequestDto(

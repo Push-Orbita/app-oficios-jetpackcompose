@@ -18,8 +18,11 @@ import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
 import com.cocido.oficios.domain.model.TimeRangeValidation
 import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.domain.model.addRange
+import com.cocido.oficios.domain.model.availabilityPutsForEdit
 import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.mergedForDisplay
 import com.cocido.oficios.domain.model.removeRange
+import com.cocido.oficios.domain.model.toManagedSchedules
 import com.cocido.oficios.domain.model.toWeeklyAvailability
 import com.cocido.oficios.domain.model.withToggledDay
 import com.cocido.oficios.domain.usecase.AvailabilityUseCases
@@ -44,6 +47,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class ServicesViewModel @Inject constructor(
     private val accountUseCases: AccountUseCases,
+    private val availabilityUseCases: AvailabilityUseCases,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ServicesUiState())
     val uiState = _uiState.asStateFlow()
@@ -55,11 +59,12 @@ class ServicesViewModel @Inject constructor(
         viewModelScope.launch {
             accountUseCases.providerDetails.collect { details ->
                 if (details != null) {
+                    val services = enrichSchedules(details.services)
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             isDeleting = false,
-                            services = details.services,
+                            services = services,
                             errorMessage = null,
                         )
                     }
@@ -94,13 +99,16 @@ class ServicesViewModel @Inject constructor(
             val keepContent = _uiState.value.services.isNotEmpty()
             _uiState.update { it.copy(isLoading = !keepContent, errorMessage = null) }
             when (val result = accountUseCases.getProfile()) {
-                is AppResult.Success -> _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isDeleting = false,
-                        services = result.data.providerDetails?.services.orEmpty(),
-                        errorMessage = null,
-                    )
+                is AppResult.Success -> {
+                    val services = enrichSchedules(result.data.providerDetails?.services.orEmpty())
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isDeleting = false,
+                            services = services,
+                            errorMessage = null,
+                        )
+                    }
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isLoading = false, isDeleting = false, errorMessage = result.error.userMessage())
@@ -131,6 +139,23 @@ class ServicesViewModel @Inject constructor(
         }
     }
 
+    private suspend fun enrichSchedules(
+        services: List<ManagedProviderService>,
+    ): List<ManagedProviderService> = services.map { service ->
+        val weeks = service.subServices.mapNotNull { sub ->
+            if (sub.id <= 0L) return@mapNotNull null
+            when (val result = availabilityUseCases.getWeekly(sub.id)) {
+                is AppResult.Success -> result.data
+                is AppResult.Error -> null
+            }
+        }
+        if (weeks.isEmpty()) {
+            service
+        } else {
+            service.copy(workSchedule = weeks.mergedForDisplay().toManagedSchedules())
+        }
+    }
+
     private fun emit(effect: ServicesEffect) = viewModelScope.launch { _effects.send(effect) }
 }
 
@@ -151,6 +176,8 @@ class AddServiceViewModel @Inject constructor(
     private val _effects = Channel<AddServiceEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
     private var barrioSearchJob: Job? = null
+    private var originalAvailabilityBySubId: Map<Long, WeeklyAvailability> = emptyMap()
+    private var editorSourceSubId: Long? = null
 
     init {
         if (editingServiceId != null) loadForEdit() else loadCategories()
@@ -486,12 +513,18 @@ class AddServiceViewModel @Inject constructor(
             }
         }
         val fallbackWeek = service.workSchedule.toWeeklyAvailability()
-        val week = service.subServices.firstOrNull()?.id?.let { subRubroId ->
-            when (val result = availabilityUseCases.getWeekly(subRubroId)) {
-                is AppResult.Success -> result.data
-                is AppResult.Error -> fallbackWeek
+        val original = buildMap {
+            for (sub in service.subServices) {
+                if (sub.id <= 0L) continue
+                when (val result = availabilityUseCases.getWeekly(sub.id)) {
+                    is AppResult.Success -> put(sub.id, result.data)
+                    is AppResult.Error -> Unit
+                }
             }
-        } ?: fallbackWeek
+        }
+        originalAvailabilityBySubId = original
+        editorSourceSubId = service.subServices.firstOrNull { it.id > 0L }?.id
+        val week = editorSourceSubId?.let { original[it] } ?: fallbackWeek
         val workDays = week.activeDays.toSet()
         val timeSlots = week.days
             .flatMap { day -> day.ranges.map { RegisterTradeTimeSlotDraft(it.start, it.end) } }
@@ -538,8 +571,14 @@ class AddServiceViewModel @Inject constructor(
             .filter { it.rubroId == rubroId }
             .maxByOrNull { it.id }
             ?: return
-        service.subServices.forEach { sub ->
-            availabilityUseCases.replaceWeekly(sub.id, week)
+        val puts = availabilityPutsForEdit(
+            persistedSubIds = service.subServices.map { sub -> sub.id },
+            originalBySubId = originalAvailabilityBySubId,
+            editorSourceSubId = editorSourceSubId,
+            wizardWeek = week,
+        )
+        for (put in puts) {
+            availabilityUseCases.replaceWeekly(put.subRubroId, put.week)
         }
     }
 

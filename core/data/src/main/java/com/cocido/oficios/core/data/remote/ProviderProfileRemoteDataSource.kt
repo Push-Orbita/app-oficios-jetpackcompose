@@ -4,6 +4,8 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.profile.ProviderProfileApi
 import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubrubrosRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.CreateTrabajadorOficioSubRubroRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorOficioSubRubroWorkerDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import com.cocido.oficios.core.network.safeApiCall
 import javax.inject.Inject
@@ -36,5 +38,17 @@ class ProviderProfileRemoteDataSource @Inject constructor(
 
     suspend fun deleteRubro(id: Long) = safeApiCall {
         providerProfileApi.deleteRubro(id)
+    }
+
+    suspend fun createSubRubro(request: CreateTrabajadorOficioSubRubroRequestDto) = safeApiCall {
+        providerProfileApi.createSubRubro(request)
+    }
+
+    suspend fun updateSubRubro(id: Long, request: UpdateTrabajadorOficioSubRubroWorkerDto) = safeApiCall {
+        providerProfileApi.updateSubRubro(id, request)
+    }
+
+    suspend fun deleteSubRubro(id: Long) = safeApiCall {
+        providerProfileApi.deleteSubRubro(id)
     }
 }

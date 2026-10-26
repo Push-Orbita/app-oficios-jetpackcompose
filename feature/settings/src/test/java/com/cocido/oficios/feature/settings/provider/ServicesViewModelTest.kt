@@ -37,6 +37,8 @@ import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.model.AgendaBlock
 import com.cocido.oficios.domain.model.CreateAgendaBlockParams
+import com.cocido.oficios.domain.model.DayAvailability
+import com.cocido.oficios.domain.model.TimeRange
 import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.domain.repository.AvailabilityRepository
 import com.cocido.oficios.domain.usecase.AvailabilityUseCases
@@ -75,7 +77,10 @@ class ServicesViewModelTest {
 
     @Test
     fun `edit service emits navigate to edit`() = runTest(testDispatcher) {
-        val viewModel = ServicesViewModel(AccountUseCases(FakeAccountRepository()))
+        val viewModel = ServicesViewModel(
+            AccountUseCases(FakeAccountRepository()),
+            AvailabilityUseCases(FakeAvailabilityRepository()),
+        )
         advanceUntilIdle()
         val effects = mutableListOf<ServicesEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
@@ -83,6 +88,25 @@ class ServicesViewModelTest {
         advanceUntilIdle()
         job.cancel()
         assertTrue(effects.any { it is ServicesEffect.NavigateToEdit && it.serviceId == 11L })
+    }
+
+    @Test
+    fun `list uses specialty availability hours instead of rubro dias laborales`() = runTest(testDispatcher) {
+        val availability = FakeAvailabilityRepository(
+            weeksBySub = mapOf(
+                1L to mondayWeek("14:00", "18:00"),
+                2L to mondayWeek("14:00", "18:00"),
+            ),
+        )
+        val viewModel = ServicesViewModel(
+            AccountUseCases(FakeAccountRepository()),
+            AvailabilityUseCases(availability),
+        )
+        advanceUntilIdle()
+        val schedule = viewModel.uiState.value.services.single().workSchedule
+        assertEquals("LUNES", schedule.single().dayFrom)
+        assertEquals("14:00", schedule.single().ranges.single().from)
+        assertEquals("18:00", schedule.single().ranges.single().to)
     }
 }
 
@@ -208,10 +232,35 @@ class AddServiceViewModelTest {
         assertTrue(viewModel.uiState.value.hasUnsavedChanges)
     }
 
+    @Test
+    fun `save in edit does not put the same week on every specialty`() = runTest(testDispatcher) {
+        val first = mondayWeek("14:00", "18:00")
+        val second = mondayWeek("09:00", "18:00")
+        val availability = FakeAvailabilityRepository(
+            weeksBySub = mapOf(1L to first, 2L to second),
+        )
+        val viewModel = addViewModel(
+            FakeAccountRepository(),
+            FakeCatalogRepository(),
+            serviceId = 11L,
+            availability = availability,
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.PaymentToggled("EFECTIVO", true))
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.Save)
+        advanceUntilIdle()
+        assertEquals(emptyList<Long>(), availability.replacedSubIds)
+    }
+
     private fun addViewModel(
         accounts: FakeAccountRepository,
         catalog: FakeCatalogRepository,
         serviceId: Long?,
+        availability: FakeAvailabilityRepository = FakeAvailabilityRepository(),
     ) = AddServiceViewModel(
         savedStateHandle = SavedStateHandle(buildMap { if (serviceId != null) put("serviceId", serviceId) }),
         accountUseCases = AccountUseCases(accounts),
@@ -220,15 +269,25 @@ class AddServiceViewModelTest {
         getSubRubros = GetSubRubrosByRubroUseCase(catalog),
         searchBarrios = SearchBarriosUseCase(catalog),
         geocodeLocalAddress = GeocodeLocalAddressUseCase(FakeLocationRepository()),
-        availabilityUseCases = AvailabilityUseCases(FakeAvailabilityRepository()),
+        availabilityUseCases = AvailabilityUseCases(availability),
     )
 }
 
-private class FakeAvailabilityRepository : AvailabilityRepository {
+private fun mondayWeek(from: String, to: String) = WeeklyAvailability(
+    days = listOf(DayAvailability("LUNES", listOf(TimeRange(from, to)))),
+    includeSunday = false,
+)
+
+private class FakeAvailabilityRepository(
+    private val weeksBySub: Map<Long, WeeklyAvailability> = emptyMap(),
+) : AvailabilityRepository {
+    val replacedSubIds = mutableListOf<Long>()
     override suspend fun getWeeklyAvailability(subRubroId: Long) =
-        AppResult.Success(WeeklyAvailability.default())
-    override suspend fun replaceWeeklyAvailability(subRubroId: Long, week: WeeklyAvailability) =
-        AppResult.Success(week)
+        AppResult.Success(weeksBySub[subRubroId] ?: WeeklyAvailability.default())
+    override suspend fun replaceWeeklyAvailability(subRubroId: Long, week: WeeklyAvailability): AppResult<WeeklyAvailability> {
+        replacedSubIds += subRubroId
+        return AppResult.Success(week)
+    }
     override suspend fun listBlocks(subRubroId: Long) = AppResult.Success(emptyList<AgendaBlock>())
     override suspend fun createBlock(params: CreateAgendaBlockParams) =
         AppResult.Success(AgendaBlock(id = 1, date = params.date))

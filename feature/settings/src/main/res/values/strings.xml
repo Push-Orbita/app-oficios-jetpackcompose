@@ -200,6 +200,7 @@
     <string name="services_client_home">Voy al domicilio del cliente</string>
     <string name="services_local">Atiendo en mi local</string>
     <string name="services_requires_turns">Este servicio requiere turno</string>
+    <string name="services_requires_turns_edit_hint">Al guardar se actualiza en el servidor. Si no se puede desactivar, se le avisará.</string>
     <string name="services_local_address">Dirección del local</string>
     <string name="services_local_name">Nombre del local (opcional)</string>
     <string name="services_local_name_hint">Ej: Taller Centro</string>
