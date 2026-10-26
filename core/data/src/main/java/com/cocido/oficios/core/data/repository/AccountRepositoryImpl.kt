@@ -189,9 +189,18 @@ class AccountRepositoryImpl @Inject constructor(
         providerRemote.updateProfessionalInfo(request.toDto()).map { Unit }
             .also { if (it is AppResult.Success) refreshProviderDetails() }
 
-    override suspend fun addProviderService(request: ProviderRubroFullRequest) =
-        providerRemote.createSecondaryRubroFull(request.toDto()).map { Unit }
-            .also { if (it is AppResult.Success) refreshProviderDetails() }
+    override suspend fun addProviderService(request: ProviderRubroFullRequest): AppResult<Unit> {
+        val details = providerDetailsCache.get() ?: when (val refreshed = refreshProviderDetails()) {
+            is AppResult.Success -> refreshed.data
+            is AppResult.Error -> null
+        }
+        val created = if (details?.services?.any { it.isPrimary } == true) {
+            providerRemote.createSecondaryRubroFull(request.toDto())
+        } else {
+            providerRemote.createRubroFull(request.toDto())
+        }
+        return created.map { Unit }.also { if (it is AppResult.Success) refreshProviderDetails() }
+    }
 
     override suspend fun deleteProviderService(id: Long): AppResult<Unit> {
         val previous = providerDetailsCache.get()

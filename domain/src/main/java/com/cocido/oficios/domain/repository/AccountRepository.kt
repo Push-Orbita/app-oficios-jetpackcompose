@@ -51,6 +51,7 @@ interface AccountRepository {
     suspend fun setFavoriteContacto(id: Long, favorite: Boolean): AppResult<Unit>
 
     suspend fun updateProviderProfessionalInfo(request: ProviderProfessionalInfoRequest): AppResult<Unit>
+    /** Primer rubro: POST `/full`. Si ya hay principal: POST `/full/secundario`. */
     suspend fun addProviderService(request: ProviderRubroFullRequest): AppResult<Unit>
     suspend fun deleteProviderService(id: Long): AppResult<Unit>
     /**
