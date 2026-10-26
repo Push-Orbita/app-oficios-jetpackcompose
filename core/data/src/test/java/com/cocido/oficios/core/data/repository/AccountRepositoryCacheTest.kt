@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.data.cache.ClientProfileStore
 import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
 import com.cocido.oficios.core.data.remote.AccountRemoteDataSource
+import com.cocido.oficios.core.data.remote.AgendaRemoteDataSource
 import com.cocido.oficios.core.data.remote.ClientProfileRemoteDataSource
 import com.cocido.oficios.core.data.remote.ProviderProfileRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkCertificateRemoteDataSource
@@ -53,12 +54,16 @@ import com.cocido.oficios.core.network.api.profile.dto.UpdateFavoriteRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.VerifyTelefonoCodigoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.VerificarTelefonoCodigoResponseDto
+import com.cocido.oficios.domain.model.ProviderRubroFullRequest
+import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import java.io.File
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonElement
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -66,6 +71,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import retrofit2.HttpException
+import retrofit2.Response
 
 @RunWith(RobolectricTestRunner::class)
 class AccountRepositoryCacheTest {
@@ -88,6 +95,7 @@ class AccountRepositoryCacheTest {
             accountRemote = AccountRemoteDataSource(accountApi, AccountProfileUploadDataSource(accountApi)),
             clientRemote = ClientProfileRemoteDataSource(UnusedClientProfileApi()),
             providerRemote = ProviderProfileRemoteDataSource(UnusedProviderProfileApi(), authApi),
+            agendaRemote = AgendaRemoteDataSource(UnusedAgendaApi()),
             certificateRemote = WorkCertificateRemoteDataSource(
                 UnusedWorkCertificateApi(),
                 WorkCertificateUploadDataSource(UnusedWorkCertificateApi()),
@@ -146,6 +154,64 @@ class AccountRepositoryCacheTest {
         assertEquals(null, repository.providerDetails.value)
         assertEquals(null, repository.profile.value)
     }
+
+    @Test
+    fun `replace does not delete when create returns 400`() = runTest {
+        val api = RecordingProviderProfileApi(createSucceeds = false)
+        repository = repositoryWith(providerApi = api)
+        val result = repository.replaceProviderService(11L, true, sampleReplaceRequest())
+        assertTrue(result is AppResult.Error)
+        assertEquals(1, api.createFullCalls)
+        assertEquals(emptyList<Long>(), api.deletedIds)
+    }
+
+    @Test
+    fun `replace deletes old rubro only after create 2xx`() = runTest {
+        val api = RecordingProviderProfileApi(createSucceeds = true)
+        repository = repositoryWith(providerApi = api)
+        val result = repository.replaceProviderService(11L, true, sampleReplaceRequest())
+        assertTrue(result is AppResult.Success)
+        assertEquals(1, api.createFullCalls)
+        assertEquals(listOf(11L), api.deletedIds)
+    }
+
+    @Test
+    fun `replace of cached service posts sesion and never deletes`() = runTest {
+        val api = RecordingProviderProfileApi(createSucceeds = true)
+        val agenda = RecordingAgendaApi()
+        authApi.rubros = listOf(existingRubroDto())
+        accountApi.currentUser = providerUser()
+        repository = repositoryWith(providerApi = api, agendaApi = agenda)
+        assertTrue(repository.getProfile() is AppResult.Success)
+        val result = repository.replaceProviderService(11L, true, sampleReplaceRequest())
+        assertTrue(result is AppResult.Success)
+        assertEquals(0, api.createFullCalls)
+        assertEquals(emptyList<Long>(), api.deletedIds)
+        assertEquals(1, agenda.createSesionCalls)
+        assertEquals(true, repository.providerDetails.value?.services?.single()?.subServices?.single()?.requiresTurns)
+    }
+
+    private fun repositoryWith(
+        providerApi: ProviderProfileApi = UnusedProviderProfileApi(),
+        agendaApi: com.cocido.oficios.core.network.api.agenda.AgendaApi = UnusedAgendaApi(),
+    ): AccountRepositoryImpl {
+        val context = RuntimeEnvironment.getApplication()
+        val sessionManager = SessionManager(TokenDataStore(context), coordinator)
+        return AccountRepositoryImpl(
+            accountRemote = AccountRemoteDataSource(accountApi, AccountProfileUploadDataSource(accountApi)),
+            clientRemote = ClientProfileRemoteDataSource(UnusedClientProfileApi()),
+            providerRemote = ProviderProfileRemoteDataSource(providerApi, authApi),
+            agendaRemote = AgendaRemoteDataSource(agendaApi),
+            certificateRemote = WorkCertificateRemoteDataSource(
+                UnusedWorkCertificateApi(),
+                WorkCertificateUploadDataSource(UnusedWorkCertificateApi()),
+            ),
+            galleryRemote = WorkGalleryRemoteDataSource(galleryApi, WorkGalleryUploadDataSource(galleryApi)),
+            sessionManager = sessionManager,
+            coordinator = coordinator,
+            clientProfileStore = ClientProfileStore(coordinator),
+        )
+    }
 }
 
 private fun clientUser(firstName: String) = UsuarioDto(
@@ -157,10 +223,12 @@ private fun clientUser(firstName: String) = UsuarioDto(
 
 private class FakeAuthApi : AuthApi {
     var gallery: List<WorkGalleryDto> = emptyList()
+    var rubros: List<com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto> = emptyList()
 
     override suspend fun getProviderProfile() = TrabajadorOficioPerfilMeDto(
         id = 9L,
         estado = "VALIDADO",
+        rubros = rubros,
         galeriaTrabajos = gallery,
     )
 
@@ -240,6 +308,121 @@ private class UnusedClientProfileApi : ClientProfileApi {
     override suspend fun updateContacto(id: Long, request: UpdateContactoRequestDto) = unused()
     override suspend fun deleteContacto(id: Long) = unused()
     override suspend fun setFavoriteContacto(id: Long, request: UpdateFavoriteRequestDto) = unused()
+}
+
+private class UnusedAgendaApi : com.cocido.oficios.core.network.api.agenda.AgendaApi {
+    override suspend fun getSlotsDisponibles(
+        subRubroId: Long,
+        fechaDesde: String,
+        fechaHasta: String,
+        fecha: String?,
+    ) = unused()
+    override suspend fun searchSlots(
+        subRubroId: Long,
+        fromIso: String?,
+        toIso: String?,
+        pageSize: Int,
+    ) = unused()
+    override suspend fun createSlot(request: com.cocido.oficios.core.network.api.agenda.dto.CreateSlotTurnoRequestDto) =
+        unused()
+    override suspend fun updateSlot(
+        id: Long,
+        request: com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto,
+    ) = unused()
+    override suspend fun deleteSlot(id: Long) = unused()
+    override suspend fun getSesionesPorSubRubro(subRubroId: Long) = unused()
+    override suspend fun createSesion(request: com.cocido.oficios.core.network.api.agenda.dto.CreateSesionRequestDto) =
+        unused()
+    override suspend fun deleteSesion(id: Long) = unused()
+}
+
+private fun providerUser() = UsuarioDto(
+    id = 9L,
+    email = "t@test.com",
+    persona = PersonaDto(id = 2L, nombres = "Emanuel", apellido = "Molina"),
+    rolUsuario = RolUsuarioDto(id = 2L, nombre = "trabajador"),
+)
+
+private fun existingRubroDto() = com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto(
+    id = 11L,
+    rubro = com.cocido.oficios.core.network.api.catalog.dto.RubroDto(id = 10L, nombre = "Plomería"),
+    principal = true,
+    subRubros = listOf(
+        com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioSubRubroFullDto(
+            id = 21L,
+            subRubro = com.cocido.oficios.core.network.api.catalog.dto.SubRubroDto(id = 100L, nombre = "Caños"),
+            lugarDomicilio = true,
+            requiereTurnos = false,
+        ),
+    ),
+)
+
+private class RecordingAgendaApi : com.cocido.oficios.core.network.api.agenda.AgendaApi {
+    var createSesionCalls = 0
+    override suspend fun getSlotsDisponibles(
+        subRubroId: Long,
+        fechaDesde: String,
+        fechaHasta: String,
+        fecha: String?,
+    ) = unused()
+    override suspend fun searchSlots(
+        subRubroId: Long,
+        fromIso: String?,
+        toIso: String?,
+        pageSize: Int,
+    ) = unused()
+    override suspend fun createSlot(request: com.cocido.oficios.core.network.api.agenda.dto.CreateSlotTurnoRequestDto) =
+        unused()
+    override suspend fun updateSlot(
+        id: Long,
+        request: com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto,
+    ) = unused()
+    override suspend fun deleteSlot(id: Long) = unused()
+    override suspend fun getSesionesPorSubRubro(subRubroId: Long) = emptyList<com.cocido.oficios.core.network.api.agenda.dto.SesionDto>()
+    override suspend fun createSesion(request: com.cocido.oficios.core.network.api.agenda.dto.CreateSesionRequestDto) =
+        com.cocido.oficios.core.network.api.agenda.dto.SesionDto(
+            id = 1L,
+            duracion = request.duracion,
+            medidaDuracion = request.medidaDuracion,
+            intervalo = request.intervalo,
+            medidaIntervalo = request.medidaIntervalo,
+            trabajadorOficioSubRubroId = request.trabajadorOficioSubRubroId,
+        ).also { createSesionCalls += 1 }
+    override suspend fun deleteSesion(id: Long) = unused()
+}
+
+private fun sampleReplaceRequest() = ProviderRubroFullRequest(
+    rubroId = 10,
+    subRubroIds = listOf(100),
+    servesAtClientHome = true,
+    servesAtLocal = false,
+    workDays = listOf("LUNES"),
+    timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+    requiresTurns = true,
+)
+
+private class RecordingProviderProfileApi(
+    private val createSucceeds: Boolean,
+) : ProviderProfileApi {
+    var createFullCalls = 0
+    val deletedIds = mutableListOf<Long>()
+
+    override suspend fun updateProfile(request: UpdateTrabajadorPerfilProfesionalRequestDto) = unused()
+    override suspend fun createRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) {
+        createFullCalls += 1
+        if (!createSucceeds) throw va01()
+    }
+    override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
+    override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
+    override suspend fun deleteRubro(id: Long) {
+        deletedIds += id
+    }
+}
+
+private fun va01(): HttpException {
+    val body = """{"code":"VA01","message":"El trabajador ya tiene un rubro principal configurado."}"""
+        .toResponseBody("application/json".toMediaType())
+    return HttpException(Response.error<Unit>(400, body))
 }
 
 private class UnusedProviderProfileApi : ProviderProfileApi {

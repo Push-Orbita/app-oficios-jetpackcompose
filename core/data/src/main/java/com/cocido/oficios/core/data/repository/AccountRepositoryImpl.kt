@@ -12,20 +12,21 @@ import com.cocido.oficios.core.data.mapper.toDomainItem
 import com.cocido.oficios.core.data.mapper.toDomainUser
 import com.cocido.oficios.core.data.mapper.toDto
 import com.cocido.oficios.core.data.remote.AccountRemoteDataSource
+import com.cocido.oficios.core.data.remote.AgendaRemoteDataSource
 import com.cocido.oficios.core.data.remote.ClientProfileRemoteDataSource
 import com.cocido.oficios.core.data.remote.ProviderProfileRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkCertificateRemoteDataSource
 import com.cocido.oficios.core.data.remote.WorkGalleryRemoteDataSource
 import com.cocido.oficios.core.data.session.SessionManager
+import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import com.cocido.oficios.domain.model.AccountDeletionRequest
 import com.cocido.oficios.domain.model.AccountProfile
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ProviderAccountDetails
-import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
-import com.cocido.oficios.domain.model.toRubroFullRequest
 import com.cocido.oficios.domain.model.RequestAccountDeletionParams
 import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
@@ -43,6 +44,7 @@ class AccountRepositoryImpl @Inject constructor(
     private val accountRemote: AccountRemoteDataSource,
     private val clientRemote: ClientProfileRemoteDataSource,
     private val providerRemote: ProviderProfileRemoteDataSource,
+    private val agendaRemote: AgendaRemoteDataSource,
     private val certificateRemote: WorkCertificateRemoteDataSource,
     private val galleryRemote: WorkGalleryRemoteDataSource,
     private val sessionManager: SessionManager,
@@ -224,36 +226,64 @@ class AccountRepositoryImpl @Inject constructor(
         isPrimary: Boolean,
         request: ProviderRubroFullRequest,
     ): AppResult<Unit> {
-        val snapshot = snapshotExistingService(existingId)
-        when (val createdFirst = createRubro(isPrimary, request)) {
-            is AppResult.Success -> {
-                when (val deleted = providerRemote.deleteRubro(existingId)) {
-                    is AppResult.Error -> return deleted
-                    is AppResult.Success -> Unit
-                }
-                return createdFirst.map { Unit }.also { refreshProviderDetails() }
-            }
-            is AppResult.Error -> {
-                if (!isRubroCoexistenceConflict(createdFirst.error)) {
-                    return createdFirst.map { Unit }
+        val existing = providerDetailsCache.get()?.services?.firstOrNull { it.id == existingId }
+        if (existing != null) {
+            return updateExistingProviderService(existing, request)
+        }
+        return createThenDeleteOld(existingId, isPrimary, request)
+    }
+
+    private suspend fun updateExistingProviderService(
+        existing: ManagedProviderService,
+        request: ProviderRubroFullRequest,
+    ): AppResult<Unit> {
+        if (request.requiresTurns) {
+            val targets = existing.subServices.filter { it.id > 0L }
+            for (sub in targets) {
+                when (val sessions = agendaRemote.getSesionesPorSubRubro(sub.id)) {
+                    is AppResult.Error -> return sessions.map { }
+                    is AppResult.Success -> if (sessions.data.isEmpty()) {
+                        when (
+                            val created = agendaRemote.createSesion(
+                                subRubroId = sub.id,
+                                duracion = DEFAULT_TURN_DURATION_MINUTES,
+                                medidaDuracion = DEFAULT_TURN_DURATION_UNIT,
+                                intervalo = DEFAULT_TURN_INTERVAL,
+                                medidaIntervalo = DEFAULT_TURN_DURATION_UNIT,
+                            )
+                        ) {
+                            is AppResult.Error -> return created.map { }
+                            is AppResult.Success -> Unit
+                        }
+                    }
                 }
             }
         }
-        // OpenAPI: un solo principal y rubroId único. El POST no puede coexistir
-        // con el rubro actual; solo entonces se recrea. Si el POST nuevo falla,
-        // se restaura el snapshot para no perder el servicio.
-        when (val deleted = providerRemote.deleteRubro(existingId)) {
-            is AppResult.Error -> return deleted
-            is AppResult.Success -> Unit
+        if (request.paymentMethods.isNotEmpty()) {
+            when (
+                val payments = providerRemote.updateProfessionalInfo(
+                    UpdateTrabajadorPerfilProfesionalRequestDto(metodosPago = request.paymentMethods),
+                )
+            ) {
+                is AppResult.Error -> return payments.map { }
+                is AppResult.Success -> Unit
+            }
         }
-        return when (val created = createRubro(isPrimary, request)) {
-            is AppResult.Success -> created.map { Unit }.also { refreshProviderDetails() }
-            is AppResult.Error -> {
-                if (snapshot != null) {
-                    createRubro(isPrimary, snapshot)
-                }
-                refreshProviderDetails()
-                created
+        applyRequiresTurnsToCache(existing.id, request.requiresTurns)
+        refreshProviderDetails()
+        applyRequiresTurnsToCache(existing.id, request.requiresTurns)
+        return AppResult.Success(Unit)
+    }
+
+    private suspend fun createThenDeleteOld(
+        existingId: Long,
+        isPrimary: Boolean,
+        request: ProviderRubroFullRequest,
+    ): AppResult<Unit> {
+        val created = createRubro(isPrimary, request)
+        return deleteOnlyAfterCreateSucceeds(created) {
+            providerRemote.deleteRubro(existingId).also { deleted ->
+                if (deleted is AppResult.Success) refreshProviderDetails()
             }
         }
     }
@@ -267,21 +297,22 @@ class AccountRepositoryImpl @Inject constructor(
         providerRemote.createSecondaryRubroFull(request.toDto())
     }
 
-    private fun snapshotExistingService(existingId: Long): ProviderRubroFullRequest? {
-        val details = providerDetailsCache.get() ?: return null
-        val service = details.services.firstOrNull { it.id == existingId } ?: return null
-        val domicilio = details.commercialLocal?.let { local ->
-            val barrioId = local.barrioId ?: return@let null
-            ProviderLocalDomicilioRequest(
-                barrioId = barrioId,
-                calle = local.street,
-                numero = local.number,
-                nombre = local.name,
-            )
-        }
-        return service.toRubroFullRequest(
-            paymentMethods = details.paymentMethods,
-            domicilioLocal = domicilio.takeIf { service.subServices.any { sub -> sub.servesAtLocal } },
+    private fun applyRequiresTurnsToCache(serviceId: Long, requiresTurns: Boolean) {
+        val details = providerDetailsCache.get() ?: return
+        cacheProviderDetails(
+            details.copy(
+                services = details.services.map { service ->
+                    if (service.id != serviceId) {
+                        service
+                    } else {
+                        service.copy(
+                            subServices = service.subServices.map { sub ->
+                                sub.copy(requiresTurns = requiresTurns)
+                            },
+                        )
+                    }
+                },
+            ),
         )
     }
 
@@ -412,13 +443,14 @@ class AccountRepositoryImpl @Inject constructor(
     }
 }
 
-private fun isRubroCoexistenceConflict(error: AppError): Boolean {
-    if (error is AppError.Conflict || error is AppError.Validation) return true
-    val text = error.message.lowercase()
-    return "rubro principal" in text ||
-        "full/secundario" in text ||
-        "ya tiene un rubro" in text ||
-        "mismo rubro" in text ||
-        "rubroid" in text ||
-        "duplicad" in text
+internal suspend fun deleteOnlyAfterCreateSucceeds(
+    created: AppResult<*>,
+    deleteOld: suspend () -> AppResult<*>,
+): AppResult<Unit> = when (created) {
+    is AppResult.Error -> created.map { }
+    is AppResult.Success -> deleteOld().map { }
 }
+
+private const val DEFAULT_TURN_DURATION_MINUTES = 60
+private const val DEFAULT_TURN_DURATION_UNIT = "minutos"
+private const val DEFAULT_TURN_INTERVAL = "15"

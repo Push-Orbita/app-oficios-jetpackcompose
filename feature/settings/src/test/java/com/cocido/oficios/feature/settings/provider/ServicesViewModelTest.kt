@@ -179,7 +179,7 @@ class AddServiceViewModelTest {
     }
 
     @Test
-    fun `save in edit mode replaces via delete plus create`() = runTest(testDispatcher) {
+    fun `save in edit mode updates the existing service`() = runTest(testDispatcher) {
         val accounts = FakeAccountRepository()
         val catalog = FakeCatalogRepository()
         val viewModel = addViewModel(accounts, catalog, serviceId = 11L)
