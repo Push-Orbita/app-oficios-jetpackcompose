@@ -72,9 +72,9 @@ class SplashLogoSafeZoneTest {
         val insetOutlineHDp =
             app.resources.getDimension(R.dimen.oficios_splash_isotype_inset_horizontal_outline) / density
         val halfDiagonal = sqrt(widthDp * widthDp + heightDp * heightDp) / 2f
-        assertEquals(130f, heightDp, 0.51f)
-        assertEquals(74f, widthDp, 0.51f)
-        assertEquals(71f, filledWidthDp, 0.51f)
+        assertEquals(120f, heightDp, 0.51f)
+        assertEquals(68f, widthDp, 0.51f)
+        assertEquals(66f, filledWidthDp, 0.51f)
         assertEquals(canvasDp - 2f * insetVDp, heightDp, 0.51f)
         assertEquals(canvasDp - 2f * insetOutlineHDp, widthDp, 0.51f)
         // Radio 80 = círculo 160dp (con icon background). 192/2=96 es más holgado.

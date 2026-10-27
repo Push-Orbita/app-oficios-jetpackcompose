@@ -12,8 +12,8 @@ class SplashIsotypeSizeTest {
     fun composeSplashIsotypeMatchesSystemSafeZone() {
         val width = OficiosComponentSize.authLogoIconWidthSplash.value
         val height = OficiosComponentSize.authLogoIconHeightSplash.value
-        assertEquals(71f, width)
-        assertEquals(130f, height)
+        assertEquals(66f, width)
+        assertEquals(120f, height)
         val halfDiagonal = sqrt(width * width + height * height) / 2f
         assertTrue(
             "esquina Compose a $halfDiagonal dp del centro debe caber en radio 80 (círculo 160dp)",

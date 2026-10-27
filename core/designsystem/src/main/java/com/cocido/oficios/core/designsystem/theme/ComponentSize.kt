@@ -98,11 +98,11 @@ object OficiosComponentSize {
     val authLogoIconWidthCompact = 122.dp
     /**
      * Splash Compose = isotipo del splash de sistema (canvas 288dp, círculo 192dp).
-     * Alto 130dp / ancho 71dp (plano 110×201) para que casco + pin entren en el
-     * círculo — también si el mask baja a 160dp — y no salte de tamaño al fade.
+     * Alto 120dp / ancho 66dp (plano 110×201) con aire en casco y torso —
+     * también si el mask baja a 160dp — y no salte de tamaño al fade.
      */
-    val authLogoIconHeightSplash = 130.dp
-    val authLogoIconWidthSplash = 71.dp
+    val authLogoIconHeightSplash = 120.dp
+    val authLogoIconWidthSplash = 66.dp
     /** Gap layout logo→wordmark en splash. El lockup se centra en el área segura. */
     val authSplashLogoWordmarkGap = 23.dp
     val authWordmarkHeight = 36.dp

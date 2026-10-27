@@ -2,7 +2,7 @@
 <!--
     Splash de sistema (tema oscuro), sin icon background:
     canvas 288dp, círculo visible 192dp. Isotipo plano (Figma 666:2)
-    casco azul + pin blanco a 71×130 (insets 108.5/79), contraste
+    casco azul + pin blanco a 66×120 (insets 111/84), contraste
     sobre navy #00358B.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">

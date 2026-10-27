@@ -2,8 +2,8 @@
 <!--
     Splash de sistema (tema claro), sin icon background:
     canvas 288dp, círculo visible 192dp. El isotipo navy-outlined
-    (Figma 736:40) va centrado a 74×130 (insets 107/79) para entrar
-    entero en el círculo, también si el mask baja a 160dp.
+    (Figma 736:40) va centrado a 68×120 (insets 110/84) con aire
+    en el círculo, también si el mask baja a 160dp.
     No pintar el canvas de color: el fondo es windowSplashScreenBackground.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
