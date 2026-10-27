@@ -97,9 +97,8 @@ object OficiosComponentSize {
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
     /**
-     * Splash Compose = isotipo del splash de sistema (canvas 288dp, círculo 192dp).
-     * Alto 120dp / ancho 66dp (plano 110×201) con aire en casco y torso —
-     * también si el mask baja a 160dp — y no salte de tamaño al fade.
+     * Splash Compose ≈ isotipo del system splash (vector 288×288, isotipo al 50%).
+     * Alto 120dp / ancho 66dp para que no salte de tamaño al fade.
      */
     val authLogoIconHeightSplash = 120.dp
     val authLogoIconWidthSplash = 66.dp

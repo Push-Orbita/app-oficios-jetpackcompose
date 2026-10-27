@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+ / compat sin icon background: canvas 288dp, círculo visible 192dp.
-         Con icon background el círculo baja a 160dp; el isotipo también debe caber ahí. -->
-    <dimen name="oficios_splash_icon_canvas">288dp</dimen>
     <!--
-        Alto 120dp (no 130 ni 152): a 130dp lanot aún rozaba punta del casco
-        y base del torso contra el mask. El vector es edge-to-edge.
-        Outline 114×201 → 68×120. Plano 110×201 → 66×120.
-        Esquina 68×120: ~69dp del centro, aire en radio 80 (160dp) y 96 (192dp).
+        Canvas del ícono de system splash: cuadrado 288dp.
+        El isotipo vive DENTRO del vector (group scale al 50% = 144 unidades)
+        para que el ImageView API 12+ no escale el dibujo alto al diámetro
+        del círculo (192dp sin icon background / 160dp con).
     -->
-    <dimen name="oficios_splash_isotype_width">66dp</dimen>
-    <dimen name="oficios_splash_isotype_height">120dp</dimen>
-    <dimen name="oficios_splash_isotype_outline_width">68dp</dimen>
-    <!-- Insets sobre canvas 288 para que el logo no llene el canvas si width/height se ignora. -->
-    <dimen name="oficios_splash_isotype_inset_vertical">84dp</dimen>
-    <dimen name="oficios_splash_isotype_inset_horizontal_outline">110dp</dimen>
-    <dimen name="oficios_splash_isotype_inset_horizontal">111dp</dimen>
+    <dimen name="oficios_splash_icon_canvas">288dp</dimen>
 </resources>

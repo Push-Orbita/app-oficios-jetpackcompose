@@ -1,26 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Splash de sistema (tema oscuro), sin icon background:
-    canvas 288dp, círculo visible 192dp. Isotipo plano (Figma 666:2)
-    casco azul + pin blanco a 66×120 (insets 111/84), contraste
-    sobre navy #00358B.
+    Splash oscuro: mismo canvas 288dp. Isotipo plano Figma 666:2
+    casco #006AF0 + pin blanco, centrado al 50% (aire en el círculo).
+    group scale=0.195652 → isotipo 78.8×144 en canvas 288.
 -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <size
-                android:width="@dimen/oficios_splash_icon_canvas"
-                android:height="@dimen/oficios_splash_icon_canvas" />
-            <solid android:color="@android:color/transparent" />
-        </shape>
-    </item>
-    <item
-        android:width="@dimen/oficios_splash_isotype_width"
-        android:height="@dimen/oficios_splash_isotype_height"
-        android:gravity="center"
-        android:left="@dimen/oficios_splash_isotype_inset_horizontal"
-        android:top="@dimen/oficios_splash_isotype_inset_vertical"
-        android:right="@dimen/oficios_splash_isotype_inset_horizontal"
-        android:bottom="@dimen/oficios_splash_isotype_inset_vertical"
-        android:drawable="@drawable/ic_oficios_logotipo" />
-</layer-list>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <group
+        android:scaleX="0.195652"
+        android:scaleY="0.195652"
+        android:translateX="104.576087"
+        android:translateY="72.000000">
+        <path
+            android:pathData="M200.943 368.5C277.987 368.5 340.443 303.581 340.443 223.5C340.443 215.847 339.873 208.333 338.774 201H63.1128C62.0137 208.333 61.4434 215.847 61.4434 223.5C61.4434 303.581 123.9 368.5 200.943 368.5Z"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"/>
+        <path
+            android:pathData="M201.443 0C219.334 0 233.898 14.2372 234.427 32H234.443V164C234.443 164.552 234.891 165 235.443 165H242.443C242.996 165 243.443 164.552 243.443 164V32H262.443C274.041 32 283.443 41.402 283.443 53V149C283.443 149.552 283.891 150 284.443 150H291.443C291.996 150 292.443 149.552 292.443 149V60.0234C303.283 60.5316 311.971 69.2574 312.423 80.1113C338.164 107.57 353.943 143.708 353.943 183H48.9434C48.9434 143.708 64.7216 107.569 90.4629 80.1113C90.9148 69.2574 99.604 60.5316 110.443 60.0234V150C110.443 150.552 110.891 151 111.443 151H118.443C118.996 151 119.443 150.552 119.443 150V53C119.443 41.402 128.845 32 140.443 32H159.443V164C159.443 164.552 159.891 165 160.443 165H167.443C167.996 165 168.443 164.552 168.443 164V32H168.46C168.989 14.2372 183.553 0 201.443 0Z"
+            android:fillColor="#006AF0"/>
+        <path
+            android:pathData="M27.4434 197C27.4434 193.134 30.5774 190 34.4434 190H368.443C372.309 190 375.443 193.134 375.443 197V211C375.443 214.866 372.309 218 368.443 218H34.4434C30.5774 218 27.4434 214.866 27.4434 211V197Z"
+            android:fillColor="#006AF0"/>
+        <path
+            android:pathData="M345.797 337.25C390.302 337.25 417.639 385.974 394.444 423.957L250.089 660.341C227.867 696.731 175.019 696.731 152.796 660.341L8.44294 423.957C-14.7522 385.974 12.5845 337.25 57.0894 337.25H71.1871C102.844 378.064 150.187 404.416 200.681 404.416C251.176 404.416 299.156 378.064 331.369 337.25H345.797Z"
+            android:fillColor="#FFFFFF"/>
+        <path
+            android:pathData="M290.929 618.408C292.503 618.958 294.049 619.523 295.563 620.104C307.989 624.863 319.282 630.97 327.782 638.669C336.284 646.369 343.443 657.097 343.443 670.5C343.443 683.903 336.284 694.631 327.782 702.331C319.282 710.03 307.989 716.137 295.563 720.896C270.591 730.462 237.309 736 201.443 736C165.577 736 132.296 730.462 107.323 720.896C94.8981 716.137 83.605 710.03 75.1045 702.331C66.6027 694.631 59.4434 683.903 59.4434 670.5C59.4434 657.097 66.6027 646.369 75.1045 638.669C83.605 630.97 94.8981 624.863 107.323 620.104C108.837 619.523 110.382 618.958 111.956 618.408L121.577 634.163C94.5889 642.876 77.4434 655.921 77.4434 670.5C77.4434 696.734 132.96 718 201.443 718C269.927 718 325.443 696.734 325.443 670.5C325.443 655.921 308.297 642.876 281.308 634.163L290.929 618.408Z"
+            android:fillColor="#FFFFFF"/>
+        <path
+            android:pathData="M201.443 605C229.496 605 255.968 608.387 278.119 614.44L268.316 630.492C249.021 625.75 226.071 623 201.443 623C176.816 623 153.864 625.75 134.569 630.492L124.767 614.44C146.918 608.387 173.39 605 201.443 605Z"
+            android:fillColor="#FFFFFF"/>
+    </group>
+</vector>

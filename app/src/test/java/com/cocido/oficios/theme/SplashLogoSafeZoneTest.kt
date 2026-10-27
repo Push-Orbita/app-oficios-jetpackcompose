@@ -3,7 +3,6 @@ package com.cocido.oficios.theme
 import android.util.TypedValue
 import androidx.core.content.res.ResourcesCompat
 import com.cocido.oficios.R
-import kotlin.math.sqrt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -61,26 +60,20 @@ class SplashLogoSafeZoneTest {
     }
 
     @Test
-    fun isotypeFitsInside160dpCircle() {
-        val app = RuntimeEnvironment.getApplication()
-        val density = app.resources.displayMetrics.density
-        val widthDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_outline_width) / density
-        val filledWidthDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_width) / density
-        val heightDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_height) / density
-        val canvasDp = app.resources.getDimension(R.dimen.oficios_splash_icon_canvas) / density
-        val insetVDp = app.resources.getDimension(R.dimen.oficios_splash_isotype_inset_vertical) / density
-        val insetOutlineHDp =
-            app.resources.getDimension(R.dimen.oficios_splash_isotype_inset_horizontal_outline) / density
-        val halfDiagonal = sqrt(widthDp * widthDp + heightDp * heightDp) / 2f
-        assertEquals(120f, heightDp, 0.51f)
-        assertEquals(68f, widthDp, 0.51f)
-        assertEquals(66f, filledWidthDp, 0.51f)
-        assertEquals(canvasDp - 2f * insetVDp, heightDp, 0.51f)
-        assertEquals(canvasDp - 2f * insetOutlineHDp, widthDp, 0.51f)
-        // Radio 80 = círculo 160dp (con icon background). 192/2=96 es más holgado.
-        assertTrue(
-            "esquina del isotipo a $halfDiagonal dp del centro debe caber en radio 80",
-            halfDiagonal < 80f,
+    fun lightSplashVectorKeepsIsotypeInsideSafeZone() {
+        // Outline viewport 439×772; group scale cabe el alto en 144/288.
+        assertSplashVectorSafeZone(
+            path = "src/main/res/drawable/ic_splash_logo.xml",
+            sourceViewportHeight = 772f,
+        )
+    }
+
+    @Test
+    fun nightSplashVectorKeepsIsotypeInsideSafeZone() {
+        // Plano viewport 403×736.
+        assertSplashVectorSafeZone(
+            path = "src/main/res/drawable-night/ic_splash_logo.xml",
+            sourceViewportHeight = 736f,
         )
     }
 
@@ -96,12 +89,31 @@ class SplashLogoSafeZoneTest {
             assertFalse(path, lower.contains("#fc0"))
             assertFalse(path, lower.contains("#ffc107"))
             assertFalse(path, lower.contains("yellow"))
-            assertTrue(path, xml.contains("ic_oficios_logotipo"))
-            assertTrue(path, xml.contains("oficios_splash_icon_canvas"))
-            assertTrue(path, xml.contains("oficios_splash_isotype_inset_vertical"))
-            assertTrue(path, xml.contains("android:left="))
-            assertTrue(path, xml.contains("android:top="))
+            assertTrue(path, xml.contains("#006AF0"))
+            assertTrue(path, xml.contains("<vector"))
+            assertFalse(path, xml.contains("<layer-list"))
         }
+    }
+
+    private fun assertSplashVectorSafeZone(path: String, sourceViewportHeight: Float) {
+        val xml = java.io.File(path).readText()
+        assertTrue(path, xml.contains("android:viewportWidth=\"288\""))
+        assertTrue(path, xml.contains("android:viewportHeight=\"288\""))
+        assertTrue(path, xml.contains("<group"))
+        val scale = Regex("""android:scaleY="([0-9.]+)"""")
+            .find(xml)
+            ?.groupValues
+            ?.get(1)
+            ?.toFloat()
+            ?: error("$path missing scaleY")
+        val logoHeight = scale * sourceViewportHeight
+        assertEquals("isotipo debe ocupar 50% del canvas 288", 144f, logoHeight, 0.6f)
+        assertTrue(
+            "alto $logoHeight debe quedar bajo el círculo de 160dp (y 192dp) con aire",
+            logoHeight < 160f,
+        )
+        assertTrue(path, xml.contains("android:width=\"288dp\""))
+        assertTrue(path, xml.contains("android:height=\"288dp\""))
     }
 
     private fun assertSplashCanvas288Dp() {
