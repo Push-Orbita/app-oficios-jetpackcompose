@@ -104,32 +104,38 @@ private fun PersonalDataForm(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.fillMaxWidth(),
         )
-        OficiosAvatar(
-            name = "${state.firstName} ${state.lastName}",
-            imageUrl = when {
-                state.removePhoto -> null
-                state.selectedPhotoPath != null -> state.selectedPhotoPath
-                else -> state.currentPhotoUrl
-            },
-            size = OficiosComponentSize.avatarLg,
-            showBorder = true,
-        )
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
-            OficiosButton(
-                text = stringResource(R.string.personal_data_change_photo),
-                onClick = onRequestPhoto,
-                variant = OficiosButtonVariant.Outlined,
-                modifier = Modifier.weight(1f),
+            OficiosAvatar(
+                name = "${state.firstName} ${state.lastName}",
+                imageUrl = when {
+                    state.removePhoto -> null
+                    state.selectedPhotoPath != null -> state.selectedPhotoPath
+                    else -> state.currentPhotoUrl
+                },
+                size = OficiosComponentSize.avatarLg,
+                showBorder = true,
             )
-            OficiosButton(
-                text = stringResource(R.string.personal_data_remove_photo),
-                onClick = { onEvent(PersonalDataEvent.RemovePhoto) },
-                variant = OficiosButtonVariant.Ghost,
-                modifier = Modifier.weight(1f),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                OficiosButton(
+                    text = stringResource(R.string.personal_data_change_photo),
+                    onClick = onRequestPhoto,
+                    variant = OficiosButtonVariant.Outlined,
+                    modifier = Modifier.weight(1f),
+                )
+                OficiosButton(
+                    text = stringResource(R.string.personal_data_remove_photo),
+                    onClick = { onEvent(PersonalDataEvent.RemovePhoto) },
+                    variant = OficiosButtonVariant.Ghost,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
         OficiosTextField(
             value = state.firstName,
