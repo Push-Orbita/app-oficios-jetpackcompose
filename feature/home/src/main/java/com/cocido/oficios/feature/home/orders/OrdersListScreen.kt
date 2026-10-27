@@ -236,7 +236,7 @@ private fun OrdersListSuccess(
                                 val tag = if (history) AgendaAppointmentTag.NONE else order.agendaTag(now)
                                 AgendaAppointmentRow(
                                     rubro = order.agendaRubroLabel(),
-                                    address = order.addressLabel.ifBlank { order.counterpartName },
+                                    address = order.addressLabel,
                                     time = order.agendaTimeLabel(),
                                     isToday = tag == AgendaAppointmentTag.TODAY,
                                     isNow = tag == AgendaAppointmentTag.NOW,
@@ -244,6 +244,8 @@ private fun OrdersListSuccess(
                                     modifier = oficiosAnimateItem(),
                                     todayLabel = stringResource(R.string.provider_home_agenda_today_tag),
                                     nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
+                                    avatarName = order.counterpartName.ifBlank { order.agendaRubroLabel() },
+                                    avatarUrl = order.avatarUrl,
                                 )
                             }
                         }
@@ -258,11 +260,13 @@ private fun OrdersListSuccess(
                             items(undated, key = { it.id }) { order ->
                                 AgendaAppointmentRow(
                                     rubro = order.agendaRubroLabel(),
-                                    address = order.addressLabel.ifBlank { order.counterpartName },
+                                    address = order.addressLabel,
                                     time = order.scheduledLabel.orEmpty(),
                                     isToday = false,
                                     onClick = { onEvent(OrdersListEvent.OrderClicked(order.id)) },
                                     modifier = oficiosAnimateItem(),
+                                    avatarName = order.counterpartName.ifBlank { order.agendaRubroLabel() },
+                                    avatarUrl = order.avatarUrl,
                                 )
                             }
                         }

@@ -3,6 +3,7 @@ package com.cocido.oficios.core.designsystem.component.cards
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -30,14 +31,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Fila de turno — Figma `259:435` / `259:606`.
- * AHORA: card blanca + barra 24dp #006DEF. HOY: barra 24dp + tag vertical. Resto: barra 16dp #004DA8.
+ * Fila de turno / pedido — Figma agenda `259:435` + patrón de búsqueda
+ * (avatar circular, título, meta, chevron).
+ * AHORA: card invertida + barra 24dp. HOY: barra 24dp + tag vertical.
  */
 @Composable
 fun AgendaAppointmentRow(
@@ -50,6 +53,8 @@ fun AgendaAppointmentRow(
     isNow: Boolean = false,
     todayLabel: String = "HOY",
     nowLabel: String = "AHORA",
+    avatarName: String? = null,
+    avatarUrl: String? = null,
 ) {
     val shape = RoundedCornerShape(OficiosRadius.sm)
     val highlighted = isNow
@@ -59,6 +64,15 @@ fun AgendaAppointmentRow(
     val titleColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
     val bodyColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurfaceVariant
     val chevronColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
+    val title = agendaRowTitle(rubro = rubro, counterpartName = avatarName)
+    val meta = agendaRowMeta(
+        rubro = rubro,
+        address = address,
+        time = time,
+        title = title,
+        counterpartName = avatarName,
+    )
+    val showAvatar = avatarName != null || !avatarUrl.isNullOrBlank()
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -97,39 +111,44 @@ fun AgendaAppointmentRow(
                     .background(MaterialTheme.colorScheme.outline),
             )
         }
-        Column(
+        Row(
             modifier = Modifier
                 .weight(1f)
                 .padding(
-                    start = OficiosSpacing.xs,
-                    top = OficiosSpacing.xs,
-                    bottom = OficiosSpacing.xs,
+                    start = OficiosSpacing.sm,
+                    top = OficiosSpacing.sm,
+                    bottom = OficiosSpacing.sm,
                     end = OficiosSpacing.xs,
                 ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
         ) {
-            Text(
-                text = rubro,
-                style = MaterialTheme.typography.titleMedium,
-                color = titleColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (address.isNotBlank()) {
+            if (showAvatar) {
+                OficiosAvatar(
+                    name = avatarName?.ifBlank { rubro }.orEmpty().ifBlank { title },
+                    imageUrl = avatarUrl,
+                    size = OficiosComponentSize.avatarSm,
+                    circular = true,
+                    showBorder = !highlighted,
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = address,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = bodyColor,
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = titleColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-            }
-            if (time.isNotBlank()) {
-                Text(
-                    text = time,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = bodyColor,
-                    maxLines = 1,
-                )
+                if (meta.isNotBlank()) {
+                    Text(
+                        text = meta,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = bodyColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
         Icon(
@@ -140,6 +159,21 @@ fun AgendaAppointmentRow(
         )
     }
 }
+
+internal fun agendaRowTitle(rubro: String, counterpartName: String?): String =
+    counterpartName?.takeIf { it.isNotBlank() } ?: rubro
+
+internal fun agendaRowMeta(
+    rubro: String,
+    address: String,
+    time: String,
+    title: String,
+    counterpartName: String?,
+): String = buildList {
+    if (rubro.isNotBlank() && rubro != title) add(rubro)
+    if (address.isNotBlank() && address != title && address != counterpartName) add(address)
+    if (time.isNotBlank()) add(time)
+}.joinToString(" · ")
 
 @Preview(name = "Agenda rows", showBackground = true, backgroundColor = 0xFF00358B)
 @Composable
@@ -153,6 +187,7 @@ private fun AgendaAppointmentRowPreview() {
                 isToday = true,
                 isNow = true,
                 onClick = {},
+                avatarName = "María González",
             )
             AgendaAppointmentRow(
                 rubro = "Albañilería",
@@ -160,6 +195,7 @@ private fun AgendaAppointmentRowPreview() {
                 time = "13:30hs",
                 isToday = true,
                 onClick = {},
+                avatarName = "María González",
                 modifier = Modifier.padding(top = OficiosSpacing.sm),
             )
             AgendaAppointmentRow(
@@ -168,6 +204,7 @@ private fun AgendaAppointmentRowPreview() {
                 time = "09:30hs",
                 isToday = false,
                 onClick = {},
+                avatarName = "Luis Pérez",
                 modifier = Modifier.padding(top = OficiosSpacing.sm),
             )
         }

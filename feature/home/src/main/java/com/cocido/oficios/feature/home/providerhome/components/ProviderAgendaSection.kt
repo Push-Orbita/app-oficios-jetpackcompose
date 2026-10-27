@@ -175,6 +175,8 @@ fun ProviderAgendaSection(
                             todayLabel = stringResource(R.string.provider_home_agenda_today_tag),
                             nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
                             onClick = { onOrderClick(order.id) },
+                            avatarName = order.counterpartName.ifBlank { order.agendaRubroLabel() },
+                            avatarUrl = order.avatarUrl,
                         )
                     }
                 }
