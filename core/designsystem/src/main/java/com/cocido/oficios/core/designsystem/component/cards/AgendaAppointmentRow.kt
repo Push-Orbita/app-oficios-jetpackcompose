@@ -55,6 +55,8 @@ fun AgendaAppointmentRow(
     nowLabel: String = "AHORA",
     avatarName: String? = null,
     avatarUrl: String? = null,
+    /** Franja gris 16dp de agenda. Mis pedidos la oculta; HOY/AHORA se mantienen. */
+    showIdleSideBar: Boolean = true,
 ) {
     val shape = RoundedCornerShape(OficiosRadius.sm)
     val highlighted = isNow
@@ -65,10 +67,9 @@ fun AgendaAppointmentRow(
     val bodyColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurfaceVariant
     val chevronColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
     val title = agendaRowTitle(rubro = rubro, counterpartName = avatarName)
-    val meta = agendaRowMeta(
+    val detail = agendaRowDetail(
         rubro = rubro,
         address = address,
-        time = time,
         title = title,
         counterpartName = avatarName,
     )
@@ -103,7 +104,7 @@ fun AgendaAppointmentRow(
                         .graphicsLayer { rotationZ = -90f },
                 )
             }
-        } else {
+        } else if (showIdleSideBar) {
             Box(
                 modifier = Modifier
                     .width(OficiosComponentSize.agendaDefaultBarWidth)
@@ -140,13 +141,21 @@ fun AgendaAppointmentRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (meta.isNotBlank()) {
+                if (detail.isNotBlank()) {
                     Text(
-                        text = meta,
+                        text = detail,
                         style = MaterialTheme.typography.bodyMedium,
                         color = bodyColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                if (time.isNotBlank()) {
+                    Text(
+                        text = time,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = bodyColor,
+                        maxLines = 1,
                     )
                 }
             }
@@ -163,16 +172,14 @@ fun AgendaAppointmentRow(
 internal fun agendaRowTitle(rubro: String, counterpartName: String?): String =
     counterpartName?.takeIf { it.isNotBlank() } ?: rubro
 
-internal fun agendaRowMeta(
+internal fun agendaRowDetail(
     rubro: String,
     address: String,
-    time: String,
     title: String,
     counterpartName: String?,
 ): String = buildList {
     if (rubro.isNotBlank() && rubro != title) add(rubro)
     if (address.isNotBlank() && address != title && address != counterpartName) add(address)
-    if (time.isNotBlank()) add(time)
 }.joinToString(" · ")
 
 @Preview(name = "Agenda rows", showBackground = true, backgroundColor = 0xFF00358B)
@@ -205,6 +212,7 @@ private fun AgendaAppointmentRowPreview() {
                 isToday = false,
                 onClick = {},
                 avatarName = "Luis Pérez",
+                showIdleSideBar = false,
                 modifier = Modifier.padding(top = OficiosSpacing.sm),
             )
         }

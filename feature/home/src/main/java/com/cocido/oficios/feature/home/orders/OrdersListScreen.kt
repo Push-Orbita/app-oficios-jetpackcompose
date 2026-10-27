@@ -246,6 +246,7 @@ private fun OrdersListSuccess(
                                     nowLabel = stringResource(R.string.provider_home_agenda_now_tag),
                                     avatarName = order.counterpartName.ifBlank { order.agendaRubroLabel() },
                                     avatarUrl = order.avatarUrl,
+                                    showIdleSideBar = false,
                                 )
                             }
                         }
@@ -267,6 +268,7 @@ private fun OrdersListSuccess(
                                     modifier = oficiosAnimateItem(),
                                     avatarName = order.counterpartName.ifBlank { order.agendaRubroLabel() },
                                     avatarUrl = order.avatarUrl,
+                                    showIdleSideBar = false,
                                 )
                             }
                         }

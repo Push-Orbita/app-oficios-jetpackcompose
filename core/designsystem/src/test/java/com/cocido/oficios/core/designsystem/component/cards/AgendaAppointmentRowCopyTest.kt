@@ -13,23 +13,21 @@ class AgendaAppointmentRowCopyTest {
     }
 
     @Test
-    fun metaDropsDuplicateNameAndJoinsRubroAddressTime() {
+    fun detailJoinsRubroAndAddressWithoutTime() {
         assertEquals(
-            "Plomería · Av. 25 de Mayo 450 · 12:00hs",
-            agendaRowMeta(
+            "Plomería · Av. 25 de Mayo 450",
+            agendaRowDetail(
                 rubro = "Plomería",
                 address = "Av. 25 de Mayo 450",
-                time = "12:00hs",
                 title = "Ana Paz",
                 counterpartName = "Ana Paz",
             ),
         )
         assertEquals(
-            "12:00hs",
-            agendaRowMeta(
+            "",
+            agendaRowDetail(
                 rubro = "Plomería",
                 address = "Ana Paz",
-                time = "12:00hs",
                 title = "Plomería",
                 counterpartName = "Ana Paz",
             ),
