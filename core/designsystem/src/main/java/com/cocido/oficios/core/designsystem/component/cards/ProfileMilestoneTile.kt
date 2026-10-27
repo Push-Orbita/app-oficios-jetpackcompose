@@ -34,7 +34,7 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
  * Barra de progreso 40dp r16 con borde punteado y % a la derecha.
- * Figma `259:303`.
+ * Figma `259:303`. Fill `primary` (azul de marca); el track queda sutil.
  */
 @Composable
 fun ProfileProgressBar(
@@ -54,7 +54,7 @@ fun ProfileProgressBar(
             modifier = Modifier
                 .fillMaxWidth(clamped / 100f)
                 .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.outline),
+                .background(MaterialTheme.colorScheme.primary),
         )
         Text(
             text = "$clamped%",
