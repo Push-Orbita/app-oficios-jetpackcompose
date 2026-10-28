@@ -697,7 +697,7 @@ fun ProviderAvailabilityStepScreen(
                         value = uiState.turnIntervalMinutes?.toString() ?: "",
                         onValueChange = { onTurnIntervalChanged(it.toIntOrNull()) },
                         label = stringResource(R.string.onboarding_step_availability_turn_interval),
-                        helperText = stringResource(R.string.onboarding_step_availability_turn_interval_hint),
+                        supportingText = stringResource(R.string.onboarding_step_availability_turn_interval_hint),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
                     )
