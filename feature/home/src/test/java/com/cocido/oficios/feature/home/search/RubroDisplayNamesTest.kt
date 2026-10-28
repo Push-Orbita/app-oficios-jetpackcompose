@@ -48,11 +48,11 @@ class RubroDisplayNamesTest {
     @Test
     fun `unmatched uses neutral title and hint`() {
         assertEquals(
-            "Trabajadores de Oficios Formosa",
+            "Trabajadores",
             RubroDisplayNames.pluralTitle("Hogar y Construcción"),
         )
         assertEquals("¿Busca a alguien en específico?", RubroDisplayNames.searchHint("Hogar y Construcción"))
-        assertEquals("Trabajadores de Oficios Formosa", RubroDisplayNames.pluralTitle(null))
+        assertEquals("Trabajadores", RubroDisplayNames.pluralTitle(null))
         assertEquals("¿Busca a alguien en específico?", RubroDisplayNames.searchHint("   "))
         assertNull(RubroDisplayNames.resolve("Tecnología"))
     }

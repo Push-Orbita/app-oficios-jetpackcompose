@@ -11,7 +11,11 @@ object RubroDisplayNames {
 
     fun pluralTitle(rubroLabel: String?): String {
         val mapped = resolve(rubroLabel)
-        return "${mapped?.first ?: FALLBACK_PLURAL} de Oficios Formosa"
+        return if (mapped != null) {
+            "${mapped.first} de Oficios Formosa"
+        } else {
+            FALLBACK_PLURAL
+        }
     }
 
     fun searchHint(rubroLabel: String?): String {
