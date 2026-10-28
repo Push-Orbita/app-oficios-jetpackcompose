@@ -17,4 +17,5 @@ object SettingsDestination {
     const val changePassword = "settings/change-password"
     const val deleteAccount = "settings/delete-account"
     const val configuration = "settings/configuration"
+    const val verifyEmail = "settings/verify-email"
 }

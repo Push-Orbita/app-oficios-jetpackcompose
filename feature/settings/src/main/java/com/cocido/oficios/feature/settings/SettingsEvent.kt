@@ -10,6 +10,7 @@ sealed interface SettingsEvent {
     data object OpenTerms : SettingsEvent
     data object OpenHelp : SettingsEvent
     data object OpenConfiguration : SettingsEvent
+    data object OpenVerifyEmail : SettingsEvent
     data object Logout : SettingsEvent
     data object NavigateBack : SettingsEvent
 }
@@ -23,4 +24,5 @@ sealed interface SettingsEffect {
     data object NavigateToTerms : SettingsEffect
     data object NavigateToHelp : SettingsEffect
     data object NavigateToConfiguration : SettingsEffect
+    data object NavigateToVerifyEmail : SettingsEffect
 }
