@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -211,7 +212,7 @@ private fun SearchResultsHeader(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        if (hasRubroFilter || categoryOnlyLabel != null) {
+        if (hasRubroFilter) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,11 +244,7 @@ private fun SearchResultsHeader(
                             ),
                     )
                     Text(
-                        text = if (hasRubroFilter) {
-                            RubroDisplayNames.pluralTitle(rubroLabel)
-                        } else {
-                            categoryOnlyLabel ?: ""
-                        },
+                        text = RubroDisplayNames.pluralTitle(rubroLabel),
                         style = MaterialTheme.typography.headlineLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.weight(1f),
@@ -264,16 +261,21 @@ private fun SearchResultsHeader(
             }
         } else {
             com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar(
-                title = stringResource(R.string.home_categories_title),
+                title = categoryOnlyLabel ?: stringResource(R.string.home_categories_title),
                 onBack = { onEvent(SearchResultsEvent.Back) },
                 actions = {
-                    com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton(
-                        onClick = { onEvent(SearchResultsEvent.OpenNotifications) },
-                        contentDescription = stringResource(R.string.home_notifications),
-                        unreadCount = unreadNotificationCount,
-                    )
+                    Row(
+                        modifier = Modifier.padding(end = OficiosSpacing.md),
+                    ) {
+                        com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton(
+                            onClick = { onEvent(SearchResultsEvent.OpenNotifications) },
+                            contentDescription = stringResource(R.string.home_notifications),
+                            unreadCount = unreadNotificationCount,
+                        )
+                    }
                 },
                 showDivider = false,
+                windowInsets = WindowInsets(0),
             )
             if (showContactLimit) {
                 Text(
