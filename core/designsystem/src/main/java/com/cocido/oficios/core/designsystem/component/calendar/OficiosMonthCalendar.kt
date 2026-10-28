@@ -147,12 +147,13 @@ fun OficiosMonthCalendar(
 
 @Composable
 fun OficiosHourGrid(
+    hours: List<java.time.LocalTime>,
     selectedHour: java.time.LocalTime?,
     hourState: (java.time.LocalTime) -> HourChipState,
     onHourSelected: (java.time.LocalTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hours = (0..23).map { java.time.LocalTime.of(it, 0) }
+    if (hours.isEmpty()) return
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -168,11 +169,14 @@ fun OficiosHourGrid(
                 row.forEach { hour ->
                     val state = hourState(hour)
                     HourChip(
-                        label = "%02d:00".format(hour.hour),
+                        label = "%02d:%02d".format(hour.hour, hour.minute),
                         state = state,
                         onClick = { if (state != HourChipState.Unavailable) onHourSelected(hour) },
                         modifier = Modifier.weight(1f),
                     )
+                }
+                repeat(4 - row.size) {
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -271,18 +275,37 @@ private fun HourChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val (bg, fg) = when (state) {
-        HourChipState.Selected -> OficiosTheme.colors.selectedContainer to OficiosTheme.colors.onSelected
-        HourChipState.Available -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
+    val (bg, fg, borderColor) = when (state) {
+        HourChipState.Selected -> Triple(
+            OficiosTheme.colors.selectedContainer,
+            OficiosTheme.colors.onSelected,
+            null
+        )
+        HourChipState.Available -> Triple(
+            MaterialTheme.colorScheme.surface,
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.primary
+        )
         HourChipState.Unavailable,
         HourChipState.Idle,
-        -> MaterialTheme.colorScheme.outline.copy(alpha = 0f) to MaterialTheme.colorScheme.outline
+        -> Triple(
+            MaterialTheme.colorScheme.outline.copy(alpha = 0f),
+            MaterialTheme.colorScheme.outline,
+            null
+        )
     }
     Box(
         modifier = modifier
             .height(OficiosComponentSize.hourChipHeight)
             .clip(RoundedCornerShape(OficiosRadius.sm))
             .background(bg)
+            .then(
+                if (borderColor != null) Modifier.border(
+                    width = 1.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(OficiosRadius.sm)
+                ) else Modifier
+            )
             .then(
                 if (state != HourChipState.Unavailable) Modifier.clickable(onClick = onClick) else Modifier,
             ),

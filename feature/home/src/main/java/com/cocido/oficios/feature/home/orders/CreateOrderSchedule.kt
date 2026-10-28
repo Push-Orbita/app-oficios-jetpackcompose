@@ -41,16 +41,17 @@ internal object CreateOrderSchedule {
         return slots.firstOrNull { slot ->
             slot.isSelectable &&
                 slot.start.toLocalDate() == date &&
-                slot.start.toLocalTime().hour == hour.hour
+                slot.start.toLocalTime() == hour
         }
     }
 
-    fun availableHoursForDate(slots: List<AgendaSlot>, date: LocalDate?): Set<Int> {
-        if (date == null) return emptySet()
+    fun availableHoursForDate(slots: List<AgendaSlot>, date: LocalDate?): List<LocalTime> {
+        if (date == null) return emptyList()
         return slots
             .filter { it.isSelectable && it.start.toLocalDate() == date }
-            .map { it.start.hour }
-            .toSet()
+            .map { it.start.toLocalTime() }
+            .distinct()
+            .sorted()
     }
 
     fun blockedHoursForDate(slots: List<AgendaSlot>, date: LocalDate?): Set<Int> {
@@ -62,21 +63,21 @@ internal object CreateOrderSchedule {
     }
 
     /**
-     * Horas que el cliente puede elegir. `null` = sin restricción (API vieja / sin agenda).
-     * Los slots con id=0 o BLOQUEADO quedan afuera.
+     * Horarios que el cliente puede elegir. `null` = sin restricción (API vieja / sin agenda).
+     * Si hay slots disponibles, devuelve esas horas exactas; si no, cae a franjas horarias.
      */
     fun selectableHours(
         slots: List<AgendaSlot>,
         date: LocalDate?,
         ranges: List<TimeRange>,
         dayHasAvailability: Boolean?,
-    ): Set<Int>? {
-        if (date == null) return emptySet()
+    ): List<LocalTime>? {
+        if (date == null) return emptyList()
         val fromSlots = availableHoursForDate(slots, date)
         if (fromSlots.isNotEmpty()) return fromSlots
         val fromRanges = TimeRangeValidation.hoursCovered(ranges)
-        if (fromRanges.isNotEmpty()) return fromRanges
-        if (dayHasAvailability != null) return emptySet()
+        if (fromRanges.isNotEmpty()) return fromRanges.map { LocalTime.of(it, 0) }
+        if (dayHasAvailability != null) return emptyList()
         return null
     }
 
@@ -89,7 +90,7 @@ internal object CreateOrderSchedule {
     ): Boolean {
         if (hour == null || date == null) return false
         val allowed = selectableHours(slots, date, ranges, dayHasAvailability) ?: return true
-        return hour.hour in allowed
+        return hour in allowed
     }
 
     fun visitDateTime(date: LocalDate?, hour: LocalTime?): LocalDateTime? {

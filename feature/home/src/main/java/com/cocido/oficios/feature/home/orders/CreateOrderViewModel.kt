@@ -291,7 +291,7 @@ class CreateOrderViewModel @Inject constructor(
             val contactos = (contactosResult as? AppResult.Success)?.data.orEmpty()
             val selectedSubRubroId = subRubroOptions.singleOrNull()?.id
             val workDayKeys = profile.availability?.workDays
-                ?.map { it.dayStart.uppercase() }
+                ?.flatMap { expandWorkDayRange(it.dayStart, it.dayEnd) }
                 ?.toSet()
                 .orEmpty()
 
@@ -416,6 +416,22 @@ class CreateOrderViewModel @Inject constructor(
 
     private inline fun updateSuccess(transform: CreateOrderUiState.Success.() -> CreateOrderUiState.Success) {
         _uiState.update { current -> if (current is CreateOrderUiState.Success) current.transform() else current }
+    }
+
+    private fun expandWorkDayRange(dayStart: String, dayEnd: String): List<String> {
+        val weekDays = listOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO")
+        val start = weekDays.indexOf(dayStart.uppercase())
+        val end = weekDays.indexOf(dayEnd.uppercase())
+        
+        if (start < 0 || end < 0) {
+            return if (start >= 0) listOf(weekDays[start]) else emptyList()
+        }
+        
+        return if (start <= end) {
+            weekDays.subList(start, end + 1)
+        } else {
+            listOf(weekDays[start])
+        }
     }
 
     private companion object {

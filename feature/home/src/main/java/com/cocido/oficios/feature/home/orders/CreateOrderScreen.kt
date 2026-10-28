@@ -285,7 +285,9 @@ private fun CreateOrderForm(
                 ranges = state.dayRanges,
                 dayHasAvailability = state.dayHasAvailability,
             )
+            val displayHours = selectableHours ?: (0..23).map { java.time.LocalTime.of(it, 0) }
             OficiosHourGrid(
+                hours = displayHours,
                 selectedHour = state.selectedHour,
                 hourState = { hour ->
                     hourChipState(
@@ -485,12 +487,12 @@ private fun summaryDetail(state: CreateOrderUiState.Success): String {
 private fun hourChipState(
     hour: LocalTime,
     selectedHour: LocalTime?,
-    selectableHours: Set<Int>?,
+    selectableHours: List<LocalTime>?,
     selectedDate: LocalDate?,
 ): HourChipState {
-    if (selectedHour != null && hour.hour == selectedHour.hour) return HourChipState.Selected
+    if (selectedHour != null && hour == selectedHour) return HourChipState.Selected
     if (selectedDate == null) return HourChipState.Unavailable
-    return if (selectableHours == null || hour.hour in selectableHours) {
+    return if (selectableHours == null || hour in selectableHours) {
         HourChipState.Available
     } else {
         HourChipState.Unavailable

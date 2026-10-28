@@ -24,6 +24,9 @@ sealed interface RegisterTradeEvent {
     data class WorkDayToggled(val day: String, val checked: Boolean) : RegisterTradeEvent
     data class ServesAtClientHomeChanged(val value: Boolean) : RegisterTradeEvent
     data class ServesAtLocalChanged(val value: Boolean) : RegisterTradeEvent
+    data class RequiresTurnsChanged(val value: Boolean) : RegisterTradeEvent
+    data class TurnDurationChanged(val value: String) : RegisterTradeEvent
+    data class TurnIntervalChanged(val value: String) : RegisterTradeEvent
     data class PaymentMethodToggled(val method: String, val checked: Boolean) : RegisterTradeEvent
     data object Continue : RegisterTradeEvent
     data object RetryLoadCatalog : RegisterTradeEvent
@@ -39,6 +42,9 @@ data class RegisterTradeUiState(
     val selectedWorkDays: Set<String> = emptySet(),
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
+    val requiresTurns: Boolean = false,
+    val turnDurationMinutes: String = "",
+    val turnIntervalMinutes: String = "",
     val selectedCategoryId: Long? = null,
     val selectedTradeId: Long? = null,
     val selectedSpecializations: Set<String> = emptySet(),

@@ -203,6 +203,40 @@ fun RegisterTradeScreen(
                     }
 
                     RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_turns_label),
+                    ) {
+                        OficiosCheckbox(
+                            checked = uiState.requiresTurns,
+                            onCheckedChange = { onEvent(RegisterTradeEvent.RequiresTurnsChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_requires_turns),
+                            compactRow = true,
+                        )
+                        if (uiState.requiresTurns) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                            ) {
+                                OficiosTextField(
+                                    value = uiState.turnDurationMinutes,
+                                    onValueChange = { onEvent(RegisterTradeEvent.TurnDurationChanged(it)) },
+                                    label = stringResource(R.string.auth_register_trade_turn_duration),
+                                    placeholder = "60",
+                                    supportingText = stringResource(R.string.auth_register_trade_turn_duration_hint),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                OficiosTextField(
+                                    value = uiState.turnIntervalMinutes,
+                                    onValueChange = { onEvent(RegisterTradeEvent.TurnIntervalChanged(it)) },
+                                    label = stringResource(R.string.auth_register_trade_turn_interval),
+                                    placeholder = "0",
+                                    supportingText = stringResource(R.string.auth_register_trade_turn_interval_hint),
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+                    }
+
+                    RegisterTradeLabeledSection(
                         title = stringResource(R.string.auth_register_trade_payment_label),
                     ) {
                         Text(

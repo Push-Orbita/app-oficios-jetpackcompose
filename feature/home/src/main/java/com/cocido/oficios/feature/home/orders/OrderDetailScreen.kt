@@ -298,6 +298,14 @@ private fun OrderDetailContent(
 
         when {
             order.status == ServiceRequestStatus.PENDING && isWorker -> {
+                OficiosButton(
+                    text = stringResource(R.string.orders_accept),
+                    onClick = { onEvent(OrderDetailEvent.Accept) },
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Large,
+                    enabled = !state.isActionInProgress,
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md), modifier = Modifier.fillMaxWidth()) {
                     OficiosButton(
                         text = stringResource(R.string.orders_reject),
@@ -309,22 +317,14 @@ private fun OrderDetailContent(
                         enabled = !state.isActionInProgress,
                     )
                     OficiosButton(
-                        text = stringResource(R.string.orders_accept),
-                        onClick = { onEvent(OrderDetailEvent.Accept) },
+                        text = stringResource(R.string.orders_reschedule),
+                        onClick = { onEvent(OrderDetailEvent.OpenCounterOffer) },
                         modifier = Modifier.weight(1f),
                         variant = OficiosButtonVariant.Secondary,
                         size = OficiosButtonSize.Medium,
                         enabled = !state.isActionInProgress,
                     )
                 }
-                OficiosButton(
-                    text = stringResource(R.string.orders_reschedule),
-                    onClick = { onEvent(OrderDetailEvent.OpenCounterOffer) },
-                    variant = OficiosButtonVariant.Primary,
-                    size = OficiosButtonSize.Large,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !state.isActionInProgress,
-                )
             }
 
             order.status == ServiceRequestStatus.PENDING && !isWorker -> {
@@ -383,23 +383,25 @@ private fun OrderDetailContent(
             order.status == ServiceRequestStatus.ACCEPTED -> when (order.bookingStatus) {
                 BookingStatus.CONFIRMED -> {
                     if (isWorker) {
+                        OficiosButton(
+                            text = stringResource(R.string.orders_on_the_way),
+                            onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
+                            variant = OficiosButtonVariant.Primary,
+                            size = OficiosButtonSize.Large,
+                            enabled = !state.isActionInProgress,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10, Alignment.End),
+                            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                         ) {
                             OficiosButton(
                                 text = stringResource(R.string.orders_contact),
                                 onClick = { openWorkerContact(context, order.contactPhone) },
-                                variant = OficiosButtonVariant.Primary,
-                                size = OficiosButtonSize.Small,
-                                enabled = order.contactPhone.isNotBlank() && !state.isActionInProgress,
-                            )
-                            OficiosButton(
-                                text = stringResource(R.string.orders_on_the_way),
-                                onClick = { onEvent(OrderDetailEvent.MarkEnRoute) },
                                 variant = OficiosButtonVariant.Secondary,
-                                size = OficiosButtonSize.Small,
-                                enabled = !state.isActionInProgress,
+                                size = OficiosButtonSize.Medium,
+                                enabled = order.contactPhone.isNotBlank() && !state.isActionInProgress,
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     } else {
