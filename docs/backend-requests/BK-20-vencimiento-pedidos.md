@@ -31,7 +31,8 @@ Job periódico (cada 5–15 min, timezone `America/Argentina/Buenos_Aires`) sobr
 2. Booking `PENDIENTE` o `CONFIRMADA` (no iniciado) → no usar CANCELADA de parte. Opciones:
    - **Preferida:** agregar `EXPIRADA` al enum del booking (simétrico a la solicitud), o
    - `CANCELADA` con `canceladoPor: SISTEMA` (hay que ampliar el enum; la app ya contempla “SISTEMA”).
-3. **No tocar** `EN_CAMINO` / `EN_CURSO` / `LLEGUE`: el trabajo está en marcha.
-4. Notificar a ambas partes (`type` de FCM, p. ej. `SOLICITUD_EXPIRADA` / `BOOKING_EXPIRADO`) con el `solicitudId` / `bookingId`.
+3. **No tocar de inmediato** `EN_CAMINO` / `EN_CURSO` / `LLEGUE`: el trabajo está en marcha.
+4. **Cerrar o escalar bookings abiertos de más:** si un booking sigue en `EN_CAMINO`, `EN_CURSO` o `LLEGUE` más de **X horas después de `finConfirmado`** (propuesta: **24 h**, configurable por admin), el backend debe cerrarlo o escalarlo (p. ej. `FINALIZADA` automática, o alerta a soporte). La app **no** mueve esos pedidos a Historial por tiempo: se quedan en Activos hasta que el backend los cierre.
+5. Notificar a ambas partes (`type` de FCM, p. ej. `SOLICITUD_EXPIRADA` / `BOOKING_EXPIRADO`) con el `solicitudId` / `bookingId`.
 
 Sin este job, Historial en la app es una vista derivada: el detalle sigue mostrando Confirmada/Pendiente.

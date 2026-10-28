@@ -11,29 +11,16 @@ object DniImageUploadContract {
     const val FRONT_FILE_PREFIX = "dni_frente"
     const val BACK_FILE_PREFIX = "dni_dorso"
 
-    val ACCEPTED_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "gif")
-
-    val ACCEPTED_MIME_TYPES = setOf(
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/gif",
-    )
-
-    val ACCEPTED_FORMATS_LABEL = "JPG, PNG, WEBP, GIF"
+    val ACCEPTED_EXTENSIONS = ImageUploadContract.ACCEPTED_EXTENSIONS
+    val ACCEPTED_MIME_TYPES = ImageUploadContract.ACCEPTED_MIME_TYPES
+    val ACCEPTED_FORMATS_LABEL = ImageUploadContract.ACCEPTED_FORMATS_LABEL
 
     fun isAcceptedExtension(extension: String): Boolean =
-        extension.lowercase() in ACCEPTED_EXTENSIONS
+        ImageUploadContract.isAcceptedExtension(extension)
 
-    fun normalizeExtension(extension: String): String = when (extension.lowercase()) {
-        "jpeg" -> "jpg"
-        else -> extension.lowercase()
-    }
+    fun normalizeExtension(extension: String): String =
+        ImageUploadContract.normalizeExtension(extension)
 
-    fun mimeTypeForExtension(extension: String): String = when (normalizeExtension(extension)) {
-        "png" -> "image/png"
-        "webp" -> "image/webp"
-        "gif" -> "image/gif"
-        else -> "image/jpeg"
-    }
+    fun mimeTypeForExtension(extension: String): String =
+        ImageUploadContract.mimeTypeForExtension(extension)
 }

@@ -34,4 +34,18 @@ class GalleryGestureTest {
         assertEquals(0f, rest.x)
         assertEquals(0f, rest.y)
     }
+
+    @Test
+    fun viewerOpensAtTappedIndex() {
+        assertEquals(2, GalleryGesture.initialPage(2, 8))
+        assertEquals(0, GalleryGesture.initialPage(-4, 8))
+        assertEquals(7, GalleryGesture.initialPage(40, 8))
+    }
+
+    @Test
+    fun swipeDownDismissesOnlyPastThreshold() {
+        assertTrue(GalleryGesture.shouldDismissDrag(1, 1f, 4f, 30f))
+        assertFalse(GalleryGesture.shouldCloseFromDismiss(100f))
+        assertTrue(GalleryGesture.shouldCloseFromDismiss(140f))
+    }
 }

@@ -22,6 +22,7 @@ interface AgendaApi {
         @Query("trabajadorOficioSubRubroId") subRubroId: Long,
         @Query("fechaDesde") fechaDesde: String,
         @Query("fechaHasta") fechaHasta: String,
+        @Query("fecha") fecha: String? = null,
     ): List<SlotTurnoAgendaDto>
 
     @GET("agenda/slot/search")

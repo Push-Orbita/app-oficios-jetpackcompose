@@ -8,6 +8,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.usecase.AgendaUseCases
+import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.CreateServiceRequestUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +33,7 @@ class CreateOrderViewModel @Inject constructor(
     private val clientProfileRepository: ClientProfileRepository,
     private val createServiceRequestUseCase: CreateServiceRequestUseCase,
     private val agendaUseCases: AgendaUseCases,
+    private val availabilityUseCases: AvailabilityUseCases,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -41,9 +43,44 @@ class CreateOrderViewModel @Inject constructor(
 
     private val _effects = Channel<CreateOrderEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
     init {
+        viewModelScope.launch {
+            clientProfileRepository.domicilios.collect { list ->
+                if (list == null) return@collect
+                updateSuccess {
+                    copy(
+                        domicilios = list,
+                        selectedDomicilioId = selectedDomicilioId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id,
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            clientProfileRepository.contactos.collect { list ->
+                if (list == null) return@collect
+                updateSuccess {
+                    copy(
+                        contactos = list,
+                        selectedContactoId = selectedContactoId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id,
+                    )
+                }
+            }
+        }
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        refreshDomiciliosAndContactos()
     }
 
     fun onEvent(event: CreateOrderEvent) {
@@ -56,12 +93,18 @@ class CreateOrderViewModel @Inject constructor(
                         selectedSlotId = null,
                         proposedDateTime = null,
                         availableSlots = emptyList(),
+                        monthSlots = emptyList(),
+                        dayRanges = emptyList(),
+                        dayHasAvailability = null,
                         slotsErrorMessage = null,
+                        submitErrorMessage = null,
                         submitIdempotencyKey = null,
                         specialtyLabel = subRubroOptions.firstOrNull { it.id == event.id }?.name.orEmpty(),
                     )
                 }
                 loadAvailableSlots(event.id)
+                val date = (uiState.value as? CreateOrderUiState.Success)?.selectedDate
+                if (date != null) loadDaySchedule(event.id, date)
             }
             is CreateOrderEvent.DomicilioSelected -> updateSuccess {
                 copy(selectedDomicilioId = event.id, submitIdempotencyKey = null)
@@ -69,8 +112,12 @@ class CreateOrderViewModel @Inject constructor(
             is CreateOrderEvent.ContactoSelected -> updateSuccess {
                 copy(selectedContactoId = event.id, submitIdempotencyKey = null)
             }
-            is CreateOrderEvent.DateSelected -> updateSuccess {
-                applyDateHour(selectedDate = event.date, selectedHour = selectedHour)
+            is CreateOrderEvent.DateSelected -> {
+                updateSuccess {
+                    applyDateHour(selectedDate = event.date, selectedHour = selectedHour)
+                }
+                val subRubroId = (uiState.value as? CreateOrderUiState.Success)?.selectedSubRubroId
+                if (subRubroId != null) loadDaySchedule(subRubroId, event.date)
             }
             is CreateOrderEvent.HourSelected -> updateSuccess {
                 applyDateHour(selectedDate = selectedDate, selectedHour = event.hour)
@@ -89,6 +136,49 @@ class CreateOrderViewModel @Inject constructor(
             CreateOrderEvent.AddLocation -> viewModelScope.launch {
                 _effects.send(CreateOrderEffect.NavigateToAddLocation)
             }
+            is CreateOrderEvent.LocationPicked -> refreshDomicilios(event.id)
+        }
+    }
+
+    private fun refreshDomicilios(preferredId: Long) {
+        viewModelScope.launch {
+            val result = clientProfileRepository.getMyDomicilios()
+            val list = (result as? AppResult.Success)?.data.orEmpty()
+            updateSuccess {
+                copy(
+                    domicilios = list,
+                    selectedDomicilioId = list.firstOrNull { it.id == preferredId }?.id
+                        ?: selectedDomicilioId?.takeIf { id -> list.any { it.id == id } }
+                        ?: list.firstOrNull { it.favorito }?.id
+                        ?: list.singleOrNull()?.id,
+                    submitIdempotencyKey = null,
+                )
+            }
+        }
+    }
+
+    private fun refreshDomiciliosAndContactos() {
+        viewModelScope.launch {
+            val domiciliosResult = clientProfileRepository.getMyDomicilios()
+            val contactosResult = clientProfileRepository.getMyContactos()
+            val domicilios = (domiciliosResult as? AppResult.Success)?.data
+            val contactos = (contactosResult as? AppResult.Success)?.data
+            updateSuccess {
+                copy(
+                    domicilios = domicilios ?: this.domicilios,
+                    contactos = contactos ?: this.contactos,
+                    selectedDomicilioId = (domicilios ?: this.domicilios).let { list ->
+                        selectedDomicilioId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id
+                    },
+                    selectedContactoId = (contactos ?: this.contactos).let { list ->
+                        selectedContactoId?.takeIf { id -> list.any { it.id == id } }
+                            ?: list.firstOrNull { it.favorito }?.id
+                            ?: list.singleOrNull()?.id
+                    },
+                )
+            }
         }
     }
 
@@ -96,13 +186,22 @@ class CreateOrderViewModel @Inject constructor(
         selectedDate: LocalDate?,
         selectedHour: java.time.LocalTime?,
     ): CreateOrderUiState.Success {
-        val slot = CreateOrderSchedule.matchingSlot(availableSlots, selectedDate, selectedHour)
+        val hour = selectedHour?.takeIf {
+            CreateOrderSchedule.isHourSelectable(
+                hour = it,
+                date = selectedDate,
+                slots = availableSlots,
+                ranges = dayRanges,
+                dayHasAvailability = dayHasAvailability,
+            )
+        }
+        val slot = CreateOrderSchedule.matchingSlot(availableSlots, selectedDate, hour)
         return copy(
             selectedDate = selectedDate,
-            selectedHour = selectedHour,
+            selectedHour = hour,
             selectedSlotId = slot?.id,
             proposedDateTime = if (slot == null) {
-                CreateOrderSchedule.visitDateTime(selectedDate, selectedHour)
+                CreateOrderSchedule.visitDateTime(selectedDate, hour)
             } else {
                 null
             },
@@ -122,8 +221,9 @@ class CreateOrderViewModel @Inject constructor(
                 is AppResult.Success -> updateSuccess {
                     val next = copy(
                         isLoadingSlots = false,
-                        availableSlots = result.data,
-                        hasAgenda = result.data.isNotEmpty(),
+                        monthSlots = result.data,
+                        availableSlots = if (selectedDate == null) result.data else availableSlots.ifEmpty { result.data },
+                        hasAgenda = result.data.any { it.isSelectable } || hasAgenda,
                         slotsErrorMessage = null,
                     )
                     next.applyDateHour(next.selectedDate, next.selectedHour)
@@ -131,11 +231,45 @@ class CreateOrderViewModel @Inject constructor(
                 is AppResult.Error -> updateSuccess {
                     copy(
                         isLoadingSlots = false,
-                        availableSlots = emptyList(),
-                        hasAgenda = false,
+                        monthSlots = emptyList(),
                         slotsErrorMessage = result.error.userMessage(),
                     )
                 }
+            }
+        }
+    }
+
+    private fun loadDaySchedule(subRubroId: Long, date: LocalDate) {
+        viewModelScope.launch {
+            updateSuccess { copy(isLoadingSlots = true, slotsErrorMessage = null) }
+            val dateIso = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+            val dayResult = availabilityUseCases.getDay(workerId, dateIso, subRubroId)
+            val slotsResult = agendaUseCases.getAvailableSlotsForDate(subRubroId, dateIso)
+            updateSuccess {
+                if (selectedDate != date) return@updateSuccess this
+                val window = (dayResult as? AppResult.Success)?.data
+                val ranges = window?.ranges.orEmpty()
+                val slots = (slotsResult as? AppResult.Success)?.data
+                    ?: availableSlots.filter { it.start.toLocalDate() == date }
+                val dayKnown = dayResult is AppResult.Success || slotsResult is AppResult.Success
+                val hasAvailability = when {
+                    slots.any { it.isSelectable } -> true
+                    ranges.isNotEmpty() -> true
+                    dayResult is AppResult.Success -> false
+                    else -> null
+                }
+                copy(
+                    isLoadingSlots = false,
+                    availableSlots = slots,
+                    dayRanges = ranges,
+                    dayHasAvailability = hasAvailability,
+                    hasAgenda = window?.requiresTurns == true || slots.any { it.isSelectable },
+                    slotsErrorMessage = if (dayKnown && hasAvailability == false) {
+                        "Ese día no tiene disponibilidad."
+                    } else {
+                        null
+                    },
+                ).applyDateHour(selectedDate, selectedHour)
             }
         }
     }
@@ -157,7 +291,7 @@ class CreateOrderViewModel @Inject constructor(
             val contactos = (contactosResult as? AppResult.Success)?.data.orEmpty()
             val selectedSubRubroId = subRubroOptions.singleOrNull()?.id
             val workDayKeys = profile.availability?.workDays
-                ?.map { it.dayStart.uppercase() }
+                ?.flatMap { expandWorkDayRange(it.dayStart, it.dayEnd) }
                 ?.toSet()
                 .orEmpty()
 
@@ -194,6 +328,12 @@ class CreateOrderViewModel @Inject constructor(
                 selectedContactoId = state.selectedContactoId,
                 selectedDate = state.selectedDate,
                 selectedHour = state.selectedHour,
+            ) || !CreateOrderSchedule.isHourSelectable(
+                hour = state.selectedHour,
+                date = state.selectedDate,
+                slots = state.availableSlots,
+                ranges = state.dayRanges,
+                dayHasAvailability = state.dayHasAvailability,
             )
         ) {
             return
@@ -214,7 +354,7 @@ class CreateOrderViewModel @Inject constructor(
         val subRubroId = state.selectedSubRubroId
         val domicilioId = state.selectedDomicilioId
         val contactoId = state.selectedContactoId
-        val slotId = state.selectedSlotId
+        val slotId = state.selectedSlotId?.takeIf { it > 0L }
         val dateTime = state.proposedDateTime
             ?: CreateOrderSchedule.visitDateTime(state.selectedDate, state.selectedHour)
         val hasSlotOrDate = slotId != null || dateTime != null
@@ -258,11 +398,17 @@ class CreateOrderViewModel @Inject constructor(
                     _effects.send(CreateOrderEffect.RequestSent)
                 }
                 is AppResult.Error -> {
+                    val message = result.error.userMessage()
                     _uiState.update {
-                        if (it is CreateOrderUiState.Success) it.copy(isSubmitting = false) else it
+                        if (it is CreateOrderUiState.Success) {
+                            it.copy(isSubmitting = false, submitErrorMessage = message)
+                        } else {
+                            it
+                        }
                     }
-                    _effects.send(CreateOrderEffect.ShowMessage(result.error.userMessage()))
-                    subRubroId.let { loadAvailableSlots(it) }
+                    _effects.send(CreateOrderEffect.ShowMessage(message))
+                    val date = (uiState.value as? CreateOrderUiState.Success)?.selectedDate
+                    if (date != null) loadDaySchedule(subRubroId, date) else loadAvailableSlots(subRubroId)
                 }
             }
         }
@@ -270,6 +416,22 @@ class CreateOrderViewModel @Inject constructor(
 
     private inline fun updateSuccess(transform: CreateOrderUiState.Success.() -> CreateOrderUiState.Success) {
         _uiState.update { current -> if (current is CreateOrderUiState.Success) current.transform() else current }
+    }
+
+    private fun expandWorkDayRange(dayStart: String, dayEnd: String): List<String> {
+        val weekDays = listOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO")
+        val start = weekDays.indexOf(dayStart.uppercase())
+        val end = weekDays.indexOf(dayEnd.uppercase())
+        
+        if (start < 0 || end < 0) {
+            return if (start >= 0) listOf(weekDays[start]) else emptyList()
+        }
+        
+        return if (start <= end) {
+            weekDays.subList(start, end + 1)
+        } else {
+            listOf(weekDays[start])
+        }
     }
 
     private companion object {

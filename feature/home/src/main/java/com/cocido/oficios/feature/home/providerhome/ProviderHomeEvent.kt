@@ -1,5 +1,8 @@
 package com.cocido.oficios.feature.home.providerhome
 
+import java.time.LocalDate
+import java.time.YearMonth
+
 sealed interface ProviderHomeEvent {
     data object Retry : ProviderHomeEvent
     data object Refresh : ProviderHomeEvent
@@ -11,6 +14,8 @@ sealed interface ProviderHomeEvent {
     data object ViewFullAgendaClicked : ProviderHomeEvent
     data object ConfigureAgendaClicked : ProviderHomeEvent
     data class OrderClicked(val orderId: Long) : ProviderHomeEvent
+    data class AgendaDateSelected(val date: LocalDate) : ProviderHomeEvent
+    data class AgendaMonthChanged(val month: YearMonth) : ProviderHomeEvent
     data object NavigateToSettings : ProviderHomeEvent
     data object NavigateToFavorites : ProviderHomeEvent
     data object NavigateToHelp : ProviderHomeEvent

@@ -1,6 +1,7 @@
 package com.cocido.oficios.core.data.session
 
 import com.cocido.oficios.core.common.auth.TokenExpiry
+import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
 import com.cocido.oficios.core.datastore.TokenDataStore
 import com.cocido.oficios.domain.model.AuthState
 import com.cocido.oficios.domain.model.AuthTokens
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.update
 @Singleton
 class SessionManager @Inject constructor(
     private val tokenDataStore: TokenDataStore,
+    private val sessionCaches: SessionCacheCoordinator,
 ) : SessionRepository {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
@@ -28,6 +30,7 @@ class SessionManager @Inject constructor(
     }
 
     override suspend fun saveSession(tokens: AuthTokens, user: User) {
+        sessionCaches.clearAll()
         tokenDataStore.saveSession(
             accessToken = tokens.accessToken,
             refreshToken = tokens.refreshToken,
@@ -46,6 +49,7 @@ class SessionManager @Inject constructor(
 
     override suspend fun clearSession() {
         tokenDataStore.clear()
+        sessionCaches.clearAll()
         _authState.update { AuthState.Unauthenticated }
     }
 

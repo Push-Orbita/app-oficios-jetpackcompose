@@ -18,7 +18,12 @@ import com.cocido.oficios.domain.repository.AgendaRepository
 import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.WorkerProfileRepository
+import com.cocido.oficios.core.common.result.AppError
+import com.cocido.oficios.domain.model.CreateAgendaBlockParams
+import com.cocido.oficios.domain.model.WeeklyAvailability
+import com.cocido.oficios.domain.repository.AvailabilityRepository
 import com.cocido.oficios.domain.usecase.AgendaUseCases
+import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.CreateServiceRequestUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import java.time.LocalDate
@@ -145,6 +150,7 @@ class CreateOrderViewModelTest {
             clientProfileRepository = FixedClientProfileRepository(),
             createServiceRequestUseCase = CreateServiceRequestUseCase(orders),
             agendaUseCases = AgendaUseCases(EmptyAgendaRepository()),
+            availabilityUseCases = AvailabilityUseCases(MissingDayAvailabilityRepository()),
         )
     }
 }
@@ -191,6 +197,23 @@ private class FixedClientProfileRepository : ClientProfileRepository {
     )
 
     private fun unused(): Nothing = error("unused")
+}
+
+private class MissingDayAvailabilityRepository : AvailabilityRepository {
+    override suspend fun getWeeklyAvailability(subRubroId: Long) =
+        AppResult.Error(AppError.Unknown("unused"))
+    override suspend fun replaceWeeklyAvailability(
+        subRubroId: Long,
+        week: WeeklyAvailability,
+    ) = AppResult.Error(AppError.Unknown("unused"))
+    override suspend fun listBlocks(subRubroId: Long) =
+        AppResult.Error(AppError.Unknown("unused"))
+    override suspend fun createBlock(params: CreateAgendaBlockParams) =
+        AppResult.Error(AppError.Unknown("unused"))
+    override suspend fun deleteBlock(subRubroId: Long, blockId: Long) =
+        AppResult.Error(AppError.Unknown("unused"))
+    override suspend fun getDayAvailability(workerId: Long, date: String, subRubroId: Long) =
+        AppResult.Error(AppError.Unknown("unavailable"))
 }
 
 private class EmptyAgendaRepository : AgendaRepository {

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
-import com.cocido.oficios.domain.model.WorkHoursSchedule
 import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.GetMySubRubrosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,8 +30,31 @@ class AgendaConfigViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<AgendaConfigEffect>()
     val effects: SharedFlow<AgendaConfigEffect> = _effects.asSharedFlow()
 
+    private var skipNextResume = true
+
     init {
+        viewModelScope.launch {
+            agendaUseCases.sessions.collect { snap ->
+                if (snap == null) return@collect
+                updateSuccess { state ->
+                    if (state.selectedSubRubroId != snap.subRubroId) {
+                        state
+                    } else {
+                        state.copy(isLoadingSessions = false, sessions = snap.sessions, error = null)
+                    }
+                }
+            }
+        }
         load()
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        val state = _uiState.value as? AgendaConfigUiState.Success ?: return
+        state.selectedSubRubroId?.let { loadSessions(it) }
     }
 
     fun onEvent(event: AgendaConfigEvent) {
@@ -42,19 +64,14 @@ class AgendaConfigViewModel @Inject constructor(
             is AgendaConfigEvent.DurationChanged -> updateSuccess {
                 it.copy(durationInput = event.value.filter(Char::isDigit), hasAttemptedSubmit = false)
             }
+            is AgendaConfigEvent.DurationUnitChanged -> updateSuccess {
+                it.copy(durationUnit = event.unit)
+            }
             is AgendaConfigEvent.IntervalChanged -> updateSuccess {
-                it.copy(intervalInput = event.value.filter(Char::isDigit))
+                it.copy(intervalInput = event.value.filter(Char::isDigit), hasAttemptedSubmit = false)
             }
-            is AgendaConfigEvent.DayToggled -> updateSuccess {
-                val next = if (event.dayKey in it.selectedDays) it.selectedDays - event.dayKey
-                else it.selectedDays + event.dayKey
-                it.copy(selectedDays = next)
-            }
-            is AgendaConfigEvent.HourToggled -> updateSuccess {
-                it.copy(selectedHours = WorkHoursSchedule.toggleHour(it.selectedHours, event.hour))
-            }
-            is AgendaConfigEvent.DivisionSelected -> updateSuccess {
-                it.copy(durationInput = event.minutes.toString(), hasAttemptedSubmit = false)
+            is AgendaConfigEvent.IntervalUnitChanged -> updateSuccess {
+                it.copy(intervalUnit = event.unit)
             }
             is AgendaConfigEvent.OficioToggled -> updateSuccess {
                 val next = if (event.subRubroId in it.selectedSubRubroIds) {
@@ -65,6 +82,7 @@ class AgendaConfigViewModel @Inject constructor(
                 it.copy(
                     selectedSubRubroIds = next,
                     selectedSubRubroId = next.lastOrNull() ?: it.selectedSubRubroId,
+                    hasAttemptedSubmit = false,
                 )
             }
             AgendaConfigEvent.Save -> save()
@@ -73,6 +91,9 @@ class AgendaConfigViewModel @Inject constructor(
             }
             AgendaConfigEvent.ConfirmDeleteSession -> confirmDeleteSession()
             AgendaConfigEvent.DismissDeleteSession -> updateSuccess { it.copy(sessionPendingDeleteId = null) }
+            AgendaConfigEvent.OpenAvailability -> viewModelScope.launch {
+                _effects.emit(AgendaConfigEffect.NavigateToAvailability)
+            }
         }
     }
 
@@ -98,7 +119,12 @@ class AgendaConfigViewModel @Inject constructor(
     }
 
     private fun selectSubRubro(subRubroId: Long) {
-        updateSuccess { it.copy(selectedSubRubroId = subRubroId, durationInput = "60", intervalInput = "") }
+        updateSuccess {
+            it.copy(
+                selectedSubRubroId = subRubroId,
+                selectedSubRubroIds = it.selectedSubRubroIds + subRubroId,
+            )
+        }
         loadSessions(subRubroId)
     }
 
@@ -106,7 +132,17 @@ class AgendaConfigViewModel @Inject constructor(
         viewModelScope.launch {
             updateSuccess { it.copy(isLoadingSessions = true, error = null) }
             when (val result = agendaUseCases.getSessionsForSubRubro(subRubroId)) {
-                is AppResult.Success -> updateSuccess { it.copy(isLoadingSessions = false, sessions = result.data) }
+                is AppResult.Success -> updateSuccess { state ->
+                    val first = result.data.firstOrNull()
+                    state.copy(
+                        isLoadingSessions = false,
+                        sessions = result.data,
+                        durationInput = first?.durationMinutes?.toString() ?: state.durationInput,
+                        durationUnit = first?.durationUnit ?: state.durationUnit,
+                        intervalInput = first?.intervalMinutes?.toString().orEmpty().ifBlank { state.intervalInput },
+                        intervalUnit = first?.intervalUnit ?: state.intervalUnit,
+                    )
+                }
                 is AppResult.Error -> updateSuccess {
                     it.copy(isLoadingSessions = false, error = result.error.userMessage())
                 }
@@ -123,7 +159,7 @@ class AgendaConfigViewModel @Inject constructor(
         val targets = state.selectedSubRubroIds.ifEmpty {
             listOfNotNull(state.selectedSubRubroId)
         }
-        if (targets.isEmpty() || state.selectedDays.isEmpty() || state.selectedHours.isEmpty()) {
+        if (targets.isEmpty()) {
             updateSuccess { it.copy(hasAttemptedSubmit = true) }
             return
         }
@@ -145,6 +181,8 @@ class AgendaConfigViewModel @Inject constructor(
                         subRubroId = subRubroId,
                         durationMinutes = duration,
                         intervalMinutes = interval,
+                        durationUnit = state.durationUnit,
+                        intervalUnit = interval?.let { state.intervalUnit },
                     ),
                 )
                 if (result is AppResult.Error) {
@@ -158,7 +196,7 @@ class AgendaConfigViewModel @Inject constructor(
                 state.selectedSubRubroId?.let { loadSessions(it) }
             } else {
                 updateSuccess { it.copy(isSaving = false) }
-                emitEffect(AgendaConfigEffect.ShowMessage(lastError))
+                emitEffect(AgendaConfigEffect.ShowError(lastError))
             }
         }
     }
@@ -177,7 +215,7 @@ class AgendaConfigViewModel @Inject constructor(
                 }
                 is AppResult.Error -> {
                     updateSuccess { it.copy(isDeleting = false, sessionPendingDeleteId = null) }
-                    emitEffect(AgendaConfigEffect.ShowMessage(result.error.userMessage()))
+                    emitEffect(AgendaConfigEffect.ShowError(result.error.userMessage()))
                 }
             }
         }

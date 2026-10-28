@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.search.dto.WorkerSearchItemDto
 import com.cocido.oficios.domain.model.PagedWorkers
 import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.domain.model.WorkerSummary
+import com.cocido.oficios.domain.model.normalizeStarRating
 
 fun PaginatedResponseDto<WorkerSearchItemDto>.toPagedWorkers(
     filters: WorkerSearchFilters,
@@ -56,9 +57,10 @@ fun WorkerSearchItemDto.toWorkerSummary(
         id = id,
         displayName = displayName,
         specialtyLabel = specialtyLabel,
-        rating = reputacion?.promedio?.toFloat(),
+        rating = normalizeStarRating(reputacion?.puntajeGlobal ?: reputacion?.promedio),
         avatarUrl = usuario?.fotoPerfil.toPhotoUrl(),
         isVerified = estado.equals("VALIDADO", ignoreCase = true) || usuario?.emailVerificado == true,
         primaryRubroId = primaryRubro?.rubro?.id,
+        reviewCount = reputacion?.comentariosTotales ?: reputacion?.cantidadCalificaciones,
     )
 }

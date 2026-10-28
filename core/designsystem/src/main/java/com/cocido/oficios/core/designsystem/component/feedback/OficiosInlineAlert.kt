@@ -16,7 +16,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -45,8 +44,8 @@ fun OficiosInlineAlert(
             arrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.Start)
         }
         OficiosInlineAlertTone.OnBrand -> {
-            iconTint = OficiosColorWhite
-            textColor = OficiosColorWhite
+            iconTint = MaterialTheme.colorScheme.onSurface
+            textColor = MaterialTheme.colorScheme.onSurface
             iconSize = OficiosComponentSize.authLoginErrorIconSize
             arrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterHorizontally)
         }

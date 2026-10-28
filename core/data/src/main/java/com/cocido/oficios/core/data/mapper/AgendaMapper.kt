@@ -32,6 +32,8 @@ fun SesionDto.toDomain(): AgendaSessionConfig = AgendaSessionConfig(
     subRubroId = trabajadorOficioSubRubroId,
     durationMinutes = duracion,
     intervalMinutes = intervalo?.toIntOrNull(),
+    durationUnit = medidaDuracion.ifBlank { "minutos" },
+    intervalUnit = medidaIntervalo,
 )
 
 fun TrabajadorOficioPerfilMeDto.toSubRubroOptions(): List<ProviderSubRubroOption> =

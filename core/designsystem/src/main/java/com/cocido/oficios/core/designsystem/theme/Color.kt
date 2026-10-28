@@ -24,10 +24,14 @@ val OficiosColorOutlineFillVariant = Color(0x66004DA8) // 40 % opacity
 /** Texto secundario. Un paso más claro que el Figma para AA sobre #00358B (4.7:1). */
 val OficiosColorSecondaryText = Color(0xFF8EABD4)
 
-/** Texto secundario — valor de Figma rgb(127,154,197). Contraste 3.9:1 (AA solo para texto grande).
- * TODO: Decisión pendiente: mantener #8EABD4 (AA 4.7:1) o usar valor Figma 1:1 #7F9AC5 (AA grande).
- * Ver tokens.md §1 y PLAN_COMPLETO_1a1.md bloqueante #2. */
+/** Texto secundario — valor de Figma rgb(127,154,197). Contraste 3.9:1 (AA solo para texto grande / íconos). */
 val OficiosColorSecondaryTextFigma = Color(0xFF7F9AC5)
+
+/**
+ * Texto secundario chico sobre navy (#00358B): el mínimo más claro que #7F9AC5
+ * que llega a 4.5:1 (WCAG AA). Mismo matiz, +blanco ~12 %. No usar en disabled.
+ */
+val OficiosColorTextSecondaryAccessible = Color(0xFF8EA6CC)
 
 /** Azul de acción — CTA secundario. Figma rgb(0,109,239). El CTA dominante es blanco. */
 val OficiosColorAction = Color(0xFF006DEF)
@@ -52,6 +56,20 @@ val OficiosColorDisabledText = Color(0xFF918E9B)
 
 /** Borde de input con error — Figma rgb(163,47,86). */
 val OficiosColorErrorBorder = Color(0xFFA32F56)
+
+/**
+ * Fill de acción destructiva (botón Danger / confirmar eliminar).
+ *
+ * Figma (`hhKrcrusbr3h6qJxqYBiTd`) no publica variable ni estilo de error/danger
+ * fill: `search_design_system` para error, danger y alert devolvió vacío.
+ * `#BA6380` ([OficiosColorAlert]) es stroke/texto de alerta sobre navy; como
+ * fill con texto blanco queda ~4.05:1 y se lee rosa lavado.
+ * `#A32F56` ([OficiosColorErrorBorder]) es borde de input, no un fill de CTA.
+ *
+ * `#D23C3C` es el `#D64545` pedido, un paso más oscuro para WCAG AA 4.5:1
+ * de texto blanco sobre fill sólido (sin alpha). Contrast ~4.7:1.
+ */
+val OficiosColorDangerFill = Color(0xFFD23C3C)
 
 val OficiosColorWhite = Color(0xFFFFFFFF)
 /** Placeholders sobre fondo — rgba(255,255,255,0.5) */
@@ -99,16 +117,13 @@ val OficiosColorSurface = OficiosColorBackground
 @Deprecated("Usar OficiosColorOutlineFill", ReplaceWith("OficiosColorOutlineFill"))
 val OficiosColorSurfaceVariant = OficiosColorOutlineFill
 
-// Light scheme primitivos — el handoff no define un modo claro (single "Mode 1"),
-// pero feature:settings ya expone un toggle System/Light/Dark; se arma una variante
-// clara coherente con la misma familia de color para no romper esa función existente.
-private val OficiosColorBackgroundLight = Color(0xFFF3F6FC)
-private val OficiosColorSurfaceLight = Color(0xFFFFFFFF)
-private val OficiosColorOutlineLight = Color(0xFFB9C9E4)
-private val OficiosColorOnSurfaceLight = OficiosColorBackground
-
 // ---------------------------------------------------------------------------
 // Color schemes
+//
+// Claro (DEFAULT): fondo hueso `#F4F5F7`; surface/surfaceContainer* blancos `#FFFFFF`
+// (cards, inputs, listas, menús, sheets, diálogos). Texto `#0D1B2A`.
+// El azul de marca Figma `#00358B` es `primary` (botones, títulos, chips, nav).
+// Oscuro: Mode 1 de Figma, navy full-bleed — no se altera.
 // ---------------------------------------------------------------------------
 
 internal val DarkColorScheme = darkColorScheme(
@@ -118,8 +133,13 @@ internal val DarkColorScheme = darkColorScheme(
     onSurface = OficiosColorWhite,
     surfaceVariant = OficiosColorOutlineFill,
     onSurfaceVariant = OficiosColorSecondaryText,
+    surfaceBright = OficiosColorOutlineFill,
+    surfaceDim = OficiosColorBackground,
+    surfaceContainerLowest = OficiosColorOutlineFill,
+    surfaceContainerLow = OficiosColorOutlineFill,
     surfaceContainer = OficiosColorOutlineFill,
     surfaceContainerHigh = OficiosColorOutlineFill,
+    surfaceContainerHighest = OficiosColorOutlineFill,
     outline = OficiosColorOutlineFill,
     outlineVariant = OficiosColorOutlineFillVariant,
     primary = OficiosColorAction,
@@ -145,22 +165,39 @@ internal val DarkColorScheme = darkColorScheme(
 )
 
 internal val LightColorScheme = lightColorScheme(
-    background = OficiosColorBackgroundLight,
-    onBackground = OficiosColorOnSurfaceLight,
-    surface = OficiosColorSurfaceLight,
-    onSurface = OficiosColorOnSurfaceLight,
-    surfaceVariant = OficiosColorSurfaceLight,
-    onSurfaceVariant = OficiosColorOnSurfaceLight,
-    outline = OficiosColorOutlineLight,
-    outlineVariant = OficiosColorOutlineLight.copy(alpha = 0.5f),
-    primary = OficiosColorAction,
+    background = Color(0xFFF4F5F7),
+    onBackground = Color(0xFF0D1B2A),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF0D1B2A),
+    surfaceVariant = Color(0xFFFFFFFF),
+    onSurfaceVariant = Color(0xFF4A5568),
+    surfaceBright = Color(0xFFFFFFFF),
+    surfaceDim = Color(0xFFF4F5F7),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFFFFFFF),
+    surfaceContainer = Color(0xFFFFFFFF),
+    surfaceContainerHigh = Color(0xFFFFFFFF),
+    surfaceContainerHighest = Color(0xFFFFFFFF),
+    outline = Color(0xFFE2E5EA),
+    outlineVariant = Color(0xFFD5D8DE),
+    primary = OficiosColorBackground,
     onPrimary = OficiosColorWhite,
-    primaryContainer = OficiosColorOutlineLight,
-    onPrimaryContainer = OficiosColorBackground,
+    primaryContainer = OficiosColorBackground,
+    onPrimaryContainer = OficiosColorWhite,
     secondary = OficiosColorBackground,
     onSecondary = OficiosColorWhite,
+    secondaryContainer = Color(0xFFFFFFFF),
+    onSecondaryContainer = OficiosColorBackground,
     tertiary = OficiosColorAccent,
-    onTertiary = OficiosColorWhite,
-    error = OficiosColorError,
+    onTertiary = OficiosColorBackground,
+    tertiaryContainer = Color(0xFFFFF3D6),
+    onTertiaryContainer = Color(0xFF8A5A00),
+    error = Color(0xFFC62828),
     onError = OficiosColorWhite,
+    errorContainer = Color(0xFFFDECEA),
+    onErrorContainer = Color(0xFFC62828),
+    scrim = Color(0x99000000),
+    inverseSurface = OficiosColorBackground,
+    inverseOnSurface = OficiosColorWhite,
+    inversePrimary = OficiosColorAction,
 )

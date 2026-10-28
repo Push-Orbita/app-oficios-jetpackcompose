@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.network
 
+import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.toAppError
 import java.io.IOException
@@ -35,11 +36,25 @@ private fun Throwable.isDefiniteConnectivityFailure(): Boolean =
 
 private fun HttpException.toHttpAppError(): AppError {
     val body = response()?.errorBody()?.string().orEmpty()
+    val httpCode = code()
+    val htmlBody = looksLikeHtmlErrorBody(body)
+    if (httpCode == 413 || (htmlBody && httpCode in 400..499)) {
+        return AppError.Network(
+            message = ImageUploadContract.PAYLOAD_TOO_LARGE_MESSAGE,
+            code = httpCode,
+        )
+    }
+    if (htmlBody && httpCode in 500..599) {
+        return AppError.Network(
+            message = "Error del servidor. Intente más tarde.",
+            code = httpCode,
+        )
+    }
     val backendCode = parseErrorCode(body)
     val parsedMessage = parseErrorMessage(body)
     val message = messageForBackendCode(backendCode, parsedMessage) ?: message()
 
-    return when (code()) {
+    return when (httpCode) {
         400, 422 -> AppError.Validation(
             message = message.ifBlank { "Revise los datos ingresados" },
             fieldErrors = parseFieldErrors(body),
@@ -63,20 +78,30 @@ private fun HttpException.toHttpAppError(): AppError {
         )
         429 -> AppError.Network(
             message = message.ifBlank { "Espere un momento e intente de nuevo." },
-            code = code(),
+            code = httpCode,
             backendCode = backendCode,
         )
         in 500..599 -> AppError.Network(
             message = "Error del servidor. Intente más tarde.",
-            code = code(),
+            code = httpCode,
             backendCode = backendCode,
         )
         else -> AppError.Network(
-            message = message.ifBlank { "Error de red" },
-            code = code(),
+            message = message.ifBlank { "No pudimos completar la solicitud. Intente de nuevo." },
+            code = httpCode,
             backendCode = backendCode,
         )
     }
+}
+
+internal fun looksLikeHtmlErrorBody(body: String): Boolean {
+    val trimmed = body.trimStart().lowercase()
+    if (trimmed.isBlank()) return false
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) return false
+    return trimmed.startsWith("<") ||
+        trimmed.contains("<html") ||
+        trimmed.contains("<center>") ||
+        trimmed.contains("nginx")
 }
 
 internal fun parseErrorCode(body: String): String? {
@@ -167,9 +192,13 @@ private val knownBackendMessages = mapOf(
     "COMPLETION_CODE_RATE_LIMITED" to "Espere un momento para reenviar el código.",
     "DB02" to "El servicio no está disponible en este momento. Intente más tarde.",
     "SE01" to "El servicio no está disponible en este momento. Intente más tarde.",
+    "VA01" to "Revise los datos ingresados",
 )
 
 private fun messageForBackendCode(code: String?, parsed: String?): String? {
+    if (code == "VA01") {
+        return parsed?.takeIf { it.isNotBlank() } ?: knownBackendMessages["VA01"]
+    }
     knownBackendMessages[code]?.let { return it }
     if (code?.startsWith("DB") == true || code?.startsWith("SE") == true) {
         return "El servicio no está disponible en este momento. Intente más tarde."

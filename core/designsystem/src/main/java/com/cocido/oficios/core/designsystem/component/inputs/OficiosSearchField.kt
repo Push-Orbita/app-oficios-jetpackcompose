@@ -1,6 +1,7 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -59,15 +61,18 @@ fun OficiosSearchField(
     placeholderMaxLines: Int = 1,
     enabled: Boolean = true,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    onClick: (() -> Unit)? = null,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
     val iconTint = MaterialTheme.colorScheme.onBackground
 
+    val interactive = onClick == null
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        enabled = enabled,
+        enabled = enabled && interactive,
+        readOnly = !interactive,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = textColor),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         singleLine = true,
@@ -77,9 +82,17 @@ fun OficiosSearchField(
             .fillMaxWidth()
             .heightIn(min = OficiosComponentSize.textFieldHeight)
             .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.surface)
             .border(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 shape = MaterialTheme.shapes.small,
+            )
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                },
             )
             .semantics(mergeDescendants = true) {
                 contentDescription = placeholder
@@ -112,7 +125,7 @@ fun OficiosSearchField(
                     if (onMicClick != null) {
                         SearchFieldIcon(
                             icon = OficiosIcons.Mic,
-                            contentDescription = stringResource(com.cocido.oficios.core.designsystem.R.string.ds_search_voice),
+                            description = stringResource(com.cocido.oficios.core.designsystem.R.string.ds_search_voice),
                             onClick = onMicClick,
                             tint = iconTint,
                         )
@@ -120,7 +133,7 @@ fun OficiosSearchField(
                     if (onSearchClick != null) {
                         SearchFieldIcon(
                             icon = OficiosIcons.Search,
-                            contentDescription = stringResource(com.cocido.oficios.core.designsystem.R.string.ds_search_action),
+                            description = stringResource(com.cocido.oficios.core.designsystem.R.string.ds_search_action),
                             onClick = onSearchClick,
                             tint = iconTint,
                         )
@@ -137,7 +150,7 @@ fun OficiosSearchField(
                         ) {
                             SearchFieldIcon(
                                 icon = OficiosIcons.SlidersHorizontal,
-                                contentDescription = filterCd,
+                                description = filterCd,
                                 onClick = onFilterClick,
                                 tint = iconTint,
                             )
@@ -152,19 +165,30 @@ fun OficiosSearchField(
 @Composable
 private fun SearchFieldIcon(
     icon: Int,
-    contentDescription: String,
+    description: String,
     onClick: () -> Unit,
     tint: androidx.compose.ui.graphics.Color,
 ) {
-    Icon(
-        imageVector = ImageVector.vectorResource(icon),
-        contentDescription = contentDescription,
-        tint = tint,
-        modifier = Modifier
-            .size(OficiosComponentSize.iconMd)
-            .semantics { role = Role.Button }
-            .clickable(onClick = onClick),
-    )
+    Box(
+        modifier = Modifier.size(OficiosComponentSize.iconMd),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(icon),
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(OficiosComponentSize.iconMd),
+        )
+        Box(
+            modifier = Modifier
+                .requiredSize(OficiosComponentSize.minTouchTarget)
+                .clickable(onClick = onClick)
+                .semantics {
+                    role = Role.Button
+                    contentDescription = description
+                },
+        )
+    }
 }
 
 @Preview(name = "Search Field", showBackground = true, backgroundColor = 0xFF00358B)

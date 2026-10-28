@@ -40,7 +40,8 @@ class AccountMapperTest {
                 ProviderDomicilioDto(
                     id = 4,
                     barrioId = 7,
-                    calle = "San Martín 123",
+                    calle = "San Martín",
+                    numero = "123",
                     nombre = "Local comercial",
                     barrio = BarrioDto(7, "Centro"),
                 ),
@@ -53,7 +54,8 @@ class AccountMapperTest {
         assertEquals(1, details.certificates.size)
         assertEquals(7L, details.commercialLocal?.barrioId)
         assertEquals("Centro", details.commercialLocal?.barrioName)
-        assertEquals("San Martín 123", details.commercialLocal?.street)
+        assertEquals("San Martín", details.commercialLocal?.street)
+        assertEquals("123", details.commercialLocal?.number)
         assertFalse(details.services.first().subServices.first().servesAtLocal)
         assertTrue(details.hasCommercialLocal)
     }

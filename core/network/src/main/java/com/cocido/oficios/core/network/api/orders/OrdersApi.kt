@@ -53,7 +53,7 @@ interface OrdersApi {
     suspend fun enviarContrapropuesta(
         @Path("id") id: Long,
         @Body request: CreateContrapropuestaRequestDto,
-    ): JsonElement
+    )
 
     @PATCH("solicitud-servicio/{id}/cancelar")
     suspend fun cancelarSolicitudConfirmada(
@@ -68,10 +68,10 @@ interface OrdersApi {
     ): SolicitudServicioDto
 
     @PATCH("contrapropuesta/{id}/aceptar")
-    suspend fun aceptarContrapropuesta(@Path("id") id: Long): JsonElement
+    suspend fun aceptarContrapropuesta(@Path("id") id: Long)
 
     @PATCH("contrapropuesta/{id}/rechazar")
-    suspend fun rechazarContrapropuesta(@Path("id") id: Long): JsonElement
+    suspend fun rechazarContrapropuesta(@Path("id") id: Long)
 
     @GET("booking/{id}")
     suspend fun getBooking(@Path("id") id: Long): BookingDto
@@ -100,5 +100,5 @@ interface OrdersApi {
     @POST("calificaciones")
     suspend fun crearCalificacion(
         @Body request: CreateCalificacionRequestDto,
-    ): JsonElement
+    )
 }

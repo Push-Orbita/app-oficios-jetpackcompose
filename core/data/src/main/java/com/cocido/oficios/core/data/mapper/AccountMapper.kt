@@ -8,12 +8,14 @@ import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
 import com.cocido.oficios.core.network.api.profile.dto.CertificadoTrabajoDto
 import com.cocido.oficios.core.network.api.profile.dto.ProviderDomicilioDto
 import com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubroFullDto
+import com.cocido.oficios.core.network.api.worker.dto.DomicilioEnrichedDto
 import com.cocido.oficios.domain.model.ManagedProviderService
 import com.cocido.oficios.domain.model.ManagedProviderSubService
 import com.cocido.oficios.domain.model.ManagedTimeRange
 import com.cocido.oficios.domain.model.ManagedWorkSchedule
 import com.cocido.oficios.domain.model.ProviderAccountDetails
 import com.cocido.oficios.domain.model.ProviderCommercialLocal
+import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.WorkCertificateItem
 import com.cocido.oficios.domain.model.WorkGalleryItem
 
@@ -37,6 +39,7 @@ private fun List<ProviderDomicilioDto>.toCommercialLocal(): ProviderCommercialLo
         barrioId = dto.barrioId ?: dto.barrio?.id,
         barrioName = dto.barrio?.nombre,
         street = dto.calle,
+        number = dto.numero,
         name = dto.nombre,
     )
 }
@@ -65,6 +68,7 @@ private fun TrabajadorOficioRubroFullDto.toManagedService() = ManagedProviderSer
             },
         )
     },
+    localDomicilio = domicilioLocal?.toLocalDomicilioRequest(),
 )
 
 fun WorkGalleryDto.toDomainItem() = WorkGalleryItem(id = id, imageUrl = urlArchivo)
@@ -92,3 +96,12 @@ fun scheduleClock(raw: String): String {
     val match = Regex("""(\d{1,2}):(\d{2})""").find(raw.trim()) ?: return raw.trim()
     return "${match.groupValues[1].padStart(2, '0')}:${match.groupValues[2]}"
 }
+
+private fun DomicilioEnrichedDto.toLocalDomicilioRequest() = ProviderLocalDomicilioRequest(
+    barrioId = barrioId ?: barrio?.id ?: 0L,
+    calle = calle,
+    numero = numero,
+    nombre = nombre,
+    latitud = latitud,
+    longitud = longitud,
+)

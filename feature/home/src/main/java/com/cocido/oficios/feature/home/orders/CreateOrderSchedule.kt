@@ -1,7 +1,8 @@
 package com.cocido.oficios.feature.home.orders
 
 import com.cocido.oficios.domain.model.AgendaSlot
-import com.cocido.oficios.domain.model.AgendaSlotStatus
+import com.cocido.oficios.domain.model.TimeRange
+import com.cocido.oficios.domain.model.TimeRangeValidation
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -38,18 +39,58 @@ internal object CreateOrderSchedule {
     ): AgendaSlot? {
         if (date == null || hour == null) return null
         return slots.firstOrNull { slot ->
-            slot.status == AgendaSlotStatus.DISPONIBLE &&
+            slot.isSelectable &&
                 slot.start.toLocalDate() == date &&
-                slot.start.toLocalTime().hour == hour.hour
+                slot.start.toLocalTime() == hour
         }
     }
 
-    fun availableHoursForDate(slots: List<AgendaSlot>, date: LocalDate?): Set<Int> {
+    fun availableHoursForDate(slots: List<AgendaSlot>, date: LocalDate?): List<LocalTime> {
+        if (date == null) return emptyList()
+        return slots
+            .filter { it.isSelectable && it.start.toLocalDate() == date }
+            .map { it.start.toLocalTime() }
+            .distinct()
+            .sorted()
+    }
+
+    fun blockedHoursForDate(slots: List<AgendaSlot>, date: LocalDate?): Set<Int> {
         if (date == null) return emptySet()
         return slots
-            .filter { it.status == AgendaSlotStatus.DISPONIBLE && it.start.toLocalDate() == date }
+            .filter { !it.isSelectable && it.start.toLocalDate() == date }
             .map { it.start.hour }
             .toSet()
+    }
+
+    /**
+     * Horarios que el cliente puede elegir. `null` = sin restricción (API vieja / sin agenda).
+     * Si hay slots disponibles, devuelve esas horas exactas; si no, cae a franjas horarias.
+     */
+    fun selectableHours(
+        slots: List<AgendaSlot>,
+        date: LocalDate?,
+        ranges: List<TimeRange>,
+        dayHasAvailability: Boolean?,
+    ): List<LocalTime>? {
+        if (date == null) return emptyList()
+        val fromSlots = availableHoursForDate(slots, date)
+        if (fromSlots.isNotEmpty()) return fromSlots
+        val fromRanges = TimeRangeValidation.hoursCovered(ranges)
+        if (fromRanges.isNotEmpty()) return fromRanges.map { LocalTime.of(it, 0) }
+        if (dayHasAvailability != null) return emptyList()
+        return null
+    }
+
+    fun isHourSelectable(
+        hour: LocalTime?,
+        date: LocalDate?,
+        slots: List<AgendaSlot>,
+        ranges: List<TimeRange>,
+        dayHasAvailability: Boolean?,
+    ): Boolean {
+        if (hour == null || date == null) return false
+        val allowed = selectableHours(slots, date, ranges, dayHasAvailability) ?: return true
+        return hour in allowed
     }
 
     fun visitDateTime(date: LocalDate?, hour: LocalTime?): LocalDateTime? {

@@ -23,7 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.badges.OficiosNotificationBadge
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -46,8 +45,8 @@ fun OficiosNotificationButton(
                 .heightIn(min = OficiosComponentSize.avatarSm)
                 .size(OficiosComponentSize.avatarSm)
                 .clip(shape)
-                .background(OficiosColorOutlineFill)
-                .border(1.dp, OficiosColorOutlineFill, shape)
+                .background(MaterialTheme.colorScheme.outline)
+                .border(1.dp, MaterialTheme.colorScheme.outline, shape)
                 .semantics { role = Role.Button }
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,

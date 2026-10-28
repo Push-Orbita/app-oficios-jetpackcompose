@@ -4,7 +4,6 @@ import com.cocido.oficios.core.network.api.account.dto.AccountDeletionRequestDto
 import com.cocido.oficios.core.network.api.account.dto.ChangePasswordRequestDto
 import com.cocido.oficios.core.network.api.account.dto.CreateAccountDeletionRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.UsuarioDto
-import kotlinx.serialization.json.JsonElement
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -33,8 +32,9 @@ interface AccountApi {
         @Part("urlFotoPerfil") currentPhotoUrl: RequestBody? = null,
     ): UsuarioDto
 
+    /** OpenAPI JSON; el body no se usa. Unit tolera texto plano o vacío. */
     @PATCH("auth/change-password")
-    suspend fun changePassword(@Body request: ChangePasswordRequestDto): JsonElement
+    suspend fun changePassword(@Body request: ChangePasswordRequestDto)
 
     @POST("usuario/me/deletion-requests")
     suspend fun createDeletionRequest(

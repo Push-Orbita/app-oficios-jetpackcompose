@@ -20,8 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.border.dashedBorder
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -41,7 +39,7 @@ fun DashedAddTile(
         modifier = modifier
             .size(OficiosComponentSize.profileMediaTile)
             .clip(shape)
-            .dashedBorder(OficiosColorOutlineFill, OficiosRadius.lg)
+            .dashedBorder(MaterialTheme.colorScheme.outline, OficiosRadius.lg)
             .clickable(onClick = onClick)
             .padding(OficiosSpacing.xs),
         contentAlignment = Alignment.Center,
@@ -50,12 +48,12 @@ fun DashedAddTile(
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorWhite,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Icon(
                 imageVector = ImageVector.vectorResource(OficiosIcons.CirclePlus),
                 contentDescription = null,
-                tint = OficiosColorWhite,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(OficiosComponentSize.iconLg),
             )
         }

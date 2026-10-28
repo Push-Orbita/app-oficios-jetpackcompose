@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.model.WorkerSpecialty
 import com.cocido.oficios.domain.model.WorkerTimeRange
 import com.cocido.oficios.domain.model.WorkerWorkAddress
 import com.cocido.oficios.domain.model.WorkerWorkDay
+import com.cocido.oficios.domain.model.normalizeStarRating
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -136,11 +137,9 @@ private fun com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubr
 }
 
 private fun com.cocido.oficios.core.network.api.search.dto.ReputacionResumenDto.toReputation(): WorkerReputation {
-    val rating = puntajeGlobal?.toFloat() ?: promedio?.toFloat()
-    val reviewCount = comentariosTotales ?: cantidadCalificaciones
     return WorkerReputation(
-        rating = rating,
-        reviewCount = reviewCount,
+        rating = normalizeStarRating(puntajeGlobal ?: promedio),
+        reviewCount = comentariosTotales ?: cantidadCalificaciones,
     )
 }
 
@@ -219,7 +218,7 @@ fun reviewAuthorLabel(contactoTexto: String?): String? {
 
 fun formatReviewDate(iso: String?, zone: ZoneId = DisplayDateTime.ARGENTINA): String? {
     val zoned = DisplayDateTime.toZonedDateTime(iso, zone) ?: return null
-    return DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss", Locale.forLanguageTag("es-AR"))
+    return DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm", Locale.forLanguageTag("es-AR"))
         .format(zoned)
 }
 

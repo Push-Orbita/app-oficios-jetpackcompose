@@ -5,8 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.mapper.toRubroFullRequest
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
@@ -28,7 +32,7 @@ import com.cocido.oficios.domain.usecase.profile.SubmitSecondaryProviderRubroUse
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
-import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -121,6 +125,8 @@ class ProviderDniViewModel @Inject constructor(
     }
     fun onCertificateNameChanged(value: String) = _uiState.update { it.copy(certificateName = value, error = null) }
     fun onCertificateSelected(path: String?) = _uiState.update { it.copy(certificatePath = path, error = null) }
+
+    fun onPickError(message: String) = _uiState.update { it.copy(error = message) }
 
     fun submit() {
         val state = _uiState.value
@@ -396,6 +402,8 @@ data class ProviderAvailabilityUiState(
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
     val requiresTurns: Boolean = false,
+    val turnDurationMinutes: Int? = null,
+    val turnIntervalMinutes: Int? = null,
     val hasRubroContext: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -403,7 +411,8 @@ data class ProviderAvailabilityUiState(
     val canSubmit: Boolean
         get() = hasRubroContext &&
             selectedWorkDays.isNotEmpty() &&
-            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() }
+            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } &&
+            (!requiresTurns || turnDurationMinutes != null)
 }
 
 private object ProviderAvailabilityDefaults {
@@ -452,6 +461,8 @@ class ProviderAvailabilityViewModel @Inject constructor(
                         servesAtClientHome = draft.servesAtClientHome,
                         servesAtLocal = draft.servesAtLocal,
                         requiresTurns = draft.requiresTurns,
+                        turnDurationMinutes = draft.turnDurationMinutes,
+                        turnIntervalMinutes = draft.turnIntervalMinutes,
                         hasRubroContext = draft.rubroId > 0 && draft.subRubroIds.isNotEmpty(),
                     )
                 }
@@ -491,12 +502,26 @@ class ProviderAvailabilityViewModel @Inject constructor(
 
     fun onServesAtClientHomeChanged(value: Boolean) = _uiState.update { it.copy(servesAtClientHome = value, error = null) }
     fun onServesAtLocalChanged(value: Boolean) = _uiState.update { it.copy(servesAtLocal = value, error = null) }
-    fun onRequiresTurnsChanged(value: Boolean) = _uiState.update { it.copy(requiresTurns = value, error = null) }
+    fun onRequiresTurnsChanged(value: Boolean) = _uiState.update {
+        it.copy(
+            requiresTurns = value,
+            turnDurationMinutes = if (value && it.turnDurationMinutes == null) 60 else it.turnDurationMinutes,
+            error = null,
+        )
+    }
+    fun onTurnDurationChanged(minutes: Int?) = _uiState.update { it.copy(turnDurationMinutes = minutes, error = null) }
+    fun onTurnIntervalChanged(minutes: Int?) = _uiState.update { it.copy(turnIntervalMinutes = minutes, error = null) }
 
     fun submit() {
         val state = _uiState.value
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Complete días, horarios y dónde atiende") }
+            val message = when {
+                state.requiresTurns && state.turnDurationMinutes == null -> "Ingrese la duración del turno"
+                !state.selectedWorkDays.any() -> "Seleccione al menos un día laboral"
+                !state.timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } -> "Configure al menos un horario"
+                else -> "Complete días, horarios y dónde atiende"
+            }
+            _uiState.update { it.copy(error = message) }
             return
         }
         viewModelScope.launch {
@@ -522,6 +547,8 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 servesAtClientHome = state.servesAtClientHome,
                 servesAtLocal = state.servesAtLocal,
                 requiresTurns = state.requiresTurns,
+                turnDurationMinutes = state.turnDurationMinutes,
+                turnIntervalMinutes = state.turnIntervalMinutes,
             )
             registerTradeDraftRepository.save(updatedDraft)
             when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {
@@ -543,13 +570,14 @@ data class ProviderLocalUiState(
     val calle: String = "",
     val numero: String = "",
     val nombre: String = "Local comercial",
-    val latitud: Double? = null,
-    val longitud: Double? = null,
-    val isLocating: Boolean = false,
+    val location: AddressLocationSnapshot = AddressLocationSnapshot(),
+    val isGeocoding: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 ) {
-    val canSubmit: Boolean get() = selectedBarrioId != null && calle.isNotBlank() && latitud != null && longitud != null
+    val latitud: Double? get() = location.latitude
+    val longitud: Double? get() = location.longitude
+    val canSubmit: Boolean get() = selectedBarrioId != null && calle.isNotBlank()
 }
 
 @HiltViewModel
@@ -559,7 +587,7 @@ class ProviderLocalViewModel @Inject constructor(
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
-    private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
+    private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderLocalUiState())
@@ -613,6 +641,7 @@ class ProviderLocalViewModel @Inject constructor(
                 selectedBarrioId = option.id,
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
+                location = FormosaAddressGeocoding.invalidate(),
             )
         }
     }
@@ -622,40 +651,86 @@ class ProviderLocalViewModel @Inject constructor(
         _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 
-    fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
-    fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
+    fun onCalleChanged(value: String) = _uiState.update {
+        it.copy(calle = value, error = null, location = FormosaAddressGeocoding.invalidate())
+    }
+    fun onNumeroChanged(value: String) = _uiState.update {
+        it.copy(numero = value, error = null, location = FormosaAddressGeocoding.invalidate())
+    }
     fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
     fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
-        it.copy(latitud = latitude, longitud = longitude, error = null)
+        it.copy(
+            location = FormosaAddressGeocoding.pinMoved(it.location, latitude, longitude),
+            error = null,
+        )
     }
-    fun onLocationPermissionDenied() = _uiState.update {
-        it.copy(error = "Permita la ubicación o marque manualmente la entrada de su local en el mapa.")
+    fun locateOnMap() = _uiState.update {
+        val next = FormosaAddressGeocoding.openMap(it.location)
+        it.copy(location = next, error = next.message)
     }
-    fun useCurrentLocation() {
+    fun confirmPin() {
+        val confirmed = FormosaAddressGeocoding.confirmPin(_uiState.value.location)
+        _uiState.update { it.copy(location = confirmed, error = confirmed.message) }
+        if (confirmed.canPersist) persist()
+    }
+
+    fun submit() {
+        val state = _uiState.value
+        if (state.selectedBarrioId == null || !state.canSubmit) {
+            _uiState.update { it.copy(error = "Complete barrio, calle y número de su local.") }
+            return
+        }
+        if (!state.location.canPersist) {
+            resolveFromAddress()
+            return
+        }
+        persist()
+    }
+
+    private fun resolveFromAddress() {
+        val state = _uiState.value
         viewModelScope.launch {
-            _uiState.update { it.copy(isLocating = true, error = null) }
-            when (val result = getCurrentLocationUseCase()) {
-                is AppResult.Success -> _uiState.update {
+            _uiState.update {
+                it.copy(
+                    isGeocoding = true,
+                    error = null,
+                    location = it.location.copy(phase = AddressLocationPhase.Geocoding),
+                )
+            }
+            when (
+                val result = geocodeLocalAddress(
+                    LocalAddressQuery(
+                        street = state.calle,
+                        number = state.numero,
+                        neighborhood = state.barrioQuery,
+                    ),
+                )
+            ) {
+                is AppResult.Error -> _uiState.update {
                     it.copy(
-                        isLocating = false,
-                        latitud = result.data.latitude,
-                        longitud = result.data.longitude,
+                        isGeocoding = false,
+                        location = AddressLocationSnapshot(
+                            phase = AddressLocationPhase.NeedsMap,
+                            message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                        ),
+                        error = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
                     )
                 }
-                is AppResult.Error -> _uiState.update {
-                    it.copy(isLocating = false, error = result.error.userMessage())
+                is AppResult.Success -> {
+                    val snapshot = FormosaAddressGeocoding.snapshotFor(result.data)
+                    _uiState.update {
+                        it.copy(isGeocoding = false, location = snapshot, error = snapshot.message)
+                    }
                 }
             }
         }
     }
 
-    fun submit() {
+    private fun persist() {
         val state = _uiState.value
-        val barrioId = state.selectedBarrioId
-        if (barrioId == null || !state.canSubmit) {
-            _uiState.update { it.copy(error = "Complete barrio, calle y la ubicación en el mapa") }
-            return
-        }
+        val barrioId = state.selectedBarrioId ?: return
+        val location = state.location
+        if (!location.canPersist) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
@@ -667,9 +742,6 @@ class ProviderLocalViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false, error = "Complete primero rubro y subrubros") }
                 return@launch
             }
-            val streetLine = listOf(state.calle.trim(), state.numero.trim())
-                .filter { it.isNotBlank() }
-                .joinToString(" ")
             val updatedDraft = draft.copy(
                 barrioId = barrioId,
                 servesAtLocal = true,
@@ -678,10 +750,11 @@ class ProviderLocalViewModel @Inject constructor(
             val request = updatedDraft.toRubroFullRequest().copy(
                 domicilioLocal = ProviderLocalDomicilioRequest(
                     barrioId = barrioId,
-                    calle = streetLine,
+                    calle = state.calle.trim().ifBlank { null },
+                    numero = state.numero.trim().ifBlank { null },
                     nombre = state.nombre.trim().ifBlank { "Local comercial" },
-                    latitud = GeoCoordinates.roundForApi(state.latitud),
-                    longitud = GeoCoordinates.roundForApi(state.longitud),
+                    latitud = GeoCoordinates.roundForApi(location.latitude),
+                    longitud = GeoCoordinates.roundForApi(location.longitude),
                 ),
             )
             when (val result = submitProviderRubroFullUseCase(request)) {
@@ -803,7 +876,7 @@ class ProviderFinalizeViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ProviderStepEffect>()
     val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
 
-    fun finalize() {
+    fun finalizeProfile() {
         viewModelScope.launch {
             _isLoading.update { true }
             when (val result = finalizeProviderProfileUseCase()) {

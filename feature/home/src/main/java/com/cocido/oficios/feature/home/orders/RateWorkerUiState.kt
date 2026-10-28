@@ -8,7 +8,9 @@ sealed interface RateWorkerUiState {
         val comment: String = "",
         val isSubmitting: Boolean = false,
         val hasAttemptedSubmit: Boolean = false,
-    ) : RateWorkerUiState
+    ) : RateWorkerUiState {
+        val canSubmit: Boolean get() = qualityStars > 0 && punctualityStars > 0
+    }
     data class Submitted(val workerName: String) : RateWorkerUiState
 }
 

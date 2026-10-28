@@ -2,10 +2,12 @@ package com.cocido.oficios.core.designsystem.component.navigation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -16,10 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
@@ -45,14 +51,26 @@ fun OficiosScreenTitle(
             modifier = Modifier.weight(1f, fill = false),
         ) {
             if (onNavigateBack != null) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(OficiosIcons.ChevronLeft),
-                    contentDescription = "Volver",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable(onClick = onNavigateBack),
-                    tint = MaterialTheme.colorScheme.onBackground,
-                )
+                Box(
+                    modifier = Modifier.size(24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(OficiosIcons.ChevronLeft),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.onBackground,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .requiredSize(OficiosComponentSize.minTouchTarget)
+                            .clickable(onClick = onNavigateBack)
+                            .semantics {
+                                role = Role.Button
+                                this.contentDescription = "Volver"
+                            },
+                    )
+                }
                 Spacer(modifier = Modifier.width(10.dp))
             }
             Text(

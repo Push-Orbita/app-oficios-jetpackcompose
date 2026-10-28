@@ -97,8 +97,8 @@ fun VerifyPhoneStepScreen(
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
-                variant = OficiosButtonVariant.Secondary,
-                size = OficiosButtonSize.Large,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Form,
             )
         }
     }

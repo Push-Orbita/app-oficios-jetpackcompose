@@ -9,13 +9,22 @@ import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
+import com.cocido.oficios.domain.repository.OrderRepository
+import com.cocido.oficios.domain.usecase.catalog.GetAllRubrosUseCase
+import com.cocido.oficios.domain.usecase.catalog.GetAllSubRubrosUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.core.ui.intent.dispatchSpokenSearch
+import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.usecase.search.GetRecentClientWorkersUseCase
+import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
+import com.cocido.oficios.domain.usecase.search.RemoveRecentSearchUseCase
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
+import kotlinx.coroutines.test.advanceTimeBy
 import com.cocido.oficios.feature.home.FakeRecentSearchRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,6 +52,35 @@ class SearchResultsViewModelTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `empty search opens idle instead of querying the backend`() = runTest(testDispatcher) {
+        var searches = 0
+        val viewModel = createViewModel(
+            savedState = SavedStateHandle(),
+            onSearch = { searches++ },
+        )
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Idle)
+        assertEquals(0, searches)
+    }
+
+    @Test
+    fun `typed query waits 300ms before searching`() = runTest(testDispatcher) {
+        var searches = 0
+        val viewModel = createViewModel(
+            savedState = SavedStateHandle(),
+            onSearch = { searches++ },
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(SearchResultsEvent.QueryChanged("plomero"))
+        advanceTimeBy(299)
+        assertEquals(0, searches)
+        advanceTimeBy(1)
+        advanceUntilIdle()
+        assertEquals(1, searches)
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
     }
 
     @Test
@@ -178,17 +216,29 @@ class SearchResultsViewModelTest {
             ),
         ),
         recents: FakeRecentSearchRepository = FakeRecentSearchRepository(),
+        savedState: SavedStateHandle = SavedStateHandle(
+            mapOf(
+                "rubroId" to 3L,
+                "rubroLabel" to "Plomería",
+            ),
+        ),
+        onSearch: () -> Unit = {},
     ): SearchResultsViewModel {
         val repository = object : WorkerSearchRepository {
             override suspend fun searchWorkers(
                 filters: WorkerSearchFilters,
                 pageNumber: Int,
                 pageSize: Int,
-            ) = searchResult
+            ): AppResult<PagedWorkers> {
+                onSearch()
+                return searchResult
+            }
         }
         val catalogRepository = object : CatalogRepository {
             override suspend fun getCategories(): AppResult<List<CatalogOption>> =
                 AppResult.Success(emptyList())
+            override suspend fun getAllRubros(): AppResult<List<CatalogOption>> =
+                AppResult.Success(listOf(CatalogOption(3, "Plomería"), CatalogOption(4, "Electricidad")))
             override suspend fun getRubrosByCategory(categoryId: Long): AppResult<List<CatalogOption>> =
                 AppResult.Success(emptyList())
             override suspend fun getSubRubrosByRubro(rubroId: Long): AppResult<List<CatalogOption>> =
@@ -196,20 +246,58 @@ class SearchResultsViewModelTest {
             override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> =
                 AppResult.Success(emptyList())
         }
-        val savedStateHandle = SavedStateHandle(
-            mapOf(
-                "rubroId" to 3L,
-                "rubroLabel" to "Plomería",
-            ),
-        )
         return SearchResultsViewModel(
-            savedStateHandle = savedStateHandle,
-            searchWorkersUseCase = SearchWorkersUseCase(repository),
+            savedStateHandle = savedState,
+            searchWorkersUseCase = SearchWorkersUseCase(repository, catalogRepository),
             trackRecentSearchUseCase = TrackRecentSearchUseCase(recents),
+            observeRecentSearchesUseCase = ObserveRecentSearchesUseCase(recents),
+            removeRecentSearchUseCase = RemoveRecentSearchUseCase(recents),
+            getRecentClientWorkersUseCase = GetRecentClientWorkersUseCase(SearchTestOrderRepository()),
+            getAllRubrosUseCase = GetAllRubrosUseCase(catalogRepository),
+            getAllSubRubrosUseCase = GetAllSubRubrosUseCase(catalogRepository),
             getCategoriesUseCase = GetCategoriesUseCase(catalogRepository),
             getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(catalogRepository),
             getSubRubrosByRubroUseCase = GetSubRubrosByRubroUseCase(catalogRepository),
             searchBarriosUseCase = SearchBarriosUseCase(catalogRepository),
         )
     }
+}
+
+private class SearchTestOrderRepository : OrderRepository {
+    override val ordersChanged = kotlinx.coroutines.flow.MutableSharedFlow<Unit>()
+    override suspend fun getClientOrders() = AppResult.Success(
+        listOf(
+            ServiceOrderListItem(
+                id = 1,
+                counterpartName = "Carlos Rodríguez",
+                subRubroLabel = "Cañerías",
+                status = ServiceRequestStatus.ACCEPTED,
+                bookingStatus = null,
+                scheduledLabel = null,
+                addressLabel = "Av. 25 de Mayo 450",
+                rubroLabel = "Plomería",
+                isVerified = true,
+                workerId = 12,
+            ),
+        ),
+    )
+    override suspend fun createServiceRequest(params: com.cocido.oficios.domain.model.CreateServiceRequestParams) = unused()
+    override suspend fun getWorkerOrders() = unused()
+    override suspend fun getOrderDetail(orderId: Long) = unused()
+    override suspend fun acceptOrder(orderId: Long) = unused()
+    override suspend fun rejectOrder(orderId: Long, reason: String) = unused()
+    override suspend fun sendCounterOffer(orderId: Long, newStartIso: String, newEndIso: String, newPrice: Double?) = unused()
+    override suspend fun acceptCounterOffer(counterOfferId: Long) = unused()
+    override suspend fun rejectCounterOffer(counterOfferId: Long) = unused()
+    override suspend fun cancelOrderBeforeAcceptance(orderId: Long) = unused()
+    override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?) = unused()
+    override suspend fun getBookingTracking(bookingId: Long) = unused()
+    override suspend fun findOrderIdForBooking(bookingId: Long) = unused()
+    override suspend fun markEnRoute(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) = unused()
+    override suspend fun markArrived(bookingId: Long, location: com.cocido.oficios.domain.model.GeoPoint) = unused()
+    override suspend fun getCompletionCode(bookingId: Long) = unused()
+    override suspend fun resendCompletionCode(bookingId: Long) = unused()
+    override suspend fun finalizeBooking(bookingId: Long, completionCode: String) = unused()
+    override suspend fun submitRating(bookingId: Long, quality: Int, punctuality: Int, comment: String?) = unused()
+    private fun unused(): Nothing = error("unused")
 }

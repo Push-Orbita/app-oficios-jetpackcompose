@@ -12,7 +12,7 @@ import org.robolectric.annotation.GraphicsMode
 
 /**
  * Capturas JVM 440×980 mdpi (frame de Figma) para `tools/figma-diff`.
- * Splash se posiciona desde el tope del frame (y≈330). El resto simula
+ * Splash centra el lockup (isotipo + wordmark) en el frame. El resto simula
  * status bar 48dp + nav 24dp porque Robolectric no aplica safeDrawing.
  *
  * Record opt-in: `./gradlew :feature:auth:testDebugUnitTest -Proborazzi.test.record=true`.
@@ -59,6 +59,34 @@ class AuthScreenshotTest {
     fun register() {
         assumeGoldenOrRecording(javaClass, "register")
         composeRule.setContent { AuthScreenshotRegister() }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun splashDark() {
+        assumeGoldenOrRecording(javaClass, "splashDark")
+        composeRule.setContent { AuthScreenshotSplash(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun loginDark() {
+        assumeGoldenOrRecording(javaClass, "loginDark")
+        composeRule.setContent { AuthScreenshotLogin(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun roleDark() {
+        assumeGoldenOrRecording(javaClass, "roleDark")
+        composeRule.setContent { AuthScreenshotRole(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun registerDark() {
+        assumeGoldenOrRecording(javaClass, "registerDark")
+        composeRule.setContent { AuthScreenshotRegister(darkTheme = true) }
         composeRule.onRoot().captureRoboImage()
     }
 }

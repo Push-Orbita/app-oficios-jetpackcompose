@@ -26,7 +26,8 @@ data class ClientContactoUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
 ) {
-    val canSubmit: Boolean get() = nombre.isNotBlank() && telefono.isNotBlank()
+    val canSubmit: Boolean get() =
+        nombre.isNotBlank() && AuthValidators.validateArgentineMobile(telefono) == null
 }
 
 sealed interface ClientContactoEffect {

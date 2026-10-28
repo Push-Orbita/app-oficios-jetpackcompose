@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_title">Ajustes</string>
-    <string name="settings_theme_section">Apariencia</string>
+    <string name="settings_configuration">Configuración</string>
+    <string name="settings_theme_section">Tema</string>
     <string name="settings_theme_system">Según el sistema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
@@ -33,13 +34,13 @@
     <string name="settings_delete_account_confirmation">Escriba ELIMINAR</string>
     <string name="settings_delete_account_submit">Eliminar mi cuenta</string>
     <string name="settings_delete_account_load_error">No pudimos consultar el estado de su cuenta</string>
-    <string name="settings_delete_account_grace_title">Tu baja está programada</string>
+    <string name="settings_delete_account_grace_title">Su baja está programada</string>
     <string name="settings_delete_account_grace_body">Vamos a eliminar su cuenta el %1$s (hora de Formosa). Si cambia de opinión, cancele la solicitud antes de esa fecha.</string>
     <string name="settings_delete_account_grace_body_generic">Su cuenta se va a eliminar en los próximos 3 días. Si cambia de opinión, cancele la solicitud ahora.</string>
     <string name="settings_delete_account_cancel">Cancelar la baja</string>
     <string name="settings_verified_email">Correo verificado</string>
     <string name="settings_pending_email">Correo pendiente de verificación</string>
-    <string name="settings_provider_role">Trabajador de oficio</string>
+    <string name="settings_provider_role">Trabajador</string>
     <string name="settings_client_role">Cliente</string>
     <string name="settings_load_error_title">No pudimos cargar su cuenta</string>
     <string name="settings_loading">Cargando su cuenta…</string>
@@ -48,7 +49,7 @@
     <string name="client_data_edit_contact">Editar contacto</string>
     <string name="client_data_new_address">Nuevo domicilio</string>
     <string name="client_data_edit_address">Editar domicilio</string>
-    <string name="client_data_load_error">No pudimos cargar sus datos</string>
+    <string name="client_data_load_error">No pudimos cargar sus contactos y domicilios</string>
     <string name="client_data_delete_title">Eliminar %1$s</string>
     <string name="client_data_delete_message">Esta acción puede dejar su perfil incompleto. Los pedidos existentes conservarán sus datos históricos.</string>
     <string name="client_data_delete_confirm">Eliminar</string>
@@ -76,9 +77,9 @@
     <string name="client_data_edit_address_action">Editar domicilio</string>
     <string name="client_data_delete_address">el domicilio</string>
     <string name="client_data_delete_address_action">Eliminar domicilio</string>
-    <string name="client_data_phone_hint">El número se valida por WhatsApp. Argentina usa +54 y usted ingresa solo el número local, por ejemplo 9 370 5219109.</string>
+    <string name="client_data_phone_hint">El número se valida por WhatsApp. Ingrese el celular local: el +54 ya está indicado. Ejemplo: 9 370 5219109.</string>
     <string name="client_data_contact_name">Nombre del contacto</string>
-    <string name="client_data_whatsapp">WhatsApp</string>
+    <string name="client_data_whatsapp">Celular (WhatsApp)</string>
     <string name="client_data_alt_email">Correo alternativo (opcional)</string>
     <string name="client_data_primary_contact_toggle">Usar como contacto principal</string>
     <string name="client_data_save_verify">Guardar y verificar</string>
@@ -96,7 +97,7 @@
     <string name="client_data_primary_address_toggle">Usar como domicilio principal</string>
     <string name="client_data_save_address">Guardar domicilio</string>
     <string name="personal_data_title">Datos personales</string>
-    <string name="personal_data_load_error">No pudimos cargar sus datos</string>
+    <string name="personal_data_load_error">No pudimos cargar sus datos personales</string>
     <string name="personal_data_intro">Mantenga sus datos actualizados para que su cuenta sea fácil de reconocer.</string>
     <string name="personal_data_change_photo">Cambiar foto</string>
     <string name="personal_data_remove_photo">Quitar</string>
@@ -111,13 +112,12 @@
     <string name="professional_profile_retry">Intente nuevamente.</string>
     <string name="professional_profile_oficios">Oficio(s):</string>
     <string name="professional_profile_specialized">Especializado en:</string>
-    <string name="professional_profile_only_can">Solo puede</string>
     <string name="professional_profile_works">Trabajos realizados</string>
     <string name="professional_profile_certificates">Certificado(s)</string>
     <string name="professional_profile_add">Añadir</string>
     <string name="professional_profile_validated">Validado</string>
     <string name="professional_profile_pending">Pendiente</string>
-    <string name="professional_profile_delete_account">Darme De Baja</string>
+    <string name="professional_profile_delete_account">Darme de baja</string>
     <string name="professional_profile_cash">Efectivo</string>
     <string name="professional_profile_transfer">Transferencia bancaria</string>
     <string name="professional_profile_mercadopago">Mercado Pago</string>
@@ -148,7 +148,10 @@
     <string name="portfolio_select_file">Seleccionar archivo</string>
     <string name="portfolio_file_selected">Archivo seleccionado</string>
     <string name="portfolio_keep_file">Si no elige otro archivo, se conservará el actual.</string>
-    <string name="portfolio_file_formats">Formatos admitidos: PDF, JPG, PNG o WEBP. Máximo 10 MB.</string>
+    <string name="portfolio_file_formats">Imágenes JPG, PNG o WEBP (menos de 900 KB). PDF hasta 1 MB.</string>
+    <string name="portfolio_drop_zone">Toque para elegir PDF o imagen</string>
+    <string name="portfolio_change_file">Cambiar archivo</string>
+    <string name="portfolio_remove_file">Quitar archivo</string>
     <string name="portfolio_save">Guardar certificado</string>
     <string name="change_password_title">Cambiar contraseña</string>
     <string name="change_password_load_error">No pudimos validar su cuenta</string>
@@ -172,11 +175,11 @@
     <string name="services_at_local">En local</string>
     <string name="services_with_turns">Con turnos</string>
     <string name="services_modality_unknown">Modalidad sin informar</string>
-    <string name="services_primary_locked">El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar especialidades, modalidad y horarios.</string>
-    <string name="services_tap_to_edit">Toque para editar especialidades, modalidad y horarios.</string>
+    <string name="services_primary_locked">El rubro principal no se puede cambiar ni eliminar. Toque la tarjeta para editar modalidad y horarios.</string>
+    <string name="services_tap_to_edit">Toque para editar modalidad y horarios.</string>
     <string name="services_edit_title">Editar servicio</string>
     <string name="services_edit_trade_title">Especialidades</string>
-    <string name="services_edit_trade_hint">El oficio queda fijo. Puede actualizar las especialidades que ofrece.</string>
+    <string name="services_edit_trade_hint">El oficio y las especialidades quedan fijos al publicar.</string>
     <string name="services_primary_rubro_locked">Rubro principal: no se puede cambiar.</string>
     <string name="services_save_changes">Guardar cambios</string>
     <string name="services_delete_action">Eliminar %1$s</string>
@@ -188,7 +191,7 @@
     <string name="services_continue">Continuar</string>
     <string name="services_category">Categoría</string>
     <string name="services_category_hint">Seleccione una categoría</string>
-    <string name="services_elegi_rubro_title">Elegí Rubro</string>
+    <string name="services_elegi_rubro_title">Elija rubro</string>
     <string name="services_elegi_rubro_hint">Seleccione la categoría y el rubro de este servicio.</string>
     <string name="services_trade">Oficio</string>
     <string name="services_trade_hint_locked">Primero seleccione una categoría</string>
@@ -197,12 +200,17 @@
     <string name="services_client_home">Voy al domicilio del cliente</string>
     <string name="services_local">Atiendo en mi local</string>
     <string name="services_requires_turns">Este servicio requiere turno</string>
+    <string name="services_requires_turns_locked">Un servicio publicado con turnos no se puede pasar a sin turnos desde la app.</string>
+    <string name="services_specialties_edit_locked">Las especialidades se eligen al publicar el servicio. Para sumar otra, agregue un servicio nuevo.</string>
+    <string name="services_specialty_hours">%1$s: %2$s</string>
+    <string name="services_schedule_pick_specialty">Especialidad de estos horarios</string>
+    <string name="services_schedule_for_specialty">Horarios de %1$s. El resto se edita eligiendo otra especialidad o desde Agenda.</string>
     <string name="services_local_address">Dirección del local</string>
     <string name="services_local_name">Nombre del local (opcional)</string>
     <string name="services_local_name_hint">Ej: Taller Centro</string>
     <string name="services_neighborhood">Barrio</string>
     <string name="services_neighborhood_hint">Busque y seleccione el barrio</string>
-    <string name="services_street">Calle y altura</string>
+    <string name="services_street">Calle</string>
     <string name="services_days">Días habituales</string>
     <string name="services_hours">Horarios</string>
     <string name="services_from">Desde</string>
@@ -217,9 +225,11 @@
     <string name="services_step_schedule_title">¿Cuándo trabaja?</string>
     <string name="services_step_payment_title">¿Cómo cobra?</string>
     <string name="services_step_review_title">Revise su nuevo servicio</string>
+    <string name="services_step_review_title_edit">Revise su servicio</string>
     <string name="services_step_trade_body">Elija el oficio y todas las especialidades que realmente realiza.</string>
     <string name="services_step_modality_body">Puede ir al domicilio del cliente, atender en un local o usar ambas modalidades.</string>
     <string name="services_step_schedule_body">Defina una disponibilidad habitual; los turnos concretos se administran desde Agenda.</string>
+    <string name="services_step_schedule_body_edit">La semana que edite se guarda solo en la especialidad elegida. El resto se cambia desde el selector o desde Agenda.</string>
     <string name="services_step_payment_body">Muestre de antemano qué medios de cobro acepta.</string>
     <string name="services_step_review_body">Esta información será visible para los clientes.</string>
     <string name="services_day_monday">Lunes</string>
@@ -236,5 +246,8 @@
     <string name="commercial_local_missing_service_description">El local comercial se guarda junto al oficio. Agregue un servicio y después complete la dirección.</string>
     <string name="commercial_local_add_service">Agregar servicio</string>
     <string name="commercial_local_street">Calle</string>
+    <string name="commercial_local_number">Número</string>
     <string name="commercial_local_save">Guardar</string>
+    <string name="commercial_local_confirm_pin">Confirmar y guardar</string>
+    <string name="commercial_local_map_title">Ubicación del local</string>
 </resources>

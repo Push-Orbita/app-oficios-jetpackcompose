@@ -7,6 +7,8 @@ import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.model.GeoPoint
 import com.cocido.oficios.domain.model.OrdersListFilter
+import com.cocido.oficios.domain.model.OrdersListSort
+import com.cocido.oficios.domain.model.OrdersListSortPrefs
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
 import com.cocido.oficios.domain.model.ServiceOrder
@@ -57,7 +59,7 @@ class OrdersListViewModelTest {
         val viewModel = viewModel(repository)
         advanceUntilIdle()
 
-        repository.clientOrders = AppResult.Error(AppError.Network("No internet connection"))
+        repository.clientOrdersResult = AppResult.Error(AppError.Network("No internet connection"))
         val effects = mutableListOf<OrdersListEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
         viewModel.onEvent(OrdersListEvent.Refresh)
@@ -94,6 +96,71 @@ class OrdersListViewModelTest {
         assertEquals(orders, state.orders)
         assertEquals(OrdersListFilter.HISTORY, state.filter)
         assertFalse(state.isRefreshing)
+    }
+
+    @Test
+    fun `sort is kept per tab during the session`() = runTest(testDispatcher) {
+        val repository = FakeOrderRepository(AppResult.Success(listOf(order(7))))
+        val viewModel = viewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onEvent(OrdersListEvent.SortSelected(OrdersListSort.OLDEST_FIRST))
+        val activeOldest = viewModel.uiState.value as OrdersListUiState.Success
+        assertEquals(OrdersListFilter.ACTIVE, activeOldest.filter)
+        assertEquals(OrdersListSort.OLDEST_FIRST, activeOldest.sort)
+
+        viewModel.onEvent(OrdersListEvent.FilterSelected(OrdersListFilter.HISTORY))
+        val historyDefault = viewModel.uiState.value as OrdersListUiState.Success
+        assertEquals(OrdersListSort.NEWEST_FIRST, historyDefault.sort)
+
+        viewModel.onEvent(OrdersListEvent.SortSelected(OrdersListSort.OLDEST_FIRST))
+        viewModel.onEvent(OrdersListEvent.FilterSelected(OrdersListFilter.ACTIVE))
+        viewModel.onEvent(OrdersListEvent.Refresh)
+        advanceUntilIdle()
+
+        val restored = viewModel.uiState.value as OrdersListUiState.Success
+        assertEquals(OrdersListFilter.ACTIVE, restored.filter)
+        assertEquals(OrdersListSort.OLDEST_FIRST, restored.sort)
+        assertEquals(OrdersListSort.OLDEST_FIRST, restored.sortPrefs.forFilter(OrdersListFilter.HISTORY))
+    }
+
+    @Test
+    fun `changing session resets filter to Activos`() = runTest(testDispatcher) {
+        val repository = FakeOrderRepository(AppResult.Success(listOf(order(7))))
+        val auth = FakeAuthRepository()
+        val viewModel = viewModel(repository, auth)
+        advanceUntilIdle()
+        viewModel.onEvent(OrdersListEvent.FilterSelected(OrdersListFilter.HISTORY))
+        viewModel.onEvent(OrdersListEvent.SortSelected(OrdersListSort.OLDEST_FIRST))
+        assertEquals(
+            OrdersListFilter.HISTORY,
+            (viewModel.uiState.value as OrdersListUiState.Success).filter,
+        )
+        assertEquals(
+            OrdersListSort.OLDEST_FIRST,
+            (viewModel.uiState.value as OrdersListUiState.Success).sort,
+        )
+
+        auth.currentUser = AppResult.Success(
+            User(
+                id = 2,
+                email = "matias@oficios.test",
+                firstName = "Matías",
+                lastName = "Britez",
+                role = UserRole.PROVIDER,
+                emailVerified = true,
+            ),
+        )
+        repository.clientOrdersResult = AppResult.Success(emptyList())
+        viewModel.onEvent(OrdersListEvent.Refresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as OrdersListUiState.Success
+        assertEquals(OrdersListFilter.ACTIVE, state.filter)
+        assertEquals(OrdersListSortPrefs(), state.sortPrefs)
+        assertEquals(OrdersListSort.NEWEST_FIRST, state.sort)
+        assertEquals(UserRole.PROVIDER, state.viewerRole)
+        assertEquals(emptyList<ServiceOrderListItem>(), state.orders)
     }
 
     @Test
@@ -148,13 +215,13 @@ class OrdersListViewModelTest {
 }
 
 private class FakeOrderRepository(
-    var clientOrders: AppResult<List<ServiceOrderListItem>>,
+    var clientOrdersResult: AppResult<List<ServiceOrderListItem>>,
 ) : OrderRepository {
     private val changes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     override val ordersChanged: SharedFlow<Unit> = changes
 
-    override suspend fun getClientOrders() = clientOrders
-    override suspend fun getWorkerOrders() = clientOrders
+    override suspend fun getClientOrders() = clientOrdersResult
+    override suspend fun getWorkerOrders() = clientOrdersResult
     override suspend fun createServiceRequest(params: CreateServiceRequestParams): AppResult<Long> = unused()
     override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> = unused()
     override suspend fun acceptOrder(orderId: Long): AppResult<Unit> = unused()

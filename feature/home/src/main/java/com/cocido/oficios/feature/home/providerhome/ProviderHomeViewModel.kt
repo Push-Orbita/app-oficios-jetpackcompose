@@ -6,12 +6,16 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ProviderHomeTiles
 import com.cocido.oficios.domain.model.ProviderProfileCompletionTarget
+import com.cocido.oficios.domain.model.defaultAgendaDateInMonth
 import com.cocido.oficios.domain.model.nowInArgentina
 import com.cocido.oficios.domain.model.upcomingAgendaAppointments
 import com.cocido.oficios.domain.usecase.GetProviderHomeUseCase
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
+import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -26,6 +30,7 @@ import kotlinx.coroutines.launch
 class ProviderHomeViewModel @Inject constructor(
     private val getProviderHomeUseCase: GetProviderHomeUseCase,
     private val getUnreadNotificationCountUseCase: GetUnreadNotificationCountUseCase,
+    private val orderUseCases: OrderUseCases,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -41,6 +46,26 @@ class ProviderHomeViewModel @Inject constructor(
     private var loadJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            getUnreadNotificationCountUseCase.unreadCount.collect { count ->
+                if (count != null) _unreadNotificationCount.value = count
+            }
+        }
+        viewModelScope.launch {
+            orderUseCases.workerOrders.collect { list ->
+                if (list == null) return@collect
+                val now = nowInArgentina(clock)
+                _uiState.update { state ->
+                    val success = state as? ProviderHomeUiState.Success ?: return@update state
+                    success.copy(
+                        content = success.content.copy(
+                            upcomingOrders = upcomingAgendaAppointments(list, now),
+                        ),
+                        now = now,
+                    ).withAgendaDatePreserved(now.toLocalDate())
+                }
+            }
+        }
         loadHome()
         refreshUnreadCount()
     }
@@ -63,6 +88,8 @@ class ProviderHomeViewModel @Inject constructor(
             ProviderHomeEvent.ViewFullAgendaClicked -> emitEffect(ProviderHomeEffect.NavigateToAgenda)
             ProviderHomeEvent.ConfigureAgendaClicked -> emitEffect(ProviderHomeEffect.NavigateToAgendaConfig)
             is ProviderHomeEvent.OrderClicked -> emitEffect(ProviderHomeEffect.NavigateToOrderDetail(event.orderId))
+            is ProviderHomeEvent.AgendaDateSelected -> updateAgendaSelection(event.date)
+            is ProviderHomeEvent.AgendaMonthChanged -> updateAgendaMonth(event.month)
             ProviderHomeEvent.NavigateToSettings -> emitEffect(ProviderHomeEffect.NavigateToSettings)
             ProviderHomeEvent.NavigateToFavorites -> emitEffect(ProviderHomeEffect.NavigateToFavorites)
             ProviderHomeEvent.NavigateToHelp -> emitEffect(ProviderHomeEffect.NavigateToHelp)
@@ -109,11 +136,16 @@ class ProviderHomeViewModel @Inject constructor(
                     is AppResult.Success -> {
                         val now = nowInArgentina(clock)
                         val agenda = upcomingAgendaAppointments(result.data.upcomingOrders, now)
-                        _uiState.update {
+                        val today = now.toLocalDate()
+                        _uiState.update { current ->
+                            val previous = current as? ProviderHomeUiState.Success
                             ProviderHomeUiState.Success(
                                 content = result.data.copy(upcomingOrders = agenda),
                                 now = now,
-                            )
+                                selectedAgendaDate = previous?.selectedAgendaDate ?: today,
+                                visibleAgendaMonth = previous?.visibleAgendaMonth ?: YearMonth.from(today),
+                                userPickedAgendaDate = previous?.userPickedAgendaDate == true,
+                            ).withAgendaDatePreserved(today)
                         }
                     }
                     is AppResult.Error -> {
@@ -139,7 +171,45 @@ class ProviderHomeViewModel @Inject constructor(
         }
     }
 
+    private fun updateAgendaSelection(date: LocalDate) {
+        _uiState.update { state ->
+            val success = state as? ProviderHomeUiState.Success ?: return@update state
+            success.copy(
+                selectedAgendaDate = date,
+                visibleAgendaMonth = YearMonth.from(date),
+                userPickedAgendaDate = true,
+            )
+        }
+    }
+
+    private fun updateAgendaMonth(month: YearMonth) {
+        _uiState.update { state ->
+            val success = state as? ProviderHomeUiState.Success ?: return@update state
+            val today = success.now.toLocalDate()
+            val date = defaultAgendaDateInMonth(
+                month = month,
+                today = today,
+                fallbackDay = success.selectedAgendaDate.dayOfMonth,
+            )
+            success.copy(
+                visibleAgendaMonth = month,
+                selectedAgendaDate = date,
+                userPickedAgendaDate = true,
+            )
+        }
+    }
+
     private fun emitEffect(effect: ProviderHomeEffect) {
         viewModelScope.launch { _effects.send(effect) }
     }
+}
+
+private fun ProviderHomeUiState.Success.withAgendaDatePreserved(
+    today: LocalDate,
+): ProviderHomeUiState.Success {
+    if (userPickedAgendaDate) return this
+    return copy(
+        selectedAgendaDate = today,
+        visibleAgendaMonth = YearMonth.from(today),
+    )
 }

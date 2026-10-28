@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 
 @Composable
 fun NotificationsRoute(
@@ -17,6 +18,7 @@ fun NotificationsRoute(
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
     val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {

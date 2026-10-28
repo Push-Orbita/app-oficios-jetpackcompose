@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 
 @Composable
 fun ServicesRoute(
@@ -19,9 +20,10 @@ fun ServicesRoute(
     viewModel: ServicesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val toastController = LocalOficiosToastController.current
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) viewModel.load() }
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) viewModel.onResume() }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
@@ -31,7 +33,7 @@ fun ServicesRoute(
                 ServicesEffect.NavigateBack -> onNavigateBack()
                 ServicesEffect.NavigateToAdd -> onNavigateToAdd()
                 is ServicesEffect.NavigateToEdit -> onNavigateToEdit(effect.serviceId)
-                is ServicesEffect.ShowMessage -> onShowMessage(effect.message)
+                is ServicesEffect.ShowMessage -> toastController.showSuccess(effect.message)
             }
         }
     }

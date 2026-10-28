@@ -126,6 +126,7 @@ fun LoginScreen(
                 placeholder = stringResource(R.string.auth_email_label),
                 floatingLabel = false,
                 isError = fieldsInError && (credentialsInvalid || uiState.emailError != null),
+                supportingText = uiState.emailError.takeIf { uiState.hasAttemptedSubmit },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
@@ -139,6 +140,7 @@ fun LoginScreen(
                 placeholder = stringResource(R.string.auth_password_label),
                 floatingLabel = false,
                 isError = fieldsInError && (credentialsInvalid || uiState.passwordError != null),
+                supportingText = uiState.passwordError.takeIf { uiState.hasAttemptedSubmit },
                 modifier = Modifier.focusRequester(passwordFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
@@ -163,7 +165,7 @@ fun LoginScreen(
             OficiosButton(
                 text = stringResource(R.string.auth_login_button),
                 onClick = { onEvent(LoginEvent.Submit) },
-                enabled = !uiState.isLoading,
+                enabled = uiState.canSubmit && !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Small,

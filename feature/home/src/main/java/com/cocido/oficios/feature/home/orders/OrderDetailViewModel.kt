@@ -60,25 +60,25 @@ class OrderDetailViewModel @Inject constructor(
         when (event) {
             OrderDetailEvent.Retry -> load(fromRefresh = false)
             OrderDetailEvent.Refresh -> load(fromRefresh = true)
-            OrderDetailEvent.Accept -> runAction { orderUseCases.acceptOrder(orderId) }
-            is OrderDetailEvent.Reject -> runAction { orderUseCases.rejectOrder(orderId, event.reason) }
+            OrderDetailEvent.Accept -> runAction("Pedido aceptado.") { orderUseCases.acceptOrder(orderId) }
+            is OrderDetailEvent.Reject -> runAction("Pedido rechazado.") { orderUseCases.rejectOrder(orderId, event.reason) }
             OrderDetailEvent.OpenCounterOffer -> emitEffect(OrderDetailEffect.NavigateToCounterOffer(orderId))
             OrderDetailEvent.AcceptCounterOffer -> {
                 val counterOfferId = (uiState.value as? OrderDetailUiState.Success)?.order?.pendingCounterOffer?.id
-                if (counterOfferId != null) runAction { orderUseCases.acceptCounterOffer(counterOfferId) }
+                if (counterOfferId != null) runAction("Contrapropuesta aceptada.") { orderUseCases.acceptCounterOffer(counterOfferId) }
             }
             OrderDetailEvent.RejectCounterOffer -> {
                 val counterOfferId = (uiState.value as? OrderDetailUiState.Success)?.order?.pendingCounterOffer?.id
-                if (counterOfferId != null) runAction { orderUseCases.rejectCounterOffer(counterOfferId) }
+                if (counterOfferId != null) runAction("Contrapropuesta rechazada.") { orderUseCases.rejectCounterOffer(counterOfferId) }
             }
-            OrderDetailEvent.CancelBeforeAcceptance -> runAction { orderUseCases.cancelOrderBeforeAcceptance(orderId) }
+            OrderDetailEvent.CancelBeforeAcceptance -> runAction("Pedido cancelado.") { orderUseCases.cancelOrderBeforeAcceptance(orderId) }
             is OrderDetailEvent.CancelConfirmed -> {
                 val motivo = event.reason?.trim().orEmpty()
                 if (motivo.isEmpty()) {
                     emitEffect(OrderDetailEffect.ShowMessage("Ingrese el motivo de cancelación."))
                     return
                 }
-                runAction { orderUseCases.cancelConfirmedOrder(orderId, motivo) }
+                runAction("Pedido cancelado.") { orderUseCases.cancelConfirmedOrder(orderId, motivo) }
             }
             OrderDetailEvent.OpenWorkerProfile -> {
                 val workerId = (uiState.value as? OrderDetailUiState.Success)?.order?.workerId ?: return
@@ -369,14 +369,17 @@ class OrderDetailViewModel @Inject constructor(
         }
     }
 
-    private fun runAction(block: suspend () -> AppResult<Unit>) {
+    private fun runAction(successMessage: String, block: suspend () -> AppResult<Unit>) {
         val current = uiState.value
         if (current !is OrderDetailUiState.Success) return
 
         viewModelScope.launch {
             _uiState.update { current.copy(isActionInProgress = true) }
             when (val result = block()) {
-                is AppResult.Success -> load()
+                is AppResult.Success -> {
+                    emitEffect(OrderDetailEffect.ShowSuccess(successMessage))
+                    load(fromRefresh = true)
+                }
                 is AppResult.Error -> {
                     _uiState.update { current.copy(isActionInProgress = false) }
                     emitEffect(OrderDetailEffect.ShowMessage(result.error.userMessage()))

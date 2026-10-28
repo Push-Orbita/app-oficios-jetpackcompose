@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Canvas del ícono de system splash: cuadrado 288dp.
+        El isotipo vive DENTRO del vector (group scale al 50% = 144 unidades)
+        para que el ImageView API 12+ no escale el dibujo alto al diámetro
+        del círculo (192dp sin icon background / 160dp con).
+    -->
+    <dimen name="oficios_splash_icon_canvas">288dp</dimen>
+</resources>

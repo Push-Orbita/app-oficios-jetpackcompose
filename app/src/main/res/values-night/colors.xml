@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Oscuro = navy Figma Mode 1. -->
+    <color name="oficios_splash_background">#FF00358B</color>
+</resources>

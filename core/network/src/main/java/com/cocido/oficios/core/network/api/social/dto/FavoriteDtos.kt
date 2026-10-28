@@ -11,6 +11,10 @@ data class FavoritoItemDto(
     val profilePhotoUrl: String? = null,
     val specialtyLabel: String? = null,
     val rating: Double? = null,
+    val promedio: Double? = null,
+    val puntajeGlobal: Double? = null,
+    val cantidadCalificaciones: Int? = null,
+    val reviewCount: Int? = null,
     val verified: Boolean = false,
     val createdAt: String? = null,
 )

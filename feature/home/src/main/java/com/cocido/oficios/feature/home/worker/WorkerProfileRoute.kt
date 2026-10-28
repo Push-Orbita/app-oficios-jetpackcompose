@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
 
@@ -24,6 +25,7 @@ fun WorkerProfileRoute(
     viewModel: WorkerProfileViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    RefreshOnResume(viewModel::onResume)
     val favoriteSavedMessage = stringResource(R.string.home_worker_favorite_saved)
     val favoriteRemovedMessage = stringResource(R.string.home_worker_favorite_removed)
     val rateUnavailableMessage = stringResource(R.string.home_worker_rate_unavailable)

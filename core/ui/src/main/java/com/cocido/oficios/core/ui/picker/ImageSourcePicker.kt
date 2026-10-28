@@ -25,8 +25,12 @@ import androidx.core.content.ContextCompat
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.common.contract.ImageUploadContract
+import com.cocido.oficios.core.ui.crop.ImageCropMode
+import com.cocido.oficios.core.ui.crop.ImageCropRequest
+import com.cocido.oficios.core.ui.crop.prepareCropSource
+import com.cocido.oficios.core.ui.crop.rememberImageCropper
 import com.cocido.oficios.core.ui.file.createCameraImageCapture
-import com.cocido.oficios.core.ui.file.resolveUriToFilePath
 
 class ImageSourcePickerState internal constructor(
     val requestImage: () -> Unit,
@@ -40,19 +44,55 @@ fun rememberImageSourcePicker(
     galleryLabel: String,
     cancelLabel: String,
     onImageSelected: (String?) -> Unit,
+    onPickError: (String) -> Unit = {},
+    filePrefix: String = "imagen",
+    cropMode: ImageCropMode = ImageCropMode.Document,
 ): ImageSourcePickerState {
     val context = LocalContext.current
     var showSheet by remember { mutableStateOf(false) }
     var pendingCameraPath by remember { mutableStateOf<String?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val cropper = rememberImageCropper()
+
+    fun openCrop(uri: Uri?, path: String?) {
+        runCatching { prepareCropSource(context, uri, path, filePrefix) }
+            .onSuccess { workingPath ->
+                cropper.start(
+                    ImageCropRequest(
+                        sourcePath = workingPath,
+                        mode = cropMode,
+                        filePrefix = filePrefix,
+                        onDone = onImageSelected,
+                        onCancel = { onImageSelected(null) },
+                        onError = { message ->
+                            onPickError(message)
+                            onImageSelected(null)
+                        },
+                    ),
+                )
+            }
+            .onFailure {
+                onPickError(ImageUploadContract.IMAGE_READ_FAILED_MESSAGE)
+                onImageSelected(null)
+            }
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        onImageSelected(uri?.let { resolveUriToFilePath(context, it) })
+        if (uri == null) {
+            onImageSelected(null)
+            return@rememberLauncherForActivityResult
+        }
+        openCrop(uri = uri, path = null)
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        onImageSelected(if (success) pendingCameraPath else null)
+        val rawPath = pendingCameraPath
         pendingCameraPath = null
+        if (!success || rawPath == null) {
+            onImageSelected(null)
+            return@rememberLauncherForActivityResult
+        }
+        openCrop(uri = null, path = rawPath)
     }
 
     fun launchCamera() {
@@ -81,6 +121,8 @@ fun rememberImageSourcePicker(
         ModalBottomSheet(
             onDismissRequest = { showSheet = false },
             sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
             Column(
                 modifier = Modifier

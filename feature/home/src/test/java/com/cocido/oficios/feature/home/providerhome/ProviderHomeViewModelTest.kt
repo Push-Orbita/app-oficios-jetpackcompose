@@ -9,10 +9,19 @@ import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.domain.model.ServiceOrderListItem
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.repository.NotificationsRepository
+import com.cocido.oficios.domain.model.CreateServiceRequestParams
+import com.cocido.oficios.domain.model.GeoPoint
+import com.cocido.oficios.domain.model.ServiceOrder
+import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.usecase.GetProviderHomeUseCase
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import com.cocido.oficios.feature.home.FakeHomeRepository
 import java.time.Clock
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -76,7 +85,7 @@ class ProviderHomeViewModelTest {
     }
 
     @Test
-    fun `past unclosed bookings are dropped from home agenda`() = runTest(testDispatcher) {
+    fun `past unclosed bookings stay on the home agenda`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             percent = 100,
             upcoming = listOf(
@@ -84,12 +93,13 @@ class ProviderHomeViewModelTest {
                 agendaOrder(2, "2026-09-29T07:00:00", BookingStatus.IN_PROGRESS),
                 agendaOrder(3, "2026-10-05T12:00:00", BookingStatus.IN_PROGRESS),
                 agendaOrder(4, "2026-10-22T09:00:00", BookingStatus.CONFIRMED),
+                agendaOrder(5, "2026-09-20T09:00:00", BookingStatus.CONFIRMED),
             ),
         )
         advanceUntilIdle()
 
         val content = successContent(viewModel)
-        assertEquals(listOf(4L), content.upcomingOrders.map { it.id })
+        assertEquals(listOf(4L, 3L, 2L, 1L), content.upcomingOrders.map { it.id })
     }
 
     @Test
@@ -179,7 +189,47 @@ class ProviderHomeViewModelTest {
     }
 
     @Test
-    fun `today and future stay sorted ascending`() = runTest(testDispatcher) {
+    fun `agenda selection starts on today even with past bookings`() = runTest(testDispatcher) {
+        val today = LocalDate.of(2026, 10, 22)
+        val viewModel = createViewModel(
+            percent = 100,
+            upcoming = listOf(
+                agendaOrder(1, "2026-10-05T12:00:00", BookingStatus.IN_PROGRESS),
+                agendaOrder(2, "2026-09-25T07:00:00", BookingStatus.IN_PROGRESS),
+                agendaOrder(3, "2026-10-22T09:00:00", BookingStatus.CONFIRMED),
+            ),
+            clock = clockAt(2026, 10, 22, 9, 15),
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as ProviderHomeUiState.Success
+        assertEquals(today, state.selectedAgendaDate)
+        assertEquals(YearMonth.of(2026, 10), state.visibleAgendaMonth)
+        assertFalse(state.userPickedAgendaDate)
+    }
+
+    @Test
+    fun `user picked agenda date survives refresh and is not stolen by past bookings`() = runTest(testDispatcher) {
+        val picked = LocalDate.of(2026, 10, 5)
+        val viewModel = createViewModel(
+            percent = 100,
+            upcoming = listOf(
+                agendaOrder(1, "2026-10-05T12:00:00", BookingStatus.IN_PROGRESS),
+            ),
+            clock = clockAt(2026, 10, 22, 9, 15),
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(ProviderHomeEvent.AgendaDateSelected(picked))
+        viewModel.onVisible()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as ProviderHomeUiState.Success
+        assertEquals(picked, state.selectedAgendaDate)
+        assertTrue(state.userPickedAgendaDate)
+    }
+
+    @Test
+    fun `today and future stay sorted newest first`() = runTest(testDispatcher) {
         val viewModel = createViewModel(
             percent = 100,
             upcoming = listOf(
@@ -190,7 +240,7 @@ class ProviderHomeViewModelTest {
         advanceUntilIdle()
 
         val content = successContent(viewModel)
-        assertEquals(listOf(1L, 2L), content.upcomingOrders.map { it.id })
+        assertEquals(listOf(2L, 1L), content.upcomingOrders.map { it.id })
     }
 
     private fun successContent(viewModel: ProviderHomeViewModel): ProviderHomeContent {
@@ -228,11 +278,14 @@ class ProviderHomeViewModelTest {
         getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(
             FakeUnreadNotificationsRepository(),
         ),
+        orderUseCases = OrderUseCases(FakeProviderHomeOrdersRepository()),
         clock = clock,
     )
 
-    private fun fixedClock(): Clock {
-        val instant = ZonedDateTime.of(2026, 10, 21, 3, 17, 0, 0, DisplayDateTime.ARGENTINA).toInstant()
+    private fun fixedClock(): Clock = clockAt(2026, 10, 21, 3, 17)
+
+    private fun clockAt(year: Int, month: Int, day: Int, hour: Int, minute: Int): Clock {
+        val instant = ZonedDateTime.of(year, month, day, hour, minute, 0, 0, DisplayDateTime.ARGENTINA).toInstant()
         return Clock.fixed(instant, DisplayDateTime.ARGENTINA)
     }
 
@@ -281,4 +334,39 @@ private class FakeUnreadNotificationsRepository : NotificationsRepository {
             ),
         )
     }
+}
+
+private class FakeProviderHomeOrdersRepository : OrderRepository {
+    override val ordersChanged: SharedFlow<Unit> = MutableSharedFlow()
+    override suspend fun getWorkerOrders() = AppResult.Success(emptyList<ServiceOrderListItem>())
+    override suspend fun getClientOrders() = unused()
+    override suspend fun createServiceRequest(params: CreateServiceRequestParams) = unused()
+    override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> = unused()
+    override suspend fun acceptOrder(orderId: Long) = unused()
+    override suspend fun rejectOrder(orderId: Long, reason: String) = unused()
+    override suspend fun sendCounterOffer(
+        orderId: Long,
+        newStartIso: String,
+        newEndIso: String,
+        newPrice: Double?,
+    ) = unused()
+    override suspend fun acceptCounterOffer(counterOfferId: Long) = unused()
+    override suspend fun rejectCounterOffer(counterOfferId: Long) = unused()
+    override suspend fun cancelOrderBeforeAcceptance(orderId: Long) = unused()
+    override suspend fun cancelConfirmedOrder(orderId: Long, reason: String?) = unused()
+    override suspend fun getBookingTracking(bookingId: Long) = unused()
+    override suspend fun findOrderIdForBooking(bookingId: Long) = unused()
+    override suspend fun markEnRoute(bookingId: Long, location: GeoPoint) = unused()
+    override suspend fun markArrived(bookingId: Long, location: GeoPoint) = unused()
+    override suspend fun getCompletionCode(bookingId: Long) = unused()
+    override suspend fun resendCompletionCode(bookingId: Long) = unused()
+    override suspend fun finalizeBooking(bookingId: Long, completionCode: String) = unused()
+    override suspend fun submitRating(
+        bookingId: Long,
+        quality: Int,
+        punctuality: Int,
+        comment: String?,
+    ) = unused()
+
+    private fun unused(): Nothing = error("unused")
 }

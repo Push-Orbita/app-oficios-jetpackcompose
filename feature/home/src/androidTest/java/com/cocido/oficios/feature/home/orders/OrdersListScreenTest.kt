@@ -64,6 +64,8 @@ class OrdersListScreenTest {
         }
         composeTestRule.onNodeWithText("Activos").assertIsDisplayed()
         composeTestRule.onNodeWithText("Historial").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Orden de sus pedidos: Más recientes")
+            .assertIsDisplayed()
         composeTestRule.onNodeWithText("No tiene pedidos activos").assertIsDisplayed()
     }
 

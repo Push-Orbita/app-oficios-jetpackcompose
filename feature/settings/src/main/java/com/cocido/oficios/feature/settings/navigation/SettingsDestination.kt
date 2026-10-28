@@ -16,4 +16,5 @@ object SettingsDestination {
     const val commercialLocal = "settings/commercial-local"
     const val changePassword = "settings/change-password"
     const val deleteAccount = "settings/delete-account"
+    const val configuration = "settings/configuration"
 }

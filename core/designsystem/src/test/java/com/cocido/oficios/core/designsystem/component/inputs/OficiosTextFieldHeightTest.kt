@@ -72,7 +72,7 @@ class OficiosTextFieldHeightTest {
                 onValueChange = {},
                 label = "Correo",
                 isError = true,
-                supportingText = "El email es obligatorio",
+                supportingText = "El correo es obligatorio",
                 modifier = Modifier.fillMaxWidth(),
             )
         },

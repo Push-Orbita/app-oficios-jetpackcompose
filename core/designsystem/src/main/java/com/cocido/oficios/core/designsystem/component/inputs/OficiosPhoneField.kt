@@ -1,7 +1,7 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -46,7 +46,7 @@ object PhoneCountryOptions {
         dialCode = "+54",
         flagEmoji = "🇦🇷",
         countryName = "Argentina",
-        localExample = "9 3705219109",
+        localExample = "9 370 5219109",
     )
 
     // Oficios Formosa opera solo en Argentina; la lista queda abierta a
@@ -73,23 +73,29 @@ fun OficiosPhoneField(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val countrySelectable = countries.size > 1
+    val phoneKeyboard = keyboardOptions.copy(keyboardType = KeyboardType.Phone)
+
+    if (!countrySelectable) {
+        OficiosTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = label,
+            placeholder = selectedCountry.localExample,
+            prefix = selectedCountry.dialCode,
+            modifier = modifier.then(numberModifier),
+            isError = isError,
+            supportingText = supportingText,
+            keyboardOptions = phoneKeyboard,
+            keyboardActions = keyboardActions,
+        )
+        return
+    }
 
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
-        if (!countrySelectable) {
-            OficiosTextField(
-                value = "${selectedCountry.flagEmoji} ${selectedCountry.dialCode}",
-                onValueChange = {},
-                label = countryLabel,
-                modifier = Modifier.width(COUNTRY_FIELD_WIDTH),
-                readOnly = true,
-                enabled = false,
-                isError = isError,
-            )
-        } else {
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it },
@@ -132,18 +138,19 @@ fun OficiosPhoneField(
                 }
             }
         }
+        Box(modifier = Modifier.weight(1f)) {
+            OficiosTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = label,
+                placeholder = selectedCountry.localExample,
+                modifier = numberModifier,
+                isError = isError,
+                supportingText = supportingText,
+                keyboardOptions = phoneKeyboard,
+                keyboardActions = keyboardActions,
+            )
         }
-        OficiosTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = label,
-            placeholder = selectedCountry.localExample,
-            modifier = numberModifier.weight(1f),
-            isError = isError,
-            supportingText = supportingText,
-            keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Phone),
-            keyboardActions = keyboardActions,
-        )
     }
 }
 
@@ -158,7 +165,8 @@ private fun OficiosPhoneFieldPreview() {
             onValueChange = {},
             selectedCountry = PhoneCountryOptions.ARGENTINA,
             onCountrySelected = {},
-            label = "WhatsApp",
+            label = "Celular (WhatsApp)",
+            supportingText = "Ingrese el número local, con el 9 de móvil.",
         )
     }
 }

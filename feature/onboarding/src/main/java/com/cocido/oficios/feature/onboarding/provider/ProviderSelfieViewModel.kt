@@ -72,6 +72,8 @@ class ProviderSelfieViewModel @Inject constructor(
         it.copy(imagePath = path, error = null)
     }
 
+    fun onPickError(message: String) = _uiState.update { it.copy(error = message) }
+
     fun submit() {
         val state = _uiState.value
         val imagePath = state.imagePath

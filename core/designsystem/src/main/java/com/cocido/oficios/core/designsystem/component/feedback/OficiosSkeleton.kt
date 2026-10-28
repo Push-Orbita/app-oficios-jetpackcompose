@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.feedback
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -31,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.theme.LocalReducedMotion
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -53,7 +53,7 @@ fun OficiosSkeleton(
     Spacer(
         modifier = modifier
             .graphicsLayer { alpha = pulse.value }
-            .background(color = OficiosColorOutlineFill, shape = shape),
+            .background(color = MaterialTheme.colorScheme.outline, shape = shape),
     )
 }
 

@@ -1,5 +1,6 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -107,6 +108,69 @@ class OficiosTextFieldLabelTest {
     @Test
     fun labelArriba_contrasena() = assertLabelAbove("Repetir contraseña", focused = true) {
         OficiosPasswordField(value = "secreto", onValueChange = {}, label = "Repetir contraseña", modifier = Modifier.fillMaxWidth())
+    }
+
+    @Test
+    fun calleYNumeroNoSeSolapan_360dpFuente130() {
+        composeTestRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, 1.3f)) {
+                OficiosTheme {
+                    Column(
+                        modifier = Modifier.width(360.dp).padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                    ) {
+                        Box(Modifier.testTag("calle")) {
+                            OficiosTextField(
+                                value = "O'Higgins",
+                                onValueChange = {},
+                                label = "Calle",
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        Box(Modifier.testTag("numero")) {
+                            OficiosTextField(
+                                value = "206",
+                                onValueChange = {},
+                                label = "Número",
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        composeTestRule.waitForIdle()
+        val calleLabel = composeTestRule.onNode(
+            hasText("Calle") and !hasSetTextAction(),
+            useUnmergedTree = true,
+        ).fetchSemanticsNode()
+        val numeroLabel = composeTestRule.onNode(
+            hasText("Número") and !hasSetTextAction(),
+            useUnmergedTree = true,
+        ).fetchSemanticsNode()
+        val calleBorder = composeTestRule.onNode(
+            hasTestTag(OFICIOS_TEXT_FIELD_BORDER_TEST_TAG) and hasAnyAncestor(hasTestTag("calle")),
+            useUnmergedTree = true,
+        ).fetchSemanticsNode()
+        val numeroBorder = composeTestRule.onNode(
+            hasTestTag(OFICIOS_TEXT_FIELD_BORDER_TEST_TAG) and hasAnyAncestor(hasTestTag("numero")),
+            useUnmergedTree = true,
+        ).fetchSemanticsNode()
+        val calleLabelBottom = calleLabel.positionInRoot.y + calleLabel.size.height
+        val numeroLabelTop = numeroLabel.positionInRoot.y
+        assertTrue(
+            "Calle y Número se superponen (calleBottom=$calleLabelBottom, numeroTop=$numeroLabelTop)",
+            calleLabelBottom <= numeroLabelTop + 1f,
+        )
+        assertTrue(
+            "el label Calle entra en el campo Número",
+            calleLabelBottom <= numeroBorder.positionInRoot.y + 1f,
+        )
+        assertTrue(
+            "el label Número entra en el campo Calle",
+            numeroLabelTop + 1f >= calleBorder.positionInRoot.y + calleBorder.size.height,
+        )
     }
 
     @Test

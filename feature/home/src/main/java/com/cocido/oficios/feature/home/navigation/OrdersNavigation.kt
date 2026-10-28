@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.navigation
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -7,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.cocido.oficios.feature.home.orders.CounterOfferRoute
 import com.cocido.oficios.feature.home.orders.CreateOrderRoute
+import com.cocido.oficios.feature.home.orders.MisUbicacionesRoute
 import com.cocido.oficios.feature.home.orders.OrderDetailRoute
 import com.cocido.oficios.feature.home.orders.OrdersListRoute
 import com.cocido.oficios.feature.home.components.ClientHomeTab
@@ -27,7 +30,10 @@ fun NavGraphBuilder.ordersScreen(
     composable(
         route = OrdersDestination.createOrder,
         arguments = listOf(navArgument("workerId") { type = NavType.LongType }),
-    ) {
+    ) { entry ->
+        val pickedLocationId by entry.savedStateHandle
+            .getStateFlow(SELECTED_DOMICILIO_KEY, -1L)
+            .collectAsState()
         CreateOrderRoute(
             onNavigateBack = { navController.popBackStack() },
             onNavigateHome = {
@@ -38,8 +44,25 @@ fun NavGraphBuilder.ordersScreen(
                     }
                 }
             },
-            onNavigateToAddLocation = {
-                navController.navigate("settings/client-data")
+            onNavigateToAddLocation = { selectedId ->
+                navController.navigate(OrdersDestination.locations(selectedId))
+            },
+            pickedLocationId = pickedLocationId.takeIf { it > 0L },
+            onPickedLocationConsumed = { entry.savedStateHandle.remove<Long>(SELECTED_DOMICILIO_KEY) },
+            onShowMessage = onShowMessage,
+            onTabSelected = { navController.openClientTab(it, settingsRoute = "settings") },
+        )
+    }
+
+    composable(
+        route = OrdersDestination.locations,
+        arguments = listOf(navArgument("selectedId") { type = NavType.LongType; defaultValue = -1L }),
+    ) {
+        MisUbicacionesRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onConfirmed = { selectedId ->
+                navController.previousBackStackEntry?.savedStateHandle?.set(SELECTED_DOMICILIO_KEY, selectedId)
+                navController.popBackStack()
             },
             onShowMessage = onShowMessage,
             onTabSelected = { navController.openClientTab(it, settingsRoute = "settings") },
@@ -96,3 +119,5 @@ fun NavGraphBuilder.ordersScreen(
         )
     }
 }
+
+private const val SELECTED_DOMICILIO_KEY = "selectedDomicilioId"

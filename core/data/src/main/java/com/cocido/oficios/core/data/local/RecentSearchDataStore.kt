@@ -41,8 +41,17 @@ class RecentSearchDataStore @Inject constructor(
         val current = getRecents()
             .filterNot { it.type == entry.type && it.id == entry.id }
         val updated = listOf(entry.copy(timestamp = System.currentTimeMillis())) + current
+        persist(updated.take(MAX_RECENTS))
+    }
+
+    override suspend fun remove(entry: RecentSearchEntry) {
+        val updated = getRecents().filterNot { it.type == entry.type && it.id == entry.id }
+        persist(updated)
+    }
+
+    private suspend fun persist(entries: List<RecentSearchEntry>) {
         context.recentSearchDataStore.edit { preferences ->
-            preferences[ENTRIES_KEY] = json.encodeToString(updated.take(MAX_RECENTS))
+            preferences[ENTRIES_KEY] = json.encodeToString(entries)
         }
     }
 

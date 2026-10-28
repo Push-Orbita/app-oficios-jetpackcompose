@@ -22,6 +22,7 @@ fun HomeSearchEntryField(
     activeFilterCount: Int = 0,
     placeholderMaxLines: Int = 1,
     showMic: Boolean = true,
+    onFieldClick: (() -> Unit)? = null,
 ) {
     val toastController = LocalOficiosToastController.current
     val unavailableMessage = stringResource(
@@ -50,6 +51,7 @@ fun HomeSearchEntryField(
         activeFilterCount = activeFilterCount,
         placeholderMaxLines = placeholderMaxLines,
         keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
+        onClick = onFieldClick,
     )
 }
 

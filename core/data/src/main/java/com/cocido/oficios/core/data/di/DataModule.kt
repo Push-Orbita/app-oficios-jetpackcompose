@@ -9,6 +9,7 @@ import com.cocido.oficios.core.data.logging.AndroidAppLogger
 import com.cocido.oficios.core.data.local.RecentSearchDataStore
 import com.cocido.oficios.core.data.register.RegisterTradeDraftDataStore
 import com.cocido.oficios.core.data.repository.AgendaRepositoryImpl
+import com.cocido.oficios.core.data.repository.AvailabilityRepositoryImpl
 import com.cocido.oficios.core.data.repository.AccountRepositoryImpl
 import com.cocido.oficios.core.data.repository.AuthRepositoryImpl
 import com.cocido.oficios.core.data.repository.CatalogRepositoryImpl
@@ -27,6 +28,7 @@ import com.cocido.oficios.core.data.repository.WorkerProfileRepositoryImpl
 import com.cocido.oficios.core.data.session.SessionManager
 import com.cocido.oficios.core.data.session.SessionPreferencesRepositoryImpl
 import com.cocido.oficios.domain.repository.AgendaRepository
+import com.cocido.oficios.domain.repository.AvailabilityRepository
 import com.cocido.oficios.domain.repository.AccountRepository
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
@@ -164,6 +166,12 @@ abstract class DataModule {
     abstract fun bindAgendaRepository(
         impl: AgendaRepositoryImpl,
     ): AgendaRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAvailabilityRepository(
+        impl: AvailabilityRepositoryImpl,
+    ): AvailabilityRepository
 
     @Binds
     @Singleton

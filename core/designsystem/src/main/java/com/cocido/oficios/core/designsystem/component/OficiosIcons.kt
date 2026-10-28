@@ -34,6 +34,7 @@ object OficiosIcons {
     @DrawableRes val ChevronLeft = R.drawable.ic_lucide_chevron_left
     @DrawableRes val ChevronRight = R.drawable.ic_lucide_chevron_right
     @DrawableRes val ChevronDown = R.drawable.ic_lucide_chevron_down
+    @DrawableRes val Check = R.drawable.ic_lucide_check
     @DrawableRes val Menu = R.drawable.ic_lucide_menu
     @DrawableRes val X = R.drawable.ic_lucide_x
     @DrawableRes val Search = R.drawable.ic_lucide_search
@@ -82,6 +83,8 @@ object OficiosIcons {
     // Edición y acciones
     @DrawableRes val Pencil = R.drawable.ic_lucide_pencil
     @DrawableRes val Redo = R.drawable.ic_lucide_redo
+    @DrawableRes val RotateCw = R.drawable.ic_lucide_rotate_cw
+    @DrawableRes val RefreshCw = R.drawable.ic_lucide_refresh_cw
     @DrawableRes val Eye = R.drawable.ic_lucide_eye
     @DrawableRes val EyeClosed = R.drawable.ic_lucide_eye_closed
     
@@ -91,6 +94,7 @@ object OficiosIcons {
     // Varios
     @DrawableRes val Asterisk = R.drawable.ic_lucide_asterisk
     @DrawableRes val Key = R.drawable.ic_lucide_key
+    @DrawableRes val Settings = R.drawable.ic_lucide_settings
     @DrawableRes val BatteryLow = R.drawable.ic_lucide_battery_low
     @DrawableRes val Signal = R.drawable.ic_lucide_signal
     @DrawableRes val Wifi = R.drawable.ic_lucide_wifi

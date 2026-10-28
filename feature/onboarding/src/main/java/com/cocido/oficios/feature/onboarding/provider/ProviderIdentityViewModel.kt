@@ -137,6 +137,8 @@ class ProviderIdentityViewModel @Inject constructor(
         it.copy(certificatePath = path, uploadError = null)
     }
 
+    fun onPickError(message: String) = _uiState.update { it.copy(uploadError = message) }
+
     fun submit() {
         val state = _uiState.value
         val documento = state.documento.trim()

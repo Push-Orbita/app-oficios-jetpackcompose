@@ -7,4 +7,5 @@ interface RecentSearchRepository {
     suspend fun getRecents(): List<RecentSearchEntry>
     fun observeRecents(): Flow<List<RecentSearchEntry>>
     suspend fun track(entry: RecentSearchEntry)
+    suspend fun remove(entry: RecentSearchEntry)
 }

@@ -496,7 +496,7 @@ private fun SlotForm(
             OficiosButton(
                 text = if (uiState.editingSlotId == null) stringResource(R.string.agenda_save_slot) else stringResource(R.string.agenda_save_changes),
                 onClick = { onEvent(AgendaListEvent.SubmitSlot) },
-                enabled = !uiState.isSavingSlot,
+                enabled = uiState.canSubmitSlot && !uiState.isSavingSlot,
                 loading = uiState.isSavingSlot,
                 modifier = Modifier.fillMaxWidth(),
                 variant = OficiosButtonVariant.Secondary,

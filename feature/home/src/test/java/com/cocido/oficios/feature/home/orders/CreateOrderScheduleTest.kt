@@ -49,6 +49,37 @@ class CreateOrderScheduleTest {
     }
 
     @Test
+    fun `slots with id zero or blocked are not selectable`() {
+        val date = LocalDate.of(2026, 3, 4)
+        val slots = listOf(
+            slot(id = 0, start = date.atTime(10, 0), status = AgendaSlotStatus.BLOQUEADO),
+            slot(id = 0, start = date.atTime(11, 0)),
+            slot(id = 4, start = date.atTime(12, 0)),
+        )
+        assertNull(CreateOrderSchedule.matchingSlot(slots, date, LocalTime.of(10, 0)))
+        assertNull(CreateOrderSchedule.matchingSlot(slots, date, LocalTime.of(11, 0)))
+        assertEquals(4L, CreateOrderSchedule.matchingSlot(slots, date, LocalTime.of(12, 0))?.id)
+        assertEquals(setOf(12), CreateOrderSchedule.availableHoursForDate(slots, date))
+        assertEquals(setOf(10, 11), CreateOrderSchedule.blockedHoursForDate(slots, date))
+        val selectable = CreateOrderSchedule.selectableHours(
+            slots = slots,
+            date = date,
+            ranges = emptyList(),
+            dayHasAvailability = true,
+        )
+        assertEquals(setOf(12), selectable)
+        assertFalse(
+            CreateOrderSchedule.isHourSelectable(
+                hour = LocalTime.of(10, 0),
+                date = date,
+                slots = slots,
+                ranges = emptyList(),
+                dayHasAvailability = true,
+            ),
+        )
+    }
+
+    @Test
     fun `canContinue requires domicilio contacto specialty and datetime`() {
         assertFalse(
             CreateOrderSchedule.canContinue(
@@ -70,13 +101,17 @@ class CreateOrderScheduleTest {
         )
     }
 
-    private fun slot(id: Long, start: LocalDateTime) = AgendaSlot(
+    private fun slot(
+        id: Long,
+        start: LocalDateTime,
+        status: AgendaSlotStatus = AgendaSlotStatus.DISPONIBLE,
+    ) = AgendaSlot(
         id = id,
         subRubroId = 1,
         subRubroLabel = "Albañilería",
         start = start,
         end = start.plusHours(1),
-        status = AgendaSlotStatus.DISPONIBLE,
+        status = status,
         autoAcceptance = false,
     )
 }

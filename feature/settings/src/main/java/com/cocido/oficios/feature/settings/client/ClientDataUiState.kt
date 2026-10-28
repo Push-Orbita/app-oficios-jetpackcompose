@@ -24,7 +24,11 @@ data class ClientDataUiState(
     val contactName: String = "",
     val contactPhone: String = "",
     val contactEmail: String = "",
+    val contactNameError: String? = null,
+    val contactPhoneError: String? = null,
+    val contactEmailError: String? = null,
     val contactFavorite: Boolean = false,
+    val canSaveContact: Boolean = false,
     val originalPhone: String = "",
     val originalPhoneVerified: Boolean = false,
     val addressName: String = "",
@@ -40,11 +44,30 @@ data class ClientDataUiState(
     val addressLatitude: Double? = null,
     val addressLongitude: Double? = null,
     val isLocating: Boolean = false,
+    val addressBarrioError: String? = null,
+    val addressStreetError: String? = null,
+    val addressNumberError: String? = null,
+    val canSaveDomicilio: Boolean = false,
     val addressFavorite: Boolean = false,
     val errorMessage: String? = null,
     val isSaving: Boolean = false,
     val pendingDelete: ClientDataDeleteTarget? = null,
-)
+) {
+    val hasUnsavedEditorChanges: Boolean
+        get() = when (mode) {
+            ClientDataMode.LIST -> false
+            ClientDataMode.CONTACT ->
+                contactName.isNotBlank() || contactPhone.isNotBlank() || contactEmail.isNotBlank()
+            ClientDataMode.DOMICILIO ->
+                addressName.isNotBlank() ||
+                    barrioQuery.isNotBlank() ||
+                    street.isNotBlank() ||
+                    number.isNotBlank() ||
+                    floor.isNotBlank() ||
+                    apartment.isNotBlank() ||
+                    houseTower.isNotBlank()
+        }
+}
 
 sealed interface ClientDataEvent {
     data object Retry : ClientDataEvent

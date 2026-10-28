@@ -14,8 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorTertiary
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import kotlin.math.roundToInt
@@ -53,7 +51,7 @@ fun WorkerReviewCard(
             if (starCount != null && starCount > 0) {
                 Row {
                     repeat(5) { index ->
-                        val tint = if (index < starCount) OficiosColorTertiary else MaterialTheme.colorScheme.outlineVariant
+                        val tint = if (index < starCount) OficiosTheme.colors.accent else MaterialTheme.colorScheme.outlineVariant
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
@@ -67,7 +65,7 @@ fun WorkerReviewCard(
                     Text(
                         text = "Puntualidad: $punctualityScore/5",
                         style = MaterialTheme.typography.labelMedium,
-                        color = OficiosColorMutedText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = OficiosSpacing.xxs),
                     )
                 }
@@ -75,7 +73,7 @@ fun WorkerReviewCard(
                 Text(
                     text = "Puntualidad: $punctualityScore/5",
                     style = MaterialTheme.typography.labelMedium,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -83,7 +81,7 @@ fun WorkerReviewCard(
                 Text(
                     text = comment,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = OficiosSpacing.xxs),
                 )
             }

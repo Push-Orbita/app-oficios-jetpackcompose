@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 
 @Composable
 fun CommercialLocalRoute(
@@ -14,6 +15,7 @@ fun CommercialLocalRoute(
     viewModel: CommercialLocalViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
     val toastController = LocalOficiosToastController.current
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->

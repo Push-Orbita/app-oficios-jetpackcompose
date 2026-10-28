@@ -10,6 +10,7 @@ data class ProviderCommercialLocal(
     val barrioId: Long? = null,
     val barrioName: String? = null,
     val street: String? = null,
+    val number: String? = null,
     val name: String? = null,
 )
 
@@ -36,6 +37,13 @@ data class ManagedProviderService(
     val rubroName: String,
     val isPrimary: Boolean,
     val subServices: List<ManagedProviderSubService>,
+    val workSchedule: List<ManagedWorkSchedule>,
+    val specialtySchedules: List<ManagedSpecialtySchedule> = emptyList(),
+    val localDomicilio: ProviderLocalDomicilioRequest? = null,
+)
+
+data class ManagedSpecialtySchedule(
+    val name: String,
     val workSchedule: List<ManagedWorkSchedule>,
 )
 
@@ -77,7 +85,7 @@ fun ManagedWorkSchedule.expandedDays(): List<String> {
 fun ManagedProviderService.toRubroFullRequest(
     paymentMethods: List<String>,
     servesAtLocal: Boolean = subServices.any { it.servesAtLocal },
-    domicilioLocal: ProviderLocalDomicilioRequest? = null,
+    domicilioLocal: ProviderLocalDomicilioRequest? = this.localDomicilio,
 ): ProviderRubroFullRequest {
     val workDays = workSchedule.flatMap { it.expandedDays() }.distinct()
     val timeSlots = workSchedule

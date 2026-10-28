@@ -28,8 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.LocalReducedMotion
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosMotion
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -108,14 +106,14 @@ fun OficiosAnimatedSuccessOverlay(
                         .clip(CircleShape)
                         .border(
                             width = 2.dp,
-                            color = OficiosColorSuccess.copy(alpha = 0.7f),
+                            color = OficiosTheme.colors.success.copy(alpha = 0.7f),
                             shape = CircleShape,
                         ),
                 )
                 Icon(
                     imageVector = Icons.Outlined.CheckCircle,
                     contentDescription = null,
-                    tint = OficiosColorSuccess,
+                    tint = OficiosTheme.colors.success,
                     modifier = Modifier
                         .size(88.dp)
                         .graphicsLayer {
@@ -136,7 +134,7 @@ fun OficiosAnimatedSuccessOverlay(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorMutedText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.graphicsLayer { alpha = textAlpha.value },
             )

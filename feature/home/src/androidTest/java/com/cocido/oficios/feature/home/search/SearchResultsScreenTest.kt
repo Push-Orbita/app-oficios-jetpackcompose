@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.WorkerSearchFilters
@@ -102,8 +103,9 @@ class SearchResultsScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Sin conexión").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Reintentar").assertIsDisplayed()
+        composeTestRule.onNodeWithText("No pudimos completar la búsqueda").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Sin conexión").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Reintentar").performScrollTo().assertIsDisplayed()
     }
 
     @Test

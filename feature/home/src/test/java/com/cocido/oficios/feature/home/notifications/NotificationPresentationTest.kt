@@ -16,6 +16,8 @@ class NotificationPresentationTest {
         assertEquals(OficiosIcons.Star, notificationIconRes("CALIFICACION_PENDIENTE"))
         assertEquals(OficiosIcons.ShieldCheck, notificationIconRes("KYC_REVISION_DOCUMENTACION"))
         assertEquals(OficiosIcons.BellDot, notificationIconRes("OTRO"))
+        assertEquals(OficiosIcons.BellDot, notificationIconRes(""))
+        assertEquals(OficiosIcons.BellDot, notificationIconRes("   "))
     }
 
     @Test

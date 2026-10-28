@@ -26,6 +26,7 @@ class WorkerSearchMapperTest {
         assertEquals(12L, worker.id)
         assertEquals("Carlos Rodríguez", worker.displayName)
         assertEquals(4.8f, worker.rating)
+        assertEquals(24, worker.reviewCount)
         assertTrue(worker.isVerified)
         assertEquals("Plomería · 5 años", worker.specialtyLabel)
     }
@@ -40,6 +41,29 @@ class WorkerSearchMapperTest {
         val worker = page.toPagedWorkers(WorkerSearchFilters()).items.first()
 
         assertEquals("https://cdn.example.com/avatar.jpg", worker.avatarUrl)
+        assertEquals(1, worker.reviewCount)
+    }
+
+    @Test
+    fun `maps puntajeGlobal when promedio is missing`() {
+        val page = json.decodeFromString(
+            PaginatedResponseDto.serializer(WorkerSearchItemDto.serializer()),
+            """
+            {
+              "data": [{
+                "id": 12,
+                "estado": "VALIDADO",
+                "usuario": { "id": 88, "email": "a@b.c", "emailVerificado": true, "persona": { "nombres": "Ana", "apellido": "Gómez" } },
+                "rubros": [],
+                "reputacion": { "puntajeGlobal": 8.4, "comentariosTotales": 5 }
+              }],
+              "metadata": { "pageNumber": 1, "totalPages": 1, "pageSize": 20, "count": 1 }
+            }
+            """.trimIndent(),
+        )
+        val worker = page.toPagedWorkers(WorkerSearchFilters()).items.first()
+        assertEquals(4.2f, worker.rating!!, 0.01f)
+        assertEquals(5, worker.reviewCount)
     }
 
     private companion object {

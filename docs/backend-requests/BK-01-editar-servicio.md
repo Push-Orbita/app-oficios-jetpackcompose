@@ -14,14 +14,19 @@ Pedido: PATCH (o PUT) de un `trabajador-oficio-rubro` ya creado, con especialida
 
 `POST /sesion` + `DELETE /sesion/{id}` cubren la config de turnos (mismo criterio que PR-9). No hay `PATCH /sesion/{id}`.
 
-## Workaround actual (app)
+## Workaround actual (app) — QA r8
 
-Editar un servicio hace **DELETE `/trabajador-oficio-rubro/{id}`** y después:
+El trabajador **no** tiene `POST`/`PATCH`/`DELETE /trabajador-oficio-sub-rubro` (404 DB03). La app ya no los llama.
 
-- principal → `POST /trabajador-oficio-rubro/full`
-- secundario → `POST /trabajador-oficio-rubro/full/secundario`
+En edición de un rubro cacheado:
 
-Riesgo: si el POST falla después del DELETE, el trabajador queda sin ese rubro (y sin slots/días asociados). El domicilio local no viaja en `GET /trabajador-oficio/me` (`TrabajadorOficioRubroFullDTO` no lo incluye), así que hay que volver a cargarlo si atiende en local.
+- no se borra el rubro ni se hace `POST /full`
+- no se destilda `requiereTurnos` (toggle solo lectura) y **no** se hace `DELETE /sesion`
+- no se agregan/quitan especialidades (lista solo lectura); el alta sigue siendo `POST /full` en un servicio nuevo
+- `POST /sesion` solo si el servicio pasa a requerir turnos
+- horarios: `PUT …/disponibilidad` por especialidad
+
+Sigue faltando el PATCH atómico de este ticket.
 
 ## Contrato pedido
 

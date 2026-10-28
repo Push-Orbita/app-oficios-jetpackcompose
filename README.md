@@ -101,10 +101,14 @@ Proveer un punto de partida sólido que incluya:
 ```bash
 # Windows (usar JBR de Android Studio si el PATH apunta a Java 8)
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-.\gradlew.bat assembleDebug
+.\gradlew.bat assembleProdDebug
+# API de desarrollo (applicationId .dev, convive instalada con prod)
+.\gradlew.bat assembleDevDebug
 ```
 
-Abrir en Android Studio y ejecutar en emulador/dispositivo (minSdk 27).
+Flavors `prod` (default, `https://apioficios.pushsoftware.com.ar/`) y `dev` (`https://apioficiosdev.pushsoftware.com.ar/`, nombre **Oficios DEV**). Sin secretos: las URLs van en `BuildConfig`. `assembleDebug` sigue compilando las variantes debug de ambos flavors.
+
+Abrir en Android Studio y ejecutar en emulador/dispositivo (minSdk 27). Seleccionar `prodDebug` o `devDebug`.
 
 El mapa del pedido lee `MAPS_API_KEY` desde `local.properties` (ese archivo no se versiona). Sin la clave, el detalle muestra la dirección y un botón para abrir Maps. Ver `local.properties.example`.
 

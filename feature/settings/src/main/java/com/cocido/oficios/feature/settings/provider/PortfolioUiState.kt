@@ -12,10 +12,16 @@ data class PortfolioUiState(
     val editingCertificateId: Long? = null,
     val certificateName: String = "",
     val certificateFilePath: String? = null,
+    val certificateFileName: String? = null,
     val currentCertificateUrl: String? = null,
     val pendingDelete: PortfolioDeleteTarget? = null,
     val errorMessage: String? = null,
-)
+) {
+    val canSaveCertificate: Boolean
+        get() = !isSaving &&
+            certificateName.trim().length >= 3 &&
+            (certificateFilePath != null || editingCertificateId != null)
+}
 
 sealed interface PortfolioDeleteTarget {
     data class Gallery(val id: Long) : PortfolioDeleteTarget
@@ -30,7 +36,8 @@ sealed interface PortfolioEvent {
     data class EditCertificate(val item: WorkCertificateItem) : PortfolioEvent
     data object CloseCertificateEditor : PortfolioEvent
     data class CertificateNameChanged(val value: String) : PortfolioEvent
-    data class CertificateFileSelected(val path: String) : PortfolioEvent
+    data class CertificateFileSelected(val path: String, val displayName: String? = null) : PortfolioEvent
+    data object CertificateFileCleared : PortfolioEvent
     data object SaveCertificate : PortfolioEvent
     data class RequestDelete(val target: PortfolioDeleteTarget) : PortfolioEvent
     data object ConfirmDelete : PortfolioEvent

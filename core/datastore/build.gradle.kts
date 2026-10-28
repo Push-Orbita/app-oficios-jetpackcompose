@@ -15,6 +15,13 @@ android {
         minSdk = 27
     }
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -35,4 +42,6 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
 }

@@ -111,6 +111,7 @@ fun ProviderDniRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onFrontImage = viewModel::onFrontImage,
         onBackImage = viewModel::onBackImage,
         onSubmit = viewModel::submit,
+        onPickError = viewModel::onPickError,
     )
 }
 
@@ -125,6 +126,7 @@ fun ProviderSelfieRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         uiState = uiState,
         onImageSelected = viewModel::onImageSelected,
         onSubmit = viewModel::submit,
+        onPickError = viewModel::onPickError,
     )
 }
 
@@ -175,6 +177,8 @@ fun ProviderAvailabilityRoute(onSaved: () -> Unit, modifier: Modifier = Modifier
         onServesAtClientHomeChanged = viewModel::onServesAtClientHomeChanged,
         onServesAtLocalChanged = viewModel::onServesAtLocalChanged,
         onRequiresTurnsChanged = viewModel::onRequiresTurnsChanged,
+        onTurnDurationChanged = viewModel::onTurnDurationChanged,
+        onTurnIntervalChanged = viewModel::onTurnIntervalChanged,
         onSubmit = viewModel::submit,
     )
 }
@@ -207,9 +211,10 @@ fun ProviderLocalRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onBarrioSelected = viewModel::onBarrioSelected,
         onBarrioSuggestionsDismissed = viewModel::dismissBarrioSuggestions,
         onCalleChanged = viewModel::onCalleChanged,
+        onNumeroChanged = viewModel::onNumeroChanged,
         onMapLocationSelected = viewModel::onMapLocationSelected,
-        onUseCurrentLocation = viewModel::useCurrentLocation,
-        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
+        onLocateOnMap = viewModel::locateOnMap,
+        onConfirmPin = viewModel::confirmPin,
         onSubmit = viewModel::submit,
     )
 }

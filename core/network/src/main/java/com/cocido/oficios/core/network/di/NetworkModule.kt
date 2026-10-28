@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.DemoApiService
 import com.cocido.oficios.core.network.api.account.AccountApi
 import com.cocido.oficios.core.network.api.account.WorkGalleryApi
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
+import com.cocido.oficios.core.network.api.availability.AvailabilityApi
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.catalog.CatalogApi
 import com.cocido.oficios.core.network.api.profile.ClientProfileApi
@@ -18,6 +19,8 @@ import com.cocido.oficios.core.network.api.notifications.NotificationsApi
 import com.cocido.oficios.core.network.api.orders.OrdersApi
 import com.cocido.oficios.core.network.api.safety.ReportsApi
 import com.cocido.oficios.core.network.api.social.FavoritesApi
+import com.cocido.oficios.core.network.JsonElementLenientConverterFactory
+import com.cocido.oficios.core.network.UnitResponseConverterFactory
 import com.cocido.oficios.core.network.authenticator.TokenAuthenticator
 import com.cocido.oficios.core.network.interceptor.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -79,6 +82,8 @@ object NetworkModule {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
+            .addConverterFactory(UnitResponseConverterFactory)
+            .addConverterFactory(JsonElementLenientConverterFactory)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
     }
@@ -102,6 +107,8 @@ object NetworkModule {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.DEMO_BASE_URL)
             .client(demoClient)
+            .addConverterFactory(UnitResponseConverterFactory)
+            .addConverterFactory(JsonElementLenientConverterFactory)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
     }
@@ -186,6 +193,12 @@ object NetworkModule {
     @Singleton
     fun provideAgendaApi(@ApiRetrofit retrofit: Retrofit): AgendaApi {
         return retrofit.create(AgendaApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAvailabilityApi(@ApiRetrofit retrofit: Retrofit): AvailabilityApi {
+        return retrofit.create(AvailabilityApi::class.java)
     }
 
     @Provides

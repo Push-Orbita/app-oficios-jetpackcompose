@@ -1,28 +1,50 @@
 package com.cocido.oficios
 
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.SideEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cocido.oficios.core.designsystem.theme.OficiosTheme
-import com.cocido.oficios.navigation.OficiosApp
-import com.cocido.oficios.ui.MainViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import com.cocido.oficios.domain.model.ThemeMode
+import com.cocido.oficios.domain.model.isDark
+import com.cocido.oficios.navigation.OficiosApp
+import com.cocido.oficios.theme.OficiosSystemBars
+import com.cocido.oficios.ui.MainViewModel
 
 @Composable
 fun OficiosRoot(
+    initialThemeMode: ThemeMode = ThemeMode.LIGHT,
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val pendingPushRoute by viewModel.pendingPushRoute.collectAsStateWithLifecycle()
+    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle(initialValue = initialThemeMode)
+    val darkTheme = themeMode.isDark(isSystemInDarkTheme())
+    val view = LocalView.current
 
-    // El diseño de Oficios Formosa tiene un único modo (navy oscuro, "Mode 1" del Figma).
-    // No hay assets ni tokens verificados para modo claro, así que se fuerza siempre
-    // oscuro sin importar el tema del sistema — evita pantallas rotas (logo blanco
-    // invisible, contraste incorrecto) en dispositivos con el sistema en claro.
-    OficiosTheme(darkTheme = true) {
+    SideEffect {
+        val activity = view.context.findComponentActivity() ?: return@SideEffect
+        OficiosSystemBars.apply(activity, darkTheme)
+    }
+
+    OficiosTheme(darkTheme = darkTheme) {
         OficiosApp(
             pendingPushRoute = pendingPushRoute,
             onPushRouteConsumed = viewModel::consumePushRoute,
         )
     }
+}
+
+private fun Context.findComponentActivity(): ComponentActivity? {
+    var current: Context? = this
+    while (current is ContextWrapper) {
+        if (current is ComponentActivity) return current
+        current = current.baseContext
+    }
+    return current as? ComponentActivity
 }

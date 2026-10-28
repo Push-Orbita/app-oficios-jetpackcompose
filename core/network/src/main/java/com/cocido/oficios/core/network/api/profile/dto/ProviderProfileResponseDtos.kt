@@ -3,6 +3,7 @@ package com.cocido.oficios.core.network.api.profile.dto
 import com.cocido.oficios.core.network.api.catalog.dto.BarrioDto
 import com.cocido.oficios.core.network.api.catalog.dto.RubroDto
 import com.cocido.oficios.core.network.api.catalog.dto.SubRubroDto
+import com.cocido.oficios.core.network.api.worker.dto.DomicilioEnrichedDto
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,6 +13,7 @@ data class TrabajadorOficioRubroFullDto(
     val principal: Boolean = false,
     val subRubros: List<TrabajadorOficioSubRubroFullDto> = emptyList(),
     val diasLaborales: List<DiaLaboralSimpleDto> = emptyList(),
+    val domicilioLocal: DomicilioEnrichedDto? = null,
 )
 
 @Serializable
@@ -43,6 +45,7 @@ data class ProviderDomicilioDto(
     val id: Long? = null,
     val barrioId: Long? = null,
     val calle: String? = null,
+    val numero: String? = null,
     val nombre: String? = null,
     val barrio: BarrioDto? = null,
 )

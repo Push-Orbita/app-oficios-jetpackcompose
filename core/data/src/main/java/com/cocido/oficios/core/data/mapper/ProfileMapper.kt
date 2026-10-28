@@ -6,6 +6,7 @@ import com.cocido.oficios.core.network.api.profile.dto.CreateDomicilioLocalReque
 import com.cocido.oficios.core.network.api.profile.dto.CreateDomicilioRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubrubrosRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateHorarioLaboralRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.CreateSesionItemRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateSubrubroRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateContactoRequestDto
@@ -19,6 +20,7 @@ import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.toReplaceDays
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 
@@ -78,9 +80,27 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
             lugarDomicilio = servesAtClientHome,
             lugarLocal = servesAtLocal,
             requiereTurnos = requiresTurns,
+            sesion = if (requiresTurns) {
+                CreateSesionItemRequestDto(
+                    duracion = turnDurationMinutes ?: DEFAULT_TURN_DURATION_MINUTES,
+                    medidaDuracion = DEFAULT_TURN_DURATION_UNIT,
+                    intervalo = turnIntervalMinutes?.toString(),
+                    medidaIntervalo = if (turnIntervalMinutes != null) DEFAULT_TURN_DURATION_UNIT else null,
+                )
+            } else {
+                null
+            },
         )
     },
-    diasLaborales = workDays.map { day ->
+    diasLaborales = weeklyAvailability?.toReplaceDays()?.map { day ->
+        CreateDiaLaboralRequestDto(
+            diaInicio = day.day,
+            diaFin = day.day,
+            horariosLaborales = day.ranges.map { range ->
+                CreateHorarioLaboralRequestDto(horaInicio = range.start, horaFin = range.end)
+            }.ifEmpty { listOf(CreateHorarioLaboralRequestDto("09:00", "18:00")) },
+        )
+    } ?: workDays.map { day ->
         CreateDiaLaboralRequestDto(
             diaInicio = day,
             diaFin = day,
@@ -90,7 +110,8 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
     domicilioLocal = domicilioLocal?.let {
         CreateDomicilioLocalRequestDto(
             barrioId = it.barrioId,
-            calle = it.calle,
+            calle = it.calle?.trim()?.ifBlank { null },
+            numero = it.numero?.trim()?.ifBlank { null },
             nombre = it.nombre,
             latitud = it.latitud,
             longitud = it.longitud,
@@ -98,6 +119,9 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
     },
     metodosPago = paymentMethods.takeIf { it.isNotEmpty() },
 )
+
+private const val DEFAULT_TURN_DURATION_MINUTES = 60
+private const val DEFAULT_TURN_DURATION_UNIT = "minutos"
 
 private fun List<RegisterTradeTimeSlotDraft>.toHorarios(): List<CreateHorarioLaboralRequestDto> =
     filter { it.from.isNotBlank() && it.to.isNotBlank() }

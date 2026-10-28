@@ -14,6 +14,11 @@ import javax.inject.Inject
 class AccountUseCases @Inject constructor(
     private val repository: AccountRepository,
 ) {
+    val profile get() = repository.profile
+    val providerDetails get() = repository.providerDetails
+    val domicilios get() = repository.domicilios
+    val contactos get() = repository.contactos
+
     suspend fun getProfile() = repository.getProfile()
     suspend fun updateProfile(request: UpdateAccountProfileRequest) = repository.updateProfile(request)
     suspend fun changePassword(email: String, password: String, confirmation: String) =

@@ -8,6 +8,8 @@ import com.cocido.oficios.core.data.mapper.toBookingTracking
 import com.cocido.oficios.core.data.mapper.toDomain
 import com.cocido.oficios.core.data.mapper.toListItem
 import com.cocido.oficios.core.data.remote.OrderRemoteDataSource
+import com.cocido.oficios.core.data.cache.CachedValue
+import com.cocido.oficios.core.data.cache.SessionCacheCoordinator
 import com.cocido.oficios.core.network.api.orders.dto.CreateSolicitudServicioRequestDto
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.model.ServiceOrder
@@ -19,6 +21,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 
@@ -26,14 +29,36 @@ import kotlinx.coroutines.withContext
 class OrderRepositoryImpl @Inject constructor(
     private val remoteDataSource: OrderRemoteDataSource,
     private val dispatcherProvider: DispatcherProvider,
+    coordinator: SessionCacheCoordinator,
 ) : OrderRepository {
 
     private val ordersChangedEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     override val ordersChanged: SharedFlow<Unit> = ordersChangedEvents.asSharedFlow()
 
-    private fun <T> AppResult<T>.notifyIfChanged(): AppResult<T> {
-        if (this is AppResult.Success) ordersChangedEvents.tryEmit(Unit)
+    private val clientOrdersCache = CachedValue<List<ServiceOrderListItem>>(coordinator)
+    private val workerOrdersCache = CachedValue<List<ServiceOrderListItem>>(coordinator)
+    override val clientOrders: StateFlow<List<ServiceOrderListItem>?> = clientOrdersCache.state
+    override val workerOrders: StateFlow<List<ServiceOrderListItem>?> = workerOrdersCache.state
+
+    private suspend fun <T> AppResult<T>.notifyIfChanged(): AppResult<T> {
+        if (this is AppResult.Success) {
+            refreshCachedLists()
+            ordersChangedEvents.tryEmit(Unit)
+        }
         return this
+    }
+
+    private suspend fun refreshCachedLists() {
+        if (clientOrdersCache.get() != null) {
+            remoteDataSource.getMisSolicitudesCliente().map { response ->
+                response.data.map { it.toListItem(isWorkerViewing = false) }
+            }.also { if (it is AppResult.Success) clientOrdersCache.set(it.data) }
+        }
+        if (workerOrdersCache.get() != null) {
+            remoteDataSource.getSolicitudesTrabajador().map { response ->
+                response.resolved().solicitudes.map { it.toListItem(isWorkerViewing = true) }
+            }.also { if (it is AppResult.Success) workerOrdersCache.set(it.data) }
+        }
     }
 
     override suspend fun createServiceRequest(params: CreateServiceRequestParams): AppResult<Long> =
@@ -56,14 +81,14 @@ class OrderRepositoryImpl @Inject constructor(
         withContext(dispatcherProvider.io) {
             remoteDataSource.getMisSolicitudesCliente().map { response ->
                 response.data.map { it.toListItem(isWorkerViewing = false) }
-            }
+            }.also { if (it is AppResult.Success) clientOrdersCache.set(it.data) }
         }
 
     override suspend fun getWorkerOrders(): AppResult<List<ServiceOrderListItem>> =
         withContext(dispatcherProvider.io) {
             remoteDataSource.getSolicitudesTrabajador().map { response ->
                 response.resolved().solicitudes.map { it.toListItem(isWorkerViewing = true) }
-            }
+            }.also { if (it is AppResult.Success) workerOrdersCache.set(it.data) }
         }
 
     override suspend fun getOrderDetail(orderId: Long): AppResult<ServiceOrder> =

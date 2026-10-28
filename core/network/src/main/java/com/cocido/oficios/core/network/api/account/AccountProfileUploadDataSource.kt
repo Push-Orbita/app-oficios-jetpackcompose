@@ -5,8 +5,6 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 @Singleton
@@ -25,11 +23,7 @@ class AccountProfileUploadDataSource @Inject constructor(
         val photoPart = photoFilePath?.let { path ->
             val file = File(path)
             require(file.exists() && file.length() > 0L) { "La foto seleccionada no está disponible." }
-            MultipartBody.Part.createFormData(
-                "fotoPerfil",
-                file.name,
-                file.asRequestBody("image/*".toMediaTypeOrNull()),
-            )
+            createProfilePhotoPart(file)
         }
         val photoUrlPart = when {
             photoPart != null -> null

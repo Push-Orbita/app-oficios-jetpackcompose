@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -54,8 +55,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
-import com.cocido.oficios.core.designsystem.theme.OficiosColorErrorBorder
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -89,6 +88,7 @@ fun OficiosTextField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     leadingIcon: ImageVector? = null,
+    prefix: String? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -150,24 +150,22 @@ fun OficiosTextField(
 
     val borderColor = when {
         !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = OficiosAlpha.disabled)
-        isError -> OficiosColorErrorBorder
+        isError -> MaterialTheme.colorScheme.error
         isFocused -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.outline
     }
     val labelColor = when {
-        !enabled -> OficiosColorMutedText
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         isError -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.onSurface
     }
     val valueColor = when {
-        !enabled -> OficiosColorMutedText
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         else -> MaterialTheme.colorScheme.onSurface
     }
-    val containerColor = if (!enabled) {
-        MaterialTheme.colorScheme.surfaceVariant
-    } else {
-        Color.Transparent
-    }
+    val containerColor = MaterialTheme.colorScheme.surface.copy(
+        alpha = if (enabled) 1f else OficiosAlpha.disabled,
+    )
 
     val showValueEllipsis = value.isNotEmpty() && (readOnly || !isFocused)
     val displayedValue = remember(value, visualTransformation) {
@@ -203,7 +201,7 @@ fun OficiosTextField(
             }
         }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         if (fieldLabel.isNotBlank()) {
             Text(
                 text = fieldLabel,
@@ -243,6 +241,14 @@ fun OficiosTextField(
                             modifier = Modifier.size(OficiosComponentSize.iconMd),
                         )
                     }
+                    if (!prefix.isNullOrBlank()) {
+                        Text(
+                            text = prefix,
+                            style = fieldTextStyle,
+                            color = valueColor,
+                            maxLines = 1,
+                        )
+                    }
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -272,7 +278,6 @@ fun OficiosTextField(
                             onValueChange = onValueChange,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .then(modifier)
                                 .then(
                                     if (showValueEllipsis && singleLine) {
                                         Modifier.heightIn(max = valueLineHeightDp)
@@ -285,15 +290,21 @@ fun OficiosTextField(
                                     if (parentBringIntoView != null) {
                                         parentBringIntoView.onFieldFocus(focusState.isFocused, fieldCoordinates)
                                     } else if (focusState.isFocused && fieldSize != IntSize.Zero) {
-                                        scope.launch {
-                                            bringIntoViewRequester.bringIntoView(
-                                                Rect(
-                                                    left = 0f,
-                                                    top = 0f,
-                                                    right = fieldSize.width.toFloat(),
-                                                    bottom = fieldSize.height + ctaClearancePx,
-                                                ),
-                                            )
+                                        val coords = fieldCoordinates
+                                        if (coords != null && coords.isAttached) {
+                                            scope.launch {
+                                                runCatching {
+                                                    withFrameNanos {}
+                                                    bringIntoViewRequester.bringIntoView(
+                                                        Rect(
+                                                            left = 0f,
+                                                            top = 0f,
+                                                            right = fieldSize.width.toFloat(),
+                                                            bottom = fieldSize.height + ctaClearancePx,
+                                                        ),
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 },

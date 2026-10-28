@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings.account
 
+import com.cocido.oficios.domain.validation.AuthValidators
+
 data class ChangePasswordUiState(
     val isLoading: Boolean = true,
     val email: String = "",
@@ -9,7 +11,13 @@ data class ChangePasswordUiState(
     val confirmationError: String? = null,
     val errorMessage: String? = null,
     val isSubmitting: Boolean = false,
-)
+) {
+    val canSubmit: Boolean
+        get() = AuthValidators.validatePassword(password) == null &&
+            AuthValidators.validatePasswordConfirmation(password, confirmation) == null
+    val hasUnsavedChanges: Boolean
+        get() = password.isNotBlank() || confirmation.isNotBlank()
+}
 
 sealed interface ChangePasswordEvent {
     data class PasswordChanged(val value: String) : ChangePasswordEvent

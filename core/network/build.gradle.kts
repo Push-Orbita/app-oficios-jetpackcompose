@@ -14,8 +14,20 @@ android {
 
     defaultConfig {
         minSdk = 27
-        buildConfigField("String", "BASE_URL", "\"https://apioficios.pushsoftware.com.ar/\"")
         buildConfigField("String", "DEMO_BASE_URL", "\"https://jsonplaceholder.typicode.com/\"")
+    }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("prod") {
+            dimension = "environment"
+            isDefault = true
+            buildConfigField("String", "BASE_URL", "\"https://apioficios.pushsoftware.com.ar/\"")
+        }
+        create("dev") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"https://apioficiosdev.pushsoftware.com.ar/\"")
+        }
     }
 
     compileOptions {
