@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -52,8 +53,9 @@ fun OficiosCodeInput(
 ) {
     val focusRequester = remember { FocusRequester() }
     
-    // Auto-focus cuando se monta el componente
+    // Auto-focus después del primer frame para evitar IllegalStateException
     LaunchedEffect(Unit) {
+        withFrameNanos {}
         focusRequester.requestFocus()
     }
     

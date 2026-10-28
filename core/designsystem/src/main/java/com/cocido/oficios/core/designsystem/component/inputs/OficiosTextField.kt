@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -293,7 +294,7 @@ fun OficiosTextField(
                                         if (coords != null && coords.isAttached) {
                                             scope.launch {
                                                 runCatching {
-                                                    kotlinx.coroutines.withFrameNanos {}
+                                                    withFrameNanos {}
                                                     bringIntoViewRequester.bringIntoView(
                                                         Rect(
                                                             left = 0f,
