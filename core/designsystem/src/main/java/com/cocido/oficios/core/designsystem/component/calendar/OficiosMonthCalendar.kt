@@ -224,12 +224,12 @@ private fun DayCell(
     val colors = OficiosTheme.colors
     val textColor = when {
         selected -> colors.onSelected
-        highlighted -> colors.onPrimary
+        highlighted -> MaterialTheme.colorScheme.primary
         !inMonth || !enabled -> if (!inMonth) MaterialTheme.colorScheme.outline else colors.disabled
         else -> MaterialTheme.colorScheme.onSurface
     }
     val clickable = enabled && inMonth
-    val dotColor = if (selected) colors.onSelected else MaterialTheme.colorScheme.onSurface
+    val dotColor = if (selected) colors.onSelected else MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .size(OficiosComponentSize.calendarDayCell)
@@ -237,7 +237,7 @@ private fun DayCell(
             .then(
                 when {
                     selected -> Modifier.background(colors.selectedContainer)
-                    highlighted -> Modifier.background(MaterialTheme.colorScheme.primary)
+                    highlighted -> Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
                     isToday -> Modifier.border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                     else -> Modifier
                 },

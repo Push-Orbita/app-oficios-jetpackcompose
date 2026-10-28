@@ -793,7 +793,7 @@ private fun CancelOrderButton(
         text = stringResource(R.string.orders_cancel),
         onClick = onClick,
         leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
-        variant = OficiosButtonVariant.Danger,
+        variant = OficiosButtonVariant.OutlinedDanger,
         size = size,
         modifier = Modifier.fillMaxWidth(),
         enabled = enabled,

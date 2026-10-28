@@ -200,7 +200,7 @@ fun OficiosTextField(
             }
         }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         if (fieldLabel.isNotBlank()) {
             Text(
                 text = fieldLabel,
@@ -277,7 +277,6 @@ fun OficiosTextField(
                             onValueChange = onValueChange,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .then(modifier)
                                 .then(
                                     if (showValueEllipsis && singleLine) {
                                         Modifier.heightIn(max = valueLineHeightDp)
@@ -290,15 +289,21 @@ fun OficiosTextField(
                                     if (parentBringIntoView != null) {
                                         parentBringIntoView.onFieldFocus(focusState.isFocused, fieldCoordinates)
                                     } else if (focusState.isFocused && fieldSize != IntSize.Zero) {
-                                        scope.launch {
-                                            bringIntoViewRequester.bringIntoView(
-                                                Rect(
-                                                    left = 0f,
-                                                    top = 0f,
-                                                    right = fieldSize.width.toFloat(),
-                                                    bottom = fieldSize.height + ctaClearancePx,
-                                                ),
-                                            )
+                                        val coords = fieldCoordinates
+                                        if (coords != null && coords.isAttached) {
+                                            scope.launch {
+                                                runCatching {
+                                                    kotlinx.coroutines.withFrameNanos {}
+                                                    bringIntoViewRequester.bringIntoView(
+                                                        Rect(
+                                                            left = 0f,
+                                                            top = 0f,
+                                                            right = fieldSize.width.toFloat(),
+                                                            bottom = fieldSize.height + ctaClearancePx,
+                                                        ),
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 },
