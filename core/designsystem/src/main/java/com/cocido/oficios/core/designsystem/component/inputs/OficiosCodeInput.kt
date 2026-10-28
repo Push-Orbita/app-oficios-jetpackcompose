@@ -2,6 +2,7 @@ package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -14,9 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -39,6 +38,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
  * Muestra casillas individuales para cada dígito del código de verificación.
  * El código completo se maneja como un String único.
  * 
+ * El usuario debe tocar las casillas para activar el teclado y comenzar a escribir.
+ * 
  * @param digitCount Cantidad de dígitos (6 para email, variable para teléfono según API)
  */
 @Composable
@@ -53,14 +54,10 @@ fun OficiosCodeInput(
 ) {
     val focusRequester = remember { FocusRequester() }
     
-    // Auto-focus después del primer frame para evitar IllegalStateException
-    LaunchedEffect(Unit) {
-        withFrameNanos {}
-        focusRequester.requestFocus()
-    }
-    
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled) { focusRequester.requestFocus() },
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
