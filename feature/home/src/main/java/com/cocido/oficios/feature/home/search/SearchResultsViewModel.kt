@@ -236,7 +236,8 @@ class SearchResultsViewModel @Inject constructor(
                     val chips = buildActiveFilterChips(activeFilters)
                     if (append) {
                         val current = _uiState.value as? SearchResultsUiState.Success
-                        val merged = (current?.workers.orEmpty()) + result.data.items
+                        val newItems = applyRatingsCache(result.data.items)
+                        val merged = (current?.workers.orEmpty()) + newItems
                         _uiState.update {
                             SearchResultsUiState.Success(
                                 workers = merged,
@@ -246,7 +247,7 @@ class SearchResultsViewModel @Inject constructor(
                                 endReached = endReached,
                             )
                         }
-                        enrichWorkersWithRatings(result.data.items)
+                        fetchMissingRatings(newItems)
                     } else {
                         if (result.data.items.isEmpty()) {
                             pendingTrackOnSuccess = false
@@ -255,16 +256,17 @@ class SearchResultsViewModel @Inject constructor(
                             }
                         } else {
                             maybeTrackSuccessfulSearch()
+                            val workersWithCache = applyRatingsCache(result.data.items)
                             _uiState.update {
                                 SearchResultsUiState.Success(
-                                    workers = result.data.items,
+                                    workers = workersWithCache,
                                     activeFilters = activeFilters,
                                     filterChips = chips,
                                     isLoadingPage = false,
                                     endReached = endReached,
                                 )
                             }
-                            enrichWorkersWithRatings(result.data.items)
+                            fetchMissingRatings(workersWithCache)
                         }
                     }
                 }
@@ -721,15 +723,30 @@ class SearchResultsViewModel @Inject constructor(
         }
     }
 
-    private fun enrichWorkersWithRatings(workers: List<WorkerSummary>) {
+    private fun applyRatingsCache(workers: List<WorkerSummary>): List<WorkerSummary> {
+        return workers.map { worker ->
+            if (worker.rating == null) {
+                val cached = ratingsCache[worker.id]
+                if (cached != null) {
+                    worker.copy(rating = cached.first, reviewCount = cached.second)
+                } else {
+                    worker
+                }
+            } else {
+                worker
+            }
+        }
+    }
+
+    private fun fetchMissingRatings(workers: List<WorkerSummary>) {
         viewModelScope.launch {
-            val workersToEnrich = workers.filter { worker ->
+            val workersToFetch = workers.filter { worker ->
                 worker.rating == null && !ratingsCache.containsKey(worker.id)
             }
             
-            if (workersToEnrich.isEmpty()) return@launch
+            if (workersToFetch.isEmpty()) return@launch
             
-            workersToEnrich.forEach { worker ->
+            workersToFetch.forEach { worker ->
                 launch {
                     val reviewsResult = getWorkerReviewsUseCase(
                         workerId = worker.id,
