@@ -19,6 +19,7 @@ data class WorkerSearchItemDto(
 
 @Serializable
 data class ReputacionResumenDto(
+    val rating: Double? = null,
     val promedio: Double? = null,
     val cantidadCalificaciones: Int? = null,
 
@@ -27,4 +28,6 @@ data class ReputacionResumenDto(
 
     @SerialName("comentariosTotales")
     val comentariosTotales: Int? = null,
+
+    val reviewCount: Int? = null,
 )
