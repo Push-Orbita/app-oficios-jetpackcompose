@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.screenshot
 
+import androidx.compose.material3.MaterialTheme
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,7 +17,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBottomNavigationBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosNavItem
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientHomeContent
@@ -58,6 +61,7 @@ import com.cocido.oficios.domain.model.WorkerSubRubroOption
 import com.cocido.oficios.domain.model.WorkHoursSchedule
 import com.cocido.oficios.feature.home.agenda.AgendaConfigScreen
 import com.cocido.oficios.feature.home.agenda.AgendaConfigUiState
+import com.cocido.oficios.feature.home.agenda.AgendaDurationUnitMinutes
 import com.cocido.oficios.feature.home.orders.CreateOrderScreen
 import com.cocido.oficios.feature.home.orders.CreateOrderUiState
 import com.cocido.oficios.feature.home.orders.OrdersListScreen
@@ -134,26 +138,49 @@ private val screenshotWorkers = listOf(
 )
 
 @Composable
+internal fun SearchScreenshotBottomNav(
+    darkTheme: Boolean = false,
+    selectedRoute: String = "home",
+) {
+    OficiosTheme(darkTheme = darkTheme) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            OficiosBottomNavigationBar(
+                currentRoute = selectedRoute,
+                items = listOf(
+                    OficiosNavItem("home", "Inicio", OficiosIcons.House),
+                    OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
+                    OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
+                    OficiosNavItem("profile", "Perfil", OficiosIcons.User),
+                ),
+                onItemSelected = {},
+            )
+        }
+    }
+}
+
+@Composable
 internal fun SearchScreenshotHome(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
     emptyRecents: Boolean = false,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         HomeScreen(
             uiState = HomeUiState.Success(
                 ClientHomeContent(
                     userDisplayName = "Nicolas Ayala",
                     emailVerified = true,
                     profilePhotoUrl = null,
-                    recentSearches = if (emptyRecents) {
+                    recentSearches = emptyList(),
+                    featuredWorkers = if (emptyRecents) {
                         emptyList()
                     } else {
-                        listOf(
-                            RecentSearchEntry(RecentSearchType.RUBRO, 12, "Plomería", rubroId = 12),
-                            RecentSearchEntry(RecentSearchType.RUBRO, 13, "Electricidad", rubroId = 13),
-                            RecentSearchEntry(RecentSearchType.RUBRO, 14, "Pintura", rubroId = 14),
-                        )
+                        screenshotWorkers.take(3)
                     },
                     categories = screenshotCategories,
                 ),
@@ -171,8 +198,9 @@ internal fun SearchScreenshotHome(
 internal fun SearchScreenshotCategories(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         CategoriesScreen(
             uiState = CategoriesUiState.Success(screenshotCategories),
             selectedTab = ClientHomeTab.INICIO,
@@ -187,8 +215,9 @@ internal fun SearchScreenshotCategories(
 internal fun SearchScreenshotRubros(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         RubrosScreen(
             uiState = RubrosUiState.Success(
                 categoryName = "Construcción",
@@ -204,8 +233,9 @@ internal fun SearchScreenshotRubros(
 internal fun SearchScreenshotResults(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         SearchResultsScreen(
             uiState = SearchResultsUiState.Success(
                 workers = screenshotWorkers,
@@ -226,10 +256,11 @@ internal fun SearchScreenshotResults(
 internal fun SearchScreenshotFicha(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         WorkerProfileScreen(
-            uiState = previewState(withGallery = true, withReviews = false),
+            uiState = previewState(withGallery = true, withReviews = true),
             onEvent = {},
             showFavorites = true,
         )
@@ -243,8 +274,9 @@ internal val ProviderHomeScreenshotNow: ZonedDateTime =
 internal fun SearchScreenshotProviderHome(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         ProviderHomeScreen(
             uiState = ProviderHomeUiState.Success(
                 content = ProviderHomeContent(
@@ -274,8 +306,9 @@ internal fun SearchScreenshotProviderHome(
 internal fun SearchScreenshotProviderHomeComplete(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         ProviderHomeScreen(
             uiState = ProviderHomeUiState.Success(
                 content = ProviderHomeContent(
@@ -305,8 +338,9 @@ internal fun SearchScreenshotProviderHomeComplete(
 internal fun SearchScreenshotOrderDetail(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         OrderDetailScreen(
             uiState = OrderDetailUiState.Success(
                 order = ServiceOrder(
@@ -345,9 +379,10 @@ internal fun SearchScreenshotOrderDetail(
 internal fun SearchScreenshotCreateOrder(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
     val today = LocalDate.of(2026, 3, 4)
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         CreateOrderScreen(
             uiState = CreateOrderUiState.Success(
                 workerName = "Emanuel Molina",
@@ -413,8 +448,9 @@ internal fun SearchScreenshotCreateOrder(
 internal fun SearchScreenshotAgendaConfig(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         AgendaConfigScreen(
             uiState = AgendaConfigUiState.Success(
                 subRubroOptions = listOf(
@@ -428,8 +464,9 @@ internal fun SearchScreenshotAgendaConfig(
                 selectedSubRubroId = 1,
                 selectedSubRubroIds = setOf(1),
                 durationInput = "60",
-                selectedDays = setOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"),
-                selectedHours = setOf(8, 9, 10, 11, 16, 17, 18, 19, 20, 21),
+                durationUnit = AgendaDurationUnitMinutes,
+                intervalInput = "15",
+                intervalUnit = AgendaDurationUnitMinutes,
             ),
             onEvent = {},
             onNavigateBack = {},
@@ -441,8 +478,9 @@ internal fun SearchScreenshotAgendaConfig(
 internal fun SearchScreenshotOrdersList(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         OrdersListScreen(
             uiState = OrdersListUiState.Success(
                 orders = listOf(
@@ -527,8 +565,9 @@ private fun providerHomeOrder(
 internal fun SearchScreenshotNotifications(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
 ) {
-    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar) {
+    SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         NotificationsScreen(
             uiState = NotificationsUiState(
                 items = listOf(
@@ -588,13 +627,14 @@ internal fun SearchScreenshotNotifications(
 internal fun SearchScreenshotFrame(
     statusBar: Dp = SearchScreenshotChrome.FigmaStatusBar,
     navigationBar: Dp = SearchScreenshotChrome.FigmaNavBar,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    OficiosTheme {
+    OficiosTheme(darkTheme = darkTheme) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(OficiosColorBackground),
+                .background(MaterialTheme.colorScheme.background),
         ) {
             Spacer(Modifier.fillMaxWidth().height(statusBar))
             Box(modifier = Modifier.weight(1f)) {

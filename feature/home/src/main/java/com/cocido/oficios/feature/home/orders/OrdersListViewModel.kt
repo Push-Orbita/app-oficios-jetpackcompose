@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.OrdersListFilter
+import com.cocido.oficios.domain.model.OrdersListSortPrefs
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.repository.OrderRepository
@@ -37,8 +38,19 @@ class OrdersListViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var loadGeneration = 0
     private var lastSuccess: OrdersListUiState.Success? = null
+    private var loadedUserId: Long? = null
 
     init {
+        viewModelScope.launch {
+            orderRepository.clientOrders.collect { list ->
+                applyCachedOrders(list, workerView = false)
+            }
+        }
+        viewModelScope.launch {
+            orderRepository.workerOrders.collect { list ->
+                applyCachedOrders(list, workerView = true)
+            }
+        }
         load()
         viewModelScope.launch {
             orderRepository.ordersChanged.collect {
@@ -62,6 +74,13 @@ class OrdersListViewModel @Inject constructor(
             is OrdersListEvent.FilterSelected -> _uiState.update { state ->
                 if (state is OrdersListUiState.Success) state.copy(filter = event.filter) else state
             }
+            is OrdersListEvent.SortSelected -> _uiState.update { state ->
+                if (state is OrdersListUiState.Success) {
+                    state.copy(sortPrefs = state.sortPrefs.with(state.filter, event.sort))
+                } else {
+                    state
+                }
+            }
             is OrdersListEvent.OrderClicked -> emitEffect(OrdersListEffect.NavigateToOrderDetail(event.orderId))
             OrdersListEvent.SearchClicked -> emitEffect(OrdersListEffect.NavigateToSearch)
         }
@@ -84,7 +103,14 @@ class OrdersListViewModel @Inject constructor(
                 if (generation != loadGeneration) return@launch
                 val userResult = authRepository.getCurrentUser()
                 if (generation != loadGeneration) return@launch
-                val role = (userResult as? AppResult.Success)?.data?.role
+                val user = (userResult as? AppResult.Success)?.data
+                val sessionChanged = user != null && user.id != loadedUserId
+                if (sessionChanged) {
+                    loadedUserId = user.id
+                    lastSuccess = null
+                }
+                val retained = if (sessionChanged) null else previous
+                val role = user?.role
                 val ordersResult = when {
                     userResult is AppResult.Error -> userResult
                     role == UserRole.PROVIDER -> orderUseCases.getWorkerOrders()
@@ -95,15 +121,17 @@ class OrdersListViewModel @Inject constructor(
                     is AppResult.Success -> {
                         val next = OrdersListUiState.Success(
                             orders = ordersResult.data,
-                            filter = previous?.filter ?: OrdersListFilter.ACTIVE,
+                            filter = retained?.filter ?: OrdersListFilter.ACTIVE,
+                            sortPrefs = retained?.sortPrefs ?: OrdersListSortPrefs(),
+                            viewerRole = role ?: UserRole.UNKNOWN,
                         )
                         lastSuccess = next
                         _uiState.value = next
                     }
                     is AppResult.Error -> {
                         val message = ordersResult.error.userMessage()
-                        val kept = previous ?: lastSuccess
-                        if (kept != null && (refreshing || silent)) {
+                        val kept = retained ?: lastSuccess
+                        if (kept != null && (refreshing || silent) && !sessionChanged) {
                             val restored = kept.copy(isRefreshing = false)
                             lastSuccess = restored
                             _uiState.value = restored
@@ -126,6 +154,16 @@ class OrdersListViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun applyCachedOrders(list: List<com.cocido.oficios.domain.model.ServiceOrderListItem>?, workerView: Boolean) {
+        if (list == null) return
+        val current = _uiState.value as? OrdersListUiState.Success ?: return
+        val isWorker = current.viewerRole == UserRole.PROVIDER
+        if (workerView != isWorker) return
+        val next = current.copy(orders = list, isRefreshing = false)
+        lastSuccess = next
+        _uiState.value = next
     }
 
     private fun emitEffect(effect: OrdersListEffect) {

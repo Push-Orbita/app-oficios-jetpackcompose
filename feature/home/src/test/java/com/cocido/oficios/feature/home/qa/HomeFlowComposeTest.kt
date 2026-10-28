@@ -54,7 +54,7 @@ class HomeFlowComposeTest {
     }
 
     @Test
-    fun homeSuccessShowsSearchAndMic() {
+    fun homeSuccessShowsSearchEntry() {
         composeRule.setContent {
             OficiosTheme {
                 HomeScreen(
@@ -76,7 +76,6 @@ class HomeFlowComposeTest {
             }
         }
         composeRule.onNodeWithText("¿Qué oficio está buscando?").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Buscar por voz").assertIsDisplayed()
     }
 
     @Test

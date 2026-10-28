@@ -23,6 +23,20 @@ class SearchScreenshotTest {
     val composeRule = createComposeRule()
 
     @Test
+    fun bottomNav() {
+        assumeGoldenOrRecording(javaClass, "bottomNav")
+        composeRule.setContent { SearchScreenshotBottomNav() }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun bottomNavDark() {
+        assumeGoldenOrRecording(javaClass, "bottomNavDark")
+        composeRule.setContent { SearchScreenshotBottomNav(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
     fun home() {
         assumeGoldenOrRecording(javaClass, "home")
         composeRule.setContent { SearchScreenshotHome() }
@@ -75,6 +89,55 @@ class SearchScreenshotTest {
     fun providerHomeComplete() {
         assumeGoldenOrRecording(javaClass, "providerHomeComplete")
         composeRule.setContent { SearchScreenshotProviderHomeComplete() }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun homeDark() {
+        assumeGoldenOrRecording(javaClass, "homeDark")
+        composeRule.setContent { SearchScreenshotHome(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun fichaDark() {
+        assumeGoldenOrRecording(javaClass, "fichaDark")
+        composeRule.setContent { SearchScreenshotFicha(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun providerHomeDark() {
+        assumeGoldenOrRecording(javaClass, "providerHomeDark")
+        composeRule.setContent { SearchScreenshotProviderHome(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun resultsDark() {
+        assumeGoldenOrRecording(javaClass, "resultsDark")
+        composeRule.setContent { SearchScreenshotResults(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun ordersListDark() {
+        assumeGoldenOrRecording(javaClass, "ordersListDark")
+        composeRule.setContent { SearchScreenshotOrdersList(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun orderDetailDark() {
+        assumeGoldenOrRecording(javaClass, "orderDetailDark")
+        composeRule.setContent { SearchScreenshotOrderDetail(darkTheme = true) }
+        composeRule.onRoot().captureRoboImage()
+    }
+
+    @Test
+    fun createOrderDark() {
+        assumeGoldenOrRecording(javaClass, "createOrderDark")
+        composeRule.setContent { SearchScreenshotCreateOrder(darkTheme = true) }
         composeRule.onRoot().captureRoboImage()
     }
 }

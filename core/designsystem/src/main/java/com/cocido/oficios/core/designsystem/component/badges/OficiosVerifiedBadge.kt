@@ -11,12 +11,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.R
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 /**
- * Badge de usuario verificado — [OficiosColorSuccess] (#4CAF7D) sobre navy.
+ * Badge de usuario verificado — [OficiosTheme.colors.success] (#4CAF7D) sobre navy.
  * Cliente: badge-check (Figma 25:95). Trabajador: shield-check (Figma 259:254).
  */
 @Composable
@@ -28,7 +27,7 @@ fun OficiosVerifiedBadge(
     Icon(
         imageVector = ImageVector.vectorResource(iconRes),
         contentDescription = contentDescription,
-        tint = OficiosColorSuccess,
+        tint = OficiosTheme.colors.success,
         modifier = modifier.size(OficiosComponentSize.iconMd),
     )
 }

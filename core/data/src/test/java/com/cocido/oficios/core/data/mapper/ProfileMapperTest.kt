@@ -37,6 +37,7 @@ class ProfileMapperTest {
             domicilioLocal = ProviderLocalDomicilioRequest(
                 barrioId = 5,
                 calle = "Av. Siempre Viva",
+                numero = "100",
                 nombre = "Local",
             ),
         ).toDto()
@@ -45,7 +46,36 @@ class ProfileMapperTest {
         assertEquals(2, dto.subrubros.size)
         assertTrue(dto.subrubros.all { it.lugarDomicilio })
         assertEquals(2, dto.diasLaborales.size)
+        assertEquals("LUNES", dto.diasLaborales[0].diaInicio)
+        assertEquals("LUNES", dto.diasLaborales[0].diaFin)
+        assertEquals("08:00", dto.diasLaborales[0].horariosLaborales.single().horaInicio)
+        assertEquals("12:00", dto.diasLaborales[0].horariosLaborales.single().horaFin)
+        assertEquals("MARTES", dto.diasLaborales[1].diaInicio)
+        assertEquals("MARTES", dto.diasLaborales[1].diaFin)
         assertEquals(5L, dto.domicilioLocal?.barrioId)
+        assertEquals("Av. Siempre Viva", dto.domicilioLocal?.calle)
+        assertEquals("100", dto.domicilioLocal?.numero)
+        assertTrue(dto.subrubros.all { it.sesion == null })
+    }
+
+    @Test
+    fun `maps sesion when rubro requires turns`() {
+        val dto = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("08:00", "12:00")),
+            requiresTurns = true,
+        ).toDto()
+
+        val sesion = dto.subrubros.single().sesion
+        assertEquals(true, dto.subrubros.single().requiereTurnos)
+        assertEquals(60, sesion?.duracion)
+        assertEquals("minutos", sesion?.medidaDuracion)
+        assertEquals("15", sesion?.intervalo)
+        assertEquals("minutos", sesion?.medidaIntervalo)
     }
 
     @Test
@@ -61,6 +91,7 @@ class ProfileMapperTest {
         ).toDto()
 
         assertEquals(listOf("EFECTIVO", "MERCADOPAGO"), dto.metodosPago)
+        assertEquals(null, dto.subrubros.single().sesion)
     }
 
     @Test

@@ -77,10 +77,13 @@ internal class FieldAndCtaBringIntoView(
     }
 
     suspend fun bringIntoView() {
+        val coords = blockCoordinates
+        if (coords == null || !coords.isAttached) return
+        
         val width = blockSize.width
         val height = blockSize.height
         if (width <= 0 || height <= 0) {
-            requester.bringIntoView()
+            runCatching { requester.bringIntoView() }
             return
         }
         val rect = fieldFocusedBringIntoViewRect(
@@ -91,7 +94,7 @@ internal class FieldAndCtaBringIntoView(
             fieldMarginPx = fieldMarginPx,
             viewportHeightPx = viewportHeightPx,
         )
-        requester.bringIntoView(rect)
+        runCatching { requester.bringIntoView(rect) }
     }
 }
 

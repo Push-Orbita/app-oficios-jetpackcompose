@@ -26,3 +26,15 @@ class SearchBarriosUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(query: String) = catalogRepository.searchBarrios(query)
 }
+
+class GetAllRubrosUseCase @Inject constructor(
+    private val catalogRepository: CatalogRepository,
+) {
+    suspend operator fun invoke() = catalogRepository.getAllRubros()
+}
+
+class GetAllSubRubrosUseCase @Inject constructor(
+    private val catalogRepository: CatalogRepository,
+) {
+    suspend operator fun invoke() = catalogRepository.getAllSubRubros()
+}

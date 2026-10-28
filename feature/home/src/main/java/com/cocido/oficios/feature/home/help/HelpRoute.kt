@@ -19,7 +19,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
-import com.cocido.oficios.core.designsystem.component.navigation.OficiosTopAppBar
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosRootTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.intent.isSupportPhoneConfigured
@@ -64,7 +64,7 @@ fun HelpScreen(
                     onBack = onNavigateBack,
                 )
             } else {
-                OficiosTopAppBar(title = stringResource(R.string.help_title))
+                OficiosRootTopBar(title = stringResource(R.string.help_title))
             }
         },
         bottomBar = {

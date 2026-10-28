@@ -26,6 +26,11 @@ class FakeRecentSearchRepository(
         if (liveUpdates) recentsFlow.emit(stored.toList())
     }
 
+    override suspend fun remove(entry: RecentSearchEntry) {
+        stored.removeAll { it.type == entry.type && it.id == entry.id }
+        if (liveUpdates) recentsFlow.emit(stored.toList())
+    }
+
     suspend fun emitRecents(entries: List<RecentSearchEntry>) {
         stored.clear()
         stored.addAll(entries)

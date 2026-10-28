@@ -1,10 +1,13 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,11 +65,15 @@ fun <T> OficiosAutocompleteField(
 ) {
     var userExpanded by remember { mutableStateOf(false) }
     var searchSession by remember { mutableStateOf(false) }
+    var userDismissed by remember { mutableStateOf(false) }
     val resolvedNoResults = noResultsText ?: stringResource(R.string.ds_autocomplete_no_results)
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    var wasImeVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(isLoading, suggestions) {
         if (isLoading) searchSession = true
-        if (isLoading || suggestions.isNotEmpty()) {
+        if (!userDismissed && (isLoading || suggestions.isNotEmpty())) {
             userExpanded = true
         }
     }
@@ -74,29 +83,51 @@ fun <T> OficiosAutocompleteField(
         suggestions.isEmpty() &&
         userExpanded
     val hasMenuContent = isLoading || suggestions.isNotEmpty() || showNoResults
-    val menuExpanded = hasMenuContent && enabled
+    val menuExpanded = userExpanded && hasMenuContent && enabled
 
     fun dismissMenu() {
         userExpanded = false
+        userDismissed = true
         searchSession = false
         onSuggestionsDismissed()
+    }
+
+    fun dismissKeyboardAndSuggestions() {
+        keyboardController?.hide()
+        dismissMenu()
+    }
+
+    LaunchedEffect(imeVisible) {
+        val closedIme = wasImeVisible && !imeVisible
+        wasImeVisible = imeVisible
+        if (closedIme && userExpanded) {
+            dismissMenu()
+        }
+    }
+
+    BackHandler(enabled = menuExpanded) {
+        dismissKeyboardAndSuggestions()
     }
 
     ExposedDropdownMenuBox(
         expanded = menuExpanded,
         onExpandedChange = { requested ->
             if (requested) {
+                userDismissed = false
                 userExpanded = true
                 onFocused()
             } else {
-                dismissMenu()
+                dismissKeyboardAndSuggestions()
             }
         },
         modifier = modifier.fillMaxWidth(),
     ) {
         OficiosTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = {
+                userDismissed = false
+                onValueChange(it)
+            },
             label = label,
             placeholder = placeholder,
             enabled = enabled,
@@ -109,6 +140,7 @@ fun <T> OficiosAutocompleteField(
             keyboardActions = keyboardActions,
             onFocusChange = { focused ->
                 if (focused) {
+                    userDismissed = false
                     userExpanded = true
                     onFocused()
                 }
@@ -123,7 +155,7 @@ fun <T> OficiosAutocompleteField(
         )
         ExposedDropdownMenu(
             expanded = menuExpanded,
-            onDismissRequest = { dismissMenu() },
+            onDismissRequest = { dismissKeyboardAndSuggestions() },
             modifier = Modifier
                 .testTag(OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG)
                 .heightIn(max = 240.dp),
@@ -186,6 +218,7 @@ fun <T> OficiosAutocompleteField(
                             onClick = {
                                 onSuggestionSelected(option)
                                 userExpanded = false
+                                userDismissed = true
                                 searchSession = false
                             },
                             contentPadding = PaddingValues(

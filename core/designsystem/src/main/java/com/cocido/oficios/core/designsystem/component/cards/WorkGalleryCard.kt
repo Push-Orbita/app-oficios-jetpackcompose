@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -61,7 +60,7 @@ fun WorkGalleryCard(
                 Icon(
                     imageVector = Icons.Outlined.Image,
                     contentDescription = null,
-                    tint = OficiosColorMutedText,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(OficiosComponentSize.iconLg),
                 )
             }
@@ -70,7 +69,7 @@ fun WorkGalleryCard(
             Text(
                 text = caption,
                 style = MaterialTheme.typography.bodyMedium,
-                color = OficiosColorMutedText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = OficiosSpacing.xs),
             )
         }

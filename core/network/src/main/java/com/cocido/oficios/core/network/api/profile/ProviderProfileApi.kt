@@ -4,7 +4,6 @@ import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorPerfilEstadoDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateFullAltaRubrosSubrubrosRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateTrabajadorPerfilProfesionalRequestDto
-import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.PATCH
@@ -21,12 +20,18 @@ interface ProviderProfileApi {
     @POST("trabajador-oficio-rubro/full")
     suspend fun createRubroFull(
         @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
-    ): JsonElement
+    )
 
     @POST("trabajador-oficio-rubro/full/secundario")
     suspend fun createSecondaryRubroFull(
         @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
-    ): JsonElement
+    )
+
+    @PATCH("trabajador-oficio-rubro/{id}/full")
+    suspend fun updateRubroFull(
+        @Path("id") id: Long,
+        @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
+    )
 
     @POST("trabajador-oficio/me/finalizar-perfil")
     suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto

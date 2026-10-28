@@ -1,8 +1,10 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -11,9 +13,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -56,16 +63,32 @@ fun OficiosPasswordField(
         keyboardActions = keyboardActions,
         floatingLabel = floatingLabel,
         trailingContent = {
-            Icon(
-                imageVector = ImageVector.vectorResource(
-                    if (passwordVisible) visibleVisibilityIconRes else hiddenVisibilityIconRes,
-                ),
-                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .size(OficiosComponentSize.iconMd)
-                    .clickable(enabled = enabled) { passwordVisible = !passwordVisible },
-            )
+            Box(
+                modifier = Modifier.size(OficiosComponentSize.iconMd),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(
+                        if (passwordVisible) visibleVisibilityIconRes else hiddenVisibilityIconRes,
+                    ),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(OficiosComponentSize.iconMd),
+                )
+                Box(
+                    modifier = Modifier
+                        .requiredSize(OficiosComponentSize.minTouchTarget)
+                        .clickable(enabled = enabled) { passwordVisible = !passwordVisible }
+                        .semantics(mergeDescendants = true) {
+                            role = Role.Button
+                            this.contentDescription = if (passwordVisible) {
+                                "Ocultar contraseña"
+                            } else {
+                                "Mostrar contraseña"
+                            }
+                        },
+                )
+            }
         },
     )
 }

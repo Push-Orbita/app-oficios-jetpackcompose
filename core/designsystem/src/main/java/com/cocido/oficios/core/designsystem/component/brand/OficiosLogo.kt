@@ -38,9 +38,11 @@ fun OficiosLogo(
     },
     contentDescription: String? = "Oficios Formosa",
 ) {
-    val drawable = when (variant) {
-        OficiosLogoVariant.Icon -> R.drawable.ic_oficios_logotipo
-        OficiosLogoVariant.WithTitle -> R.drawable.ic_oficios_logotipo_title
+    val drawable = when {
+        variant == OficiosLogoVariant.Icon && OficiosTheme.isDark -> R.drawable.ic_oficios_logotipo
+        variant == OficiosLogoVariant.Icon -> R.drawable.ic_oficios_logotipo_outline
+        OficiosTheme.isDark -> R.drawable.ic_oficios_logotipo_title
+        else -> R.drawable.ic_oficios_logotipo_title_outline
     }
 
     val logoModifier = when (variant) {

@@ -26,6 +26,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -62,17 +63,74 @@ class PortfolioViewModelTest {
         assertTrue(viewModel.uiState.value.editingCertificateId == null)
     }
 
+    @Test
+    fun `canSaveCertificate requires name and file on create`() {
+        val empty = PortfolioUiState(isLoading = false)
+        assertFalse(empty.canSaveCertificate)
+        assertFalse(empty.copy(certificateName = "Matrícula").canSaveCertificate)
+        assertTrue(
+            empty.copy(certificateName = "Matrícula municipal", certificateFilePath = "/tmp/a.jpg")
+                .canSaveCertificate,
+        )
+        assertTrue(empty.copy(certificateName = "Matrícula municipal", editingCertificateId = 9L).canSaveCertificate)
+        assertFalse(
+            empty.copy(
+                certificateName = "Matrícula municipal",
+                certificateFilePath = "/tmp/a.jpg",
+                isSaving = true,
+            ).canSaveCertificate,
+        )
+    }
+
+    @Test
+    fun `save certificate without file keeps editor and shows inline error`() = runTest(testDispatcher) {
+        val viewModel = portfolioViewModel("")
+        advanceUntilIdle()
+        viewModel.onEvent(PortfolioEvent.AddCertificate)
+        viewModel.onEvent(PortfolioEvent.CertificateNameChanged("Matrícula municipal"))
+        viewModel.onEvent(PortfolioEvent.SaveCertificate)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.certificateEditorVisible)
+        assertEquals("Seleccione el archivo del certificado.", viewModel.uiState.value.errorMessage)
+        assertFalse(viewModel.uiState.value.canSaveCertificate)
+    }
+
+    @Test
+    fun `successful gallery delete removes the photo from ui`() = runTest(testDispatcher) {
+        val accounts = FakePortfolioAccountRepository(
+            gallery = listOf(
+                WorkGalleryItem(12L, "https://cdn.example/12.jpg"),
+                WorkGalleryItem(13L, "https://cdn.example/13.jpg"),
+            ),
+        )
+        val viewModel = PortfolioViewModel(
+            savedStateHandle = SavedStateHandle(),
+            accountUseCases = AccountUseCases(accounts),
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(PortfolioEvent.RequestDelete(PortfolioDeleteTarget.Gallery(12L)))
+        viewModel.onEvent(PortfolioEvent.ConfirmDelete)
+        advanceUntilIdle()
+        assertEquals(listOf(13L), viewModel.uiState.value.gallery.map { it.id })
+        assertEquals(listOf(12L), accounts.deletedGalleryIds)
+        assertEquals(null, viewModel.uiState.value.errorMessage)
+    }
+
     private fun portfolioViewModel(focus: String) = PortfolioViewModel(
         savedStateHandle = SavedStateHandle(mapOf("focus" to focus)),
         accountUseCases = AccountUseCases(FakePortfolioAccountRepository()),
     )
 }
 
-private class FakePortfolioAccountRepository : AccountRepository {
+private class FakePortfolioAccountRepository(
+    gallery: List<WorkGalleryItem> = emptyList(),
+) : AccountRepository {
     private val unused = AppResult.Error(AppError.Unknown("unused"))
+    private val galleryItems = gallery.toMutableList()
+    val deletedGalleryIds = mutableListOf<Long>()
 
     override suspend fun getCertificates() = AppResult.Success(emptyList<WorkCertificateItem>())
-    override suspend fun getGallery() = AppResult.Success(emptyList<WorkGalleryItem>())
+    override suspend fun getGallery() = AppResult.Success(galleryItems.toList())
 
     override suspend fun getProfile(): AppResult<AccountProfile> = unused
     override suspend fun updateProfile(request: UpdateAccountProfileRequest) = unused
@@ -99,7 +157,11 @@ private class FakePortfolioAccountRepository : AccountRepository {
     override suspend fun updateCertificate(id: Long, name: String, currentUrl: String?, filePath: String?) = unused
     override suspend fun deleteCertificate(id: Long) = unused
     override suspend fun uploadGallery(filePaths: List<String>) = unused
-    override suspend fun deleteGalleryItem(id: Long) = unused
+    override suspend fun deleteGalleryItem(id: Long): AppResult<Unit> {
+        deletedGalleryIds += id
+        galleryItems.removeAll { it.id == id }
+        return AppResult.Success(Unit)
+    }
     override suspend fun getCurrentDeletionRequest() = unused
     override suspend fun requestAccountDeletion(params: RequestAccountDeletionParams) = unused
     override suspend fun cancelAccountDeletion() = unused

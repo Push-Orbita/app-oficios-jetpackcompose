@@ -34,6 +34,19 @@ class ExceptionMapperTest {
     }
 
     @Test
+    fun `validation fieldErrors surface the first useful message`() {
+        val error = AppError.Validation(
+            message = "Datos de entrada no válidos.",
+            fieldErrors = mapOf("fotos" to "Formato no válido. Aceptados: JPG, PNG, WEBP, GIF"),
+            backendCode = "VA01",
+        )
+        assertEquals(
+            "Formato no válido. Aceptados: JPG, PNG, WEBP, GIF",
+            error.userMessage(),
+        )
+    }
+
+    @Test
     fun `unknown error hides technical message`() {
         val error = RuntimeException("Internal boom").toAppError()
 
@@ -84,5 +97,22 @@ class ExceptionMapperTest {
             "El servicio no está disponible en este momento. Intente más tarde.",
             error.userMessage(),
         )
+    }
+
+    @Test
+    fun `http 413 never surfaces as error de red`() {
+        val error = AppError.Network(message = "HTTP 413 Request Entity Too Large", code = 413)
+        assertEquals(
+            "El archivo es demasiado pesado. Pruebe con uno más liviano.",
+            error.userMessage(),
+        )
+        assertTrue("Error de red" !in error.userMessage())
+    }
+
+    @Test
+    fun `http response with blank network copy is not error de red`() {
+        val error = AppError.Network(message = "Error de red", code = 502)
+        assertEquals("No pudimos completar la solicitud. Intente de nuevo.", error.userMessage())
+        assertTrue("Error de red" !in error.userMessage())
     }
 }

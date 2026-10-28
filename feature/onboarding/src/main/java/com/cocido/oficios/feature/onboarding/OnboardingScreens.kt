@@ -67,7 +67,7 @@ fun ProviderOnboardingChecklistScreen(
         when (state) {
             OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
             is OnboardingChecklistUiState.Error -> OficiosErrorState(
-                title = "Error",
+                title = stringResource(R.string.onboarding_provider_error_title),
                 description = state.message,
                 onRetry = onRetry,
             )
@@ -105,7 +105,7 @@ fun ProviderPendingApprovalScreen(
         when (state) {
             ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
             is ProviderStatusUiState.Error -> OficiosErrorState(
-                title = "Error",
+                title = stringResource(R.string.onboarding_status_error_title),
                 description = state.message,
                 onRetry = onRetry,
             )
@@ -136,7 +136,7 @@ fun ProviderRejectedScreen(
         when (state) {
             ProviderStatusUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
             is ProviderStatusUiState.Error -> OficiosErrorState(
-                title = "Error",
+                title = stringResource(R.string.onboarding_status_error_title),
                 description = state.message,
                 onRetry = onRetry,
             )
@@ -203,7 +203,7 @@ private fun OnboardingChecklistScaffold(
         when (state) {
             OnboardingChecklistUiState.Loading -> OficiosLoadingState(modifier = Modifier.fillMaxSize())
             is OnboardingChecklistUiState.Error -> OficiosErrorState(
-                title = "Error",
+                title = stringResource(R.string.onboarding_client_error_title),
                 description = state.message,
                 onRetry = onRetry,
             )

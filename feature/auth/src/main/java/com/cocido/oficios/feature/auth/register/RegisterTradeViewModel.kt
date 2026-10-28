@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.auth.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
@@ -109,6 +110,20 @@ class RegisterTradeViewModel @Inject constructor(
             is RegisterTradeEvent.ServesAtLocalChanged -> update {
                 it.copy(servesAtLocal = event.value)
             }
+            is RegisterTradeEvent.RequiresTurnsChanged -> update {
+                it.copy(
+                    requiresTurns = event.value,
+                    turnDurationMinutes = if (event.value && it.turnDurationMinutes.isBlank()) "60" else it.turnDurationMinutes,
+                )
+            }
+            is RegisterTradeEvent.TurnDurationChanged -> update {
+                val filtered = event.value.filter { it.isDigit() }
+                it.copy(turnDurationMinutes = filtered)
+            }
+            is RegisterTradeEvent.TurnIntervalChanged -> update {
+                val filtered = event.value.filter { it.isDigit() }
+                it.copy(turnIntervalMinutes = filtered)
+            }
             is RegisterTradeEvent.PaymentMethodToggled -> update {
                 val updated = it.selectedPaymentMethods.toMutableSet()
                 if (event.checked) updated.add(event.method) else updated.remove(event.method)
@@ -166,7 +181,7 @@ class RegisterTradeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingCatalog = false,
-                            catalogError = result.error.message,
+                            catalogError = result.error.userMessage(),
                         ).validated()
                     }
                 }
@@ -191,7 +206,7 @@ class RegisterTradeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingTrades = false,
-                            catalogError = result.error.message,
+                            catalogError = result.error.userMessage(),
                         ).validated()
                     }
                 }
@@ -216,7 +231,7 @@ class RegisterTradeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoadingSpecializations = false,
-                            catalogError = result.error.message,
+                            catalogError = result.error.userMessage(),
                         ).validated()
                     }
                 }
@@ -234,6 +249,8 @@ class RegisterTradeViewModel @Inject constructor(
         val rubroId = state.selectedTradeId ?: return
 
         val subRubroIds = state.selectedSpecializations.mapNotNull { it.toLongOrNull() }
+        val durationMinutes = state.turnDurationMinutes.toIntOrNull()?.coerceIn(15, 480)
+        val intervalMinutes = state.turnIntervalMinutes.toIntOrNull()?.coerceIn(0, 240)
 
         viewModelScope.launch {
             registerTradeDraftRepository.save(
@@ -250,6 +267,9 @@ class RegisterTradeViewModel @Inject constructor(
                     workDays = state.selectedWorkDays.toList(),
                     servesAtClientHome = state.servesAtClientHome,
                     servesAtLocal = state.servesAtLocal,
+                    requiresTurns = state.requiresTurns,
+                    turnDurationMinutes = durationMinutes,
+                    turnIntervalMinutes = intervalMinutes,
                     paymentMethods = state.selectedPaymentMethods.toList(),
                     timeSlots = state.timeSlots
                         .filter { it.from.isNotBlank() && it.to.isNotBlank() }
@@ -290,6 +310,7 @@ class RegisterTradeViewModel @Inject constructor(
 
     private fun RegisterTradeUiState.validated(): RegisterTradeUiState {
         val hasSpecialization = selectedSpecializations.isNotEmpty()
+        val turnFieldsValid = !requiresTurns || turnDurationMinutes.toIntOrNull()?.let { it in 15..480 } == true
         val canContinue = selectedCategoryId != null &&
             selectedTradeId != null &&
             hasSpecialization &&
@@ -299,7 +320,8 @@ class RegisterTradeViewModel @Inject constructor(
             selectedPaymentMethods.isNotEmpty() &&
             selectedWorkDays.isNotEmpty() &&
             (servesAtClientHome || servesAtLocal) &&
-            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() }
+            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } &&
+            turnFieldsValid
         return copy(canContinue = canContinue)
     }
 

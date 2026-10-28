@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.home.orders
 import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientDomicilio
+import com.cocido.oficios.domain.model.TimeRange
 import com.cocido.oficios.domain.model.WorkerSubRubroOption
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,8 +34,12 @@ sealed interface CreateOrderUiState {
         val selectedDomicilioId: Long? = null,
         val selectedContactoId: Long? = null,
         val availableSlots: List<AgendaSlot> = emptyList(),
+        val monthSlots: List<AgendaSlot> = emptyList(),
+        val dayRanges: List<TimeRange> = emptyList(),
+        val dayHasAvailability: Boolean? = null,
         val isLoadingSlots: Boolean = false,
         val slotsErrorMessage: String? = null,
+        val submitErrorMessage: String? = null,
         val selectedSlotId: Long? = null,
         val selectedDate: LocalDate? = null,
         val selectedHour: LocalTime? = null,
@@ -62,6 +67,7 @@ sealed interface CreateOrderEvent {
     data object EditRequest : CreateOrderEvent
     data object Submit : CreateOrderEvent
     data object AddLocation : CreateOrderEvent
+    data class LocationPicked(val id: Long) : CreateOrderEvent
 }
 
 sealed interface CreateOrderEffect {

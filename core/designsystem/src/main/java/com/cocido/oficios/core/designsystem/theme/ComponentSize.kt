@@ -6,10 +6,14 @@ object OficiosComponentSize {
     /** Altura de inputs — Figma h-48 px-16 py-12 r8 borde 1px */
     val textFieldHeight = 48.dp
     val minTouchTarget = 48.dp
+    /** Wizards y formularios: Atrás / Continuar / Guardar en barra fija. */
+    val buttonHeightForm = 48.dp
     val buttonHeightLarge = 52.dp
     val buttonHeightMedium = 44.dp
     val buttonHeightSmall = 36.dp
     val buttonMinHeight = buttonHeightSmall
+    /** Chip de filtro / Rubros: visual 36–40 dp; el touch 48 es overlay. */
+    val filterChipHeight = buttonHeightSmall
     /** Área táctil de íconos y controles que no son el CTA. */
     val buttonHeight = minTouchTarget
     val buttonPaddingHorizontal = 12.dp
@@ -21,7 +25,10 @@ object OficiosComponentSize {
     val iconMd = 24.dp
     val iconLg = 32.dp
     val checkboxSize = 18.dp
-    val bottomBarHeight = 64.dp
+    /** Círculo 1:1 del ítem seleccionado (BBVA). */
+    val bottomNavIndicator = 48.dp
+    /** 48 círculo + label Satoshi 16 + gap. */
+    val bottomBarHeight = 76.dp
     val topBarHeight = 56.dp
     val avatarSm = 48.dp
     val avatarMd = 64.dp
@@ -29,8 +36,11 @@ object OficiosComponentSize {
     val avatarSettings = 72.dp
     val ratingIcon = 36.dp
     val categoryCardSize = 118.dp
-    /** Figma 259:293 — tiles Beneficios / hitos de perfil 118.67. */
-    val homeBenefitTile = 118.dp
+    /**
+     * Ancho mínimo legible del tile Beneficios cuando 3 no entran
+     * (Figma 259:293 es 118.67 en artboard 440; en 360–430dp se usa carrusel).
+     */
+    val homeBenefitTileMinWidth = 170.dp
     /** Figma 259:303 — barra de progreso de perfil. */
     val profileProgressHeight = 40.dp
     /** Figma 259:498 — barra HOY. */
@@ -58,7 +68,7 @@ object OficiosComponentSize {
     val workerCardNameToRating = 7.dp
     val workerCardHeaderToSpecialty = 11.dp
     val workerCardSpecialtyToActions = 18.dp
-    /** Ficha 40:559: slide de galería 376×376 (440 − 32 − 32). */
+    /** Ficha 40:559 / 613:460: slide 376×376. La ficha usa [profileMediaTile]. */
     val workerGallerySize = 376.dp
     /** Ancho de una card de carrusel, como fracción del viewport. */
     val carouselWidthFraction = 0.82f
@@ -86,14 +96,14 @@ object OficiosComponentSize {
     val authLogoWithTitleHeightCompact = 262.dp
     val authLogoWithTitleHeightSplash = 269.dp
     val authLogoIconWidthCompact = 122.dp
-    /** Splash: isotipo plano Figma `666:2` a 164dp de ancho (alto = ancho × 736/403). */
-    val authLogoIconWidthSplash = 164.dp
     /**
-     * Gap layout logo→wordmark. El drawable aporta ~6dp de aire; 23dp deja
-     * el wordmark visual en y≈628 (gap óptico 29) con logo top 330.
+     * Splash Compose ≈ isotipo del system splash (vector 288×288, isotipo al 50%).
+     * Alto 120dp / ancho 66dp para que no salte de tamaño al fade.
      */
+    val authLogoIconHeightSplash = 120.dp
+    val authLogoIconWidthSplash = 66.dp
+    /** Gap layout logo→wordmark en splash. El lockup se centra en el área segura. */
     val authSplashLogoWordmarkGap = 23.dp
-    val authSplashLogoTop = 330.dp
     val authWordmarkHeight = 36.dp
     val authWordmarkHeightSplash = 48.dp
     /** Login: alto del isotipo compacto (Fit; el drawable es 403×736). */
@@ -138,11 +148,13 @@ object OficiosComponentSize {
     val authRegisterTermsToDivider = 16.dp
     val authRegisterDividerToPrompt = 16.dp
     val authRegisterTermsCheckboxToText = 8.dp
-    val authSupportBadgeWidth = 31.dp
-    val authSupportBadgeHeight = 36.dp
-    val authSupportBadgeSize = authSupportBadgeWidth
-    val authSupportBadgeOffsetY = 18.dp
-    val authSupportBadgeOffsetX = 15.dp
+    /** Ícono de ayuda interno: círculo con "?", outline de la card. */
+    val authSupportHelpIconSize = 32.dp
+    /**
+     * Ancho mínimo que se le deja al texto antes de bajar el botón Contactar
+     * a una segunda fila. Evita recortar el copy o apretar el CTA.
+     */
+    val authSupportMinTextWidth = 120.dp
     /** Login/rol soporte: Figma 20dp arriba y 20dp abajo; el texto se centra. */
     val authSupportCardPaddingTop = 20.dp
     val authSupportCardPaddingBottom = 20.dp

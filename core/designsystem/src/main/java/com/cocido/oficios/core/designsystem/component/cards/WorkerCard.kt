@@ -29,19 +29,17 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadg
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAccent
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryTextFigma
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import java.util.Locale
 
 // ---------------------------------------------------------------------------
 // WorkerCard — Figma nodo 40:492
 //
 // Avatar 64 r8 | Nombre + shield-check
 //               Número + 5 estrellas (o "Sin calificación")
-// Especialidad #7F9AC5 a ancho completo
+// Especialidad: texto chico usa token AA (#8EA6CC); Figma #7F9AC5 queda para íconos/grande
 // [Contactar Primary]          [Ver ficha completa White]
 // ---------------------------------------------------------------------------
 
@@ -57,6 +55,7 @@ fun WorkerCard(
     onContact: () -> Unit,
     onViewProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    reviewCount: Int? = null,
 ) {
     val verifiedCd = stringResource(R.string.ds_worker_verified)
     val ratingCd = if (rating != null) {
@@ -112,7 +111,7 @@ fun WorkerCard(
                             modifier = Modifier.semantics { contentDescription = ratingCd },
                         ) {
                             Text(
-                                text = formatWorkerRating(rating),
+                                text = formatWorkerRatingLabel(rating, reviewCount),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
@@ -124,7 +123,7 @@ fun WorkerCard(
                                     else -> OficiosIcons.Star
                                 }
                                 val tint = if (filled > 0f) {
-                                    OficiosColorAccent
+                                    OficiosTheme.colors.accent
                                 } else {
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
                                 }
@@ -140,7 +139,7 @@ fun WorkerCard(
                         Text(
                             text = stringResource(R.string.ds_worker_no_rating),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = OficiosColorSecondaryText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -150,7 +149,7 @@ fun WorkerCard(
             Text(
                 text = specialty,
                 style = MaterialTheme.typography.bodyLarge,
-                color = OficiosColorSecondaryTextFigma,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(OficiosComponentSize.workerCardSpecialtyToActions))
@@ -179,12 +178,14 @@ fun WorkerCard(
     }
 }
 
-private fun formatWorkerRating(rating: Float): String {
-    return if (rating % 1f == 0f) {
+internal fun formatWorkerRatingLabel(rating: Float, reviewCount: Int? = null): String {
+    val number = if (rating % 1f == 0f) {
         rating.toInt().toString()
     } else {
-        String.format("%.1f", rating)
+        String.format(Locale.forLanguageTag("es-AR"), "%.1f", rating)
     }
+    val count = reviewCount?.takeIf { it > 0 } ?: return number
+    return "$number ($count)"
 }
 
 @Preview(name = "Worker Card", showBackground = true, backgroundColor = 0xFF00358B)

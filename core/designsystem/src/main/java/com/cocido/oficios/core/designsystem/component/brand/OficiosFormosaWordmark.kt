@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +40,11 @@ fun OficiosFormosaWordmark(
         contentDescription = contentDescription,
         modifier = sizeModifier,
         contentScale = ContentScale.Fit,
+        colorFilter = if (OficiosTheme.isDark) {
+            null
+        } else {
+            ColorFilter.tint(OficiosTheme.colors.onBackground, BlendMode.SrcIn)
+        },
     )
 }
 

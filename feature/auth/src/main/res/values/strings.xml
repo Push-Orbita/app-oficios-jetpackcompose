@@ -73,11 +73,18 @@
     <string name="auth_register_trade_from_label">Desde</string>
     <string name="auth_register_trade_to_label">Hasta</string>
     <string name="auth_register_trade_add_schedule">Añadir otro horario</string>
+    <string name="auth_register_trade_turns_label">Agenda de turnos:</string>
+    <string name="auth_register_trade_requires_turns">Requiere agenda de turnos</string>
+    <string name="auth_register_trade_turn_duration">Duración del turno (min)</string>
+    <string name="auth_register_trade_turn_duration_hint">Ej: 60 minutos</string>
+    <string name="auth_register_trade_turn_interval">Intervalo entre turnos (min)</string>
+    <string name="auth_register_trade_turn_interval_hint">Opcional, ej: 15 min</string>
     <string name="auth_register_trade_payment_label">Método de Pago:</string>
     <string name="auth_register_trade_payment_hint">Seleccione una opción</string>
     <string name="auth_register_trade_payment_efectivo">Efectivo</string>
     <string name="auth_register_trade_payment_transferencia">Transferencia</string>
     <string name="auth_register_trade_payment_mercadopago">Mercado Pago</string>
+    <string name="splash_error_title">No pudimos iniciar</string>
     <string name="auth_register_trade_retry_catalog">Reintentar carga</string>
     <string name="auth_register_trade_loading_specializations">Cargando especializaciones…</string>
 </resources>

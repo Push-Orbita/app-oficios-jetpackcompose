@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.onboarding.components
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,10 +14,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
-import com.cocido.oficios.core.designsystem.theme.OficiosColorError
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWarning
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
@@ -59,18 +56,18 @@ fun OnboardingStepCard(
                 Text(
                     text = step.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Text(
                 text = statusLabel,
                 style = MaterialTheme.typography.labelMedium,
                 color = when (step.status) {
-                    OnboardingStepStatus.COMPLETE -> OficiosColorSuccess
-                    OnboardingStepStatus.IN_REVIEW -> OficiosColorWarning
-                    OnboardingStepStatus.REJECTED -> OficiosColorError
-                    OnboardingStepStatus.BLOCKED -> OficiosColorMutedText
-                    OnboardingStepStatus.PENDING -> OficiosColorError
+                    OnboardingStepStatus.COMPLETE -> OficiosTheme.colors.success
+                    OnboardingStepStatus.IN_REVIEW -> OficiosTheme.colors.warning
+                    OnboardingStepStatus.REJECTED -> MaterialTheme.colorScheme.error
+                    OnboardingStepStatus.BLOCKED -> MaterialTheme.colorScheme.onSurfaceVariant
+                    OnboardingStepStatus.PENDING -> MaterialTheme.colorScheme.error
                 },
             )
         }

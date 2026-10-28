@@ -8,6 +8,7 @@ data class FavoriteWorker(
     val rating: Float?,
     val avatarUrl: String?,
     val isVerified: Boolean,
+    val reviewCount: Int? = null,
 )
 
 data class FavoritePage(

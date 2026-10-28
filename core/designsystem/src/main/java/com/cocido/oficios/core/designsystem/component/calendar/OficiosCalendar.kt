@@ -29,8 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosAlpha
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -199,9 +197,9 @@ fun OficiosScheduleSlot(
             },
             contentDescription = null,
             tint = when (slot.state) {
-                ScheduleSlotState.Booked -> OficiosColorSuccess
+                ScheduleSlotState.Booked -> OficiosTheme.colors.success
                 ScheduleSlotState.Blocked -> MaterialTheme.colorScheme.error
-                else -> OficiosColorMutedText
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
             },
             modifier = Modifier.size(OficiosComponentSize.iconSm),
         )
@@ -222,7 +220,7 @@ fun OficiosScheduleSlot(
                 Text(text = it, style = MaterialTheme.typography.bodyMedium, color = labelColor)
             }
             slot.clientName?.let {
-                Text(text = it, style = MaterialTheme.typography.bodySmall, color = OficiosColorMutedText)
+                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 

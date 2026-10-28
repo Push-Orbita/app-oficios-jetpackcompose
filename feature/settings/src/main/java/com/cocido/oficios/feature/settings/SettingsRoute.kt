@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 
 @Composable
 fun SettingsRoute(
@@ -18,6 +19,7 @@ fun SettingsRoute(
     onNavigateToDeleteAccount: () -> Unit,
     onNavigateToTerms: () -> Unit = {},
     onNavigateToHelp: () -> Unit = {},
+    onNavigateToConfiguration: () -> Unit = {},
     modifier: Modifier = Modifier,
     showBackNavigation: Boolean = true,
     bottomBar: @Composable () -> Unit = {},
@@ -25,6 +27,7 @@ fun SettingsRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val loggedOut by viewModel.loggedOut.collectAsStateWithLifecycle()
+    RefreshOnResume(viewModel::onResume)
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLoggedOut()
@@ -40,6 +43,7 @@ fun SettingsRoute(
                 SettingsEffect.NavigateToDeleteAccount -> onNavigateToDeleteAccount()
                 SettingsEffect.NavigateToTerms -> onNavigateToTerms()
                 SettingsEffect.NavigateToHelp -> onNavigateToHelp()
+                SettingsEffect.NavigateToConfiguration -> onNavigateToConfiguration()
             }
         }
     }

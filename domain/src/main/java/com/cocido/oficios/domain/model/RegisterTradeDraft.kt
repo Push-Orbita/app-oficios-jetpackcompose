@@ -23,6 +23,8 @@ data class RegisterTradeDraft(
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
     val requiresTurns: Boolean = false,
+    val turnDurationMinutes: Int? = null,
+    val turnIntervalMinutes: Int? = null,
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
     val paymentMethods: List<String> = emptyList(),
 )

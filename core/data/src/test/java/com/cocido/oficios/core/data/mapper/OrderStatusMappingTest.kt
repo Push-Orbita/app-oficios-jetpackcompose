@@ -21,6 +21,7 @@ class OrderStatusMappingTest {
         assertEquals(BookingStatus.IN_PROGRESS, "LLEGUE".toBookingStatus())
         assertEquals(BookingStatus.FINISHED, "FINALIZADA".toBookingStatus())
         assertEquals(BookingStatus.CANCELLED, "CANCELADA".toBookingStatus())
+        assertEquals(BookingStatus.EXPIRED, "EXPIRADA".toBookingStatus())
     }
 
     @Test
@@ -33,13 +34,15 @@ class OrderStatusMappingTest {
             solicitud(6, "PENDIENTE", "PENDIENTE"),
             solicitud(18, "ACEPTADA", "FINALIZADA"),
             solicitud(17, "CANCELADA", "CANCELADA"),
+            solicitud(19, "ACEPTADA", "EXPIRADA"),
         ).map { it.toListItem(isWorkerViewing = true) }
 
         val now = ZonedDateTime.of(2026, 9, 1, 8, 0, 0, 0, DisplayDateTime.ARGENTINA)
-        assertEquals(listOf(6L, 15L, 11L, 9L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, now).map { it.id })
-        assertEquals(listOf(18L, 17L), items.arrangedFor(OrdersListFilter.HISTORY, now).map { it.id })
+        assertEquals(listOf(15L, 11L, 9L, 6L, 5L), items.arrangedFor(OrdersListFilter.ACTIVE, now).map { it.id })
+        assertEquals(listOf(19L, 18L, 17L), items.arrangedFor(OrdersListFilter.HISTORY, now).map { it.id })
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 11L }.bookingStatus)
         assertEquals(BookingStatus.IN_PROGRESS, items.first { it.id == 15L }.bookingStatus)
+        assertEquals(BookingStatus.EXPIRED, items.first { it.id == 19L }.bookingStatus)
     }
 
     private fun solicitud(id: Long, estado: String, bookingEstado: String) = SolicitudServicioSimpleDto(

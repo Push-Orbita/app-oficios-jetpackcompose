@@ -30,11 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
-import com.cocido.oficios.core.designsystem.theme.OficiosColorAction
-import com.cocido.oficios.core.designsystem.theme.OficiosColorBackground
-import com.cocido.oficios.core.designsystem.theme.OficiosColorDisabledText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -63,8 +58,10 @@ fun OficiosMonthCalendar(
     onMonthChange: (YearMonth) -> Unit,
     onDateSelected: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    today: LocalDate? = null,
     isDateEnabled: (LocalDate) -> Boolean = { true },
     isDateHighlighted: (LocalDate) -> Boolean = { false },
+    isDateMarked: (LocalDate) -> Boolean = { false },
 ) {
     val locale = Locale.forLanguageTag("es-AR")
     val firstOfMonth = month.atDay(1)
@@ -75,7 +72,7 @@ fun OficiosMonthCalendar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.dp, OficiosColorOutlineFill, RoundedCornerShape(OficiosRadius.lg))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(OficiosRadius.lg))
             .padding(OficiosSpacing.s10),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
     ) {
@@ -107,8 +104,8 @@ fun OficiosMonthCalendar(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            WEEKDAY_LABELS.forEachIndexed { index, label ->
-                val color = if (index == 0) OficiosColorOutlineFill else OficiosColorWhite
+            WEEKDAY_LABELS.forEach { label ->
+                val color = MaterialTheme.colorScheme.onSurface
                 Box(
                     modifier = Modifier.size(OficiosComponentSize.calendarDayCell),
                     contentAlignment = Alignment.Center,
@@ -135,7 +132,9 @@ fun OficiosMonthCalendar(
                     DayCell(
                         day = date.dayOfMonth,
                         selected = selected,
+                        isToday = inMonth && date == today,
                         highlighted = inMonth && isDateHighlighted(date),
+                        marked = inMonth && isDateMarked(date),
                         enabled = enabled,
                         inMonth = inMonth,
                         onClick = { onDateSelected(date) },
@@ -148,16 +147,17 @@ fun OficiosMonthCalendar(
 
 @Composable
 fun OficiosHourGrid(
+    hours: List<java.time.LocalTime>,
     selectedHour: java.time.LocalTime?,
     hourState: (java.time.LocalTime) -> HourChipState,
     onHourSelected: (java.time.LocalTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hours = (0..23).map { java.time.LocalTime.of(it, 0) }
+    if (hours.isEmpty()) return
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .border(1.dp, OficiosColorOutlineFill, RoundedCornerShape(OficiosRadius.lg))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(OficiosRadius.lg))
             .padding(OficiosSpacing.s10),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
@@ -169,11 +169,14 @@ fun OficiosHourGrid(
                 row.forEach { hour ->
                     val state = hourState(hour)
                     HourChip(
-                        label = "%02d:00".format(hour.hour),
+                        label = "%02d:%02d".format(hour.hour, hour.minute),
                         state = state,
                         onClick = { if (state != HourChipState.Unavailable) onHourSelected(hour) },
                         modifier = Modifier.weight(1f),
                     )
+                }
+                repeat(4 - row.size) {
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -190,7 +193,7 @@ private fun MonthNavButton(
         modifier = Modifier
             .size(OficiosComponentSize.textFieldHeight)
             .clip(RoundedCornerShape(OficiosRadius.sm))
-            .background(OficiosColorOutlineFill)
+            .background(MaterialTheme.colorScheme.outline)
             .clickable(onClick = onClick)
             .semantics {
                 this.contentDescription = contentDescription
@@ -201,7 +204,7 @@ private fun MonthNavButton(
         Icon(
             imageVector = ImageVector.vectorResource(icon),
             contentDescription = null,
-            tint = OficiosColorWhite,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(OficiosComponentSize.iconMd),
         )
     }
@@ -211,26 +214,31 @@ private fun MonthNavButton(
 private fun DayCell(
     day: Int,
     selected: Boolean,
+    isToday: Boolean,
     highlighted: Boolean,
+    marked: Boolean,
     enabled: Boolean,
     inMonth: Boolean,
     onClick: () -> Unit,
 ) {
+    val colors = OficiosTheme.colors
     val textColor = when {
-        selected -> OficiosColorBackground
-        highlighted -> OficiosColorWhite
-        !inMonth || !enabled -> if (!inMonth) OficiosColorOutlineFill else OficiosColorDisabledText
-        else -> OficiosColorWhite
+        selected -> colors.onSelected
+        highlighted -> MaterialTheme.colorScheme.primary
+        !inMonth || !enabled -> if (!inMonth) MaterialTheme.colorScheme.outline else colors.disabled
+        else -> MaterialTheme.colorScheme.onSurface
     }
     val clickable = enabled && inMonth
+    val dotColor = if (selected) colors.onSelected else MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .size(OficiosComponentSize.calendarDayCell)
             .clip(CircleShape)
             .then(
                 when {
-                    selected -> Modifier.background(OficiosColorWhite)
-                    highlighted -> Modifier.background(OficiosColorAction)
+                    selected -> Modifier.background(colors.selectedContainer)
+                    highlighted -> Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                    isToday -> Modifier.border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                     else -> Modifier
                 },
             )
@@ -239,7 +247,7 @@ private fun DayCell(
     ) {
         Text(
             text = day.toString(),
-            style = if (selected || highlighted) {
+            style = if (selected || highlighted || isToday) {
                 MaterialTheme.typography.titleMedium
             } else {
                 MaterialTheme.typography.bodyLarge
@@ -247,6 +255,16 @@ private fun DayCell(
             color = textColor,
             textAlign = TextAlign.Center,
         )
+        if (marked && inMonth) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 3.dp)
+                    .size(4.dp)
+                    .clip(CircleShape)
+                    .background(dotColor),
+            )
+        }
     }
 }
 
@@ -257,18 +275,37 @@ private fun HourChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val (bg, fg) = when (state) {
-        HourChipState.Selected -> OficiosColorWhite to OficiosColorBackground
-        HourChipState.Available -> OficiosColorAction to OficiosColorWhite
+    val (bg, fg, borderColor) = when (state) {
+        HourChipState.Selected -> Triple(
+            OficiosTheme.colors.selectedContainer,
+            OficiosTheme.colors.onSelected,
+            null
+        )
+        HourChipState.Available -> Triple(
+            MaterialTheme.colorScheme.surface,
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.primary
+        )
         HourChipState.Unavailable,
         HourChipState.Idle,
-        -> OficiosColorOutlineFill.copy(alpha = 0f) to OficiosColorOutlineFill
+        -> Triple(
+            MaterialTheme.colorScheme.outline.copy(alpha = 0f),
+            MaterialTheme.colorScheme.outline,
+            null
+        )
     }
     Box(
         modifier = modifier
             .height(OficiosComponentSize.hourChipHeight)
             .clip(RoundedCornerShape(OficiosRadius.sm))
             .background(bg)
+            .then(
+                if (borderColor != null) Modifier.border(
+                    width = 1.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(OficiosRadius.sm)
+                ) else Modifier
+            )
             .then(
                 if (state != HourChipState.Unavailable) Modifier.clickable(onClick = onClick) else Modifier,
             ),

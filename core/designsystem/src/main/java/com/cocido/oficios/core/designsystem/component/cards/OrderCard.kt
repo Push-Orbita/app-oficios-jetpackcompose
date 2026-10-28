@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -138,9 +137,9 @@ private fun StatusBadgeText(status: OrderStatus) {
         style = MaterialTheme.typography.labelMedium,
         color = when (status) {
             is OrderStatus.Pending -> MaterialTheme.colorScheme.tertiary
-            is OrderStatus.Confirmed -> com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+            is OrderStatus.Confirmed -> com.cocido.oficios.core.designsystem.theme.OficiosTheme.colors.success
             is OrderStatus.InReview -> MaterialTheme.colorScheme.onSurfaceVariant
-            is OrderStatus.Approved -> com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
+            is OrderStatus.Approved -> com.cocido.oficios.core.designsystem.theme.OficiosTheme.colors.success
             is OrderStatus.Completed -> MaterialTheme.colorScheme.onSurfaceVariant
             is OrderStatus.Rejected -> MaterialTheme.colorScheme.error
             is OrderStatus.Cancelled -> MaterialTheme.colorScheme.error
@@ -158,11 +157,11 @@ private fun OrderMetaRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = OficiosColorMutedText,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(OficiosComponentSize.iconSm),
         )
         Spacer(modifier = Modifier.padding(start = OficiosSpacing.xxs))
-        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = OficiosColorMutedText)
+        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

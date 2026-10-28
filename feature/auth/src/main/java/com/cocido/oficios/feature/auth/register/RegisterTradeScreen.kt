@@ -24,7 +24,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRegisterTradeTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -204,6 +203,40 @@ fun RegisterTradeScreen(
                     }
 
                     RegisterTradeLabeledSection(
+                        title = stringResource(R.string.auth_register_trade_turns_label),
+                    ) {
+                        OficiosCheckbox(
+                            checked = uiState.requiresTurns,
+                            onCheckedChange = { onEvent(RegisterTradeEvent.RequiresTurnsChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_requires_turns),
+                            compactRow = true,
+                        )
+                        if (uiState.requiresTurns) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                            ) {
+                                OficiosTextField(
+                                    value = uiState.turnDurationMinutes,
+                                    onValueChange = { onEvent(RegisterTradeEvent.TurnDurationChanged(it)) },
+                                    label = stringResource(R.string.auth_register_trade_turn_duration),
+                                    placeholder = "60",
+                                    supportingText = stringResource(R.string.auth_register_trade_turn_duration_hint),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                OficiosTextField(
+                                    value = uiState.turnIntervalMinutes,
+                                    onValueChange = { onEvent(RegisterTradeEvent.TurnIntervalChanged(it)) },
+                                    label = stringResource(R.string.auth_register_trade_turn_interval),
+                                    placeholder = "0",
+                                    supportingText = stringResource(R.string.auth_register_trade_turn_interval_hint),
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+                    }
+
+                    RegisterTradeLabeledSection(
                         title = stringResource(R.string.auth_register_trade_payment_label),
                     ) {
                         Text(
@@ -245,8 +278,9 @@ fun RegisterTradeScreen(
                         OficiosButton(
                             text = stringResource(R.string.auth_continue),
                             onClick = { onEvent(RegisterTradeEvent.Continue) },
-                            variant = OficiosButtonVariant.Secondary,
-                            size = OficiosButtonSize.Large,
+                            variant = OficiosButtonVariant.Primary,
+                            size = OficiosButtonSize.Form,
+                            modifier = Modifier.fillMaxWidth(),
                             enabled = !uiState.isLoading,
                             loading = uiState.isLoading,
                         )
@@ -317,7 +351,7 @@ private fun RegisterTradeSpecializationsSection(
                 Text(
                     text = stringResource(R.string.auth_register_trade_loading_specializations),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             options.forEach { option ->

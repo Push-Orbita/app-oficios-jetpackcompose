@@ -31,9 +31,18 @@ class NotificationsViewModel @Inject constructor(
 
     private val _effects = Channel<NotificationsEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
+    private var skipNextResume = true
 
     init {
         load(pageNumber = 1, append = false)
+    }
+
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load(pageNumber = 1, append = false, refreshing = _uiState.value.items.isNotEmpty())
     }
 
     fun onEvent(event: NotificationsEvent) {

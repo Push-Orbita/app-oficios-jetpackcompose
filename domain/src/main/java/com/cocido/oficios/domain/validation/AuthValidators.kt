@@ -6,8 +6,8 @@ object AuthValidators {
     private val DNI_REGEX = Regex("^[0-9]{7,11}$")
 
     fun validateEmail(email: String): String? = when {
-        email.isBlank() -> "El email es obligatorio"
-        !EMAIL_REGEX.matches(email) -> "Ingrese un email válido"
+        email.isBlank() -> "El correo es obligatorio"
+        !EMAIL_REGEX.matches(email) -> "Ingrese un correo válido"
         else -> null
     }
 
@@ -57,6 +57,33 @@ object AuthValidators {
             digits
         }
         return if (local.length == 10 && !local.startsWith("9")) "9$local" else local
+    }
+
+    fun validateContactName(name: String): String? = when {
+        name.isBlank() -> "Ingrese un nombre para identificar este contacto."
+        name.trim().length > 100 -> "El nombre no puede superar 100 caracteres."
+        else -> null
+    }
+
+    /**
+     * Celular local argentino (OpenAPI: 10–11 dígitos, sin +54). Tras [normalizeArgentinePhone]
+     * queda en 11 dígitos con 9 de móvil.
+     */
+    fun validateArgentineMobile(raw: String): String? {
+        val phone = normalizeArgentinePhone(raw)
+        return when {
+            raw.isBlank() -> "Ingrese su celular de WhatsApp."
+            phone.length != 11 || !phone.startsWith("9") ->
+                "Ingrese el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109."
+            else -> null
+        }
+    }
+
+    fun validateOptionalEmail(email: String): String? {
+        val trimmed = email.trim()
+        if (trimmed.isBlank()) return null
+        if (trimmed.length > 100) return "El correo no puede superar 100 caracteres."
+        return validateEmail(trimmed)
     }
 
     private const val ARGENTINA_COUNTRY_CODE = "54"

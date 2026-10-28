@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.onboarding.steps
 
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.PhotoCamera
@@ -40,6 +43,7 @@ import com.cocido.oficios.core.designsystem.component.badges.OficiosBadge
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
+import com.cocido.oficios.core.designsystem.component.buttons.OficiosFormActionsBar
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.inputs.LocalScrollViewportHeightPx
@@ -51,11 +55,14 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
+import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOptions
+import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
+import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
+import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
 import com.cocido.oficios.core.ui.map.OficiosLocationPicker
 import com.cocido.oficios.feature.onboarding.R
 import com.cocido.oficios.feature.onboarding.client.ClientContactDomicilioUiState
@@ -80,8 +87,8 @@ fun OnboardingStepScaffold(
     isLoading: Boolean = false,
     canSubmit: Boolean = true,
     submitText: String? = null,
-    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Secondary,
-    submitSize: OficiosButtonSize = OficiosButtonSize.Large,
+    submitVariant: OficiosButtonVariant = OficiosButtonVariant.Primary,
+    submitSize: OficiosButtonSize = OficiosButtonSize.Form,
     showSubmitButton: Boolean = true,
     itemSpacing: Dp = OficiosSpacing.md,
     onSubmit: () -> Unit,
@@ -100,23 +107,26 @@ fun OnboardingStepScaffold(
                     .padding(padding)
                     .consumeWindowInsets(padding)
                     .imePadding()
-                    .onSizeChanged { viewportHeightPx = it.height }
-                    .verticalScroll(rememberScrollState())
-                    .padding(OficiosSpacing.md),
-                verticalArrangement = Arrangement.spacedBy(itemSpacing),
+                    .onSizeChanged { viewportHeightPx = it.height },
             ) {
-                Text(text = title, style = MaterialTheme.typography.headlineSmall)
-                if (error != null) OficiosInlineAlert(message = error)
-                content()
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(OficiosSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(itemSpacing),
+                ) {
+                    Text(text = title, style = MaterialTheme.typography.headlineSmall)
+                    if (error != null) OficiosInlineAlert(message = error)
+                    content()
+                }
                 if (showSubmitButton) {
-                    OficiosButton(
-                        text = buttonText,
-                        onClick = onSubmit,
-                        enabled = !isLoading,
-                        loading = isLoading,
-                        modifier = Modifier.fillMaxWidth(),
-                        variant = submitVariant,
-                        size = submitSize,
+                    OficiosFormActionsBar(
+                        primaryLabel = buttonText,
+                        onPrimary = onSubmit,
+                        primaryEnabled = canSubmit && !isLoading,
+                        primaryLoading = isLoading,
                     )
                 }
             }
@@ -176,7 +186,11 @@ fun ClientContactDomicilioStepScreen(
             selectedCountry = uiState.selectedCountry,
             onCountrySelected = onCountrySelected,
             label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
-            supportingText = stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+            isError = uiState.telefono.isNotBlank() &&
+                AuthValidators.validateArgentineMobile(uiState.telefono) != null,
+            supportingText = AuthValidators.validateArgentineMobile(uiState.telefono)
+                ?.takeIf { uiState.telefono.isNotBlank() }
+                ?: stringResource(R.string.onboarding_step_contact_whatsapp_hint),
         )
         OficiosTextField(
             value = uiState.email,
@@ -309,13 +323,24 @@ fun ClientContactoStepScreen(
         onSubmit = onSubmit,
     ) {
         OficiosTextField(value = uiState.nombre, onValueChange = onNombreChanged, label = stringResource(R.string.onboarding_step_contact_nombre_label))
-        OficiosTextField(
+        OficiosPhoneField(
             value = uiState.telefono,
             onValueChange = onTelefonoChanged,
+            selectedCountry = PhoneCountryOptions.ARGENTINA,
             label = stringResource(R.string.onboarding_step_contact_whatsapp_label),
-            supportingText = stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+            isError = uiState.telefono.isNotBlank() &&
+                AuthValidators.validateArgentineMobile(uiState.telefono) != null,
+            supportingText = AuthValidators.validateArgentineMobile(uiState.telefono)
+                ?.takeIf { uiState.telefono.isNotBlank() }
+                ?: stringResource(R.string.onboarding_step_contact_whatsapp_hint),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
         )
-        OficiosTextField(value = uiState.email, onValueChange = onEmailChanged, label = stringResource(R.string.onboarding_step_contact_email_label))
+        OficiosTextField(
+            value = uiState.email,
+            onValueChange = onEmailChanged,
+            label = stringResource(R.string.onboarding_step_contact_email_label),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        )
     }
 }
 
@@ -326,6 +351,7 @@ fun ProviderDniStepScreen(
     onFrontImage: (String?) -> Unit,
     onBackImage: (String?) -> Unit,
     onSubmit: () -> Unit,
+    onPickError: (String) -> Unit = {},
 ) {
     val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
     val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
@@ -338,6 +364,9 @@ fun ProviderDniStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onFrontImage,
+        onPickError = onPickError,
+        filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
     val backPicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -345,6 +374,9 @@ fun ProviderDniStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onBackImage,
+        onPickError = onPickError,
+        filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
 
     OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
@@ -414,6 +446,7 @@ fun ProviderSelfieStepScreen(
     uiState: ProviderSelfieUiState,
     onImageSelected: (String?) -> Unit,
     onSubmit: () -> Unit,
+    onPickError: (String) -> Unit = {},
 ) {
     val pickerTitle = stringResource(R.string.onboarding_image_picker_title)
     val cameraLabel = stringResource(R.string.onboarding_image_picker_camera)
@@ -426,6 +459,9 @@ fun ProviderSelfieStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onImageSelected,
+        onPickError = onPickError,
+        filePrefix = "selfie",
+        cropMode = ImageCropMode.Profile,
     )
 
     OnboardingStepScaffold(
@@ -493,7 +529,7 @@ private fun DniImageUploadCard(
                 ),
                 contentDescription = null,
                 modifier = Modifier.size(OficiosSpacing.lg),
-                tint = if (isLoaded) OficiosColorSuccess else MaterialTheme.colorScheme.primary,
+                tint = if (isLoaded) OficiosTheme.colors.success else MaterialTheme.colorScheme.primary,
             )
             Column(
                 modifier = Modifier.weight(1f),
@@ -515,12 +551,12 @@ private fun DniImageUploadCard(
                     },
                 ),
                 containerColor = if (isLoaded) {
-                    OficiosColorSuccess
+                    OficiosTheme.colors.successContainer
                 } else {
                     MaterialTheme.colorScheme.surfaceVariant
                 },
                 contentColor = if (isLoaded) {
-                    MaterialTheme.colorScheme.onPrimary
+                    OficiosTheme.colors.success
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
@@ -604,6 +640,8 @@ fun ProviderAvailabilityStepScreen(
     onServesAtClientHomeChanged: (Boolean) -> Unit,
     onServesAtLocalChanged: (Boolean) -> Unit,
     onRequiresTurnsChanged: (Boolean) -> Unit,
+    onTurnDurationChanged: (Int?) -> Unit,
+    onTurnIntervalChanged: (Int?) -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -643,6 +681,28 @@ fun ProviderAvailabilityStepScreen(
                 label = stringResource(R.string.onboarding_step_availability_requires_turns),
                 compactRow = true,
             )
+            if (uiState.requiresTurns) {
+                Column(
+                    modifier = Modifier.padding(start = OficiosSpacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                ) {
+                    OficiosTextField(
+                        value = uiState.turnDurationMinutes?.toString() ?: "",
+                        onValueChange = { onTurnDurationChanged(it.toIntOrNull()) },
+                        label = stringResource(R.string.onboarding_step_availability_turn_duration),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OficiosTextField(
+                        value = uiState.turnIntervalMinutes?.toString() ?: "",
+                        onValueChange = { onTurnIntervalChanged(it.toIntOrNull()) },
+                        label = stringResource(R.string.onboarding_step_availability_turn_interval),
+                        supportingText = stringResource(R.string.onboarding_step_availability_turn_interval_hint),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
         }
 
         AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_schedule)) {
@@ -751,9 +811,10 @@ fun ProviderLocalStepScreen(
     onBarrioSelected: (com.cocido.oficios.domain.model.CatalogOption) -> Unit,
     onBarrioSuggestionsDismissed: () -> Unit,
     onCalleChanged: (String) -> Unit,
+    onNumeroChanged: (String) -> Unit,
     onMapLocationSelected: (Double, Double) -> Unit,
-    onUseCurrentLocation: () -> Unit,
-    onLocationPermissionDenied: () -> Unit,
+    onLocateOnMap: () -> Unit,
+    onConfirmPin: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -776,13 +837,22 @@ fun ProviderLocalStepScreen(
             onSuggestionsDismissed = onBarrioSuggestionsDismissed,
         )
         OficiosTextField(value = uiState.calle, onValueChange = onCalleChanged, label = stringResource(R.string.onboarding_step_calle_label))
-        OficiosLocationPicker(
-            latitude = uiState.latitud,
-            longitude = uiState.longitud,
-            onLocationSelected = onMapLocationSelected,
-            onUseCurrentLocation = onUseCurrentLocation,
-            onPermissionDenied = onLocationPermissionDenied,
-            isLocating = uiState.isLocating,
+        OficiosTextField(value = uiState.numero, onValueChange = onNumeroChanged, label = stringResource(R.string.onboarding_step_numero_label))
+        OficiosAddressLocationPicker(
+            latitude = uiState.location.latitude,
+            longitude = uiState.location.longitude,
+            showMap = uiState.location.showMap,
+            pinDraggable = uiState.location.pinDraggable,
+            showLocateOnMap = uiState.location.showLocateOnMap,
+            showConfirm = uiState.location.showConfirm,
+            confirmed = uiState.location.confirmed,
+            isGeocoding = uiState.isGeocoding,
+            onLocateOnMap = onLocateOnMap,
+            onPinChanged = onMapLocationSelected,
+            onConfirmPin = onConfirmPin,
+            locateOnMapLabel = uiState.location.locateOnMapLabel,
+            title = "Ubicación del local",
+            hint = uiState.location.message,
         )
     }
 }
@@ -800,6 +870,7 @@ fun ProviderIdentityStepScreen(
     onSelfieImageSelected: (String?) -> Unit,
     onCertificateNameChanged: (String) -> Unit,
     onCertificateSelected: (String?) -> Unit,
+    onPickError: (String) -> Unit = {},
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -814,6 +885,9 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onFrontImageSelected,
+        onPickError = onPickError,
+        filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
     val backImagePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -821,6 +895,9 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onBackImageSelected,
+        onPickError = onPickError,
+        filePrefix = "dni",
+        cropMode = ImageCropMode.Document,
     )
     val selfieImagePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -828,6 +905,9 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onSelfieImageSelected,
+        onPickError = onPickError,
+        filePrefix = "selfie",
+        cropMode = ImageCropMode.Profile,
     )
     val certificatePicker = rememberImageSourcePicker(
         title = pickerTitle,
@@ -835,6 +915,9 @@ fun ProviderIdentityStepScreen(
         galleryLabel = galleryLabel,
         cancelLabel = cancelLabel,
         onImageSelected = onCertificateSelected,
+        onPickError = onPickError,
+        filePrefix = "certificado",
+        cropMode = ImageCropMode.Certificate,
     )
 
     OnboardingStepScaffold(
@@ -972,7 +1055,7 @@ fun ProviderIdentityStepScreen(
                     Text(
                         text = "Certificado seleccionado: ${uiState.certificatePath.substringAfterLast('/')}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = OficiosColorSuccess,
+                        color = OficiosTheme.colors.success,
                     )
                 }
             }

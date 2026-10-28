@@ -8,6 +8,7 @@ import com.cocido.oficios.core.network.api.social.dto.FavoritoStatusDto
 import com.cocido.oficios.domain.model.FavoritePage
 import com.cocido.oficios.domain.model.FavoriteStatus
 import com.cocido.oficios.domain.model.FavoriteWorker
+import com.cocido.oficios.domain.model.normalizeStarRating
 import com.cocido.oficios.domain.model.ReportReason
 import com.cocido.oficios.domain.model.SubmittedReport
 
@@ -16,9 +17,10 @@ fun FavoritoItemDto.toDomain(): FavoriteWorker = FavoriteWorker(
     workerId = trabajadorOficioId,
     displayName = displayName.ifBlank { "Trabajador" },
     specialtyLabel = specialtyLabel.orEmpty(),
-    rating = rating?.toFloat(),
+    rating = normalizeStarRating(puntajeGlobal ?: promedio ?: rating),
     avatarUrl = profilePhotoUrl,
     isVerified = verified,
+    reviewCount = cantidadCalificaciones ?: reviewCount,
 )
 
 fun PaginatedResponseDto<FavoritoItemDto>.toFavoritePage(): FavoritePage {

@@ -18,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
@@ -69,7 +68,7 @@ fun ProfileCompletionCard(
                 Text(
                     text = "Falta: ${missingItems.joinToString(", ")}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 

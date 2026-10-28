@@ -46,9 +46,6 @@ import com.cocido.oficios.core.designsystem.component.feedback.oficiosContentPha
 import com.cocido.oficios.core.designsystem.component.motion.oficiosAnimateItem
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosColorOutlineFill
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSecondaryText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorWhite
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -186,9 +183,9 @@ private fun NotificationRow(
 ) {
     val unreadLabel = stringResource(R.string.notifications_unread_label)
     val shape = RoundedCornerShape(OficiosRadius.sm)
-    val titleColor = if (item.isRead) OficiosColorSecondaryText else OficiosColorWhite
-    val bodyColor = if (item.isRead) OficiosColorSecondaryText else OficiosColorWhite
-    val iconTint = if (item.isRead) OficiosColorSecondaryText else OficiosColorWhite
+    val titleColor = if (item.isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+    val bodyColor = if (item.isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+    val iconTint = if (item.isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
     val description = buildString {
         append(item.title)
         if (!item.isRead) append(". ").append(unreadLabel)
@@ -198,7 +195,7 @@ private fun NotificationRow(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .border(1.dp, OficiosColorOutlineFill, shape)
+            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
             .clickable(onClick = onClick)
             .padding(OficiosSpacing.sm)
             .semantics(mergeDescendants = true) { contentDescription = description },
@@ -252,7 +249,7 @@ private fun NotificationRow(
                 Text(
                     text = item.createdAtLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    color = OficiosColorSecondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

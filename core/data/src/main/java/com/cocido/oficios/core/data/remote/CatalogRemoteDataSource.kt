@@ -22,11 +22,23 @@ class CatalogRemoteDataSource @Inject constructor(
         catalogApi.searchRubros(categoriaId = categoryId).data
     }
 
+    suspend fun fetchAllRubros(): AppResult<List<RubroDto>> = safeApiCall {
+        catalogApi.searchRubros(pageSize = 100).data
+    }
+
     suspend fun fetchSubRubros(rubroId: Long): AppResult<List<SubRubroDto>> = safeApiCall {
         catalogApi.searchSubRubros(rubroId = rubroId).data
     }
 
-    suspend fun fetchBarrios(query: String?, pageSize: Int = 20): AppResult<List<BarrioDto>> = safeApiCall {
-        catalogApi.searchBarrios(query = query, pageSize = pageSize).data
+    suspend fun fetchAllSubRubros(): AppResult<List<SubRubroDto>> = safeApiCall {
+        catalogApi.searchSubRubros(pageSize = 100).data
+    }
+
+    suspend fun fetchBarrios(
+        query: String?,
+        nombre: String? = query,
+        pageSize: Int = 20,
+    ): AppResult<List<BarrioDto>> = safeApiCall {
+        catalogApi.searchBarrios(query = query, nombre = nombre, pageSize = pageSize).data
     }
 }

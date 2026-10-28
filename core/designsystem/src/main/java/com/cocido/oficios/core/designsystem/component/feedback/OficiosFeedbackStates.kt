@@ -32,8 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
-import com.cocido.oficios.core.designsystem.theme.OficiosColorMutedText
-import com.cocido.oficios.core.designsystem.theme.OficiosColorSuccess
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -70,7 +68,7 @@ fun OficiosLoadingState(
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = OficiosColorMutedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -88,7 +86,7 @@ fun OficiosEmptyState(
     description: String,
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Outlined.Inbox,
-    iconTint: Color = OficiosColorMutedText,
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     iconSize: Dp = 72.dp,
     ctaLabel: String? = null,
     onCta: (() -> Unit)? = null,
@@ -126,7 +124,7 @@ fun OficiosEmptyState(
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = OficiosColorMutedText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         if (ctaLabel != null && onCta != null) {
@@ -222,7 +220,7 @@ fun OficiosSuccessState(
         Icon(
             imageVector = Icons.Outlined.CheckCircle,
             contentDescription = null,
-            tint = OficiosColorSuccess,
+            tint = OficiosTheme.colors.success,
             modifier = Modifier.size(72.dp),
         )
         Spacer(Modifier.height(OficiosSpacing.md))
@@ -236,7 +234,7 @@ fun OficiosSuccessState(
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = OficiosColorMutedText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         if (ctaLabel != null && onCta != null) {

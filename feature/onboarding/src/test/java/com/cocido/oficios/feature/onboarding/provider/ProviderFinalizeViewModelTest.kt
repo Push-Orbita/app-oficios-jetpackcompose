@@ -42,7 +42,7 @@ class ProviderFinalizeViewModelTest {
         val effects = mutableListOf<ProviderStepEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.finalize()
+        viewModel.finalizeProfile()
         advanceUntilIdle()
 
         assertTrue(effects.any { it is ProviderStepEffect.Finalized })
@@ -56,7 +56,7 @@ class ProviderFinalizeViewModelTest {
         val effects = mutableListOf<ProviderStepEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.finalize()
+        viewModel.finalizeProfile()
         advanceUntilIdle()
 
         assertTrue(effects.isEmpty())
