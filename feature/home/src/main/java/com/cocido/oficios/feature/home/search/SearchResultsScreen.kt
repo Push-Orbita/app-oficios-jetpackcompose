@@ -265,7 +265,7 @@ private fun SearchResultsHeader(
                 onBack = { onEvent(SearchResultsEvent.Back) },
                 actions = {
                     Row(
-                        modifier = Modifier.padding(end = OficiosSpacing.md),
+                        modifier = Modifier.padding(end = 28.dp),
                     ) {
                         com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton(
                             onClick = { onEvent(SearchResultsEvent.OpenNotifications) },
