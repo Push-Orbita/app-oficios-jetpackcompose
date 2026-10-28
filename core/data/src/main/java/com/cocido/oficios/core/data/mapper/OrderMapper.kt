@@ -93,6 +93,7 @@ fun String.toBookingStatus(): BookingStatus = when (trim().uppercase(Locale.ROOT
     "EN_CURSO", "LLEGUE" -> BookingStatus.IN_PROGRESS
     "FINALIZADA" -> BookingStatus.FINISHED
     "CANCELADA" -> BookingStatus.CANCELLED
+    "EXPIRADA" -> BookingStatus.EXPIRED
     else -> BookingStatus.PENDING
 }
 

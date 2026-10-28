@@ -53,7 +53,7 @@ fun orderStatusVisual(
             content = colors.onError,
         )
     }
-    if (status == ServiceRequestStatus.EXPIRED) {
+    if (status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.EXPIRED) {
         return OrderStatusVisual(
             labelRes = R.string.orders_status_expired,
             explanationRes = R.string.orders_explain_expired,
@@ -109,7 +109,7 @@ fun orderStatusVisual(
             container = colors.inverseSurface,
             content = colors.inverseOnSurface,
         )
-        BookingStatus.PENDING, BookingStatus.CANCELLED -> error("cubierto arriba")
+        BookingStatus.PENDING, BookingStatus.CANCELLED, BookingStatus.EXPIRED -> error("cubierto arriba")
     }
 }
 
@@ -123,7 +123,7 @@ fun orderTimelineStepIcon(step: OrderTimelineStep): ImageVector = when (step) {
 
 /** Misma secuencia para pendiente, confirmada, en camino, en curso y finalizada. Cancelada y expirada quedan afuera. */
 fun orderTimeline(status: ServiceRequestStatus, bookingStatus: BookingStatus?): List<OrderTimelineStep> {
-    if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.CANCELLED) {
+    if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.CANCELLED || bookingStatus == BookingStatus.EXPIRED) {
         return emptyList()
     }
     return listOf(
@@ -196,7 +196,7 @@ fun punctualityStars(score: Int?): Int? = score?.coerceIn(1, 5)
 fun orderScreenTitleRes(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int = when {
     status == ServiceRequestStatus.CANCELLED || bookingStatus == BookingStatus.CANCELLED ->
         R.string.orders_title_cancelled
-    status == ServiceRequestStatus.EXPIRED -> R.string.orders_title_cancelled
+    status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.EXPIRED -> R.string.orders_title_cancelled
     status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER ->
         R.string.orders_title_pending
     bookingStatus == BookingStatus.FINISHED -> R.string.orders_title_detail

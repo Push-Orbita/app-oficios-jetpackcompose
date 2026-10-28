@@ -238,6 +238,10 @@ class AccountRepositoryImpl @Inject constructor(
         existing: ManagedProviderService,
         request: ProviderRubroFullRequest,
     ): AppResult<Unit> {
+        when (val result = providerRemote.updateRubroFull(existing.id, request.toDto())) {
+            is AppResult.Error -> return result.map { }
+            is AppResult.Success -> Unit
+        }
         if (request.paymentMethods.isNotEmpty()) {
             when (
                 val payments = providerRemote.updateProfessionalInfo(

@@ -501,7 +501,7 @@ private fun OrderDetailContent(
             }
         }
 
-        if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING && order.status != ServiceRequestStatus.CANCELLED) {
+        if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING && order.status != ServiceRequestStatus.CANCELLED && order.status != ServiceRequestStatus.EXPIRED && order.bookingStatus != BookingStatus.EXPIRED) {
             CancelOrderButton(
                 enabled = !state.isActionInProgress,
                 onClick = { showCancelDialog = true },

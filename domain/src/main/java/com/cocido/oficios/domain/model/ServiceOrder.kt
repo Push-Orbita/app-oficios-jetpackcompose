@@ -19,6 +19,7 @@ enum class BookingStatus {
     IN_PROGRESS,
     FINISHED,
     CANCELLED,
+    EXPIRED,
 }
 
 enum class CounterOfferStatus {
@@ -134,7 +135,7 @@ fun ordersListComparator(sort: OrdersListSort): Comparator<ServiceOrderListItem>
 }
 
 /**
- * Historial: solicitud cancelada/expirada, booking FINALIZADA/CANCELADA,
+ * Historial: solicitud cancelada/expirada, booking FINALIZADA/CANCELADA/EXPIRADA,
  * o PENDIENTE/CONTRAPROPUESTA/CONFIRMADA cuya franja ya terminó.
  * EN_CAMINO / EN_CURSO (y LLEGUE mapeado a en curso) siguen en Activos
  * aunque el horario haya pasado: el trabajo está en marcha.
@@ -142,7 +143,7 @@ fun ordersListComparator(sort: OrdersListSort): Comparator<ServiceOrderListItem>
  */
 fun ServiceOrderListItem.isHistoryOrder(now: ZonedDateTime): Boolean {
     if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return true
-    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED) return true
+    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED || bookingStatus == BookingStatus.EXPIRED) return true
     if (bookingStatus == BookingStatus.EN_ROUTE || bookingStatus == BookingStatus.IN_PROGRESS) return false
     return isElapsedUnstartedSlot(now)
 }
@@ -199,7 +200,7 @@ fun List<ServiceOrderListItem>.recentClientWorkers(limit: Int = 8): List<WorkerS
 fun ServiceOrder.withArrivedTracking(trackingStatus: String?): ServiceOrder {
     if (!trackingStatus.orEmpty().trim().equals("LLEGUE", ignoreCase = true)) return this
     if (status == ServiceRequestStatus.CANCELLED || status == ServiceRequestStatus.EXPIRED) return this
-    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED) return this
+    if (bookingStatus == BookingStatus.FINISHED || bookingStatus == BookingStatus.CANCELLED || bookingStatus == BookingStatus.EXPIRED) return this
     return copy(bookingStatus = BookingStatus.IN_PROGRESS)
 }
 

@@ -27,6 +27,12 @@ interface ProviderProfileApi {
         @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
     )
 
+    @PATCH("trabajador-oficio-rubro/{id}/full")
+    suspend fun updateRubroFull(
+        @Path("id") id: Long,
+        @Body request: CreateFullAltaRubrosSubrubrosRequestDto,
+    )
+
     @POST("trabajador-oficio/me/finalizar-perfil")
     suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto
 
