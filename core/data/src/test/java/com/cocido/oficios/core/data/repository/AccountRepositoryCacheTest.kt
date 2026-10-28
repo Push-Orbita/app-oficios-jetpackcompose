@@ -176,7 +176,7 @@ class AccountRepositoryCacheTest {
     }
 
     @Test
-    fun `replace of cached service posts sesion and never deletes`() = runTest {
+    fun `edit cached service uses PATCH and creates sesion when needed`() = runTest {
         val api = RecordingProviderProfileApi(createSucceeds = true)
         val agenda = RecordingAgendaApi()
         authApi.rubros = listOf(existingRubroDto())
@@ -185,6 +185,7 @@ class AccountRepositoryCacheTest {
         assertTrue(repository.getProfile() is AppResult.Success)
         val result = repository.replaceProviderService(11L, true, sampleReplaceRequest())
         assertTrue(result is AppResult.Success)
+        assertEquals(1, api.updateRubroFullCalls)
         assertEquals(0, api.createFullCalls)
         assertEquals(emptyList<Long>(), api.deletedIds)
         assertEquals(1, agenda.createSesionCalls)
@@ -192,7 +193,7 @@ class AccountRepositoryCacheTest {
     }
 
     @Test
-    fun `destildar does not delete sesion nor invent a subrubro patch`() = runTest {
+    fun `disabling turns uses PATCH and does not delete sesion`() = runTest {
         val api = RecordingProviderProfileApi(createSucceeds = true)
         val agenda = RecordingAgendaApi()
         authApi.rubros = listOf(existingRubroDto(requiresTurns = true))
@@ -213,6 +214,7 @@ class AccountRepositoryCacheTest {
             sampleReplaceRequest().copy(requiresTurns = false),
         )
         assertTrue(result is AppResult.Success)
+        assertEquals(1, api.updateRubroFullCalls)
         assertEquals(0, api.createFullCalls)
         assertEquals(emptyList<Long>(), api.deletedIds)
         assertEquals(0, agenda.createSesionCalls)
@@ -221,7 +223,7 @@ class AccountRepositoryCacheTest {
     }
 
     @Test
-    fun `extra specialty ids on edit do not invent a subrubro post`() = runTest {
+    fun `editing specialty ids uses PATCH and does not recreate service`() = runTest {
         val api = RecordingProviderProfileApi(createSucceeds = true)
         authApi.rubros = listOf(existingRubroDto())
         accountApi.currentUser = providerUser()
@@ -233,6 +235,7 @@ class AccountRepositoryCacheTest {
             sampleReplaceRequest().copy(subRubroIds = listOf(100, 200), requiresTurns = false),
         )
         assertTrue(result is AppResult.Success)
+        assertEquals(1, api.updateRubroFullCalls)
         assertEquals(0, api.createFullCalls)
         assertEquals(emptyList<Long>(), api.deletedIds)
         assertEquals(listOf(100L), repository.providerDetails.value?.services?.single()?.subServices?.map { it.catalogSubRubroId })
@@ -459,6 +462,7 @@ private class RecordingProviderProfileApi(
     private val createSucceeds: Boolean,
 ) : ProviderProfileApi {
     var createFullCalls = 0
+    var updateRubroFullCalls = 0
     val deletedIds = mutableListOf<Long>()
 
     override suspend fun updateProfile(request: UpdateTrabajadorPerfilProfesionalRequestDto) = unused()
@@ -467,7 +471,9 @@ private class RecordingProviderProfileApi(
         if (!createSucceeds) throw va01()
     }
     override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
-    override suspend fun updateRubroFull(id: Long, request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
+    override suspend fun updateRubroFull(id: Long, request: CreateFullAltaRubrosSubrubrosRequestDto) {
+        updateRubroFullCalls += 1
+    }
     override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
     override suspend fun deleteRubro(id: Long) {
         deletedIds += id
