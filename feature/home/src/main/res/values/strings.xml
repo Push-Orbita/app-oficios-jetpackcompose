@@ -229,6 +229,7 @@
     <string name="orders_title_finish">Terminar pedido</string>
     <string name="orders_title_detail">Detalle del pedido</string>
     <string name="orders_title_cancelled">Pedido cancelado</string>
+    <string name="orders_title_expired">Pedido expirado</string>
     <string name="orders_cancel_deadline">Plazo de cancelación: %1$s</string>
     <string name="orders_field_cancel_deadline">Plazo de cancelación:</string>
     <string name="orders_map_missing_location">No hay una ubicación precisa para mostrar en el mapa.</string>

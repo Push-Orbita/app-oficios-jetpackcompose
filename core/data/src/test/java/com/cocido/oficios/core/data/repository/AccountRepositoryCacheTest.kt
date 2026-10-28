@@ -467,6 +467,7 @@ private class RecordingProviderProfileApi(
         if (!createSucceeds) throw va01()
     }
     override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
+    override suspend fun updateRubroFull(id: Long, request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
     override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
     override suspend fun deleteRubro(id: Long) {
         deletedIds += id
@@ -483,6 +484,7 @@ private class UnusedProviderProfileApi : ProviderProfileApi {
     override suspend fun updateProfile(request: UpdateTrabajadorPerfilProfesionalRequestDto) = unused()
     override suspend fun createRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
     override suspend fun createSecondaryRubroFull(request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
+    override suspend fun updateRubroFull(id: Long, request: CreateFullAltaRubrosSubrubrosRequestDto) = unused()
     override suspend fun finalizeProfile(): TrabajadorPerfilEstadoDto = unused()
     override suspend fun deleteRubro(id: Long) = unused()
 }

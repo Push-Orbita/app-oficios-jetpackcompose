@@ -58,7 +58,7 @@ fun orderStatusVisual(
             labelRes = R.string.orders_status_expired,
             explanationRes = R.string.orders_explain_expired,
             icon = Icons.Outlined.Cancel,
-            container = colors.errorContainer,
+            container = colors.error,
             content = colors.onError,
         )
     }
@@ -196,7 +196,7 @@ fun punctualityStars(score: Int?): Int? = score?.coerceIn(1, 5)
 fun orderScreenTitleRes(status: ServiceRequestStatus, bookingStatus: BookingStatus?): Int = when {
     status == ServiceRequestStatus.CANCELLED || bookingStatus == BookingStatus.CANCELLED ->
         R.string.orders_title_cancelled
-    status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.EXPIRED -> R.string.orders_title_cancelled
+    status == ServiceRequestStatus.EXPIRED || bookingStatus == BookingStatus.EXPIRED -> R.string.orders_title_expired
     status == ServiceRequestStatus.PENDING || status == ServiceRequestStatus.COUNTER_OFFER ->
         R.string.orders_title_pending
     bookingStatus == BookingStatus.FINISHED -> R.string.orders_title_detail
