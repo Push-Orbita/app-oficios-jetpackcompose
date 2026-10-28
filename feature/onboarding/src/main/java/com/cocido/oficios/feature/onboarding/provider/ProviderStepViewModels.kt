@@ -402,6 +402,8 @@ data class ProviderAvailabilityUiState(
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
     val requiresTurns: Boolean = false,
+    val turnDurationMinutes: Int? = null,
+    val turnIntervalMinutes: Int? = null,
     val hasRubroContext: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -409,7 +411,8 @@ data class ProviderAvailabilityUiState(
     val canSubmit: Boolean
         get() = hasRubroContext &&
             selectedWorkDays.isNotEmpty() &&
-            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() }
+            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } &&
+            (!requiresTurns || turnDurationMinutes != null)
 }
 
 private object ProviderAvailabilityDefaults {
@@ -458,6 +461,8 @@ class ProviderAvailabilityViewModel @Inject constructor(
                         servesAtClientHome = draft.servesAtClientHome,
                         servesAtLocal = draft.servesAtLocal,
                         requiresTurns = draft.requiresTurns,
+                        turnDurationMinutes = draft.turnDurationMinutes,
+                        turnIntervalMinutes = draft.turnIntervalMinutes,
                         hasRubroContext = draft.rubroId > 0 && draft.subRubroIds.isNotEmpty(),
                     )
                 }
@@ -497,12 +502,26 @@ class ProviderAvailabilityViewModel @Inject constructor(
 
     fun onServesAtClientHomeChanged(value: Boolean) = _uiState.update { it.copy(servesAtClientHome = value, error = null) }
     fun onServesAtLocalChanged(value: Boolean) = _uiState.update { it.copy(servesAtLocal = value, error = null) }
-    fun onRequiresTurnsChanged(value: Boolean) = _uiState.update { it.copy(requiresTurns = value, error = null) }
+    fun onRequiresTurnsChanged(value: Boolean) = _uiState.update {
+        it.copy(
+            requiresTurns = value,
+            turnDurationMinutes = if (value && it.turnDurationMinutes == null) 60 else it.turnDurationMinutes,
+            error = null,
+        )
+    }
+    fun onTurnDurationChanged(minutes: Int?) = _uiState.update { it.copy(turnDurationMinutes = minutes, error = null) }
+    fun onTurnIntervalChanged(minutes: Int?) = _uiState.update { it.copy(turnIntervalMinutes = minutes, error = null) }
 
     fun submit() {
         val state = _uiState.value
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Complete días, horarios y dónde atiende") }
+            val message = when {
+                state.requiresTurns && state.turnDurationMinutes == null -> "Ingrese la duración del turno"
+                !state.selectedWorkDays.any() -> "Seleccione al menos un día laboral"
+                !state.timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } -> "Configure al menos un horario"
+                else -> "Complete días, horarios y dónde atiende"
+            }
+            _uiState.update { it.copy(error = message) }
             return
         }
         viewModelScope.launch {
@@ -528,6 +547,8 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 servesAtClientHome = state.servesAtClientHome,
                 servesAtLocal = state.servesAtLocal,
                 requiresTurns = state.requiresTurns,
+                turnDurationMinutes = state.turnDurationMinutes,
+                turnIntervalMinutes = state.turnIntervalMinutes,
             )
             registerTradeDraftRepository.save(updatedDraft)
             when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {

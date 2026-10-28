@@ -640,6 +640,8 @@ fun ProviderAvailabilityStepScreen(
     onServesAtClientHomeChanged: (Boolean) -> Unit,
     onServesAtLocalChanged: (Boolean) -> Unit,
     onRequiresTurnsChanged: (Boolean) -> Unit,
+    onTurnDurationChanged: (Int?) -> Unit,
+    onTurnIntervalChanged: (Int?) -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -679,6 +681,28 @@ fun ProviderAvailabilityStepScreen(
                 label = stringResource(R.string.onboarding_step_availability_requires_turns),
                 compactRow = true,
             )
+            if (uiState.requiresTurns) {
+                Column(
+                    modifier = Modifier.padding(start = OficiosSpacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                ) {
+                    OficiosTextField(
+                        value = uiState.turnDurationMinutes?.toString() ?: "",
+                        onValueChange = { onTurnDurationChanged(it.toIntOrNull()) },
+                        label = stringResource(R.string.onboarding_step_availability_turn_duration),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OficiosTextField(
+                        value = uiState.turnIntervalMinutes?.toString() ?: "",
+                        onValueChange = { onTurnIntervalChanged(it.toIntOrNull()) },
+                        label = stringResource(R.string.onboarding_step_availability_turn_interval),
+                        helperText = stringResource(R.string.onboarding_step_availability_turn_interval_hint),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
         }
 
         AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_schedule)) {

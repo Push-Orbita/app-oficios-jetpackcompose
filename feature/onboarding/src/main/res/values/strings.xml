@@ -94,6 +94,9 @@
     <string name="onboarding_step_availability_serves_at_home">A domicilio del cliente</string>
     <string name="onboarding_step_availability_serves_at_local">En local comercial</string>
     <string name="onboarding_step_availability_requires_turns">Requiere agenda de turnos</string>
+    <string name="onboarding_step_availability_turn_duration">Duración del turno (minutos)</string>
+    <string name="onboarding_step_availability_turn_interval">Intervalo entre turnos (minutos)</string>
+    <string name="onboarding_step_availability_turn_interval_hint">Opcional. Tiempo de descanso entre turnos.</string>
     <string name="onboarding_step_availability_from">Desde</string>
     <string name="onboarding_step_availability_to">Hasta</string>
     <string name="onboarding_step_availability_add_schedule">Agregar horario</string>

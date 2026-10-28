@@ -80,7 +80,16 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
             lugarDomicilio = servesAtClientHome,
             lugarLocal = servesAtLocal,
             requiereTurnos = requiresTurns,
-            sesion = if (requiresTurns) defaultTurnSession() else null,
+            sesion = if (requiresTurns) {
+                CreateSesionItemRequestDto(
+                    duracion = turnDurationMinutes ?: DEFAULT_TURN_DURATION_MINUTES,
+                    medidaDuracion = DEFAULT_TURN_DURATION_UNIT,
+                    intervalo = turnIntervalMinutes?.toString(),
+                    medidaIntervalo = if (turnIntervalMinutes != null) DEFAULT_TURN_DURATION_UNIT else null,
+                )
+            } else {
+                null
+            },
         )
     },
     diasLaborales = weeklyAvailability?.toReplaceDays()?.map { day ->
@@ -111,16 +120,8 @@ fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
     metodosPago = paymentMethods.takeIf { it.isNotEmpty() },
 )
 
-private fun defaultTurnSession() = CreateSesionItemRequestDto(
-    duracion = DEFAULT_TURN_DURATION_MINUTES,
-    medidaDuracion = DEFAULT_TURN_DURATION_UNIT,
-    intervalo = DEFAULT_TURN_INTERVAL,
-    medidaIntervalo = DEFAULT_TURN_DURATION_UNIT,
-)
-
 private const val DEFAULT_TURN_DURATION_MINUTES = 60
 private const val DEFAULT_TURN_DURATION_UNIT = "minutos"
-private const val DEFAULT_TURN_INTERVAL = "15"
 
 private fun List<RegisterTradeTimeSlotDraft>.toHorarios(): List<CreateHorarioLaboralRequestDto> =
     filter { it.from.isNotBlank() && it.to.isNotBlank() }
