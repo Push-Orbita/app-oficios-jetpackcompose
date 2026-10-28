@@ -65,6 +65,7 @@ fun SearchResultsScreen(
     selectedTab: ClientHomeTab = ClientHomeTab.INICIO,
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = null,
+    unreadNotificationCount: Int = 0,
 ) {
     val searchFocusRequester = remember { FocusRequester() }
     val filters = when (uiState) {
@@ -101,6 +102,7 @@ fun SearchResultsScreen(
                 showContactLimit = uiState !is SearchResultsUiState.Idle,
                 filterChips = filterChips,
                 resultCount = (uiState as? SearchResultsUiState.Success)?.workers?.size,
+                unreadNotificationCount = unreadNotificationCount,
                 onEvent = onEvent,
             )
             val isRefreshing = when (uiState) {
@@ -198,6 +200,7 @@ private fun SearchResultsHeader(
     showContactLimit: Boolean,
     filterChips: List<FilterChip>,
     resultCount: Int?,
+    unreadNotificationCount: Int,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
     val rubroLabel = filters.rubroLabel ?: filters.subRubroLabel
@@ -263,7 +266,13 @@ private fun SearchResultsHeader(
             com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar(
                 title = stringResource(R.string.home_categories_title),
                 onBack = { onEvent(SearchResultsEvent.Back) },
-                actions = {},
+                actions = {
+                    com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton(
+                        onClick = { onEvent(SearchResultsEvent.OpenNotifications) },
+                        contentDescription = stringResource(R.string.home_notifications),
+                        unreadCount = unreadNotificationCount,
+                    )
+                },
                 showDivider = false,
             )
             if (showContactLimit) {

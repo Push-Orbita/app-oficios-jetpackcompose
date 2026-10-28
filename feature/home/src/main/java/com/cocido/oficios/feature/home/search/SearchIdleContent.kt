@@ -47,7 +47,7 @@ fun SearchIdleContent(
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = OficiosSpacing.xl, vertical = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         if (state.suggestions.isNotEmpty()) {
             IdleSectionTitle(stringResource(R.string.home_search_suggestions_title))
@@ -145,7 +145,7 @@ private fun SuggestionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = OficiosSpacing.xs),
+            .padding(vertical = OficiosSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
@@ -196,7 +196,7 @@ private fun RecentQueryRow(
             modifier = Modifier
                 .weight(1f)
                 .clickable(onClick = onClick)
-                .padding(vertical = OficiosSpacing.xs),
+                .padding(vertical = OficiosSpacing.xxs),
         )
         Icon(
             imageVector = ImageVector.vectorResource(OficiosIcons.X),
@@ -218,7 +218,7 @@ private fun RecentWorkerRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = OficiosSpacing.xs),
+            .padding(vertical = OficiosSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {

@@ -98,6 +98,7 @@ class SearchResultsViewModel @Inject constructor(
             SearchResultsEvent.Retry -> refresh()
             SearchResultsEvent.Refresh -> pullToRefresh()
             SearchResultsEvent.Back -> emitEffect(SearchResultsEffect.NavigateBack)
+            SearchResultsEvent.OpenNotifications -> emitEffect(SearchResultsEffect.NavigateToNotifications)
             SearchResultsEvent.LoadNextPage -> loadNextPage()
             SearchResultsEvent.OpenFilters -> openFilters()
             SearchResultsEvent.DismissFilters -> _filterSheetState.update { it.copy(visible = false) }
@@ -856,6 +857,7 @@ sealed interface SearchResultsEvent {
     data object Retry : SearchResultsEvent
     data object Refresh : SearchResultsEvent
     data object Back : SearchResultsEvent
+    data object OpenNotifications : SearchResultsEvent
     data object LoadNextPage : SearchResultsEvent
     data object OpenFilters : SearchResultsEvent
     data object DismissFilters : SearchResultsEvent
@@ -900,6 +902,7 @@ data class SearchSuggestion(
 
 sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect
+    data object NavigateToNotifications : SearchResultsEffect
     data class NavigateToWorker(val workerId: Long) : SearchResultsEffect
     data class NavigateToHire(val workerId: Long) : SearchResultsEffect
     data class ShowMessage(val message: String) : SearchResultsEffect
