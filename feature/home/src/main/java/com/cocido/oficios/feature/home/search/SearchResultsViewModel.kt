@@ -8,6 +8,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.domain.model.WorkerSummary
+import com.cocido.oficios.domain.model.averageStarRating
 import com.cocido.oficios.domain.model.catalogSuggestions
 import com.cocido.oficios.domain.model.hasSearchCriteria
 import com.cocido.oficios.domain.model.normalizeSearchText
@@ -25,6 +26,7 @@ import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
 import com.cocido.oficios.domain.usecase.search.RemoveRecentSearchUseCase
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
+import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import com.cocido.oficios.feature.home.common.persistTo
 import com.cocido.oficios.feature.home.common.toWorkerSearchFiltersWithExtras
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,6 +58,7 @@ class SearchResultsViewModel @Inject constructor(
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val getWorkerReviewsUseCase: GetWorkerReviewsUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SearchResultsUiState>(SearchResultsUiState.Loading)
@@ -82,6 +85,7 @@ class SearchResultsViewModel @Inject constructor(
     private var idleWorkers: List<WorkerSummary> = emptyList()
     private var catalogRubros: List<CatalogOption> = emptyList()
     private var catalogSubRubros: List<CatalogOption> = emptyList()
+    private val ratingsCache = mutableMapOf<Long, Pair<Float?, Int?>>()
 
     init {
         observeRecents()
@@ -242,6 +246,7 @@ class SearchResultsViewModel @Inject constructor(
                                 endReached = endReached,
                             )
                         }
+                        enrichWorkersWithRatings(result.data.items)
                     } else {
                         if (result.data.items.isEmpty()) {
                             pendingTrackOnSuccess = false
@@ -259,6 +264,7 @@ class SearchResultsViewModel @Inject constructor(
                                     endReached = endReached,
                                 )
                             }
+                            enrichWorkersWithRatings(result.data.items)
                         }
                     }
                 }
@@ -712,6 +718,49 @@ class SearchResultsViewModel @Inject constructor(
                 label = query,
             )
             else -> null
+        }
+    }
+
+    private fun enrichWorkersWithRatings(workers: List<WorkerSummary>) {
+        viewModelScope.launch {
+            val workersToEnrich = workers.filter { worker ->
+                worker.rating == null && !ratingsCache.containsKey(worker.id)
+            }
+            
+            if (workersToEnrich.isEmpty()) return@launch
+            
+            workersToEnrich.forEach { worker ->
+                launch {
+                    val reviewsResult = getWorkerReviewsUseCase(
+                        workerId = worker.id,
+                        pageNumber = 1,
+                        pageSize = 20
+                    )
+                    
+                    if (reviewsResult is AppResult.Success) {
+                        val reviews = reviewsResult.data.items
+                        val rating = reviews.averageStarRating()
+                        val count = reviews.size.takeIf { it > 0 }
+                        
+                        ratingsCache[worker.id] = Pair(rating, count)
+                        
+                        _uiState.update { state ->
+                            if (state is SearchResultsUiState.Success) {
+                                val enrichedWorkers = state.workers.map { w ->
+                                    if (w.id == worker.id && w.rating == null) {
+                                        w.copy(rating = rating, reviewCount = count)
+                                    } else {
+                                        w
+                                    }
+                                }
+                                state.copy(workers = enrichedWorkers)
+                            } else {
+                                state
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
