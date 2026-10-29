@@ -115,6 +115,7 @@ private fun HomeSuccessContent(
             profilePhotoUrl = content.profilePhotoUrl,
             unreadNotificationCount = unreadNotificationCount,
             onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
+            onProfileClick = { onEvent(HomeEvent.NavigateToSettings) },
         )
         if (content.featuredWorkers.isNotEmpty()) {
             HomeRecentWorkersSection(

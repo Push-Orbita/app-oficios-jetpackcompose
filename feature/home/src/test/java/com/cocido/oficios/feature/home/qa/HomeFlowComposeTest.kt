@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientHomeContent
@@ -12,6 +13,7 @@ import com.cocido.oficios.domain.model.OrdersListFilter
 import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.feature.home.CategoriesScreen
 import com.cocido.oficios.feature.home.CategoriesUiState
+import com.cocido.oficios.feature.home.HomeEvent
 import com.cocido.oficios.feature.home.HomeScreen
 import com.cocido.oficios.feature.home.HomeUiState
 import com.cocido.oficios.feature.home.components.ClientHomeTab
@@ -27,6 +29,7 @@ import com.cocido.oficios.feature.home.rubros.RubrosUiState
 import com.cocido.oficios.feature.home.search.FilterSheetUiState
 import com.cocido.oficios.feature.home.search.SearchResultsScreen
 import com.cocido.oficios.feature.home.search.SearchResultsUiState
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,8 +85,36 @@ class HomeFlowComposeTest {
         }
         composeRule.onNodeWithText("¿Qué oficio está buscando?").assertDoesNotExist()
         composeRule.onNodeWithText("QA").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Abrir perfil").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Notificaciones").assertIsDisplayed()
         composeRule.onNodeWithText("Hogar").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeProfileClickNavigatesToPerfil() {
+        var lastEvent: HomeEvent? = null
+        composeRule.setContent {
+            OficiosTheme {
+                HomeScreen(
+                    uiState = HomeUiState.Success(
+                        ClientHomeContent(
+                            userDisplayName = "Daniel Gonzales",
+                            emailVerified = true,
+                            profilePhotoUrl = null,
+                            recentSearches = emptyList(),
+                            categories = listOf(HomeCategoryItem(1, "Hogar")),
+                        ),
+                    ),
+                    unreadNotificationCount = 0,
+                    selectedTab = ClientHomeTab.INICIO,
+                    onEvent = { lastEvent = it },
+                    onTabSelected = {},
+                    showFavorites = true,
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Abrir perfil").performClick()
+        assertEquals(HomeEvent.NavigateToSettings, lastEvent)
     }
 
     @Test

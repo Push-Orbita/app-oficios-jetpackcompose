@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,10 @@ import com.cocido.oficios.feature.home.common.HomeChromeViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton
@@ -27,8 +32,10 @@ fun ClientHomeHeader(
     profilePhotoUrl: String? = null,
     unreadNotificationCount: Int = 0,
     onNotificationsClick: () -> Unit,
+    onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val openProfileLabel = stringResource(R.string.home_open_profile)
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -37,7 +44,13 @@ fun ClientHomeHeader(
         Row(
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .semantics(mergeDescendants = true) {
+                    role = Role.Button
+                    contentDescription = openProfileLabel
+                }
+                .clickable(role = Role.Button, onClick = onProfileClick),
         ) {
             OficiosAvatar(
                 name = userName,

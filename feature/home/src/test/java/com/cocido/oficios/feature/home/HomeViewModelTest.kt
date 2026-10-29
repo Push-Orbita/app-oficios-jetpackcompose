@@ -69,6 +69,22 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `profile click navigates to perfil tab`() = runTest(testDispatcher) {
+        val repository = FakeHomeRepository()
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+
+        val effects = mutableListOf<HomeEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.onEvent(HomeEvent.NavigateToSettings)
+        advanceUntilIdle()
+        job.cancel()
+
+        assertTrue(effects.any { it is HomeEffect.NavigateToSettings })
+    }
+
+    @Test
     fun `refresh failure keeps content and stops refreshing`() = runTest(testDispatcher) {
         val repository = FakeHomeRepository()
         val viewModel = createViewModel(repository)
