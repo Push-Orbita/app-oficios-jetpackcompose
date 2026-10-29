@@ -711,10 +711,10 @@ fun ProviderAvailabilityStepScreen(
                 value = uiState.plazoCancelacionHorasInput,
                 onValueChange = onPlazoCancelacionHorasChanged,
                 label = stringResource(R.string.onboarding_step_availability_cancellation_hours),
-                supportingText = stringResource(R.string.onboarding_step_availability_cancellation_hours_hint),
+                supportingText = uiState.plazoCancelacionHorasError
+                    ?: stringResource(R.string.onboarding_step_availability_cancellation_hours_hint),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = uiState.plazoCancelacionHorasError != null,
-                errorText = uiState.plazoCancelacionHorasError,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

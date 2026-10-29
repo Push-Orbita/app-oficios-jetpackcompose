@@ -369,10 +369,10 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
         value = state.plazoCancelacionHorasInput,
         onValueChange = { onEvent(AddServiceEvent.PlazoCancelacionHorasChanged(it)) },
         label = stringResource(R.string.services_cancellation_hours),
-        supportingText = stringResource(R.string.services_cancellation_hours_hint),
+        supportingText = state.plazoCancelacionHorasError
+            ?: stringResource(R.string.services_cancellation_hours_hint),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         isError = state.plazoCancelacionHorasError != null,
-        errorText = state.plazoCancelacionHorasError,
     )
     if (state.servesAtLocal) {
         Text(stringResource(R.string.services_local_address), style = MaterialTheme.typography.titleMedium)

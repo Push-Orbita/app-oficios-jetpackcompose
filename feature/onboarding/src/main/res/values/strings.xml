@@ -99,6 +99,7 @@
     <string name="onboarding_step_availability_turn_interval_hint">Opcional. Tiempo de descanso entre turnos.</string>
     <string name="onboarding_step_availability_cancellation_hours">Plazo de cancelación (horas)</string>
     <string name="onboarding_step_availability_cancellation_hours_hint">Entre 1 y 24. Vacío = valor del catálogo.</string>
+    <string name="onboarding_step_availability_cancellation_hours_error">Ingrese un valor entre 1 y 24, o deje vacío</string>
     <string name="onboarding_step_availability_from">Desde</string>
     <string name="onboarding_step_availability_to">Hasta</string>
     <string name="onboarding_step_availability_add_schedule">Agregar horario</string>
