@@ -34,6 +34,7 @@ data class ProviderIdentityUiState(
     val frontRemoteLoaded: Boolean = false,
     val backRemoteLoaded: Boolean = false,
     val selfieRemoteLoaded: Boolean = false,
+    val selfieRemoteStatus: String? = null,
     val existingSelfieDocumentId: Long? = null,
     val existingCertificateName: String? = null,
     val isLoading: Boolean = false,
@@ -45,6 +46,9 @@ data class ProviderIdentityUiState(
             (backImagePath != null || backRemoteLoaded) &&
             (selfieImagePath != null || selfieRemoteLoaded) &&
             documento.isNotBlank()
+    
+    val isSelfieRejected: Boolean 
+        get() = selfieRemoteStatus?.equals("RECHAZADO", ignoreCase = true) == true
 }
 
 @HiltViewModel
@@ -96,6 +100,7 @@ class ProviderIdentityViewModel @Inject constructor(
                         it.copy(
                             existingSelfieDocumentId = selfie.id,
                             selfieRemoteLoaded = !selfie.url.isNullOrBlank(),
+                            selfieRemoteStatus = selfie.status,
                         )
                     }
                 }
@@ -186,9 +191,11 @@ class ProviderIdentityViewModel @Inject constructor(
 
             // 3. Subir selfie si es nueva
             if (selfie != null) {
-                val selfieResult = state.existingSelfieDocumentId?.let { documentId ->
-                    replaceProviderSelfieUseCase(documentId, selfie)
-                } ?: uploadProviderSelfieUseCase(selfie)
+                val selfieResult = if (state.existingSelfieDocumentId != null && state.isSelfieRejected) {
+                    replaceProviderSelfieUseCase(state.existingSelfieDocumentId, selfie)
+                } else {
+                    uploadProviderSelfieUseCase(selfie)
+                }
 
                 when (selfieResult) {
                     is AppResult.Error -> {
