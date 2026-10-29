@@ -26,8 +26,12 @@ class IdentityDocumentApiIntegrationTest {
         server.start()
         api = NetworkTestFactory.createIdentityDocumentApi(server)
         uploadDataSource = IdentityDocumentUploadDataSource(api)
-        frontFile = File.createTempFile("dni_front", ".jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
-        backFile = File.createTempFile("dni_back", ".png").apply { writeBytes(byteArrayOf(4, 5, 6)) }
+        frontFile = File.createTempFile("dni_front", ".jpg").apply {
+            writeBytes(byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte()))
+        }
+        backFile = File.createTempFile("dni_back", ".png").apply {
+            writeBytes(byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A))
+        }
     }
 
     @After
@@ -51,8 +55,8 @@ class IdentityDocumentApiIntegrationTest {
         assertTrue(request.headers["Content-Type"]?.startsWith("multipart/") == true)
         assertTrue(body.contains("name=\"${DniImageUploadContract.PART_FRONT_FIELD}\""))
         assertTrue(body.contains("name=\"${DniImageUploadContract.PART_BACK_FIELD}\""))
-        assertTrue(body.contains("filename=\"${DniImageUploadContract.FRONT_FILE_PREFIX}.jpg\""))
-        assertTrue(body.contains("filename=\"${DniImageUploadContract.BACK_FILE_PREFIX}.png\""))
+        assertTrue(body.contains("filename=\"${DniImageUploadContract.FRONT_FILE_PREFIX}_"))
+        assertTrue(body.contains("filename=\"${DniImageUploadContract.BACK_FILE_PREFIX}_"))
         assertTrue(body.contains("Content-Type: image/jpeg"))
         assertTrue(body.contains("Content-Type: image/png"))
     }
@@ -61,7 +65,9 @@ class IdentityDocumentApiIntegrationTest {
     fun `upload selfie sends multipart aligned with backend contract`() = runTest {
         server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
 
-        val selfieFile = File.createTempFile("selfie", ".jpg").apply { writeBytes(byteArrayOf(1, 2, 3)) }
+        val selfieFile = File.createTempFile("selfie", ".jpg").apply {
+            writeBytes(byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte()))
+        }
         uploadDataSource.uploadSelfie(selfieFile.absolutePath)
 
         val request = server.takeRequest()
@@ -70,6 +76,8 @@ class IdentityDocumentApiIntegrationTest {
         assertEquals("POST", request.method)
         assertTrue(request.path?.startsWith("/img-documento/subir-documento-selfie") == true)
         assertTrue(body.contains("name=\"selfieArchivo\""))
+        assertTrue(body.contains("filename=\"selfie_"))
+        assertTrue(body.contains("Content-Type: image/jpeg"))
         selfieFile.delete()
     }
 }
