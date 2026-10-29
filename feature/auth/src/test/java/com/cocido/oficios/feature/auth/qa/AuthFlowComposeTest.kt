@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.auth.qa
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -102,6 +103,33 @@ class AuthFlowComposeTest {
         }
         composeRule.onNodeWithText("Nombres").assertIsDisplayed()
         composeRule.onNodeWithText("Apellido").assertIsDisplayed()
+    }
+
+    @Test
+    fun registerNextStaysEnabledWhenFormIsInvalid() {
+        composeRule.setContent {
+            OficiosTheme {
+                RegisterFormScreen(
+                    mode = RegisterMode.PROVIDER,
+                    uiState = RegisterFormUiState(
+                        firstName = "testingA",
+                        lastName = "testingxd",
+                        document = "33999222",
+                        email = "aikotoba9000@gmail.com",
+                        password = "xd123",
+                        confirmPassword = "xd123",
+                        acceptedTerms = true,
+                        passwordError = "La contraseña tiene que tener al menos 6 caracteres",
+                        canSubmit = false,
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Siguiente").performScrollTo().assertIsEnabled()
+        composeRule.onNodeWithText("La contraseña tiene que tener al menos 6 caracteres")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test

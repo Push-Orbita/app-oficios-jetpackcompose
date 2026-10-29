@@ -44,15 +44,13 @@ class RegisterViewModel @Inject constructor(
 
     fun onEvent(event: RegisterFormEvent) {
         when (event) {
-            is RegisterFormEvent.FirstNameChanged -> update { it.copy(firstName = event.value, firstNameError = null) }
-            is RegisterFormEvent.LastNameChanged -> update { it.copy(lastName = event.value, lastNameError = null) }
-            is RegisterFormEvent.EmailChanged -> update { it.copy(email = event.value, emailError = null) }
-            is RegisterFormEvent.PasswordChanged -> update { it.copy(password = event.value, passwordError = null) }
-            is RegisterFormEvent.ConfirmPasswordChanged -> update {
-                it.copy(confirmPassword = event.value, confirmPasswordError = null)
-            }
-            is RegisterFormEvent.DocumentChanged -> update { it.copy(document = event.value, documentError = null) }
-            is RegisterFormEvent.TermsChanged -> update { it.copy(acceptedTerms = event.value, termsError = null) }
+            is RegisterFormEvent.FirstNameChanged -> update { it.copy(firstName = event.value) }
+            is RegisterFormEvent.LastNameChanged -> update { it.copy(lastName = event.value) }
+            is RegisterFormEvent.EmailChanged -> update { it.copy(email = event.value) }
+            is RegisterFormEvent.PasswordChanged -> update { it.copy(password = event.value) }
+            is RegisterFormEvent.ConfirmPasswordChanged -> update { it.copy(confirmPassword = event.value) }
+            is RegisterFormEvent.DocumentChanged -> update { it.copy(document = event.value) }
+            is RegisterFormEvent.TermsChanged -> update { it.copy(acceptedTerms = event.value) }
             RegisterFormEvent.Submit -> submit()
             RegisterFormEvent.LoginClicked -> emitEffect(RegisterEffect.NavigateToLogin)
             RegisterFormEvent.TermsClicked -> emitEffect(RegisterEffect.NavigateToTerms)
@@ -68,15 +66,14 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun submit() {
-        val state = _uiState.value
-        val errors = validate(state)
-        if (errors != null) {
-            _uiState.update { errors.copy(hasAttemptedSubmit = true).validated() }
+        val state = _uiState.value.copy(hasAttemptedSubmit = true).validated()
+        if (!state.canSubmit) {
+            _uiState.value = state
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, generalError = null) }
+            _uiState.update { it.copy(isLoading = true, generalError = null, hasAttemptedSubmit = true) }
             when (mode) {
                 RegisterMode.CLIENT -> {
                     when (
@@ -136,45 +133,36 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    private fun validate(state: RegisterFormUiState): RegisterFormUiState? {
-        val firstNameError = AuthValidators.validateName(state.firstName, "nombres")
-        val lastNameError = AuthValidators.validateName(state.lastName, "apellido")
-        val emailError = AuthValidators.validateEmail(state.email)
-        val passwordError = AuthValidators.validatePassword(state.password)
-        val confirmPasswordError = AuthValidators.validatePasswordConfirmation(
-            state.password,
-            state.confirmPassword,
-        )
-        val documentError = AuthValidators.validateDocument(state.document)
-        val termsError = if (!state.acceptedTerms) "Debe aceptar los términos" else null
-
-        return if (
-            listOf(firstNameError, lastNameError, emailError, passwordError, confirmPasswordError, documentError, termsError)
-                .any { it != null }
-        ) {
-            state.copy(
-                firstNameError = firstNameError,
-                lastNameError = lastNameError,
-                emailError = emailError,
-                passwordError = passwordError,
-                confirmPasswordError = confirmPasswordError,
-                documentError = documentError,
-                termsError = termsError,
-            )
-        } else {
-            null
-        }
-    }
-
     private fun RegisterFormUiState.validated(): RegisterFormUiState {
-        val baseValid = AuthValidators.validateName(firstName, "nombres") == null &&
-            AuthValidators.validateName(lastName, "apellido") == null &&
-            AuthValidators.validateEmail(email) == null &&
-            AuthValidators.validatePassword(password) == null &&
-            AuthValidators.validatePasswordConfirmation(password, confirmPassword) == null &&
-            AuthValidators.validateDocument(document) == null &&
-            acceptedTerms
-        return copy(canSubmit = baseValid)
+        val firstNameError = AuthValidators.validateName(firstName, "nombres")
+        val lastNameError = AuthValidators.validateName(lastName, "apellido")
+        val emailError = AuthValidators.validateEmail(email)
+        val passwordError = AuthValidators.validatePassword(password)
+        val confirmPasswordError = AuthValidators.validatePasswordConfirmation(
+            password,
+            confirmPassword,
+        )
+        val documentError = AuthValidators.validateDocument(document)
+        val termsError = if (!acceptedTerms) "Debe aceptar los términos" else null
+        val canSubmit = listOf(
+            firstNameError,
+            lastNameError,
+            emailError,
+            passwordError,
+            confirmPasswordError,
+            documentError,
+            termsError,
+        ).all { it == null }
+        return copy(
+            firstNameError = firstNameError,
+            lastNameError = lastNameError,
+            emailError = emailError,
+            passwordError = passwordError,
+            confirmPasswordError = confirmPasswordError,
+            documentError = documentError,
+            termsError = termsError,
+            canSubmit = canSubmit,
+        )
     }
 }
 

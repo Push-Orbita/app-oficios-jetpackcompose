@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.auth.register
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -67,5 +68,47 @@ class RegisterFormScreenTest {
         }
         composeTestRule.onNodeWithText("Los nombres son obligatorios").assertIsDisplayed()
         composeTestRule.onNodeWithText("El apellido es obligatorio").assertIsDisplayed()
+    }
+
+    @Test
+    fun nextButton_isEnabledWhenFormIsInvalidAndNotLoading() {
+        composeTestRule.setContent {
+            OficiosTheme {
+                RegisterFormScreen(
+                    mode = RegisterMode.PROVIDER,
+                    uiState = RegisterFormUiState(
+                        firstName = "testingA",
+                        lastName = "testingxd",
+                        document = "33999222",
+                        email = "aikotoba9000@gmail.com",
+                        password = "xd123",
+                        confirmPassword = "xd123",
+                        acceptedTerms = true,
+                        canSubmit = false,
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeTestRule.onNodeWithText("Siguiente").performScrollTo().assertIsEnabled()
+    }
+
+    @Test
+    fun providerRegister_showsLivePasswordErrorWithoutSubmitAttempt() {
+        composeTestRule.setContent {
+            OficiosTheme {
+                RegisterFormScreen(
+                    mode = RegisterMode.PROVIDER,
+                    uiState = RegisterFormUiState(
+                        password = "xd123",
+                        passwordError = "La contraseña tiene que tener al menos 6 caracteres",
+                    ),
+                    onEvent = {},
+                )
+            }
+        }
+        composeTestRule.onNodeWithText("La contraseña tiene que tener al menos 6 caracteres")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 }
