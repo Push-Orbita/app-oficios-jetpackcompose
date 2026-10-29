@@ -168,7 +168,13 @@ private fun SettingsContent(
             }
         }
         item {
-            SettingsProfileCard(user = user, displayName = displayName)
+            SettingsProfileCard(
+                user = user,
+                displayName = displayName,
+                onVerifyEmailClick = if (!user.emailVerified) {
+                    { onEvent(SettingsEvent.OpenVerifyEmail) }
+                } else null
+            )
         }
 
         item { SettingsSectionTitle(stringResource(R.string.settings_profile_section)) }
@@ -257,13 +263,17 @@ private fun SettingsContent(
 private fun SettingsProfileCard(
     user: User,
     displayName: String,
+    onVerifyEmailClick: (() -> Unit)? = null,
 ) {
     val roleLabel = stringResource(
         if (user.role == UserRole.PROVIDER) R.string.settings_provider_role else R.string.settings_client_role,
     )
     val verified = user.emailVerified
     val statusColor = if (verified) OficiosTheme.colors.success else OficiosTheme.colors.warning
-    OficiosCard(modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth)) {
+    OficiosCard(
+        modifier = Modifier.fillMaxWidth().widthIn(max = OficiosComponentSize.contentMaxWidth),
+        onClick = if (!verified && onVerifyEmailClick != null) onVerifyEmailClick else null
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),

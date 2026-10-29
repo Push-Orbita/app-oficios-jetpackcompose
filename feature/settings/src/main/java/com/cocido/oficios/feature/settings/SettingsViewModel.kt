@@ -62,6 +62,7 @@ class SettingsViewModel @Inject constructor(
             SettingsEvent.OpenTerms -> emitEffect(SettingsEffect.NavigateToTerms)
             SettingsEvent.OpenHelp -> emitEffect(SettingsEffect.NavigateToHelp)
             SettingsEvent.OpenConfiguration -> emitEffect(SettingsEffect.NavigateToConfiguration)
+            SettingsEvent.OpenVerifyEmail -> emitEffect(SettingsEffect.NavigateToVerifyEmail)
             SettingsEvent.Logout -> logout()
             SettingsEvent.NavigateBack -> Unit
         }

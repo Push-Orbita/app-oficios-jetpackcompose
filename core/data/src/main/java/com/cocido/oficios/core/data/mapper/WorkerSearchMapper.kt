@@ -57,10 +57,12 @@ fun WorkerSearchItemDto.toWorkerSummary(
         id = id,
         displayName = displayName,
         specialtyLabel = specialtyLabel,
-        rating = normalizeStarRating(reputacion?.puntajeGlobal ?: reputacion?.promedio),
+        rating = normalizeStarRating(
+            reputacion?.puntajeGlobal ?: reputacion?.promedio ?: reputacion?.rating
+        ),
         avatarUrl = usuario?.fotoPerfil.toPhotoUrl(),
         isVerified = estado.equals("VALIDADO", ignoreCase = true) || usuario?.emailVerificado == true,
         primaryRubroId = primaryRubro?.rubro?.id,
-        reviewCount = reputacion?.comentariosTotales ?: reputacion?.cantidadCalificaciones,
+        reviewCount = reputacion?.comentariosTotales ?: reputacion?.cantidadCalificaciones ?: reputacion?.reviewCount,
     )
 }

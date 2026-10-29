@@ -20,6 +20,7 @@ fun SettingsRoute(
     onNavigateToTerms: () -> Unit = {},
     onNavigateToHelp: () -> Unit = {},
     onNavigateToConfiguration: () -> Unit = {},
+    onNavigateToVerifyEmail: () -> Unit = {},
     modifier: Modifier = Modifier,
     showBackNavigation: Boolean = true,
     bottomBar: @Composable () -> Unit = {},
@@ -44,6 +45,7 @@ fun SettingsRoute(
                 SettingsEffect.NavigateToTerms -> onNavigateToTerms()
                 SettingsEffect.NavigateToHelp -> onNavigateToHelp()
                 SettingsEffect.NavigateToConfiguration -> onNavigateToConfiguration()
+                SettingsEffect.NavigateToVerifyEmail -> onNavigateToVerifyEmail()
             }
         }
     }

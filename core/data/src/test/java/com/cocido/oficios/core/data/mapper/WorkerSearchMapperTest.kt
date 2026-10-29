@@ -66,6 +66,72 @@ class WorkerSearchMapperTest {
         assertEquals(5, worker.reviewCount)
     }
 
+    @Test
+    fun `shows no rating when reputacion fields are null`() {
+        val page = json.decodeFromString(
+            PaginatedResponseDto.serializer(WorkerSearchItemDto.serializer()),
+            """
+            {
+              "data": [{
+                "id": 12,
+                "estado": "VALIDADO",
+                "usuario": { "id": 88, "email": "a@b.c", "emailVerificado": true, "persona": { "nombres": "Test", "apellido": "User" } },
+                "rubros": [],
+                "reputacion": { "promedio": null, "puntajeGlobal": null, "cantidadCalificaciones": 0 }
+              }],
+              "metadata": { "pageNumber": 1, "totalPages": 1, "pageSize": 20, "count": 1 }
+            }
+            """.trimIndent(),
+        )
+        val worker = page.toPagedWorkers(WorkerSearchFilters()).items.first()
+        assertEquals(null, worker.rating)
+        assertEquals(0, worker.reviewCount)
+    }
+
+    @Test
+    fun `shows no rating when reputacion is null`() {
+        val page = json.decodeFromString(
+            PaginatedResponseDto.serializer(WorkerSearchItemDto.serializer()),
+            """
+            {
+              "data": [{
+                "id": 12,
+                "estado": "VALIDADO",
+                "usuario": { "id": 88, "email": "a@b.c", "emailVerificado": true, "persona": { "nombres": "Test", "apellido": "User" } },
+                "rubros": [],
+                "reputacion": null
+              }],
+              "metadata": { "pageNumber": 1, "totalPages": 1, "pageSize": 20, "count": 1 }
+            }
+            """.trimIndent(),
+        )
+        val worker = page.toPagedWorkers(WorkerSearchFilters()).items.first()
+        assertEquals(null, worker.rating)
+        assertEquals(null, worker.reviewCount)
+    }
+
+    @Test
+    fun `maps rating field as fallback when promedio and puntajeGlobal are missing`() {
+        val page = json.decodeFromString(
+            PaginatedResponseDto.serializer(WorkerSearchItemDto.serializer()),
+            """
+            {
+              "data": [{
+                "id": 12,
+                "estado": "VALIDADO",
+                "usuario": { "id": 88, "email": "a@b.c", "emailVerificado": true, "persona": { "nombres": "Matias", "apellido": "Britez" } },
+                "rubros": [{ "id": 1, "principal": true, "rubro": { "id": 9, "nombre": "Reparación de cañerías" }, "subRubros": [] }],
+                "reputacion": { "rating": 4.5, "reviewCount": 10 }
+              }],
+              "metadata": { "pageNumber": 1, "totalPages": 1, "pageSize": 20, "count": 1 }
+            }
+            """.trimIndent(),
+        )
+        val worker = page.toPagedWorkers(WorkerSearchFilters()).items.first()
+        assertEquals(4.5f, worker.rating!!, 0.01f)
+        assertEquals(10, worker.reviewCount)
+    }
+
     private companion object {
         val FIXTURE = """
             {
