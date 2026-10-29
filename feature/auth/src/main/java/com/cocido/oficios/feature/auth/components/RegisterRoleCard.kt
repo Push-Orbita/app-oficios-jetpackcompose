@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import com.cocido.oficios.core.designsystem.theme.LocalOficiosDarkTheme
@@ -74,16 +73,7 @@ fun RegisterRoleCard(
                 val illustrationFilter = if (LocalOficiosDarkTheme.current) {
                     null
                 } else {
-                    ColorFilter.colorMatrix(
-                        ColorMatrix(
-                            floatArrayOf(
-                                1.15f, 0f, 0f, 0f, -70f,
-                                0f, 1.15f, 0f, 0f, -70f,
-                                0f, 0f, 1.15f, 0f, -70f,
-                                0f, 0f, 0f, 1f, 0f,
-                            ),
-                        ),
-                    )
+                    ColorFilter.tint(MaterialTheme.colorScheme.primary)
                 }
                 Image(
                     painter = painterResource(iconRes),
