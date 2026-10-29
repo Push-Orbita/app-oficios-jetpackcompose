@@ -2,7 +2,6 @@ package com.cocido.oficios.feature.home.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,14 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.LineBreak
@@ -50,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
+import com.cocido.oficios.core.designsystem.component.categories.CategoryGlyph
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -58,8 +52,6 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.feature.home.R
-import coil.compose.SubcomposeAsyncImage
-import com.cocido.oficios.core.designsystem.component.categories.CategoryIconResolver
 
 @Composable
 fun HomeFeaturedWorkersSection(
@@ -169,7 +161,7 @@ fun HomeRecentRubrosSection(
                 }
                 HomeCategoryCard(
                     title = entry.label,
-                    icon = CategoryIconResolver.iconFor(entry.id, entry.label),
+                    categoryId = entry.id,
                     iconUrl = null,
                     onClick = { onSearchClick(entry) },
                     compact = true,
@@ -241,7 +233,7 @@ fun HomeCategoriesGrid(
                     rowItems.forEach { category ->
                         HomeCategoryCard(
                             title = category.name,
-                            icon = CategoryIconResolver.iconFor(category.id, category.name),
+                            categoryId = category.id,
                             iconUrl = category.iconUrl,
                             onClick = {
                                 if (category.id < 0) onSeeAllClick() else onCategoryClick(category)
@@ -269,7 +261,7 @@ fun HomeCategoriesGrid(
         items(categories, key = { it.id }) { category ->
             HomeCategoryCard(
                 title = category.name,
-                icon = CategoryIconResolver.iconFor(category.id, category.name),
+                categoryId = category.id,
                 iconUrl = category.iconUrl,
                 onClick = { onCategoryClick(category) },
                 modifier = Modifier
@@ -281,7 +273,7 @@ fun HomeCategoriesGrid(
             item(key = "see_all") {
                 HomeCategoryCard(
                     title = stringResource(R.string.home_categories_see_all),
-                    icon = CategoryIconResolver.iconFor(-1L, "todos"),
+                    categoryId = -1L,
                     onClick = onSeeAllClick,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -316,7 +308,7 @@ fun HomeRubrosGrid(
         items(rubros, key = { it.id }) { rubro ->
             HomeCategoryCard(
                 title = rubro.label,
-                icon = CategoryIconResolver.iconFor(rubro.id, rubro.label),
+                categoryId = rubro.id,
                 iconUrl = rubro.iconUrl,
                 onClick = { onRubroClick(rubro) },
                 modifier = Modifier
@@ -335,7 +327,7 @@ fun HomeCategoryCard(
 ) {
     HomeCategoryCard(
         title = category.name,
-        icon = CategoryIconResolver.iconFor(category.id, category.name),
+        categoryId = category.id,
         iconUrl = category.iconUrl,
         onClick = onClick,
         modifier = modifier,
@@ -345,10 +337,10 @@ fun HomeCategoryCard(
 @Composable
 fun HomeCategoryCard(
     title: String,
-    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    categoryId: Long = 0L,
     iconUrl: String? = null,
 ) {
     val titleStyle = MaterialTheme.typography.bodyLarge
@@ -392,11 +384,24 @@ fun HomeCategoryCard(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            CategoryCardIcon(
-                icon = icon,
-                iconUrl = iconUrl,
+            val iconModifier = if (compact) {
+                Modifier.size(width = 50.dp, height = 44.dp)
+            } else {
+                Modifier.size(width = 48.dp, height = 48.dp)
+            }
+            val illustrationModifier = if (compact) {
+                iconModifier
+            } else {
+                Modifier.size(width = 100.dp, height = 74.dp)
+            }
+            CategoryGlyph(
+                id = categoryId,
                 label = title,
-                compact = compact,
+                iconUrl = iconUrl,
+                contentDescription = title,
+                modifier = iconModifier,
+                illustrationModifier = illustrationModifier,
+                tint = MaterialTheme.colorScheme.onBackground,
             )
         }
     }
@@ -439,53 +444,3 @@ private fun AutoshrinkCategoryLabel(
     )
 }
 
-@Composable
-private fun CategoryCardIcon(
-    icon: ImageVector,
-    iconUrl: String?,
-    label: String,
-    compact: Boolean,
-) {
-    val remoteUrl = iconUrl?.takeIf { it.isNotBlank() }
-    val iconModifier = if (compact) {
-        Modifier.size(width = 50.dp, height = 44.dp)
-    } else {
-        Modifier.size(width = 100.dp, height = 74.dp)
-    }
-    if (remoteUrl != null) {
-        SubcomposeAsyncImage(
-            model = remoteUrl,
-            contentDescription = label,
-            contentScale = ContentScale.Fit,
-            modifier = iconModifier,
-            loading = { LocalCategoryIcon(icon = icon, label = label, modifier = iconModifier) },
-            error = { LocalCategoryIcon(icon = icon, label = label, modifier = iconModifier) },
-        )
-        return
-    }
-    LocalCategoryIcon(icon = icon, label = label, modifier = iconModifier)
-}
-
-@Composable
-private fun LocalCategoryIcon(
-    icon: ImageVector,
-    label: String,
-    modifier: Modifier = Modifier,
-) {
-    val illustration = CategoryIconResolver.illustrationRes(label)
-    if (illustration != null) {
-        Image(
-            painter = painterResource(illustration),
-            contentDescription = label,
-            contentScale = ContentScale.Fit,
-            modifier = modifier,
-        )
-    } else {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = MaterialTheme.colorScheme.onBackground,
-            modifier = modifier,
-        )
-    }
-}

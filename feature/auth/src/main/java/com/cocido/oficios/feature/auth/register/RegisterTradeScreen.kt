@@ -65,7 +65,9 @@ fun RegisterTradeScreen(
                 style = MaterialTheme.typography.titleMedium,
             )
             OficiosCategoriesGrid(
-                categories = uiState.categoryOptions.map { CategoryGridItem(it.id, it.label) },
+                categories = uiState.categoryOptions.map {
+                    CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+                },
                 onCategoryClick = { item ->
                     uiState.categoryOptions.find { it.id == item.id }?.let { option ->
                         onEvent(RegisterTradeEvent.CategoryGridSelected(option))
@@ -81,7 +83,9 @@ fun RegisterTradeScreen(
                 )
                 if (uiState.selectedTrade.isBlank()) {
                     OficiosCategoriesGrid(
-                        categories = uiState.tradeOptions.map { CategoryGridItem(it.id, it.label) },
+                        categories = uiState.tradeOptions.map {
+                            CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+                        },
                         onCategoryClick = { item ->
                             uiState.tradeOptions.find { it.id == item.id }?.let { option ->
                                 onEvent(RegisterTradeEvent.TradeChanged(option.label))
