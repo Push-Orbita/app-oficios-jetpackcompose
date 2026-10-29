@@ -37,7 +37,11 @@ data class RegisterFormUiState(
     val isLoading: Boolean = false,
     val canSubmit: Boolean = false,
     val hasAttemptedSubmit: Boolean = false,
-)
+) {
+    /** Error visible tras el primer envío, o en vivo si el campo no está vacío. */
+    fun visibleFieldError(error: String?, value: String): String? =
+        error.takeIf { hasAttemptedSubmit || value.isNotEmpty() }
+}
 
 sealed interface RegisterEffect {
     data object NavigateToOnboarding : RegisterEffect
