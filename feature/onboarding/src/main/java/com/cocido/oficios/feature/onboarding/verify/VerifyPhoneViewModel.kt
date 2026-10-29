@@ -3,7 +3,10 @@ package com.cocido.oficios.feature.onboarding.verify
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.VerificationCodeCopy
+import com.cocido.oficios.core.common.result.toOtpCodeMessage
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.profile.GetClientContactosUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
@@ -128,9 +131,9 @@ class VerifyPhoneViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = result.error.userMessage(),
+                            hasAttemptedSubmit = true,
                             codeRejections = it.codeRejections + 1,
-                        )
+                        ).withVerifyPhoneError(result.error)
                     }
                 }
             }
@@ -202,3 +205,13 @@ class VerifyPhoneViewModel @Inject constructor(
         const val ONE_SECOND_MS = 1_000L
     }
 }
+
+private fun VerifyPhoneUiState.withVerifyPhoneError(error: AppError): VerifyPhoneUiState =
+    if (error is AppError.Validation) {
+        copy(
+            codeError = error.toOtpCodeMessage(VerificationCodeCopy.PHONE),
+            error = null,
+        )
+    } else {
+        copy(error = error.userMessage())
+    }

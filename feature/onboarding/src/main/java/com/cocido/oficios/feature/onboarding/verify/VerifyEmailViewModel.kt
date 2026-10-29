@@ -2,7 +2,10 @@ package com.cocido.oficios.feature.onboarding.verify
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.VerificationCodeCopy
+import com.cocido.oficios.core.common.result.toOtpCodeMessage
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.auth.SendVerificationEmailUseCase
@@ -92,7 +95,10 @@ class VerifyEmailViewModel @Inject constructor(
                 }
                 is AppResult.Error -> {
                     _uiState.update {
-                        it.copy(isLoading = false, error = result.error.userMessage())
+                        it.copy(
+                            isLoading = false,
+                            hasAttemptedSubmit = true,
+                        ).withVerifyEmailError(result.error)
                     }
                 }
             }
@@ -147,3 +153,13 @@ class VerifyEmailViewModel @Inject constructor(
         const val ONE_SECOND_MS = 1_000L
     }
 }
+
+private fun VerifyEmailUiState.withVerifyEmailError(error: AppError): VerifyEmailUiState =
+    if (error is AppError.Validation) {
+        copy(
+            codeError = error.toOtpCodeMessage(VerificationCodeCopy.EMAIL),
+            error = null,
+        )
+    } else {
+        copy(error = error.userMessage())
+    }

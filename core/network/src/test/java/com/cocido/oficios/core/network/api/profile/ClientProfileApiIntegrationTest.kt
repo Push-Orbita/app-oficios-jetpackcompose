@@ -2,12 +2,14 @@ package com.cocido.oficios.core.network.api.profile
 
 import com.cocido.oficios.core.network.api.profile.dto.CreateContactoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateDomicilioRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.VerifyTelefonoCodigoRequestDto
 import com.cocido.oficios.core.network.test.NetworkTestFactory
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -74,6 +76,24 @@ class ClientProfileApiIntegrationTest {
         val request = server.takeRequest()
         assertEquals("POST", request.method)
         assertEquals("/contacto", request.path)
+    }
+
+    @Test
+    fun `verify phone code posts codigo as json string`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"message":"ok"}""")
+                .addHeader("Content-Type", "application/json"),
+        )
+
+        api.verifyPhoneCode(10L, VerifyTelefonoCodigoRequestDto(codigo = "874987"))
+
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/contacto/10/verificar-codigo-telefono", request.path)
+        assertTrue(request.getHeader("Content-Type").orEmpty().contains("application/json"))
+        assertEquals("""{"codigo":"874987"}""", request.body.readUtf8())
     }
 
     @Test

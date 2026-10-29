@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.VerificationCodeCopy
+import com.cocido.oficios.core.common.result.toOtpCodeMessage
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.auth.ForgotPasswordUseCase
 import com.cocido.oficios.domain.usecase.auth.ResetPasswordUseCase
@@ -173,7 +175,7 @@ class ResetPasswordViewModel @Inject constructor(
                 is AppResult.Success -> verifyResult.data.also { resetToken = it }
                 is AppResult.Error -> {
                     _uiState.update {
-                        it.copy(isLoading = false, generalError = verifyResult.error.userMessage())
+                        it.copy(isLoading = false).withResetCodeError(verifyResult.error)
                     }
                     return@launch
                 }
@@ -205,3 +207,14 @@ class ResetPasswordViewModel @Inject constructor(
             AuthValidators.validatePasswordConfirmation(password, confirmPassword) == null,
     )
 }
+
+private fun ResetPasswordUiState.withResetCodeError(error: AppError): ResetPasswordUiState =
+    if (error is AppError.Validation) {
+        copy(
+            codeError = error.toOtpCodeMessage(VerificationCodeCopy.RESET),
+            generalError = null,
+            hasAttemptedSubmit = true,
+        )
+    } else {
+        copy(generalError = error.userMessage())
+    }
