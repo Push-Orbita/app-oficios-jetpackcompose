@@ -55,7 +55,7 @@ fun ClientContactDomicilioRoute(
         onDepartamentoChanged = viewModel::onDepartamentoChanged,
         onMapLocationSelected = viewModel::onMapLocationSelected,
         onUseCurrentLocation = viewModel::useCurrentLocation,
-        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
+        onConfirmPin = viewModel::confirmPin,
         onSubmit = viewModel::submit,
     )
 }
@@ -77,7 +77,7 @@ fun ClientDomicilioRoute(onSaved: () -> Unit, modifier: Modifier = Modifier) {
         onNumeroChanged = viewModel::onNumeroChanged,
         onMapLocationSelected = viewModel::onMapLocationSelected,
         onUseCurrentLocation = viewModel::useCurrentLocation,
-        onLocationPermissionDenied = viewModel::onLocationPermissionDenied,
+        onConfirmPin = viewModel::confirmPin,
         onSubmit = viewModel::submit,
     )
 }

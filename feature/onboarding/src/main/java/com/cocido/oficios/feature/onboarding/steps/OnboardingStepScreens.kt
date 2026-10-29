@@ -151,7 +151,6 @@ fun ClientContactDomicilioStepScreen(
     onDepartamentoChanged: (String) -> Unit,
     onMapLocationSelected: (Double, Double) -> Unit,
     onUseCurrentLocation: () -> Unit,
-    onLocationPermissionDenied: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     val hasUnsavedChanges = uiState.barrioQuery.isNotBlank() ||
@@ -272,7 +271,6 @@ fun ClientDomicilioStepScreen(
     onNumeroChanged: (String) -> Unit,
     onMapLocationSelected: (Double, Double) -> Unit,
     onUseCurrentLocation: () -> Unit,
-    onLocationPermissionDenied: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
