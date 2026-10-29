@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 data class ProviderSelfieUiState(
     val imagePath: String? = null,
     val remoteUrl: String? = null,
+    val remoteStatus: String? = null,
     val remoteLoaded: Boolean = false,
     val existingDocumentId: Long? = null,
     val rejectionReason: String? = null,
@@ -29,6 +30,9 @@ data class ProviderSelfieUiState(
     val error: String? = null,
 ) {
     val canSubmit: Boolean get() = imagePath != null || remoteLoaded
+    val isApproved: Boolean get() = remoteStatus?.equals("APROBADO", ignoreCase = true) == true
+    val isRejected: Boolean get() = remoteStatus?.equals("RECHAZADO", ignoreCase = true) == true
+    val isUploaded: Boolean get() = remoteStatus?.equals("SUBIDO", ignoreCase = true) == true
 }
 
 @HiltViewModel
@@ -57,6 +61,7 @@ class ProviderSelfieViewModel @Inject constructor(
                         it.copy(
                             existingDocumentId = selfie.id,
                             remoteUrl = selfie.url,
+                            remoteStatus = selfie.status,
                             remoteLoaded = !selfie.url.isNullOrBlank(),
                             rejectionReason = selfie.rejectionReason,
                         )
@@ -77,16 +82,30 @@ class ProviderSelfieViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         val imagePath = state.imagePath
+        
         if (imagePath.isNullOrBlank()) {
+            if (state.remoteLoaded) {
+                viewModelScope.launch {
+                    _effects.emit(ProviderStepEffect.Saved)
+                }
+                return
+            }
             _uiState.update { it.copy(error = "Suba una selfie para continuar") }
+            return
+        }
+
+        if (state.isApproved) {
+            _uiState.update { it.copy(error = "La selfie ya fue aprobada y no puede ser reemplazada") }
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val result = state.existingDocumentId?.let { documentId ->
-                replaceProviderSelfieUseCase(documentId, imagePath)
-            } ?: uploadProviderSelfieUseCase(imagePath)
+            val result = if (state.existingDocumentId != null && (state.isRejected || state.isUploaded)) {
+                replaceProviderSelfieUseCase(state.existingDocumentId, imagePath)
+            } else {
+                uploadProviderSelfieUseCase(imagePath)
+            }
 
             when (result) {
                 is AppResult.Success -> {

@@ -20,7 +20,7 @@ fun CertificadoTrabajoDto.toDomain() = WorkCertificateInfo(
 )
 
 fun JsonElement.toProviderDniDocuments(): ProviderDniDocuments? {
-    val document = findFirstDocument() ?: return null
+    val document = findDocumentByType("dni") ?: return null
     return ProviderDniDocuments(
         frontUrl = document.stringOrNull("frenteUrl"),
         backUrl = document.stringOrNull("reversoUrl"),
@@ -32,24 +32,35 @@ fun JsonElement.toProviderDniDocuments(): ProviderDniDocuments? {
 }
 
 fun JsonElement.toProviderSelfieDocument(): ProviderSelfieDocument? {
-    val document = findFirstDocument() ?: return null
+    val document = findDocumentByType("selfie") ?: return null
     return ProviderSelfieDocument(
         id = document.longOrNull("id"),
-        url = document.stringOrNull("selfieUrl"),
-        status = document.stringOrNull("selfieEstado"),
+        url = document.stringOrNull("frenteUrl") ?: document.stringOrNull("selfieUrl"),
+        status = document.stringOrNull("frenteEstado") ?: document.stringOrNull("selfieEstado"),
         rejectionReason = document.stringOrNull("motivoRechazo"),
     )
 }
 
-private fun JsonElement.findFirstDocument(): JsonObject? {
+private fun JsonElement.findDocumentByType(tipoDocumento: String): JsonObject? {
     val root = this as? JsonObject ?: return null
     val data = root["data"]?.jsonArray ?: return null
     val firstGroup = data.firstOrNull()?.jsonObject ?: return null
     val documents = firstGroup["documentos"]?.jsonArray
-    return when {
-        documents != null && documents.isNotEmpty() -> documents.first().jsonObject
-        else -> firstGroup
+    
+    if (documents != null && documents.isNotEmpty()) {
+        return documents
+            .mapNotNull { it.jsonObject }
+            .firstOrNull { doc ->
+                doc.stringOrNull("tipoDocumento")?.equals(tipoDocumento, ignoreCase = true) == true
+            }
     }
+    
+    val groupType = firstGroup.stringOrNull("tipoDocumento")
+    if (groupType?.equals(tipoDocumento, ignoreCase = true) == true) {
+        return firstGroup
+    }
+    
+    return null
 }
 
 fun JsonElement.toWorkCertificateList(): List<WorkCertificateInfo> {

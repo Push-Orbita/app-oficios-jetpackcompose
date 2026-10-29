@@ -17,6 +17,7 @@ interface IdentityDocumentApi {
         @Query("pageSize") pageSize: Int = 10,
         @Query("pageNumber") pageNumber: Int = 1,
         @Query("tipoDocumento") tipoDocumento: String? = null,
+        @Query("trabajadorOficioId") trabajadorOficioId: Long? = null,
     ): JsonElement
 
     @Multipart

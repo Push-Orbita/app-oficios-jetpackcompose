@@ -34,6 +34,7 @@ data class ProviderIdentityUiState(
     val frontRemoteLoaded: Boolean = false,
     val backRemoteLoaded: Boolean = false,
     val selfieRemoteLoaded: Boolean = false,
+    val selfieRemoteStatus: String? = null,
     val existingSelfieDocumentId: Long? = null,
     val existingCertificateName: String? = null,
     val isLoading: Boolean = false,
@@ -45,6 +46,15 @@ data class ProviderIdentityUiState(
             (backImagePath != null || backRemoteLoaded) &&
             (selfieImagePath != null || selfieRemoteLoaded) &&
             documento.isNotBlank()
+    
+    val isSelfieRejected: Boolean 
+        get() = selfieRemoteStatus?.equals("RECHAZADO", ignoreCase = true) == true
+    
+    val isSelfieApproved: Boolean
+        get() = selfieRemoteStatus?.equals("APROBADO", ignoreCase = true) == true
+    
+    val isSelfieUploaded: Boolean
+        get() = selfieRemoteStatus?.equals("SUBIDO", ignoreCase = true) == true
 }
 
 @HiltViewModel
@@ -96,6 +106,7 @@ class ProviderIdentityViewModel @Inject constructor(
                         it.copy(
                             existingSelfieDocumentId = selfie.id,
                             selfieRemoteLoaded = !selfie.url.isNullOrBlank(),
+                            selfieRemoteStatus = selfie.status,
                         )
                     }
                 }
@@ -186,9 +197,21 @@ class ProviderIdentityViewModel @Inject constructor(
 
             // 3. Subir selfie si es nueva
             if (selfie != null) {
-                val selfieResult = state.existingSelfieDocumentId?.let { documentId ->
-                    replaceProviderSelfieUseCase(documentId, selfie)
-                } ?: uploadProviderSelfieUseCase(selfie)
+                if (state.isSelfieApproved) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            uploadError = "DNI enviado. La selfie ya fue aprobada y no puede ser reemplazada"
+                        )
+                    }
+                    return@launch
+                }
+                
+                val selfieResult = if (state.existingSelfieDocumentId != null && (state.isSelfieRejected || state.isSelfieUploaded)) {
+                    replaceProviderSelfieUseCase(state.existingSelfieDocumentId, selfie)
+                } else {
+                    uploadProviderSelfieUseCase(selfie)
+                }
 
                 when (selfieResult) {
                     is AppResult.Error -> {
