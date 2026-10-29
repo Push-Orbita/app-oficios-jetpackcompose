@@ -13,9 +13,6 @@ class IdentityDocumentUploadDataSource @Inject constructor(
         val frontFile = File(frontImagePath)
         val backFile = File(backImagePath)
 
-        validateDniImageFile(frontFile, sideLabel = "frente")
-        validateDniImageFile(backFile, sideLabel = "dorso")
-
         identityDocumentApi.uploadDniDocuments(
             frenteArchivo = createDniImagePart(
                 fieldName = DniImageUploadContract.PART_FRONT_FIELD,
