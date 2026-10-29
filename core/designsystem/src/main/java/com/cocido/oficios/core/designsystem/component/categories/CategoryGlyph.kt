@@ -11,10 +11,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 
 /**
  * Glifo de categoría / rubro usado por las grillas (registro, home, onboarding).
@@ -105,11 +106,15 @@ private fun CategoryVectorIcon.asImageVector(): ImageVector = when (this) {
     is CategoryVectorIcon.Material -> imageVector
 }
 
-internal val CategoryVectorIconSize = 48.dp
-internal val CategoryIllustrationSizeWidth = 100.dp
-internal val CategoryIllustrationSizeHeight = 74.dp
+const val CATEGORY_CARD_GLYPH_TEST_TAG = "oficios_category_card_glyph"
 
-internal fun Modifier.categoryVectorSize(): Modifier = size(CategoryVectorIconSize)
+internal fun Modifier.categoryVectorSize(): Modifier =
+    size(OficiosComponentSize.categoryCardGlyphSize)
+        .testTag(CATEGORY_CARD_GLYPH_TEST_TAG)
 
 internal fun Modifier.categoryIllustrationSize(): Modifier =
-    size(width = CategoryIllustrationSizeWidth, height = CategoryIllustrationSizeHeight)
+    size(
+        width = OficiosComponentSize.categoryCardIllustrationWidth,
+        height = OficiosComponentSize.categoryCardIllustrationHeight,
+    ).testTag(CATEGORY_CARD_GLYPH_TEST_TAG)
+
