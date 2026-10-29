@@ -625,12 +625,16 @@ fun ProviderRubrosStepScreen(
     ) {
         if (uiState.selectedCategoryId == null) {
             OficiosCategoriesGrid(
-                categories = uiState.categoryOptions.map { CategoryGridItem(it.id, it.label) },
+                categories = uiState.categoryOptions.map {
+                    CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+                },
                 onCategoryClick = { onCategorySelected(it.id) },
             )
         } else {
             OficiosCategoriesGrid(
-                categories = uiState.tradeOptions.map { CategoryGridItem(it.id, it.label) },
+                categories = uiState.tradeOptions.map {
+                    CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+                },
                 onCategoryClick = { onTradeSelected(it.id) },
                 selectedCategoryId = uiState.selectedTradeId,
             )
