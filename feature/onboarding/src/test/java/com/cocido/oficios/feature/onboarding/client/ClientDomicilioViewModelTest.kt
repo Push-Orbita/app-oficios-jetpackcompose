@@ -1,10 +1,14 @@
 package com.cocido.oficios.feature.onboarding.client
 
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.AuthTokens
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
+import com.cocido.oficios.domain.model.GeocodedPlace
+import com.cocido.oficios.domain.model.GeoPoint
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
 import com.cocido.oficios.domain.model.User
@@ -17,6 +21,7 @@ import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +34,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -39,6 +45,17 @@ class ClientDomicilioViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private val user = User(1, "u@test.com", "Juan", "Pérez", UserRole.CLIENT, true, personaId = 50)
+    private val location = object : LocationRepository {
+        override suspend fun getCurrentLocation(requirePrecise: Boolean) =
+            AppResult.Success(GeoPoint(-26.1849, -58.1731))
+
+        override fun observeLocations(intervalMillis: Long) =
+            kotlinx.coroutines.flow.flowOf(AppResult.Success(GeoPoint(-26.1849, -58.1731)))
+
+        override suspend fun geocodeForward(query: String) = AppResult.Success(
+            listOf(GeocodedPlace(-26.1849, -58.1731, query)),
+        )
+    }
 
     @Before
     fun setup() {
@@ -69,11 +86,30 @@ class ClientDomicilioViewModelTest {
         advanceUntilIdle()
         viewModel.onBarrioSelected(CatalogOption(id = 1, label = "Centro"))
         viewModel.onCalleChanged("San Martín")
+        viewModel.onNumeroChanged("123")
         viewModel.submit()
+        advanceUntilIdle()
+        viewModel.confirmPin()
         advanceUntilIdle()
 
         assertTrue(effects.any { it is ClientDomicilioEffect.Saved })
         job.cancel()
+    }
+
+    @Test
+    fun `typing calle and altura moves the pin after debounce`() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        viewModel.onBarrioSelected(CatalogOption(id = 1, label = "San Miguel"))
+        viewModel.onCalleChanged("O'Higgins")
+        viewModel.onNumeroChanged("206")
+        advanceTimeBy(FormosaAddressGeocoding.LIVE_DEBOUNCE_MS)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(-26.1849, state.location.latitude)
+        assertEquals(-58.1731, state.location.longitude)
+        assertEquals(AddressLocationPhase.Preview, state.location.phase)
+        assertFalse(state.location.confirmed)
     }
 
     private fun createViewModel(): ClientDomicilioViewModel = ClientDomicilioViewModel(
@@ -100,17 +136,8 @@ class ClientDomicilioViewModelTest {
                     AppResult.Success(listOf(CatalogOption(1, "Centro")))
             },
         ),
-        getCurrentLocationUseCase = GetCurrentLocationUseCase(
-            object : LocationRepository {
-                override suspend fun getCurrentLocation(requirePrecise: Boolean) =
-                    AppResult.Success(com.cocido.oficios.domain.model.GeoPoint(-26.1849, -58.1731))
-
-                override fun observeLocations(intervalMillis: Long) =
-                    kotlinx.coroutines.flow.flowOf(
-                        AppResult.Success(com.cocido.oficios.domain.model.GeoPoint(-26.1849, -58.1731)),
-                    )
-            },
-        ),
+        geocodeLocalAddressUseCase = GeocodeLocalAddressUseCase(location),
+        getCurrentLocationUseCase = GetCurrentLocationUseCase(location),
     )
 
     private class FakeAuthRepository(

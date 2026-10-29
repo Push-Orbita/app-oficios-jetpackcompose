@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -40,6 +41,7 @@ class CommercialLocalViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
 
     private var searchJob: Job? = null
+    private var geocodeJob: Job? = null
     private var targetService: ManagedProviderService? = null
     private var paymentMethods: List<String> = emptyList()
     private var skipNextResume = true
@@ -71,31 +73,44 @@ class CommercialLocalViewModel @Inject constructor(
                 searchJob?.cancel()
                 update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
             }
-            is CommercialLocalEvent.CalleChanged -> update {
-                it.copy(
-                    calle = event.value,
-                    errorMessage = null,
-                    location = FormosaAddressGeocoding.invalidate(),
-                ).withAddressFieldErrors()
+            is CommercialLocalEvent.CalleChanged -> {
+                update {
+                    it.copy(
+                        calle = event.value,
+                        errorMessage = null,
+                    ).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
-            is CommercialLocalEvent.NumeroChanged -> update {
-                it.copy(
-                    numero = event.value,
-                    errorMessage = null,
-                    location = FormosaAddressGeocoding.invalidate(),
-                ).withAddressFieldErrors()
+            is CommercialLocalEvent.NumeroChanged -> {
+                update {
+                    it.copy(
+                        numero = event.value,
+                        errorMessage = null,
+                    ).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
-            is CommercialLocalEvent.MapLocationSelected -> update {
-                it.copy(
-                    location = FormosaAddressGeocoding.pinMoved(it.location, event.latitude, event.longitude),
-                    errorMessage = null,
-                )
+            is CommercialLocalEvent.MapLocationSelected -> {
+                cancelLiveGeocode()
+                update {
+                    it.copy(
+                        location = FormosaAddressGeocoding.pinMoved(it.location, event.latitude, event.longitude),
+                        errorMessage = null,
+                    )
+                }
             }
-            CommercialLocalEvent.LocateOnMap -> update {
-                val next = FormosaAddressGeocoding.openMap(it.location)
-                it.copy(location = next, errorMessage = next.message)
+            CommercialLocalEvent.LocateOnMap -> {
+                cancelLiveGeocode()
+                update {
+                    val next = FormosaAddressGeocoding.openMap(it.location)
+                    it.copy(location = next, errorMessage = next.message)
+                }
             }
-            CommercialLocalEvent.ConfirmPin -> confirmAndSave()
+            CommercialLocalEvent.ConfirmPin -> {
+                cancelLiveGeocode()
+                confirmAndSave()
+            }
             CommercialLocalEvent.Submit -> submit()
         }
     }
@@ -160,9 +175,9 @@ class CommercialLocalViewModel @Inject constructor(
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
                 isSearchingBarrios = true,
                 errorMessage = null,
-                location = if (preserveSelection) it.location else FormosaAddressGeocoding.invalidate(),
             )
         }
+        if (!preserveSelection) scheduleLiveGeocode()
         searchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = searchJob,
             query = query,
@@ -182,12 +197,13 @@ class CommercialLocalViewModel @Inject constructor(
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
                 errorMessage = null,
-                location = FormosaAddressGeocoding.invalidate(),
             ).withAddressFieldErrors()
         }
+        scheduleLiveGeocode()
     }
 
     private fun submit() {
+        cancelLiveGeocode()
         val state = _uiState.value
         val barrioId = state.selectedBarrioId
         val service = targetService
@@ -205,6 +221,30 @@ class CommercialLocalViewModel @Inject constructor(
             return
         }
         persist()
+    }
+
+    private fun scheduleLiveGeocode() {
+        val state = _uiState.value
+        geocodeJob = viewModelScope.launchDebouncedForwardGeocode(
+            previous = geocodeJob,
+            query = LocalAddressQuery(
+                street = state.calle,
+                number = state.numero,
+                neighborhood = state.barrioQuery,
+            ),
+            geocode = geocodeLocalAddress,
+            onResult = { result ->
+                val outcome = (result as? AppResult.Success)?.data ?: return@launchDebouncedForwardGeocode
+                update {
+                    it.copy(location = FormosaAddressGeocoding.applyLiveOutcome(outcome, it.location))
+                }
+            },
+        )
+    }
+
+    private fun cancelLiveGeocode() {
+        geocodeJob?.cancel()
+        geocodeJob = null
     }
 
     private fun resolveFromAddress() {
