@@ -150,7 +150,8 @@ fun ClientContactDomicilioStepScreen(
     onPisoChanged: (String) -> Unit,
     onDepartamentoChanged: (String) -> Unit,
     onMapLocationSelected: (Double, Double) -> Unit,
-    onUseCurrentLocation: () -> Unit,
+    onLocateOnMap: () -> Unit,
+    onConfirmPin: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     val hasUnsavedChanges = uiState.barrioQuery.isNotBlank() ||
@@ -250,9 +251,9 @@ fun ClientContactDomicilioStepScreen(
             showConfirm = uiState.location.showConfirm,
             confirmed = uiState.location.confirmed,
             isGeocoding = uiState.isGeocoding,
-            onLocateOnMap = onUseCurrentLocation,
+            onLocateOnMap = onLocateOnMap,
             onPinChanged = onMapLocationSelected,
-            onConfirmPin = {},
+            onConfirmPin = onConfirmPin,
             locateOnMapLabel = uiState.location.locateOnMapLabel,
             title = "Ubicación del domicilio",
             hint = uiState.location.message,
@@ -270,7 +271,8 @@ fun ClientDomicilioStepScreen(
     onCalleChanged: (String) -> Unit,
     onNumeroChanged: (String) -> Unit,
     onMapLocationSelected: (Double, Double) -> Unit,
-    onUseCurrentLocation: () -> Unit,
+    onLocateOnMap: () -> Unit,
+    onConfirmPin: () -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -311,9 +313,9 @@ fun ClientDomicilioStepScreen(
             showConfirm = uiState.location.showConfirm,
             confirmed = uiState.location.confirmed,
             isGeocoding = uiState.isGeocoding,
-            onLocateOnMap = onUseCurrentLocation,
+            onLocateOnMap = onLocateOnMap,
             onPinChanged = onMapLocationSelected,
-            onConfirmPin = {},
+            onConfirmPin = onConfirmPin,
             locateOnMapLabel = uiState.location.locateOnMapLabel,
             title = "Ubicación",
             hint = uiState.location.message,
