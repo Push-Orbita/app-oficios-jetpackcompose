@@ -62,12 +62,70 @@ class RegisterViewModelTest {
 
     @Test
     fun `client registration success`() = runTest(dispatcher) {
-        val (viewModel, _) = createViewModel()
+        val (viewModel, repository) = createViewModel()
         viewModel.setMode(RegisterMode.CLIENT)
         fillValidClientForm(viewModel)
+        assertTrue(viewModel.uiState.value.canSubmit)
+        assertFalse(viewModel.uiState.value.isLoading)
         viewModel.onEvent(RegisterFormEvent.Submit)
         advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isLoading)
+        assertNotNull(repository.lastClientRequest)
+        assertNull(repository.lastProviderRequest)
+    }
+
+    @Test
+    fun `short password shows live error and submit does not call api`() = runTest(dispatcher) {
+        val (viewModel, repository) = createViewModel()
+        viewModel.setMode(RegisterMode.PROVIDER)
+        fillReproForm(viewModel, password = "xd123")
+
+        val before = viewModel.uiState.value
+        assertFalse(before.isLoading)
+        assertFalse(before.canSubmit)
+        assertFalse(before.hasAttemptedSubmit)
+        assertEquals(
+            "La contraseña tiene que tener al menos 6 caracteres",
+            before.passwordError,
+        )
+        assertEquals(
+            "La contraseña tiene que tener al menos 6 caracteres",
+            before.visibleFieldError(before.passwordError, before.password),
+        )
+
+        viewModel.onEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+
+        val after = viewModel.uiState.value
+        assertTrue(after.hasAttemptedSubmit)
+        assertFalse(after.isLoading)
+        assertFalse(after.canSubmit)
+        assertEquals(
+            "La contraseña tiene que tener al menos 6 caracteres",
+            after.passwordError,
+        )
+        assertNull(repository.lastProviderRequest)
+        assertNull(repository.lastClientRequest)
+    }
+
+    @Test
+    fun `visibleFieldError hides empty field errors until submit attempt`() {
+        val state = RegisterFormUiState(
+            firstNameError = "Los nombres son obligatorios",
+            password = "xd123",
+            passwordError = "La contraseña tiene que tener al menos 6 caracteres",
+        )
+        assertNull(state.visibleFieldError(state.firstNameError, state.firstName))
+        assertEquals(
+            "La contraseña tiene que tener al menos 6 caracteres",
+            state.visibleFieldError(state.passwordError, state.password),
+        )
+
+        val attempted = state.copy(hasAttemptedSubmit = true)
+        assertEquals(
+            "Los nombres son obligatorios",
+            attempted.visibleFieldError(attempted.firstNameError, attempted.firstName),
+        )
     }
 
     @Test
@@ -158,12 +216,30 @@ class RegisterViewModelTest {
         firstName: String = "Juan",
         lastName: String = "Pérez",
     ) {
+        fillReproForm(
+            viewModel = viewModel,
+            firstName = firstName,
+            lastName = lastName,
+            document = "12345678",
+            email = "user@test.com",
+            password = "secret123",
+        )
+    }
+
+    private fun fillReproForm(
+        viewModel: RegisterViewModel,
+        firstName: String = "testingA",
+        lastName: String = "testingxd",
+        document: String = "33999222",
+        email: String = "aikotoba9000@gmail.com",
+        password: String = "xd123",
+    ) {
         viewModel.onEvent(RegisterFormEvent.FirstNameChanged(firstName))
         viewModel.onEvent(RegisterFormEvent.LastNameChanged(lastName))
-        viewModel.onEvent(RegisterFormEvent.DocumentChanged("12345678"))
-        viewModel.onEvent(RegisterFormEvent.EmailChanged("user@test.com"))
-        viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
-        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("secret123"))
+        viewModel.onEvent(RegisterFormEvent.DocumentChanged(document))
+        viewModel.onEvent(RegisterFormEvent.EmailChanged(email))
+        viewModel.onEvent(RegisterFormEvent.PasswordChanged(password))
+        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged(password))
         viewModel.onEvent(RegisterFormEvent.TermsChanged(true))
     }
 }

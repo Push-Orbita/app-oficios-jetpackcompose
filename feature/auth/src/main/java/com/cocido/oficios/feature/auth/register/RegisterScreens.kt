@@ -154,6 +154,15 @@ fun RegisterFormScreen(
         val emailFocus = remember { FocusRequester() }
         val passwordFocus = remember { FocusRequester() }
         val confirmFocus = remember { FocusRequester() }
+        val firstNameError = uiState.visibleFieldError(uiState.firstNameError, uiState.firstName)
+        val lastNameError = uiState.visibleFieldError(uiState.lastNameError, uiState.lastName)
+        val documentError = uiState.visibleFieldError(uiState.documentError, uiState.document)
+        val emailError = uiState.visibleFieldError(uiState.emailError, uiState.email)
+        val passwordError = uiState.visibleFieldError(uiState.passwordError, uiState.password)
+        val confirmPasswordError = uiState.visibleFieldError(
+            uiState.confirmPasswordError,
+            uiState.confirmPassword,
+        )
         FieldAndCtaBlock(spacing = OficiosSpacing.md) {
             if (uiState.generalError != null) {
                 OficiosInlineAlert(message = uiState.generalError)
@@ -165,8 +174,8 @@ fun RegisterFormScreen(
                 label = stringResource(R.string.auth_first_name_label),
                 placeholder = stringResource(R.string.auth_first_name_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.firstNameError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.firstNameError else null,
+                isError = firstNameError != null,
+                supportingText = firstNameError,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { lastNameFocus.requestFocus() }),
             )
@@ -176,8 +185,8 @@ fun RegisterFormScreen(
                 label = stringResource(R.string.auth_last_name_label),
                 placeholder = stringResource(R.string.auth_last_name_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.lastNameError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.lastNameError else null,
+                isError = lastNameError != null,
+                supportingText = lastNameError,
                 modifier = Modifier.focusRequester(lastNameFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { documentFocus.requestFocus() }),
@@ -188,8 +197,8 @@ fun RegisterFormScreen(
                 label = stringResource(R.string.auth_document_label),
                 placeholder = stringResource(R.string.auth_document_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.documentError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.documentError else null,
+                isError = documentError != null,
+                supportingText = documentError,
                 modifier = Modifier.focusRequester(documentFocus),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
@@ -203,8 +212,8 @@ fun RegisterFormScreen(
                 label = stringResource(R.string.auth_email_electronic_label),
                 placeholder = stringResource(R.string.auth_email_electronic_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.emailError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.emailError else null,
+                isError = emailError != null,
+                supportingText = emailError,
                 modifier = Modifier.focusRequester(emailFocus),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -227,8 +236,8 @@ fun RegisterFormScreen(
                 label = stringResource(R.string.auth_password_label),
                 placeholder = stringResource(R.string.auth_password_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
+                isError = passwordError != null,
+                supportingText = passwordError,
                 modifier = Modifier.focusRequester(passwordFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
@@ -239,8 +248,8 @@ fun RegisterFormScreen(
                 label = stringResource(R.string.auth_repeat_password_label),
                 placeholder = stringResource(R.string.auth_repeat_password_label),
                 floatingLabel = false,
-                isError = uiState.hasAttemptedSubmit && uiState.confirmPasswordError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.confirmPasswordError else null,
+                isError = confirmPasswordError != null,
+                supportingText = confirmPasswordError,
                 hiddenVisibilityIconRes = OficiosIcons.EyeClosed,
                 modifier = Modifier.focusRequester(confirmFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -268,7 +277,7 @@ fun RegisterFormScreen(
             OficiosButton(
                 text = stringResource(R.string.auth_next_button),
                 onClick = { onEvent(RegisterFormEvent.Submit) },
-                enabled = uiState.canSubmit && !uiState.isLoading,
+                enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Small,
