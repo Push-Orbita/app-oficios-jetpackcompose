@@ -17,6 +17,7 @@ import com.cocido.oficios.feature.settings.provider.ServicesRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.cocido.oficios.feature.onboarding.verify.VerifyEmailRoute
 
 fun NavGraphBuilder.settingsScreen(
     navController: NavHostController,
@@ -40,6 +41,7 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateToTerms = onNavigateToTerms,
             onNavigateToHelp = onNavigateToHelp,
             onNavigateToConfiguration = { navController.navigate(SettingsDestination.configuration) },
+            onNavigateToVerifyEmail = { navController.navigate(SettingsDestination.verifyEmail) },
             showBackNavigation = false,
             bottomBar = bottomBar,
         )
@@ -108,6 +110,13 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateBack = { navController.popBackStack() },
             onLoggedOut = onLoggedOut,
             onShowMessage = onShowMessage,
+        )
+    }
+    composable(SettingsDestination.verifyEmail) {
+        VerifyEmailRoute(
+            onVerified = {
+                navController.popBackStack()
+            }
         )
     }
 }

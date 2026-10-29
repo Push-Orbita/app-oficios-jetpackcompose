@@ -138,8 +138,8 @@ private fun com.cocido.oficios.core.network.api.profile.dto.TrabajadorOficioRubr
 
 private fun com.cocido.oficios.core.network.api.search.dto.ReputacionResumenDto.toReputation(): WorkerReputation {
     return WorkerReputation(
-        rating = normalizeStarRating(puntajeGlobal ?: promedio),
-        reviewCount = comentariosTotales ?: cantidadCalificaciones,
+        rating = normalizeStarRating(puntajeGlobal ?: promedio ?: rating),
+        reviewCount = comentariosTotales ?: cantidadCalificaciones ?: reviewCount,
     )
 }
 
