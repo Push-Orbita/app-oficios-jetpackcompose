@@ -108,7 +108,7 @@ fun OficiosLocationPicker(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = "Toque el mapa o «Usar mi ubicación» para marcar la entrada. El GPS no se aplica solo.",
+            text = "Toque el mapa o «Usar mi ubicación» para marcar la entrada. Complete los campos de barrio y calle arriba para que coincidan con el pin.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

@@ -108,6 +108,9 @@ class ClientDomicilioViewModel @Inject constructor(
     fun onLocationPermissionDenied() = _uiState.update {
         it.copy(error = "Permita la ubicación o marque manualmente el punto en el mapa.")
     }
+    fun clearMapPin() = _uiState.update {
+        it.copy(latitud = null, longitud = null, error = null)
+    }
     fun useCurrentLocation() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLocating = true, error = null) }
@@ -129,8 +132,11 @@ class ClientDomicilioViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         val barrioId = state.selectedBarrioId
+        val hasPin = state.latitud != null && state.longitud != null
+        
         if (barrioId == null || state.calle.isBlank()) {
-            _uiState.update { it.copy(error = "Complete barrio y calle") }
+            val pinHint = if (hasPin) " (tiene un pin en el mapa sin dirección)" else ""
+            _uiState.update { it.copy(error = "Complete barrio y calle$pinHint") }
             return
         }
         viewModelScope.launch {

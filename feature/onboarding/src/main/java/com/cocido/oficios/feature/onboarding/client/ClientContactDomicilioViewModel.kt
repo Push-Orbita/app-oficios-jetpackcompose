@@ -138,6 +138,10 @@ class ClientContactDomicilioViewModel @Inject constructor(
         it.copy(error = "Permita la ubicación o marque manualmente el punto de entrada en el mapa.")
     }
 
+    fun clearMapPin() = _uiState.update {
+        it.copy(latitud = null, longitud = null, error = null)
+    }
+
     fun useCurrentLocation() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLocating = true, error = null) }
@@ -197,8 +201,11 @@ class ClientContactDomicilioViewModel @Inject constructor(
 
     fun submit() {
         val state = _uiState.value
+        val hasPin = state.latitud != null && state.longitud != null
+        
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Complete nombre, WhatsApp, barrio y calle") }
+            val pinHint = if (hasPin) " (tiene un pin en el mapa sin dirección)" else ""
+            _uiState.update { it.copy(error = "Complete nombre, WhatsApp, barrio y calle$pinHint") }
             return
         }
         val barrioId = state.selectedBarrioId ?: return
