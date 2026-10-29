@@ -14,6 +14,7 @@ data class UpdateTrabajadorPerfilProfesionalRequestDto(
 data class CreateFullAltaRubrosSubrubrosRequestDto(
     val rubroId: Long,
     val autoAceptacion: Boolean = false,
+    val plazoCancelacionHoras: Int? = null,
     val subrubros: List<CreateSubrubroRequestDto>,
     val diasLaborales: List<CreateDiaLaboralRequestDto>,
     val domicilioLocal: CreateDomicilioLocalRequestDto? = null,

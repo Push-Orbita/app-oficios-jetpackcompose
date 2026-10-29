@@ -74,6 +74,7 @@ fun UpdateClientContactoRequest.toDto() = UpdateContactoRequestDto(
 
 fun ProviderRubroFullRequest.toDto() = CreateFullAltaRubrosSubrubrosRequestDto(
     rubroId = rubroId,
+    plazoCancelacionHoras = plazoCancelacionHoras,
     subrubros = subRubroIds.map { subRubroId ->
         CreateSubrubroRequestDto(
             subRubroId = subRubroId,

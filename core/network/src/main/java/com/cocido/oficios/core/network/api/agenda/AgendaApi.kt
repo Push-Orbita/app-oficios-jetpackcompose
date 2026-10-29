@@ -5,6 +5,7 @@ import com.cocido.oficios.core.network.api.agenda.dto.CreateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.SesionDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotTurnoAgendaDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotsAgrupadoPorTrabajadorDto
+import com.cocido.oficios.core.network.api.agenda.dto.UpdateSesionRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
 import retrofit2.http.Body
@@ -52,6 +53,12 @@ interface AgendaApi {
 
     @POST("sesion")
     suspend fun createSesion(@Body request: CreateSesionRequestDto): SesionDto
+
+    @PATCH("sesion/{id}")
+    suspend fun updateSesion(
+        @Path("id") id: Long,
+        @Body request: UpdateSesionRequestDto,
+    ): SesionDto
 
     @DELETE("sesion/{id}")
     suspend fun deleteSesion(@Path("id") id: Long)

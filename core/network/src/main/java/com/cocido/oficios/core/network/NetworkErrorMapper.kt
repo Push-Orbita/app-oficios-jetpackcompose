@@ -190,6 +190,7 @@ private val knownBackendMessages = mapOf(
     "AGENDA_SLOT_ALREADY_RESERVED" to "Ese turno ya no está disponible. Elija otro horario.",
     "AGENDA_SLOT_NOT_AVAILABLE" to "Ese horario ya no se puede reservar.",
     "COMPLETION_CODE_RATE_LIMITED" to "Espere un momento para reenviar el código.",
+    "CANCELATION_WINDOW_EXPIRED" to "Ya no se puede cancelar este servicio. El plazo de cancelación venció.",
     "DB02" to "El servicio no está disponible en este momento. Intente más tarde.",
     "SE01" to "El servicio no está disponible en este momento. Intente más tarde.",
     "VA01" to "Revise los datos ingresados",
