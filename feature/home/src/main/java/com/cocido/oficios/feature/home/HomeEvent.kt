@@ -7,9 +7,7 @@ import com.cocido.oficios.domain.model.RecentSearchType
 sealed interface HomeEvent {
     data object Retry : HomeEvent
     data object Refresh : HomeEvent
-    data object OpenSearch : HomeEvent
     data object OpenNotifications : HomeEvent
-    data class SearchSubmitted(val query: String) : HomeEvent
     data class RecentSearchSelected(val entry: RecentSearchEntry) : HomeEvent
     data class CategorySelected(val category: HomeCategoryItem) : HomeEvent
     data object SeeAllCategories : HomeEvent

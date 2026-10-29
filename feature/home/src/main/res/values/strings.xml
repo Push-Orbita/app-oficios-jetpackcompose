@@ -30,8 +30,6 @@
     <string name="home_notifications">Notificaciones</string>
     <string name="home_user_avatar">Foto de perfil</string>
     <string name="home_verified_user">Usuario verificado</string>
-    <string name="home_search">Buscar</string>
-    <string name="home_voice_search">Búsqueda por voz</string>
     <string name="home_back">Volver</string>
     <string name="home_categories_see_all">Ver todos</string>
     <string name="home_categories_empty_title">Sin categorías por ahora</string>

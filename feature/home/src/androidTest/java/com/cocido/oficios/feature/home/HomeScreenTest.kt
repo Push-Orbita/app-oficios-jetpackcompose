@@ -56,7 +56,7 @@ class HomeScreenTest {
     }
 
     @Test
-    fun home_successShowsSearchEntry() {
+    fun home_successShowsHeaderWithoutSearchEntry() {
         composeTestRule.setContent {
             OficiosTheme {
                 HomeScreen(
@@ -77,7 +77,9 @@ class HomeScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("¿Qué oficio está buscando?").assertIsDisplayed()
+        composeTestRule.onNodeWithText("¿Qué oficio está buscando?").assertDoesNotExist()
+        composeTestRule.onNodeWithText("QA Emulator").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Notificaciones").assertIsDisplayed()
         composeTestRule.onNodeWithText("Hogar").assertIsDisplayed()
         composeTestRule.onNodeWithText("Buscar").assertIsDisplayed()
     }
