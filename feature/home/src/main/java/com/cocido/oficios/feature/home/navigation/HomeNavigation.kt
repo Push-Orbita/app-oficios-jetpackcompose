@@ -132,6 +132,7 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToHire = { workerId ->
                     navController.navigate(OrdersDestination.createOrder(workerId))
                 },
+                onNavigateToNotifications = { navController.navigateToNotifications() },
                 onShowMessage = onShowMessage,
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToFavorites = { navController.navigateToFavorites() },

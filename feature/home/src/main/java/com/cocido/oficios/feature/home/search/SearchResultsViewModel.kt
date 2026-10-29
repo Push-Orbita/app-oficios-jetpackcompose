@@ -59,6 +59,7 @@ class SearchResultsViewModel @Inject constructor(
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
     private val getWorkerReviewsUseCase: GetWorkerReviewsUseCase,
+    private val getUnreadNotificationCountUseCase: com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SearchResultsUiState>(SearchResultsUiState.Loading)
@@ -66,6 +67,9 @@ class SearchResultsViewModel @Inject constructor(
 
     private val _filterSheetState = MutableStateFlow(FilterSheetUiState())
     val filterSheetState: StateFlow<FilterSheetUiState> = _filterSheetState.asStateFlow()
+
+    private val _unreadNotificationCount = MutableStateFlow(0)
+    val unreadNotificationCount: StateFlow<Int> = _unreadNotificationCount.asStateFlow()
 
     private val _effects = Channel<SearchResultsEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
@@ -91,6 +95,16 @@ class SearchResultsViewModel @Inject constructor(
         observeRecents()
         loadIdleCatalog()
         loadInitial()
+        refreshUnreadCount()
+    }
+
+    private fun refreshUnreadCount() {
+        viewModelScope.launch {
+            when (val result = getUnreadNotificationCountUseCase()) {
+                is AppResult.Success -> _unreadNotificationCount.update { result.data }
+                is AppResult.Error -> Unit
+            }
+        }
     }
 
     fun onEvent(event: SearchResultsEvent) {
@@ -98,6 +112,7 @@ class SearchResultsViewModel @Inject constructor(
             SearchResultsEvent.Retry -> refresh()
             SearchResultsEvent.Refresh -> pullToRefresh()
             SearchResultsEvent.Back -> emitEffect(SearchResultsEffect.NavigateBack)
+            SearchResultsEvent.OpenNotifications -> emitEffect(SearchResultsEffect.NavigateToNotifications)
             SearchResultsEvent.LoadNextPage -> loadNextPage()
             SearchResultsEvent.OpenFilters -> openFilters()
             SearchResultsEvent.DismissFilters -> _filterSheetState.update { it.copy(visible = false) }
@@ -856,6 +871,7 @@ sealed interface SearchResultsEvent {
     data object Retry : SearchResultsEvent
     data object Refresh : SearchResultsEvent
     data object Back : SearchResultsEvent
+    data object OpenNotifications : SearchResultsEvent
     data object LoadNextPage : SearchResultsEvent
     data object OpenFilters : SearchResultsEvent
     data object DismissFilters : SearchResultsEvent
@@ -900,6 +916,7 @@ data class SearchSuggestion(
 
 sealed interface SearchResultsEffect {
     data object NavigateBack : SearchResultsEffect
+    data object NavigateToNotifications : SearchResultsEffect
     data class NavigateToWorker(val workerId: Long) : SearchResultsEffect
     data class NavigateToHire(val workerId: Long) : SearchResultsEffect
     data class ShowMessage(val message: String) : SearchResultsEffect
