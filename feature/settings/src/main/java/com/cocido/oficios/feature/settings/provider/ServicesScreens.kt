@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -363,6 +365,15 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+    OficiosTextField(
+        value = state.plazoCancelacionHorasInput,
+        onValueChange = { onEvent(AddServiceEvent.PlazoCancelacionHorasChanged(it)) },
+        label = stringResource(R.string.services_cancellation_hours),
+        supportingText = state.plazoCancelacionHorasError
+            ?: stringResource(R.string.services_cancellation_hours_hint),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        isError = state.plazoCancelacionHorasError != null,
+    )
     if (state.servesAtLocal) {
         Text(stringResource(R.string.services_local_address), style = MaterialTheme.typography.titleMedium)
         OficiosTextField(state.localName, { onEvent(AddServiceEvent.LocalNameChanged(it)) }, stringResource(R.string.services_local_name), placeholder = stringResource(R.string.services_local_name_hint))

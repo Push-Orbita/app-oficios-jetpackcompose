@@ -74,6 +74,27 @@ class ProfileMapperTest {
         assertEquals(true, dto.subrubros.single().requiereTurnos)
         assertEquals(60, sesion?.duracion)
         assertEquals("minutos", sesion?.medidaDuracion)
+        assertEquals(null, sesion?.intervalo)
+        assertEquals(null, sesion?.medidaIntervalo)
+    }
+
+    @Test
+    fun `maps sesion with interval when provided`() {
+        val dto = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("08:00", "12:00")),
+            requiresTurns = true,
+            turnIntervalMinutes = 15,
+        ).toDto()
+
+        val sesion = dto.subrubros.single().sesion
+        assertEquals(true, dto.subrubros.single().requiereTurnos)
+        assertEquals(60, sesion?.duracion)
+        assertEquals("minutos", sesion?.medidaDuracion)
         assertEquals("15", sesion?.intervalo)
         assertEquals("minutos", sesion?.medidaIntervalo)
     }
@@ -92,6 +113,33 @@ class ProfileMapperTest {
 
         assertEquals(listOf("EFECTIVO", "MERCADOPAGO"), dto.metodosPago)
         assertEquals(null, dto.subrubros.single().sesion)
+    }
+
+    @Test
+    fun `maps plazoCancelacionHoras in rubro full request`() {
+        val dtoWithPlazo = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("08:00", "12:00")),
+            plazoCancelacionHoras = 12,
+        ).toDto()
+
+        assertEquals(12, dtoWithPlazo.plazoCancelacionHoras)
+
+        val dtoWithoutPlazo = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("08:00", "12:00")),
+            plazoCancelacionHoras = null,
+        ).toDto()
+
+        assertEquals(null, dtoWithoutPlazo.plazoCancelacionHoras)
     }
 
     @Test

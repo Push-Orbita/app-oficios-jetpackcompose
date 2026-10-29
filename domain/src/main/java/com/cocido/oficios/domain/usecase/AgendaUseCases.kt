@@ -2,6 +2,7 @@ package com.cocido.oficios.domain.usecase
 
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSessionParams
 import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import com.cocido.oficios.domain.repository.AgendaRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
@@ -25,6 +26,7 @@ class AgendaUseCases @Inject constructor(
     suspend fun deleteSlot(slotId: Long) = repository.deleteSlot(slotId)
     suspend fun getSessionsForSubRubro(subRubroId: Long) = repository.getSessionsForSubRubro(subRubroId)
     suspend fun saveSession(params: SaveAgendaSessionParams) = repository.saveSession(params)
+    suspend fun updateSession(params: UpdateAgendaSessionParams) = repository.updateSession(params)
     suspend fun deleteSession(sessionId: Long) = repository.deleteSession(sessionId)
 }
 

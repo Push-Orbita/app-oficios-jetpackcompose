@@ -299,6 +299,31 @@ class AddServiceViewModelTest {
         assertEquals(emptyList<Long>(), availability.replacedSubIds)
     }
 
+    @Test
+    fun `save in edit always syncs availability even without schedule changes`() = runTest(testDispatcher) {
+        val first = mondayWeek("14:00", "18:00")
+        val second = mondayWeek("09:00", "18:00")
+        val availability = FakeAvailabilityRepository(
+            weeksBySub = mapOf(1L to first, 2L to second),
+        )
+        val viewModel = addViewModel(
+            FakeAccountRepository(),
+            FakeCatalogRepository(),
+            serviceId = 11L,
+            availability = availability,
+        )
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.PlazoCancelacionHorasChanged("12"))
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.PaymentToggled("EFECTIVO", true))
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.Save)
+        advanceUntilIdle()
+        assertEquals(listOf(1L, 2L), availability.replacedSubIds.sorted())
+    }
+
     private fun addViewModel(
         accounts: FakeAccountRepository,
         catalog: FakeCatalogRepository,

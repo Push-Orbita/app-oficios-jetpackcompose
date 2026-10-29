@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.AddressLocationSnapshot
+import com.cocido.oficios.domain.model.AvailabilityPut
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
@@ -213,6 +214,9 @@ class AddServiceViewModel @Inject constructor(
                     it.copy(requiresTurns = event.checked)
                 }
             }
+            is AddServiceEvent.PlazoCancelacionHorasChanged -> update {
+                it.copy(plazoCancelacionHorasInput = event.value.filter { char -> char.isDigit() }, errorMessage = null)
+            }
             is AddServiceEvent.EditorSpecialtySelected -> selectEditorSpecialty(event.id)
             is AddServiceEvent.LocalNameChanged -> update { it.copy(localName = event.value) }
             is AddServiceEvent.LocalBarrioChanged -> searchBarrio(event.value)
@@ -324,6 +328,10 @@ class AddServiceViewModel @Inject constructor(
 
     private fun next() {
         val state = _uiState.value
+        state.plazoCancelacionHorasError?.let { errorMessage ->
+            update { it.copy(errorMessage = errorMessage) }
+            return
+        }
         val error = when (state.step) {
             AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) {
                 "Seleccione al menos una especialidad."
@@ -381,6 +389,7 @@ class AddServiceViewModel @Inject constructor(
                 timeSlots = state.timeSlots,
                 weeklyAvailability = state.weeklyAvailability,
                 requiresTurns = state.requiresTurns,
+                plazoCancelacionHoras = state.plazoCancelacionHoras,
                 domicilioLocal = local,
                 paymentMethods = state.paymentMethods.toList(),
             )
@@ -395,7 +404,7 @@ class AddServiceViewModel @Inject constructor(
             }
             when (result) {
                 is AppResult.Success -> {
-                    syncWeeklyAvailability(rubroId, state.weeklyAvailability)
+                    syncWeeklyAvailability(rubroId, state.weeklyAvailability, forceSync = state.isEditing)
                     emit(
                         AddServiceEffect.Saved(
                             if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
@@ -568,6 +577,7 @@ class AddServiceViewModel @Inject constructor(
                 servesAtClientHome = service.subServices.any { sub -> sub.servesAtClientHome },
                 servesAtLocal = servesAtLocal,
                 requiresTurns = service.subServices.any { sub -> sub.requiresTurns },
+                plazoCancelacionHorasInput = service.plazoCancelacionHoras?.toString().orEmpty(),
                 localName = commercialLocal?.name.orEmpty(),
                 localBarrioId = if (servesAtLocal) commercialLocal?.barrioId else it.localBarrioId,
                 localBarrioQuery = if (servesAtLocal) commercialLocal?.barrioName.orEmpty() else it.localBarrioQuery,
@@ -587,7 +597,7 @@ class AddServiceViewModel @Inject constructor(
         }
     }
 
-    private suspend fun syncWeeklyAvailability(rubroId: Long, week: WeeklyAvailability) {
+    private suspend fun syncWeeklyAvailability(rubroId: Long, week: WeeklyAvailability, forceSync: Boolean = false) {
         val details = when (val result = accountUseCases.getProfile()) {
             is AppResult.Success -> result.data.providerDetails
             is AppResult.Error -> return
@@ -597,13 +607,24 @@ class AddServiceViewModel @Inject constructor(
             .maxByOrNull { it.id }
             ?: return
         val state = _uiState.value
-        val puts = availabilityPutsForEdit(
-            persistedSubIds = service.subServices.map { sub -> sub.id },
-            originalBySubId = originalAvailabilityBySubId,
-            editorSourceSubId = state.editorSourceSubId,
-            wizardWeek = week,
-            draftBySubId = state.availabilityDrafts,
-        )
+        val puts = if (forceSync) {
+            service.subServices.filter { it.id > 0L }.map { sub ->
+                val week = if (sub.id == state.editorSourceSubId) {
+                    week
+                } else {
+                    state.availabilityDrafts[sub.id] ?: originalAvailabilityBySubId[sub.id] ?: week
+                }
+                AvailabilityPut(sub.id, week)
+            }
+        } else {
+            availabilityPutsForEdit(
+                persistedSubIds = service.subServices.map { sub -> sub.id },
+                originalBySubId = originalAvailabilityBySubId,
+                editorSourceSubId = state.editorSourceSubId,
+                wizardWeek = week,
+                draftBySubId = state.availabilityDrafts,
+            )
+        }
         for (put in puts) {
             availabilityUseCases.replaceWeekly(put.subRubroId, put.week)
         }

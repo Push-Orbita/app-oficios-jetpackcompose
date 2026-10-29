@@ -58,4 +58,50 @@ class RegisterTradeDraftMapperTest {
         assertNull(request.domicilioLocal?.calle)
         assertNull(request.domicilioLocal?.numero)
     }
+
+    @Test
+    fun `toRubroFullRequest maps plazoCancelacionHoras when present`() {
+        val draft = RegisterTradeDraft(
+            categoryId = 1,
+            categoryName = "Hogar",
+            rubroId = 11,
+            rubroName = "Plomería",
+            subRubroIds = listOf(101L),
+            otherSpecialization = null,
+            experienceRange = "3 a 5 años",
+            neighborhoodQuery = "Centro",
+            workDays = listOf("LUNES"),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            plazoCancelacionHoras = 12,
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+        )
+
+        val request = draft.toRubroFullRequest()
+
+        assertEquals(12, request.plazoCancelacionHoras)
+    }
+
+    @Test
+    fun `toRubroFullRequest maps plazoCancelacionHoras as null when absent`() {
+        val draft = RegisterTradeDraft(
+            categoryId = 1,
+            categoryName = "Hogar",
+            rubroId = 11,
+            rubroName = "Plomería",
+            subRubroIds = listOf(101L),
+            otherSpecialization = null,
+            experienceRange = "3 a 5 años",
+            neighborhoodQuery = "Centro",
+            workDays = listOf("LUNES"),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            plazoCancelacionHoras = null,
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+        )
+
+        val request = draft.toRubroFullRequest()
+
+        assertNull(request.plazoCancelacionHoras)
+    }
 }

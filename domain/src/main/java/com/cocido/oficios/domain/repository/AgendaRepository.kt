@@ -7,6 +7,7 @@ import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.AgendaSlotsSnapshot
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSessionParams
 import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,5 +45,6 @@ interface AgendaRepository {
     suspend fun deleteSlot(slotId: Long): AppResult<Unit>
     suspend fun getSessionsForSubRubro(subRubroId: Long): AppResult<List<AgendaSessionConfig>>
     suspend fun saveSession(params: SaveAgendaSessionParams): AppResult<Unit>
+    suspend fun updateSession(params: UpdateAgendaSessionParams): AppResult<Unit>
     suspend fun deleteSession(sessionId: Long): AppResult<Unit>
 }

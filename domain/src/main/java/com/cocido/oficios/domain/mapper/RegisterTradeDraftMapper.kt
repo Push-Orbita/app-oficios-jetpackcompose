@@ -19,6 +19,7 @@ fun RegisterTradeDraft.toRubroFullRequest() = ProviderRubroFullRequest(
     requiresTurns = requiresTurns,
     turnDurationMinutes = turnDurationMinutes,
     turnIntervalMinutes = turnIntervalMinutes,
+    plazoCancelacionHoras = plazoCancelacionHoras,
     timeSlots = timeSlots.ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
     domicilioLocal = if (servesAtLocal && barrioId != null) {
         com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest(

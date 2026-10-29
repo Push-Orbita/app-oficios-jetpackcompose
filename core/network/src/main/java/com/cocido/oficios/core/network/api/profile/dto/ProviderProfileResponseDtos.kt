@@ -13,6 +13,7 @@ data class TrabajadorOficioRubroFullDto(
     val principal: Boolean = false,
     val subRubros: List<TrabajadorOficioSubRubroFullDto> = emptyList(),
     val diasLaborales: List<DiaLaboralSimpleDto> = emptyList(),
+    val plazoCancelacionHoras: Int? = null,
     val domicilioLocal: DomicilioEnrichedDto? = null,
 )
 
