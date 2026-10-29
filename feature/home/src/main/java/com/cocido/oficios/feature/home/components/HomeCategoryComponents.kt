@@ -44,6 +44,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.categories.CategoryGlyph
+import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoryCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -343,26 +344,20 @@ fun HomeCategoryCard(
     categoryId: Long = 0L,
     iconUrl: String? = null,
 ) {
-    val titleStyle = MaterialTheme.typography.bodyLarge
-    val minHeight = if (compact) {
-        OficiosComponentSize.categoryCardSize
-    } else {
-        OficiosComponentSize.authRoleCardMinHeight
-    }
-    val cardPadding = if (compact) {
-        PaddingValues(
-            start = OficiosSpacing.md,
-            end = OficiosSpacing.md,
-            top = OficiosComponentSize.homeRecentCardLabelTop,
-            bottom = OficiosSpacing.md,
+    if (!compact) {
+        OficiosCategoryCard(
+            title = title,
+            onClick = onClick,
+            modifier = modifier,
+            categoryId = categoryId,
+            iconUrl = iconUrl,
         )
-    } else {
-        PaddingValues(OficiosSpacing.md)
+        return
     }
 
     Column(
         modifier = modifier
-            .heightIn(min = minHeight)
+            .heightIn(min = OficiosComponentSize.categoryCardSize)
             .clip(RoundedCornerShape(OficiosSpacing.md))
             .border(
                 width = 1.dp,
@@ -371,36 +366,35 @@ fun HomeCategoryCard(
             )
             .semantics(mergeDescendants = true) { contentDescription = title }
             .clickable(onClick = onClick)
-            .padding(cardPadding),
+            .padding(
+                start = OficiosSpacing.md,
+                end = OficiosSpacing.md,
+                top = OficiosComponentSize.homeRecentCardLabelTop,
+                bottom = OficiosSpacing.md,
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
     ) {
         AutoshrinkCategoryLabel(
             title = title,
-            style = titleStyle,
-            compact = compact,
+            style = MaterialTheme.typography.bodyLarge,
+            compact = true,
         )
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            val iconModifier = if (compact) {
-                Modifier.size(width = 50.dp, height = 44.dp)
-            } else {
-                Modifier.size(width = 48.dp, height = 48.dp)
-            }
-            val illustrationModifier = if (compact) {
-                iconModifier
-            } else {
-                Modifier.size(width = 100.dp, height = 74.dp)
-            }
+            val compactGlyph = Modifier.size(
+                width = OficiosComponentSize.categoryCardCompactGlyphWidth,
+                height = OficiosComponentSize.categoryCardCompactGlyphHeight,
+            )
             CategoryGlyph(
                 id = categoryId,
                 label = title,
                 iconUrl = iconUrl,
                 contentDescription = title,
-                modifier = iconModifier,
-                illustrationModifier = illustrationModifier,
+                modifier = compactGlyph,
+                illustrationModifier = compactGlyph,
                 tint = MaterialTheme.colorScheme.onBackground,
             )
         }

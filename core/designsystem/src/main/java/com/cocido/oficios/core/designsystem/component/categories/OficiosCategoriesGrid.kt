@@ -1,10 +1,14 @@
 package com.cocido.oficios.core.designsystem.component.categories
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
+import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 
@@ -59,6 +64,12 @@ fun OficiosCategoriesGrid(
     }
 }
 
+/**
+ * Card de categoría — Figma 527:42 / 453:49.
+ *
+ * 172 alto, padding 16, label arriba (16sp), glifo 90×90 (o ilustración 100×78)
+ * centrado H+V en el área restante.
+ */
 @Composable
 fun OficiosCategoryCard(
     title: String,
@@ -71,30 +82,38 @@ fun OficiosCategoryCard(
     OficiosCard(
         onClick = onClick,
         selected = selected,
-        modifier = modifier,
+        modifier = modifier.height(OficiosComponentSize.authRoleCardMinHeight),
+        contentPadding = PaddingValues(OficiosSpacing.md),
         expandContent = true,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = OficiosAuthGlyphBodyStyle,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
             )
-            CategoryGlyph(
-                id = categoryId,
-                label = title,
-                iconUrl = iconUrl,
-                modifier = Modifier.categoryVectorSize(),
-                illustrationModifier = Modifier.categoryIllustrationSize(),
-                tint = MaterialTheme.colorScheme.onBackground,
-            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CategoryGlyph(
+                    id = categoryId,
+                    label = title,
+                    iconUrl = iconUrl,
+                    modifier = Modifier.categoryVectorSize(),
+                    illustrationModifier = Modifier.categoryIllustrationSize(),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
         }
     }
 }

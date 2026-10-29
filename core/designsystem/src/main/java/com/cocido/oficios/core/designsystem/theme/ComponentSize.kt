@@ -37,6 +37,17 @@ object OficiosComponentSize {
     val ratingIcon = 36.dp
     val categoryCardSize = 118.dp
     /**
+     * Figma 527:54 lucide/users — glifo vectorial de categoría (Metal, Mascotas, etc.).
+     * No usar [iconLg]/48: en la card 172 queda chico y pegado al label.
+     */
+    val categoryCardGlyphSize = 90.dp
+    /** Figma 527:44 construccion-icon. */
+    val categoryCardIllustrationWidth = 100.dp
+    val categoryCardIllustrationHeight = 78.dp
+    /** Recents Figma 224:1013 — tile 118. */
+    val categoryCardCompactGlyphWidth = 50.dp
+    val categoryCardCompactGlyphHeight = 44.dp
+    /**
      * Ancho mínimo legible del tile Beneficios cuando 3 no entran
      * (Figma 259:293 es 118.67 en artboard 440; en 360–430dp se usa carrusel).
      */
