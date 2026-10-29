@@ -325,13 +325,17 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
     if (state.selectedCategoryId == null) {
         Text(stringResource(R.string.services_category), style = MaterialTheme.typography.titleMedium)
         OficiosCategoriesGrid(
-            categories = state.categories.map { CategoryGridItem(it.id, it.label) },
+            categories = state.categories.map {
+                CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+            },
             onCategoryClick = { onEvent(AddServiceEvent.CategorySelected(it.id)) },
         )
     } else {
         Text(stringResource(R.string.services_trade), style = MaterialTheme.typography.titleMedium)
         OficiosCategoriesGrid(
-            categories = state.rubros.map { CategoryGridItem(it.id, it.label) },
+            categories = state.rubros.map {
+                CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+            },
             onCategoryClick = { onEvent(AddServiceEvent.RubroSelected(it.id)) },
             selectedCategoryId = state.selectedRubroId,
         )

@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.semantics
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.badges.OficiosVerifiedBadge
+import com.cocido.oficios.core.designsystem.component.categories.CategoryIconResolver
 import com.cocido.oficios.core.designsystem.component.chips.OficiosChip
 import com.cocido.oficios.core.designsystem.component.chips.OficiosFilterChip
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -125,6 +126,7 @@ private fun RubroChipsRow(
                 label = rubro.label,
                 selected = false,
                 iconUrl = rubro.iconUrl,
+                leadingIcon = CategoryIconResolver.iconFor(rubro.id, rubro.label),
                 onToggle = { onRubroClick(rubro) },
             )
         }
