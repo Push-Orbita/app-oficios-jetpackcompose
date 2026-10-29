@@ -49,6 +49,12 @@ data class ProviderIdentityUiState(
     
     val isSelfieRejected: Boolean 
         get() = selfieRemoteStatus?.equals("RECHAZADO", ignoreCase = true) == true
+    
+    val isSelfieApproved: Boolean
+        get() = selfieRemoteStatus?.equals("APROBADO", ignoreCase = true) == true
+    
+    val isSelfieUploaded: Boolean
+        get() = selfieRemoteStatus?.equals("SUBIDO", ignoreCase = true) == true
 }
 
 @HiltViewModel
@@ -191,7 +197,17 @@ class ProviderIdentityViewModel @Inject constructor(
 
             // 3. Subir selfie si es nueva
             if (selfie != null) {
-                val selfieResult = if (state.existingSelfieDocumentId != null && state.isSelfieRejected) {
+                if (state.isSelfieApproved) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            uploadError = "DNI enviado. La selfie ya fue aprobada y no puede ser reemplazada"
+                        )
+                    }
+                    return@launch
+                }
+                
+                val selfieResult = if (state.existingSelfieDocumentId != null && (state.isSelfieRejected || state.isSelfieUploaded)) {
                     replaceProviderSelfieUseCase(state.existingSelfieDocumentId, selfie)
                 } else {
                     uploadProviderSelfieUseCase(selfie)

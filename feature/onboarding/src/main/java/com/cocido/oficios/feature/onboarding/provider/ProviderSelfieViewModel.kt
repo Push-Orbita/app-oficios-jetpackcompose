@@ -32,6 +32,7 @@ data class ProviderSelfieUiState(
     val canSubmit: Boolean get() = imagePath != null || remoteLoaded
     val isApproved: Boolean get() = remoteStatus?.equals("APROBADO", ignoreCase = true) == true
     val isRejected: Boolean get() = remoteStatus?.equals("RECHAZADO", ignoreCase = true) == true
+    val isUploaded: Boolean get() = remoteStatus?.equals("SUBIDO", ignoreCase = true) == true
 }
 
 @HiltViewModel
@@ -100,7 +101,7 @@ class ProviderSelfieViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val result = if (state.existingDocumentId != null && state.isRejected) {
+            val result = if (state.existingDocumentId != null && (state.isRejected || state.isUploaded)) {
                 replaceProviderSelfieUseCase(state.existingDocumentId, imagePath)
             } else {
                 uploadProviderSelfieUseCase(imagePath)

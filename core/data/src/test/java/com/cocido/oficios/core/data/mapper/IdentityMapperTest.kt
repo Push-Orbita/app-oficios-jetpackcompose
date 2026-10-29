@@ -63,7 +63,7 @@ class IdentityMapperTest {
     }
 
     @Test
-    fun `toProviderSelfieDocument prefers selfieUrl when both fields exist`() {
+    fun `toProviderSelfieDocument prefers frenteUrl when both fields exist`() {
         val response = """
         {
             "metadata": { "count": 1 },

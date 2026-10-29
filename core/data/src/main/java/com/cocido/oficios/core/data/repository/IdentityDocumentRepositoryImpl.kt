@@ -27,6 +27,9 @@ class IdentityDocumentRepositoryImpl @Inject constructor(
 
     override suspend fun getMyDniDocuments(): AppResult<com.cocido.oficios.domain.model.ProviderDniDocuments?> {
         val workerId = accountRepository.providerDetails.value?.workerId
+        if (workerId == null) {
+            return AppResult.Success(null)
+        }
         return remoteDataSource.searchDocuments(
             tipoDocumento = "dni",
             trabajadorOficioId = workerId,
@@ -35,6 +38,9 @@ class IdentityDocumentRepositoryImpl @Inject constructor(
 
     override suspend fun getMySelfieDocument(): AppResult<com.cocido.oficios.domain.model.ProviderSelfieDocument?> {
         val workerId = accountRepository.providerDetails.value?.workerId
+        if (workerId == null) {
+            return AppResult.Success(null)
+        }
         return remoteDataSource.searchDocuments(
             tipoDocumento = "selfie",
             trabajadorOficioId = workerId,
