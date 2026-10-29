@@ -242,13 +242,21 @@ fun ClientContactDomicilioStepScreen(
                 modifier = Modifier.weight(1f),
             )
         }
-        OficiosLocationPicker(
-            latitude = uiState.latitud,
-            longitude = uiState.longitud,
-            onLocationSelected = onMapLocationSelected,
-            onUseCurrentLocation = onUseCurrentLocation,
-            onPermissionDenied = onLocationPermissionDenied,
-            isLocating = uiState.isLocating,
+        OficiosAddressLocationPicker(
+            latitude = uiState.location.latitude,
+            longitude = uiState.location.longitude,
+            showMap = uiState.location.showMap,
+            pinDraggable = uiState.location.pinDraggable,
+            showLocateOnMap = uiState.location.showLocateOnMap,
+            showConfirm = uiState.location.showConfirm,
+            confirmed = uiState.location.confirmed,
+            isGeocoding = uiState.isGeocoding,
+            onLocateOnMap = onUseCurrentLocation,
+            onPinChanged = onMapLocationSelected,
+            onConfirmPin = {},
+            locateOnMapLabel = uiState.location.locateOnMapLabel,
+            title = "Ubicación del domicilio",
+            hint = uiState.location.message,
         )
     }
 }
@@ -296,13 +304,21 @@ fun ClientDomicilioStepScreen(
             onValueChange = onNumeroChanged,
             label = stringResource(R.string.onboarding_step_numero_label),
         )
-        OficiosLocationPicker(
-            latitude = uiState.latitud,
-            longitude = uiState.longitud,
-            onLocationSelected = onMapLocationSelected,
-            onUseCurrentLocation = onUseCurrentLocation,
-            onPermissionDenied = onLocationPermissionDenied,
-            isLocating = uiState.isLocating,
+        OficiosAddressLocationPicker(
+            latitude = uiState.location.latitude,
+            longitude = uiState.location.longitude,
+            showMap = uiState.location.showMap,
+            pinDraggable = uiState.location.pinDraggable,
+            showLocateOnMap = uiState.location.showLocateOnMap,
+            showConfirm = uiState.location.showConfirm,
+            confirmed = uiState.location.confirmed,
+            isGeocoding = uiState.isGeocoding,
+            onLocateOnMap = onUseCurrentLocation,
+            onPinChanged = onMapLocationSelected,
+            onConfirmPin = {},
+            locateOnMapLabel = uiState.location.locateOnMapLabel,
+            title = "Ubicación",
+            hint = uiState.location.message,
         )
     }
 }

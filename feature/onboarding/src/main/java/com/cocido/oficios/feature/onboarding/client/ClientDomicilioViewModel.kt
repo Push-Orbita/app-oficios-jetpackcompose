@@ -218,7 +218,6 @@ class ClientDomicilioViewModel @Inject constructor(
     }
     
     private fun persist() {
-    private fun persist() {
         val state = _uiState.value
         val barrioId = state.selectedBarrioId ?: return
         val location = state.location

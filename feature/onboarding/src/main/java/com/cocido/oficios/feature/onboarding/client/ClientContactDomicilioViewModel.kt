@@ -111,7 +111,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
             val account = (getCurrentUserUseCase() as? AppResult.Success)?.data
             _uiState.update {
                 it.copy(
-                    nombre = contacto?.nombre?.takeIf { name -> name.isNotBlank() } ?: account.displayName(),
+                    nombre = contacto?.nombre?.takeIf { name -> name.isNotBlank() } ?: account?.displayName().orEmpty(),
                     telefono = contacto?.telefonoWhatsapp?.let(AuthValidators::normalizeArgentinePhone).orEmpty(),
                     email = contacto?.email?.takeIf { mail -> mail.isNotBlank() } ?: account?.email.orEmpty(),
                     barrioQuery = domicilio?.barrioName.orEmpty(),
@@ -120,8 +120,14 @@ class ClientContactDomicilioViewModel @Inject constructor(
                     numero = domicilio?.numero.orEmpty(),
                     piso = domicilio?.piso.orEmpty(),
                     departamento = domicilio?.departamento.orEmpty(),
-                    latitud = domicilio?.latitud,
-                    longitud = domicilio?.longitud,
+                    location = if (domicilio?.latitud != null && domicilio.longitud != null) {
+                        AddressLocationSnapshot(
+                            phase = AddressLocationPhase.Confirmed,
+                            latitude = domicilio.latitud,
+                            longitude = domicilio.longitud,
+                            confirmed = true,
+                        )
+                    } else AddressLocationSnapshot(),
                     isPreloading = false,
                 )
             }
@@ -283,7 +289,6 @@ class ClientContactDomicilioViewModel @Inject constructor(
         }
     }
     
-    private fun persist() {
     private fun persist() {
         val state = _uiState.value
         val barrioId = state.selectedBarrioId ?: return
