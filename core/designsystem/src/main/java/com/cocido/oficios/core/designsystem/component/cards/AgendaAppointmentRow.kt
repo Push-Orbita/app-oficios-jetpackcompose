@@ -1,12 +1,11 @@
 package com.cocido.oficios.core.designsystem.component.cards
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,14 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -33,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
-import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
@@ -58,11 +54,10 @@ fun AgendaAppointmentRow(
     /** Franja gris 16dp de agenda. Mis pedidos la oculta; HOY/AHORA se mantienen. */
     showIdleSideBar: Boolean = true,
 ) {
-    val shape = RoundedCornerShape(OficiosRadius.sm)
     val highlighted = isNow
     val showSideLabel = isNow || isToday
     val sideLabel = if (isNow) nowLabel else todayLabel
-    val surface = if (highlighted) MaterialTheme.colorScheme.onSurface else Color.Transparent
+    val containerColor = if (highlighted) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.surface
     val titleColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
     val bodyColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurfaceVariant
     val chevronColor = if (highlighted) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
@@ -74,17 +69,20 @@ fun AgendaAppointmentRow(
         counterpartName = avatarName,
     )
     val showAvatar = avatarName != null || !avatarUrl.isNullOrBlank()
-    Row(
+    OficiosCard(
+        onClick = onClick,
+        containerColor = containerColor,
+        contentPadding = PaddingValues(0.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .clip(shape)
-            .background(surface, shape)
-            .border(1.dp, MaterialTheme.colorScheme.outline, shape)
-            .clickable(onClick = onClick)
-            .padding(end = OficiosSpacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
+            .height(IntrinsicSize.Min),
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = OficiosSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
         if (showSideLabel) {
             Box(
                 modifier = Modifier
@@ -166,6 +164,7 @@ fun AgendaAppointmentRow(
             tint = chevronColor,
             modifier = Modifier.size(OficiosComponentSize.iconMd),
         )
+        }
     }
 }
 
