@@ -14,6 +14,7 @@ fun SearchResultsRoute(
     onNavigateBack: () -> Unit,
     onNavigateToWorker: (Long) -> Unit,
     onNavigateToHire: (Long) -> Unit,
+    onNavigateToNotifications: () -> Unit,
     onShowMessage: (String) -> Unit,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToFavorites: () -> Unit = {},
@@ -24,12 +25,14 @@ fun SearchResultsRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filterSheetState by viewModel.filterSheetState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 SearchResultsEffect.NavigateBack -> onNavigateBack()
+                SearchResultsEffect.NavigateToNotifications -> onNavigateToNotifications()
                 is SearchResultsEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is SearchResultsEffect.NavigateToHire -> onNavigateToHire(effect.workerId)
                 is SearchResultsEffect.ShowMessage -> toastController.showError(effect.message)
@@ -50,6 +53,7 @@ fun SearchResultsRoute(
             onEvent = viewModel::onEvent,
             selectedTab = selectedTab,
             onTabSelected = onTabSelected,
+            unreadNotificationCount = unreadCount,
             modifier = modifier,
         )
     }

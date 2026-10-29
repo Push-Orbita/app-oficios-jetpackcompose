@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,6 +66,7 @@ fun SearchResultsScreen(
     selectedTab: ClientHomeTab = ClientHomeTab.INICIO,
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = null,
+    unreadNotificationCount: Int = 0,
 ) {
     val searchFocusRequester = remember { FocusRequester() }
     val filters = when (uiState) {
@@ -78,12 +80,6 @@ fun SearchResultsScreen(
         else -> emptyList()
     }
     val activeFilterCount = filterChips.count { it.type != FilterChipType.QUERY }
-    val shouldAutoFocus = searchQuery.isBlank() && filters.rubroId == null && filters.subRubroId == null
-    LaunchedEffect(shouldAutoFocus) {
-        if (shouldAutoFocus) {
-            searchFocusRequester.requestFocus()
-        }
-    }
     OficiosScaffold(
         modifier = modifier,
         bottomBar = {
@@ -107,6 +103,7 @@ fun SearchResultsScreen(
                 showContactLimit = uiState !is SearchResultsUiState.Idle,
                 filterChips = filterChips,
                 resultCount = (uiState as? SearchResultsUiState.Success)?.workers?.size,
+                unreadNotificationCount = unreadNotificationCount,
                 onEvent = onEvent,
             )
             val isRefreshing = when (uiState) {
@@ -204,78 +201,128 @@ private fun SearchResultsHeader(
     showContactLimit: Boolean,
     filterChips: List<FilterChip>,
     resultCount: Int?,
+    unreadNotificationCount: Int,
     onEvent: (SearchResultsEvent) -> Unit,
 ) {
-    val rubroLabel = filters.rubroLabel ?: filters.subRubroLabel ?: filters.categoryLabel
+    val rubroLabel = filters.rubroLabel ?: filters.subRubroLabel
+    val hasRubroFilter = rubroLabel != null
+    val categoryOnlyLabel = if (!hasRubroFilter) filters.categoryLabel else null
+
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                start = OficiosSpacing.xl,
-                top = OficiosSpacing.md,
-                end = OficiosSpacing.xl,
-            ),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
-        Row(
+        if (hasRubroFilter) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = OficiosSpacing.xl,
+                        top = OficiosSpacing.md,
+                        end = OficiosSpacing.xl,
+                    ),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = OficiosComponentSize.searchResultsHeaderMinHeight)
+                        .semantics { role = Role.Button }
+                        .clickable(onClick = { onEvent(SearchResultsEvent.Back) }),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+                ) {
+                    OficiosLogo(
+                        variant = OficiosLogoVariant.Icon,
+                        height = 101.dp,
+                        contentDescription = stringResource(R.string.home_back),
+                        modifier = Modifier
+                            .width(61.dp)
+                            .height(101.dp)
+                            .offset(
+                                x = OficiosComponentSize.searchResultsLogoOffsetX,
+                                y = OficiosComponentSize.searchResultsLogoOffsetY,
+                            ),
+                    )
+                    Text(
+                        text = RubroDisplayNames.pluralTitle(rubroLabel),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (showContactLimit) {
+                    Text(
+                        text = stringResource(R.string.home_search_contact_limit),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        } else {
+            com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar(
+                title = categoryOnlyLabel ?: stringResource(R.string.home_categories_title),
+                onBack = { onEvent(SearchResultsEvent.Back) },
+                actions = {
+                    Row(
+                        modifier = Modifier.padding(end = 28.dp),
+                    ) {
+                        com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton(
+                            onClick = { onEvent(SearchResultsEvent.OpenNotifications) },
+                            contentDescription = stringResource(R.string.home_notifications),
+                            unreadCount = unreadNotificationCount,
+                        )
+                    }
+                },
+                showDivider = false,
+                windowInsets = WindowInsets(0),
+            )
+            if (showContactLimit) {
+                Text(
+                    text = stringResource(R.string.home_search_contact_limit),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = OficiosSpacing.xl),
+                )
+            }
+        }
+
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = OficiosComponentSize.searchResultsHeaderMinHeight)
-                .semantics { role = Role.Button }
-                .clickable(onClick = { onEvent(SearchResultsEvent.Back) }),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.lg),
+                .padding(horizontal = OficiosSpacing.xl),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
         ) {
-            OficiosLogo(
-                variant = OficiosLogoVariant.Icon,
-                height = 101.dp,
-                contentDescription = stringResource(R.string.home_back),
-                modifier = Modifier
-                    .width(61.dp)
-                    .height(101.dp)
-                    .offset(
-                        x = OficiosComponentSize.searchResultsLogoOffsetX,
-                        y = OficiosComponentSize.searchResultsLogoOffsetY,
-                    ),
+            HomeSearchEntryField(
+                query = searchQuery,
+                onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
+                onSearch = { spoken ->
+                    onEvent(SearchResultsEvent.QueryChanged(spoken))
+                    onEvent(SearchResultsEvent.QuerySubmitted)
+                },
+                onFilterClick = { onEvent(SearchResultsEvent.OpenFilters) },
+                filterContentDescription = if (activeFilterCount > 0) {
+                    stringResource(R.string.home_search_filters_with_count, activeFilterCount)
+                } else {
+                    stringResource(R.string.home_search_filters)
+                },
+                activeFilterCount = activeFilterCount,
+                placeholder = if (hasRubroFilter) {
+                    RubroDisplayNames.searchHint(rubroLabel)
+                } else {
+                    stringResource(R.string.home_search_categories_hint)
+                },
+                placeholderMaxLines = 2,
+                modifier = Modifier.focusRequester(searchFocusRequester),
             )
-            Text(
-                text = RubroDisplayNames.pluralTitle(rubroLabel),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.weight(1f),
+            ActiveSearchFiltersRow(
+                chips = filterChips,
+                resultCount = resultCount,
+                onEvent = onEvent,
             )
         }
-            if (showContactLimit) {
-            Text(
-            text = stringResource(R.string.home_search_contact_limit),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        }
-        HomeSearchEntryField(
-            query = searchQuery,
-            onQueryChange = { onEvent(SearchResultsEvent.QueryChanged(it)) },
-            onSearch = { spoken ->
-                onEvent(SearchResultsEvent.QueryChanged(spoken))
-                onEvent(SearchResultsEvent.QuerySubmitted)
-            },
-            onFilterClick = { onEvent(SearchResultsEvent.OpenFilters) },
-            filterContentDescription = if (activeFilterCount > 0) {
-                stringResource(R.string.home_search_filters_with_count, activeFilterCount)
-            } else {
-                stringResource(R.string.home_search_filters)
-            },
-            activeFilterCount = activeFilterCount,
-            placeholder = RubroDisplayNames.searchHint(rubroLabel),
-            placeholderMaxLines = 2,
-            modifier = Modifier.focusRequester(searchFocusRequester),
-        )
-        ActiveSearchFiltersRow(
-            chips = filterChips,
-            resultCount = resultCount,
-            onEvent = onEvent,
-        )
     }
 }
 

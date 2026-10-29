@@ -122,6 +122,7 @@ fun OficiosBackTopBar(
     subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
     showDivider: Boolean = true,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     OficiosTopAppBar(
         title = title,
@@ -137,6 +138,7 @@ fun OficiosBackTopBar(
         },
         actions = actions,
         showDivider = showDivider,
+        windowInsets = windowInsets,
         modifier = modifier,
     )
 }
