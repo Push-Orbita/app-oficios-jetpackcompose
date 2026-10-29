@@ -4,14 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
-import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -32,8 +37,8 @@ data class ClientDomicilioUiState(
     val calle: String = "",
     val numero: String = "",
     val nombre: String = "Domicilio principal",
-    val latitud: Double? = null,
-    val longitud: Double? = null,
+    val location: AddressLocationSnapshot = AddressLocationSnapshot(),
+    val isGeocoding: Boolean = false,
     val isLocating: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -50,6 +55,7 @@ class ClientDomicilioViewModel @Inject constructor(
     private val saveClientDomicilioUseCase: SaveClientDomicilioUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val geocodeLocalAddressUseCase: GeocodeLocalAddressUseCase,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
 ) : ViewModel() {
 
@@ -91,6 +97,7 @@ class ClientDomicilioViewModel @Inject constructor(
                 selectedBarrioId = option.id,
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
+                location = FormosaAddressGeocoding.invalidate(),
             )
         }
     }
@@ -100,27 +107,52 @@ class ClientDomicilioViewModel @Inject constructor(
         _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 
-    fun onCalleChanged(value: String) = _uiState.update { it.copy(calle = value, error = null) }
-    fun onNumeroChanged(value: String) = _uiState.update { it.copy(numero = value, error = null) }
-    fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
-        it.copy(latitud = latitude, longitud = longitude, error = null)
+    fun onCalleChanged(value: String) = _uiState.update { 
+        it.copy(calle = value, error = null, location = FormosaAddressGeocoding.invalidate())
     }
+    fun onNumeroChanged(value: String) = _uiState.update { 
+        it.copy(numero = value, error = null, location = FormosaAddressGeocoding.invalidate())
+    }
+    
+    fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
+        it.copy(location = FormosaAddressGeocoding.pinMoved(it.location, latitude, longitude), error = null)
+    }
+    
+    fun locateOnMap() = _uiState.update {
+        val next = FormosaAddressGeocoding.openMap(it.location)
+        it.copy(location = next, error = next.message)
+    }
+    
+    fun confirmPin() {
+        val confirmed = FormosaAddressGeocoding.confirmPin(_uiState.value.location)
+        _uiState.update { it.copy(location = confirmed, error = confirmed.message) }
+        if (confirmed.canPersist) submit()
+    }
+    
     fun onLocationPermissionDenied() = _uiState.update {
         it.copy(error = "Permita la ubicación o marque manualmente el punto en el mapa.")
     }
+    
     fun clearMapPin() = _uiState.update {
-        it.copy(latitud = null, longitud = null, error = null)
+        it.copy(location = AddressLocationSnapshot(), error = null)
     }
+    
     fun useCurrentLocation() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLocating = true, error = null) }
             when (val result = getCurrentLocationUseCase()) {
-                is AppResult.Success -> _uiState.update {
-                    it.copy(
-                        isLocating = false,
-                        latitud = result.data.latitude,
-                        longitud = result.data.longitude,
-                    )
+                is AppResult.Success -> {
+                    val coords = result.data
+                    _uiState.update {
+                        it.copy(
+                            isLocating = false,
+                            location = FormosaAddressGeocoding.pinMoved(
+                                it.location,
+                                coords.latitude,
+                                coords.longitude
+                            ),
+                        )
+                    }
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isLocating = false, error = result.error.userMessage())
@@ -132,13 +164,66 @@ class ClientDomicilioViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         val barrioId = state.selectedBarrioId
-        val hasPin = state.latitud != null && state.longitud != null
         
         if (barrioId == null || state.calle.isBlank()) {
-            val pinHint = if (hasPin) " (tiene un pin en el mapa sin dirección)" else ""
-            _uiState.update { it.copy(error = "Complete barrio y calle$pinHint") }
+            _uiState.update { it.copy(error = "Complete barrio y calle") }
             return
         }
+        
+        if (!state.location.canPersist) {
+            resolveFromAddress()
+            return
+        }
+        
+        persist()
+    }
+    
+    private fun resolveFromAddress() {
+        val state = _uiState.value
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isGeocoding = true,
+                    error = null,
+                    location = it.location.copy(phase = AddressLocationPhase.Geocoding),
+                )
+            }
+            when (
+                val result = geocodeLocalAddressUseCase(
+                    LocalAddressQuery(
+                        street = state.calle,
+                        number = state.numero,
+                        neighborhood = state.barrioQuery,
+                    ),
+                )
+            ) {
+                is AppResult.Error -> _uiState.update {
+                    it.copy(
+                        isGeocoding = false,
+                        location = AddressLocationSnapshot(
+                            phase = AddressLocationPhase.NeedsMap,
+                            message = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                        ),
+                        error = FormosaAddressGeocoding.GEOCODER_ERROR_MESSAGE,
+                    )
+                }
+                is AppResult.Success -> {
+                    val snapshot = FormosaAddressGeocoding.snapshotFor(result.data)
+                    _uiState.update {
+                        it.copy(isGeocoding = false, location = snapshot, error = snapshot.message)
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun persist() {
+    private fun persist() {
+        val state = _uiState.value
+        val barrioId = state.selectedBarrioId ?: return
+        val location = state.location
+        if (!location.canPersist) return
+        
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             val personaId = when (val user = getCurrentUserUseCase()) {
@@ -157,8 +242,8 @@ class ClientDomicilioViewModel @Inject constructor(
                         nombre = state.nombre,
                         calle = state.calle.trim(),
                         numero = state.numero.trim().ifBlank { null },
-                        latitud = GeoCoordinates.roundForApi(state.latitud),
-                        longitud = GeoCoordinates.roundForApi(state.longitud),
+                        latitud = GeoCoordinates.roundForApi(location.latitude),
+                        longitud = GeoCoordinates.roundForApi(location.longitude),
                         favorito = true,
                     ),
                 )
