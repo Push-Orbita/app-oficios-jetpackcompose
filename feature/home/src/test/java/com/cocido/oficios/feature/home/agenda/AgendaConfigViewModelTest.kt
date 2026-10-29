@@ -6,6 +6,7 @@ import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
 import com.cocido.oficios.domain.model.ProviderSubRubroOption
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSessionParams
 import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import com.cocido.oficios.domain.repository.AgendaRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
@@ -101,6 +102,8 @@ private class RecordingAgendaRepository : AgendaRepository {
         lastSave = params
         return AppResult.Success(Unit)
     }
+
+    override suspend fun updateSession(params: UpdateAgendaSessionParams) = unused()
 
     override suspend fun deleteSession(sessionId: Long) = AppResult.Success(Unit)
     override suspend fun getAvailableSlots(subRubroId: Long, fromIso: String, toIso: String) =

@@ -13,6 +13,33 @@ class ClientHomeTabNavigatorTest {
     }
 
     @Test
+    fun `buscar tab opens oficios categories`() {
+        assertEquals(ClientHomeTabNavigation.Search, ClientHomeTabNavigator.navigationFor(ClientHomeTab.BUSCAR))
+        assertEquals("home/categories", clientTabRoute(ClientHomeTab.BUSCAR, "home/inicio", "settings"))
+        assertEquals(ClientHomeTab.BUSCAR, ClientHomeTabNavigator.tabForDestination("home/categories"))
+        assertEquals(
+            ClientHomeTab.BUSCAR,
+            ClientHomeTabNavigator.tabForDestination("home/rubros/{categoryId}?categoryName={categoryName}"),
+        )
+        assertEquals(
+            ClientHomeTab.BUSCAR,
+            ClientHomeTabNavigator.tabForDestination("home/search/results?rubroId={rubroId}"),
+        )
+    }
+
+    @Test
+    fun `handleTabSelected leaves home for buscar`() {
+        var searchCalled = false
+        ClientHomeTabNavigator.handleTabSelected(
+            tab = ClientHomeTab.BUSCAR,
+            onNavigateToSearch = { searchCalled = true },
+            onNavigateToSettings = {},
+            onNavigateToFavorites = {},
+        )
+        assertEquals(true, searchCalled)
+    }
+
+    @Test
     fun `pedidos is its own destination so system back returns to inicio`() {
         assertEquals(ClientHomeTabNavigation.Orders, ClientHomeTabNavigator.navigationFor(ClientHomeTab.PEDIDOS))
         assertEquals("orders/mine", clientTabRoute(ClientHomeTab.PEDIDOS, "home/inicio", "settings"))
@@ -54,7 +81,7 @@ class ClientHomeTabNavigatorTest {
         )
         assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("home/inicio"))
         assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("providerHome/inicio"))
-        assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("home/categories"))
+        assertEquals(ClientHomeTab.BUSCAR, ClientHomeTabNavigator.tabForDestination("home/categories"))
         assertEquals(ClientHomeTab.INICIO, ClientHomeTabNavigator.tabForDestination("orders/12"))
         var stayed = false
         var ordersCalled = false
@@ -72,6 +99,7 @@ class ClientHomeTabNavigatorTest {
     @Test
     fun `client tabs resolve to top level routes`() {
         assertEquals("home/inicio", clientTabRoute(ClientHomeTab.INICIO, "home/inicio", "settings"))
+        assertEquals("home/categories", clientTabRoute(ClientHomeTab.BUSCAR, "home/inicio", "settings"))
         assertEquals("orders/mine", clientTabRoute(ClientHomeTab.PEDIDOS, "home/inicio", "settings"))
         assertEquals("favorites", clientTabRoute(ClientHomeTab.FAVORITOS, "home/inicio", "settings"))
         assertEquals("settings", clientTabRoute(ClientHomeTab.AJUSTES, "home/inicio", "settings"))

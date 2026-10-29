@@ -131,6 +131,9 @@ fun ClientHomeBottomBar(
     }
     val items = buildList {
         add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), OficiosIcons.House))
+        if (roleShowsFavorites) {
+            add(OficiosNavItem(ClientHomeTab.BUSCAR.route, stringResource(R.string.home_nav_buscar), OficiosIcons.Search))
+        }
         add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), OficiosIcons.ReceiptText))
         if (roleShowsFavorites) {
             add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), OficiosIcons.Heart))
@@ -149,6 +152,7 @@ fun ClientHomeBottomBar(
 
 enum class ClientHomeTab(val route: String) {
     INICIO("home_tab_inicio"),
+    BUSCAR("home_tab_buscar"),
     PEDIDOS("home_tab_pedidos"),
     FAVORITOS("home_tab_favoritos"),
     AJUSTES("home_tab_ajustes"),

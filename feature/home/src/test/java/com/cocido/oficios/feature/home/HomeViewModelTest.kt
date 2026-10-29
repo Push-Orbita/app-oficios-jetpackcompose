@@ -54,7 +54,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `open search navigates to empty search results`() = runTest(testDispatcher) {
+    fun `open search navigates to buscar oficios tab`() = runTest(testDispatcher) {
         val repository = FakeHomeRepository()
         val viewModel = createViewModel(repository)
         advanceUntilIdle()
@@ -66,13 +66,7 @@ class HomeViewModelTest {
         advanceUntilIdle()
         job.cancel()
 
-        assertTrue(
-            effects.any { effect ->
-                effect is HomeEffect.NavigateToSearchResults &&
-                    effect.query == null &&
-                    effect.rubroId == null
-            },
-        )
+        assertTrue(effects.any { it is HomeEffect.NavigateToSearch })
     }
 
     @Test

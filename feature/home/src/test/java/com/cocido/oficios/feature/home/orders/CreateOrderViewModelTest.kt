@@ -10,6 +10,7 @@ import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSessionParams
 import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import com.cocido.oficios.domain.model.WorkerProfile
 import com.cocido.oficios.domain.model.WorkerSpecialty
@@ -225,6 +226,7 @@ private class EmptyAgendaRepository : AgendaRepository {
     override suspend fun deleteSlot(slotId: Long) = unused()
     override suspend fun getSessionsForSubRubro(subRubroId: Long) = unused()
     override suspend fun saveSession(params: SaveAgendaSessionParams) = unused()
+    override suspend fun updateSession(params: UpdateAgendaSessionParams) = unused()
     override suspend fun deleteSession(sessionId: Long) = unused()
     private fun unused(): Nothing = error("unused")
 }

@@ -29,6 +29,7 @@ sealed interface CategoriesEvent {
     data object Back : CategoriesEvent
     data object OpenNotifications : CategoriesEvent
     data class CategorySelected(val category: HomeCategoryItem) : CategoriesEvent
+    data class QueryChanged(val query: String) : CategoriesEvent
     data class SearchSubmitted(val query: String) : CategoriesEvent
     data object SeeAll : CategoriesEvent
 }
@@ -61,5 +62,4 @@ sealed interface CategoriesEffect {
     data class ShowMessage(val message: String) : CategoriesEffect
     data object NavigateToNotifications : CategoriesEffect
     data class NavigateToRubros(val categoryId: Long, val categoryName: String) : CategoriesEffect
-    data class NavigateToSearchResults(val query: String) : CategoriesEffect
 }

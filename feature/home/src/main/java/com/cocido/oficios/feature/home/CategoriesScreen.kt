@@ -9,10 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton
@@ -100,8 +96,6 @@ private fun CategoriesContent(
     state: CategoriesUiState.Success,
     onEvent: (CategoriesEvent) -> Unit,
 ) {
-    var searchQuery by rememberSaveable { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -109,16 +103,26 @@ private fun CategoriesContent(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         HomeSearchEntryField(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
+            query = state.query,
+            onQueryChange = { onEvent(CategoriesEvent.QueryChanged(it)) },
             onSearch = { onEvent(CategoriesEvent.SearchSubmitted(it)) },
-            placeholder = stringResource(R.string.home_search_hint),
+            placeholder = stringResource(R.string.home_search_categories_hint),
         )
         HomeCategoriesGrid(
-            categories = state.categories,
+            categories = state.visibleCategories,
             onCategoryClick = { onEvent(CategoriesEvent.CategorySelected(it)) },
-            showSeeAll = true,
+            showSeeAll = state.showSeeAll,
             onSeeAllClick = { onEvent(CategoriesEvent.SeeAll) },
+            emptyTitle = if (state.query.isBlank()) {
+                stringResource(R.string.home_categories_empty_title)
+            } else {
+                stringResource(R.string.home_categories_filter_empty_title)
+            },
+            emptyDescription = if (state.query.isBlank()) {
+                stringResource(R.string.home_categories_empty_description)
+            } else {
+                stringResource(R.string.home_categories_filter_empty_description, state.query)
+            },
             modifier = Modifier.weight(1f),
         )
     }

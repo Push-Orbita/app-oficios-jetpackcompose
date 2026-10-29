@@ -79,5 +79,6 @@ class HomeScreenTest {
         }
         composeTestRule.onNodeWithText("¿Qué oficio está buscando?").assertIsDisplayed()
         composeTestRule.onNodeWithText("Hogar").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Buscar").assertIsDisplayed()
     }
 }

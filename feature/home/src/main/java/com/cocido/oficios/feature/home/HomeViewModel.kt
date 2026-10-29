@@ -59,7 +59,7 @@ class HomeViewModel @Inject constructor(
         when (event) {
             HomeEvent.Retry -> loadHome()
             HomeEvent.Refresh -> loadHome(refreshing = true)
-            HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearchResults())
+            HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearch)
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
             is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
