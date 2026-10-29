@@ -95,6 +95,33 @@ class ProfileMapperTest {
     }
 
     @Test
+    fun `maps plazoCancelacionHoras in rubro full request`() {
+        val dtoWithPlazo = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("08:00", "12:00")),
+            plazoCancelacionHoras = 12,
+        ).toDto()
+
+        assertEquals(12, dtoWithPlazo.plazoCancelacionHoras)
+
+        val dtoWithoutPlazo = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("08:00", "12:00")),
+            plazoCancelacionHoras = null,
+        ).toDto()
+
+        assertEquals(null, dtoWithoutPlazo.plazoCancelacionHoras)
+    }
+
+    @Test
     fun `maps client domicilio and contacto`() {
         val domicilio = ClientDomicilioRequest(
             barrioId = 1,
