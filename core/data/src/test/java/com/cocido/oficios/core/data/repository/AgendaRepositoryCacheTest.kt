@@ -11,6 +11,7 @@ import com.cocido.oficios.core.network.api.agenda.dto.CreateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.SesionDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotTurnoAgendaDto
 import com.cocido.oficios.core.network.api.agenda.dto.SlotsAgrupadoPorTrabajadorDto
+import com.cocido.oficios.core.network.api.agenda.dto.UpdateSesionRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
@@ -146,6 +147,17 @@ private class FakeAgendaApi(
     override suspend fun createSesion(request: CreateSesionRequestDto): SesionDto {
         lastCreateSesion = request
         return sessions.first()
+    }
+
+    override suspend fun updateSesion(id: Long, request: UpdateSesionRequestDto): SesionDto {
+        return SesionDto(
+            id = id,
+            duracion = request.duracion,
+            medidaDuracion = request.medidaDuracion,
+            intervalo = request.intervalo,
+            medidaIntervalo = request.medidaIntervalo,
+            trabajadorOficioSubRubroId = 0L,
+        )
     }
 
     override suspend fun deleteSesion(id: Long) {
