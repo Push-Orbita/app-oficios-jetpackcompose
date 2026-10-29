@@ -13,6 +13,8 @@ object DomicilioFieldValidation {
     const val NUMBER_REQUIRED = "Ingrese la altura."
     const val PERSONA_REQUIRED = "No pudimos identificar a qué cuenta pertenece el domicilio."
 
+    /** Piso, departamento y casa/torre son opcionales: no entran en [validate]. */
+
     fun validate(
         barrioId: Long?,
         barrioQuery: String,

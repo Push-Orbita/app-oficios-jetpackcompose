@@ -91,8 +91,8 @@
     <string name="client_data_neighborhood_hint">Busque y seleccione su barrio</string>
     <string name="client_data_street">Calle</string>
     <string name="client_data_number">Altura</string>
-    <string name="client_data_floor_label">Piso</string>
-    <string name="client_data_apartment_label">Dpto.</string>
+    <string name="client_data_floor_label">Piso (opcional)</string>
+    <string name="client_data_apartment_label">Dpto. (opcional)</string>
     <string name="client_data_tower">Casa o torre (opcional)</string>
     <string name="client_data_primary_address_toggle">Usar como domicilio principal</string>
     <string name="client_data_save_address">Guardar domicilio</string>

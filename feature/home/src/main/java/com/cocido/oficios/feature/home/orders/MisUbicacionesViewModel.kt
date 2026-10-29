@@ -15,6 +15,7 @@ import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -44,6 +45,7 @@ class MisUbicacionesViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
 
     private var barrioSearchJob: Job? = null
+    private var geocodeJob: Job? = null
     private var personaId: Long? = null
     private var skipNextResume = true
 
@@ -93,40 +95,53 @@ class MisUbicacionesViewModel @Inject constructor(
             MisUbicacionesEvent.BarrioSuggestionsDismissed -> updateSuccess {
                 copy(barrioSuggestions = emptyList())
             }
-            is MisUbicacionesEvent.BarrioSelected -> updateSuccess {
-                copy(
-                    barrioQuery = event.option.label,
-                    barrioId = event.option.id,
-                    barrioSuggestions = emptyList(),
-                    errorMessage = null,
-                    location = FormosaAddressGeocoding.invalidate(),
-                ).withAddressFieldErrors()
+            is MisUbicacionesEvent.BarrioSelected -> {
+                updateSuccess {
+                    copy(
+                        barrioQuery = event.option.label,
+                        barrioId = event.option.id,
+                        barrioSuggestions = emptyList(),
+                        errorMessage = null,
+                    ).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
-            is MisUbicacionesEvent.StreetChanged -> updateSuccess {
-                copy(
-                    street = event.value,
-                    errorMessage = null,
-                    location = FormosaAddressGeocoding.invalidate(),
-                ).withAddressFieldErrors()
+            is MisUbicacionesEvent.StreetChanged -> {
+                updateSuccess {
+                    copy(
+                        street = event.value,
+                        errorMessage = null,
+                    ).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
-            is MisUbicacionesEvent.NumberChanged -> updateSuccess {
-                copy(
-                    number = event.value,
-                    errorMessage = null,
-                    location = FormosaAddressGeocoding.invalidate(),
-                ).withAddressFieldErrors()
+            is MisUbicacionesEvent.NumberChanged -> {
+                updateSuccess {
+                    copy(
+                        number = event.value,
+                        errorMessage = null,
+                    ).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
-            is MisUbicacionesEvent.MapLocationSelected -> updateSuccess {
-                copy(
-                    location = FormosaAddressGeocoding.pinMoved(location, event.latitude, event.longitude),
-                    errorMessage = null,
-                )
+            is MisUbicacionesEvent.MapLocationSelected -> {
+                cancelLiveGeocode()
+                updateSuccess {
+                    copy(
+                        location = FormosaAddressGeocoding.pinMoved(location, event.latitude, event.longitude),
+                        errorMessage = null,
+                    )
+                }
             }
-            MisUbicacionesEvent.LocateOnMap -> updateSuccess {
-                val next = FormosaAddressGeocoding.openMap(location)
-                copy(location = next, errorMessage = next.message)
+            MisUbicacionesEvent.LocateOnMap -> {
+                cancelLiveGeocode()
+                updateSuccess {
+                    val next = FormosaAddressGeocoding.openMap(location)
+                    copy(location = next, errorMessage = next.message)
+                }
             }
             MisUbicacionesEvent.ConfirmPin -> {
+                cancelLiveGeocode()
                 val current = uiState.value as? MisUbicacionesUiState.Success ?: return
                 val confirmed = FormosaAddressGeocoding.confirmPin(current.location)
                 updateSuccess { copy(location = confirmed, errorMessage = confirmed.message) }
@@ -191,6 +206,7 @@ class MisUbicacionesViewModel @Inject constructor(
     }
 
     private fun saveNew() {
+        cancelLiveGeocode()
         val state = (uiState.value as? MisUbicacionesUiState.Success)
             ?.withAddressFieldErrors(showBlank = true) ?: return
         updateSuccess { state }
@@ -268,6 +284,7 @@ class MisUbicacionesViewModel @Inject constructor(
                 errorMessage = null,
             ).withAddressFieldErrors()
         }
+        if (!preserveSelection) scheduleLiveGeocode()
         barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = barrioSearchJob,
             query = query,
@@ -276,6 +293,32 @@ class MisUbicacionesViewModel @Inject constructor(
                 updateSuccess { copy(isSearchingBarrios = false, barrioSuggestions = options) }
             },
         )
+    }
+
+    private fun addressQuery(state: MisUbicacionesUiState.Success) = LocalAddressQuery(
+        street = state.street,
+        number = state.number,
+        neighborhood = state.barrioQuery,
+    )
+
+    private fun scheduleLiveGeocode() {
+        val state = uiState.value as? MisUbicacionesUiState.Success ?: return
+        geocodeJob = viewModelScope.launchDebouncedForwardGeocode(
+            previous = geocodeJob,
+            query = addressQuery(state),
+            geocode = geocodeLocalAddress,
+            onResult = { result ->
+                val outcome = (result as? AppResult.Success)?.data ?: return@launchDebouncedForwardGeocode
+                updateSuccess {
+                    copy(location = FormosaAddressGeocoding.applyLiveOutcome(outcome, location))
+                }
+            },
+        )
+    }
+
+    private fun cancelLiveGeocode() {
+        geocodeJob?.cancel()
+        geocodeJob = null
     }
 
     private fun resolveFromAddress() {

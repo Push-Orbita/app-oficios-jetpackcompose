@@ -21,7 +21,10 @@ import com.cocido.oficios.domain.repository.AccountRepository
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
+import com.cocido.oficios.domain.model.GeocodedPlace
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,6 +33,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -98,6 +102,51 @@ class ClientDataViewModelTest {
     }
 
     @Test
+    fun `typing barrio calle and altura moves the pin after debounce`() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(ClientDataEvent.AddDomicilio)
+        viewModel.onEvent(ClientDataEvent.BarrioSelected(CatalogOption(7, "San Miguel")))
+        viewModel.onEvent(ClientDataEvent.StreetChanged("O'Higgins"))
+        viewModel.onEvent(ClientDataEvent.NumberChanged("206"))
+        advanceTimeBy(FormosaAddressGeocoding.LIVE_DEBOUNCE_MS)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(-26.177, state.addressLatitude)
+        assertEquals(-58.19, state.addressLongitude)
+        assertTrue(state.canSaveDomicilio)
+    }
+
+    @Test
+    fun `empty piso and dpto do not block saving a new domicilio`() = runTest(dispatcher) {
+        val accounts = FakeClientDataAccountRepository()
+        val viewModel = createViewModel(accounts)
+        advanceUntilIdle()
+        viewModel.onEvent(ClientDataEvent.AddDomicilio)
+        viewModel.onEvent(ClientDataEvent.BarrioSelected(CatalogOption(7, "San Miguel")))
+        viewModel.onEvent(ClientDataEvent.StreetChanged("O'Higgins"))
+        viewModel.onEvent(ClientDataEvent.NumberChanged("206"))
+        advanceTimeBy(FormosaAddressGeocoding.LIVE_DEBOUNCE_MS)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.canSaveDomicilio)
+        assertEquals("", viewModel.uiState.value.floor)
+        assertEquals("", viewModel.uiState.value.apartment)
+
+        viewModel.onEvent(ClientDataEvent.SaveDomicilio)
+        advanceUntilIdle()
+
+        val saved = requireNotNull(accounts.lastCreated)
+        assertEquals("O'Higgins", saved.calle)
+        assertEquals("206", saved.numero)
+        assertEquals(null, saved.piso)
+        assertEquals(null, saved.departamento)
+        assertEquals(-26.177, saved.latitud)
+        assertEquals(-58.19, saved.longitud)
+    }
+
+    @Test
     fun `delete contact emits success and updates the list without recreating`() = runTest(dispatcher) {
         val accounts = FakeClientDataAccountRepository(
             contacts = listOf(
@@ -125,6 +174,7 @@ class ClientDataViewModelTest {
     ) = ClientDataViewModel(
         accountUseCases = AccountUseCases(accounts),
         searchBarriosUseCase = SearchBarriosUseCase(EmptyCatalog()),
+        geocodeLocalAddress = GeocodeLocalAddressUseCase(FormosaGeocodingLocation()),
         getCurrentLocationUseCase = GetCurrentLocationUseCase(EmptyLocation()),
     )
 }
@@ -151,7 +201,13 @@ private class FakeClientDataAccountRepository(
 
     override suspend fun updateProfile(request: UpdateAccountProfileRequest) = unused
     override suspend fun changePassword(email: String, password: String, confirmation: String) = unused
-    override suspend fun createClientDomicilio(request: ClientDomicilioRequest) = unused
+    var lastCreated: ClientDomicilioRequest? = null
+        private set
+
+    override suspend fun createClientDomicilio(request: ClientDomicilioRequest): AppResult<Unit> {
+        lastCreated = request
+        return AppResult.Success(Unit)
+    }
     override suspend fun updateClientDomicilio(id: Long, request: UpdateClientDomicilioRequest) = unused
     override suspend fun deleteClientDomicilio(id: Long) = unused
     override suspend fun setFavoriteDomicilio(id: Long, favorite: Boolean) = unused
@@ -187,4 +243,13 @@ private class EmptyLocation : LocationRepository {
     override suspend fun getCurrentLocation(requirePrecise: Boolean) =
         AppResult.Error(AppError.Unknown("no"))
     override fun observeLocations(intervalMillis: Long) = flowOf<AppResult<GeoPoint>>()
+}
+
+private class FormosaGeocodingLocation : LocationRepository {
+    override suspend fun getCurrentLocation(requirePrecise: Boolean) =
+        AppResult.Error(AppError.Unknown("no"))
+    override fun observeLocations(intervalMillis: Long) = flowOf<AppResult<GeoPoint>>()
+    override suspend fun geocodeForward(query: String) = AppResult.Success(
+        listOf(GeocodedPlace(-26.177, -58.19, query, locality = "Formosa", adminArea = "Formosa")),
+    )
 }

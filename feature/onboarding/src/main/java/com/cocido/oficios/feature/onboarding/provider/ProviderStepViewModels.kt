@@ -33,6 +33,7 @@ import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfi
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -621,6 +622,7 @@ class ProviderLocalViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ProviderStepEffect>()
     val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
     private var searchJob: Job? = null
+    private var geocodeJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -649,6 +651,7 @@ class ProviderLocalViewModel @Inject constructor(
                 isSearchingBarrios = true,
             )
         }
+        if (!preserveSelection) scheduleLiveGeocode()
         searchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = searchJob,
             query = query,
@@ -667,9 +670,9 @@ class ProviderLocalViewModel @Inject constructor(
                 selectedBarrioId = option.id,
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
-                location = FormosaAddressGeocoding.invalidate(),
             )
         }
+        scheduleLiveGeocode()
     }
 
     fun dismissBarrioSuggestions() {
@@ -677,30 +680,40 @@ class ProviderLocalViewModel @Inject constructor(
         _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 
-    fun onCalleChanged(value: String) = _uiState.update {
-        it.copy(calle = value, error = null, location = FormosaAddressGeocoding.invalidate())
+    fun onCalleChanged(value: String) {
+        _uiState.update { it.copy(calle = value, error = null) }
+        scheduleLiveGeocode()
     }
-    fun onNumeroChanged(value: String) = _uiState.update {
-        it.copy(numero = value, error = null, location = FormosaAddressGeocoding.invalidate())
+    fun onNumeroChanged(value: String) {
+        _uiState.update { it.copy(numero = value, error = null) }
+        scheduleLiveGeocode()
     }
     fun onNombreChanged(value: String) = _uiState.update { it.copy(nombre = value, error = null) }
-    fun onMapLocationSelected(latitude: Double, longitude: Double) = _uiState.update {
-        it.copy(
-            location = FormosaAddressGeocoding.pinMoved(it.location, latitude, longitude),
-            error = null,
-        )
+    fun onMapLocationSelected(latitude: Double, longitude: Double) {
+        cancelLiveGeocode()
+        _uiState.update {
+            it.copy(
+                location = FormosaAddressGeocoding.pinMoved(it.location, latitude, longitude),
+                error = null,
+            )
+        }
     }
-    fun locateOnMap() = _uiState.update {
-        val next = FormosaAddressGeocoding.openMap(it.location)
-        it.copy(location = next, error = next.message)
+    fun locateOnMap() {
+        cancelLiveGeocode()
+        _uiState.update {
+            val next = FormosaAddressGeocoding.openMap(it.location)
+            it.copy(location = next, error = next.message)
+        }
     }
     fun confirmPin() {
+        cancelLiveGeocode()
         val confirmed = FormosaAddressGeocoding.confirmPin(_uiState.value.location)
         _uiState.update { it.copy(location = confirmed, error = confirmed.message) }
         if (confirmed.canPersist) persist()
     }
 
     fun submit() {
+        cancelLiveGeocode()
         val state = _uiState.value
         if (state.selectedBarrioId == null || !state.canSubmit) {
             _uiState.update { it.copy(error = "Complete barrio, calle y número de su local.") }
@@ -711,6 +724,30 @@ class ProviderLocalViewModel @Inject constructor(
             return
         }
         persist()
+    }
+
+    private fun scheduleLiveGeocode() {
+        val state = _uiState.value
+        geocodeJob = viewModelScope.launchDebouncedForwardGeocode(
+            previous = geocodeJob,
+            query = LocalAddressQuery(
+                street = state.calle,
+                number = state.numero,
+                neighborhood = state.barrioQuery,
+            ),
+            geocode = geocodeLocalAddress,
+            onResult = { result ->
+                val outcome = (result as? AppResult.Success)?.data ?: return@launchDebouncedForwardGeocode
+                _uiState.update {
+                    it.copy(location = FormosaAddressGeocoding.applyLiveOutcome(outcome, it.location))
+                }
+            },
+        )
+    }
+
+    private fun cancelLiveGeocode() {
+        geocodeJob?.cancel()
+        geocodeJob = null
     }
 
     private fun resolveFromAddress() {

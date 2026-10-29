@@ -7,6 +7,7 @@ import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilio
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.GeocodedPlace
 import com.cocido.oficios.domain.model.GeoPoint
 import com.cocido.oficios.domain.model.PhoneVerificationSendResult
 import com.cocido.oficios.domain.model.RegisterClientRequest
@@ -21,6 +22,7 @@ import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.profile.GetClientContactosUseCase
 import com.cocido.oficios.domain.usecase.profile.GetClientDomiciliosUseCase
@@ -36,6 +38,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -85,6 +88,22 @@ class ClientContactDomicilioViewModelTest {
         assertEquals("93705219109", viewModel.uiState.value.telefono)
     }
 
+    @Test
+    fun `empty piso and dpto do not block continuar`() = runTest(dispatcher) {
+        val viewModel = createViewModel(emptyList())
+        advanceUntilIdle()
+        viewModel.onNombreChanged("Ana Gómez")
+        viewModel.onTelefonoChanged("93705219109")
+        viewModel.onBarrioSelected(CatalogOption(1, "Centro"))
+        viewModel.onCalleChanged("O'Higgins")
+        viewModel.onNumeroChanged("206")
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.canSubmit)
+        assertEquals("", viewModel.uiState.value.piso)
+        assertEquals("", viewModel.uiState.value.departamento)
+    }
+
     private fun createViewModel(contactos: List<ClientContacto>): ClientContactDomicilioViewModel {
         val profile = object : ClientProfileRepository {
             override suspend fun saveDomicilio(request: ClientDomicilioRequest) = AppResult.Success(Unit)
@@ -112,15 +131,19 @@ class ClientContactDomicilioViewModelTest {
                         AppResult.Success(emptyList<CatalogOption>())
                 },
             ),
+            geocodeLocalAddressUseCase = GeocodeLocalAddressUseCase(location),
             pendingClientOnboardingStore = PendingClientOnboardingStore(),
-            getCurrentLocationUseCase = GetCurrentLocationUseCase(
-                object : LocationRepository {
-                    override suspend fun getCurrentLocation(requirePrecise: Boolean) =
-                        AppResult.Success(GeoPoint(0.0, 0.0))
-                    override fun observeLocations(intervalMillis: Long) =
-                        flowOf(AppResult.Success(GeoPoint(0.0, 0.0)))
-                },
-            ),
+            getCurrentLocationUseCase = GetCurrentLocationUseCase(location),
+        )
+    }
+
+    private val location = object : LocationRepository {
+        override suspend fun getCurrentLocation(requirePrecise: Boolean) =
+            AppResult.Success(GeoPoint(-26.1849, -58.1731))
+        override fun observeLocations(intervalMillis: Long) =
+            flowOf(AppResult.Success(GeoPoint(-26.1849, -58.1731)))
+        override suspend fun geocodeForward(query: String) = AppResult.Success(
+            listOf(GeocodedPlace(-26.1849, -58.1731, query)),
         )
     }
 

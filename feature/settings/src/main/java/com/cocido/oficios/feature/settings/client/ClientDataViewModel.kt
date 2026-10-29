@@ -4,15 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
+import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
+import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +36,7 @@ import kotlinx.coroutines.launch
 class ClientDataViewModel @Inject constructor(
     private val accountUseCases: AccountUseCases,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val geocodeLocalAddress: GeocodeLocalAddressUseCase,
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ClientDataUiState())
@@ -38,6 +44,7 @@ class ClientDataViewModel @Inject constructor(
     private val _effects = Channel<ClientDataEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
     private var barrioSearchJob: Job? = null
+    private var geocodeJob: Job? = null
     private var skipNextResume = true
 
     init {
@@ -97,26 +104,36 @@ class ClientDataViewModel @Inject constructor(
                         errorMessage = null,
                     ).withAddressFieldErrors()
                 }
+                scheduleLiveGeocode()
             }
             ClientDataEvent.BarrioSuggestionsDismissed -> {
                 barrioSearchJob?.cancel()
                 update { it.copy(barrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
-            is ClientDataEvent.StreetChanged -> update {
-                it.copy(street = event.value, errorMessage = null).withAddressFieldErrors()
+            is ClientDataEvent.StreetChanged -> {
+                update {
+                    it.copy(street = event.value, errorMessage = null).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
-            is ClientDataEvent.NumberChanged -> update {
-                it.copy(number = event.value, errorMessage = null).withAddressFieldErrors()
+            is ClientDataEvent.NumberChanged -> {
+                update {
+                    it.copy(number = event.value, errorMessage = null).withAddressFieldErrors()
+                }
+                scheduleLiveGeocode()
             }
             is ClientDataEvent.FloorChanged -> update { it.copy(floor = event.value) }
             is ClientDataEvent.ApartmentChanged -> update { it.copy(apartment = event.value) }
             is ClientDataEvent.HouseTowerChanged -> update { it.copy(houseTower = event.value) }
-            is ClientDataEvent.MapLocationSelected -> update {
-                it.copy(
-                    addressLatitude = event.latitude,
-                    addressLongitude = event.longitude,
-                    errorMessage = null,
-                )
+            is ClientDataEvent.MapLocationSelected -> {
+                cancelLiveGeocode()
+                update {
+                    it.copy(
+                        addressLatitude = event.latitude,
+                        addressLongitude = event.longitude,
+                        errorMessage = null,
+                    )
+                }
             }
             ClientDataEvent.UseCurrentLocation -> useCurrentLocation()
             ClientDataEvent.LocationPermissionDenied -> update {
@@ -206,6 +223,7 @@ class ClientDataViewModel @Inject constructor(
 
     private fun closeEditor() {
         barrioSearchJob?.cancel()
+        cancelLiveGeocode()
         _uiState.update {
             it.copy(mode = ClientDataMode.LIST, editingId = null, errorMessage = null, barrioSuggestions = emptyList())
         }
@@ -264,6 +282,7 @@ class ClientDataViewModel @Inject constructor(
     }
 
     private fun saveDomicilio() {
+        cancelLiveGeocode()
         val validated = _uiState.value.withAddressFieldErrors(showBlank = true)
         if (validated.editingId == null && validated.personaId == null) {
             update { validated.copy(errorMessage = "No pudimos identificar a qué cuenta pertenece el domicilio.") }
@@ -331,6 +350,7 @@ class ClientDataViewModel @Inject constructor(
                 errorMessage = null,
             ).withAddressFieldErrors()
         }
+        if (!preserveSelection) scheduleLiveGeocode()
         barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = barrioSearchJob,
             query = query,
@@ -342,6 +362,7 @@ class ClientDataViewModel @Inject constructor(
     }
 
     private fun useCurrentLocation() {
+        cancelLiveGeocode()
         viewModelScope.launch {
             update { it.copy(isLocating = true, errorMessage = null) }
             when (val result = getCurrentLocationUseCase()) {
@@ -396,6 +417,40 @@ class ClientDataViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun scheduleLiveGeocode() {
+        val state = _uiState.value
+        geocodeJob = viewModelScope.launchDebouncedForwardGeocode(
+            previous = geocodeJob,
+            query = LocalAddressQuery(
+                street = state.street,
+                number = state.number,
+                neighborhood = state.barrioQuery,
+            ),
+            geocode = geocodeLocalAddress,
+            onResult = { result ->
+                val outcome = (result as? AppResult.Success)?.data ?: return@launchDebouncedForwardGeocode
+                val current = AddressLocationSnapshot(
+                    latitude = _uiState.value.addressLatitude,
+                    longitude = _uiState.value.addressLongitude,
+                )
+                val live = FormosaAddressGeocoding.applyLiveOutcome(outcome, current)
+                if (live.latitude != null && live.longitude != null) {
+                    update {
+                        it.copy(
+                            addressLatitude = live.latitude,
+                            addressLongitude = live.longitude,
+                        )
+                    }
+                }
+            },
+        )
+    }
+
+    private fun cancelLiveGeocode() {
+        geocodeJob?.cancel()
+        geocodeJob = null
     }
 
     private fun update(block: (ClientDataUiState) -> ClientDataUiState) = _uiState.update(block)
