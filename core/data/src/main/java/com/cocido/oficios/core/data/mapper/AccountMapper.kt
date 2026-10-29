@@ -69,6 +69,7 @@ private fun TrabajadorOficioRubroFullDto.toManagedService() = ManagedProviderSer
         )
     },
     localDomicilio = domicilioLocal?.toLocalDomicilioRequest(),
+    plazoCancelacionHoras = plazoCancelacionHoras,
 )
 
 fun WorkGalleryDto.toDomainItem() = WorkGalleryItem(id = id, imageUrl = urlArchivo)

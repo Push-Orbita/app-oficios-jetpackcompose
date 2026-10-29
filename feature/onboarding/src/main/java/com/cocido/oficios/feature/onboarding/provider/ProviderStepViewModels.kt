@@ -404,6 +404,7 @@ data class ProviderAvailabilityUiState(
     val requiresTurns: Boolean = false,
     val turnDurationMinutes: Int? = null,
     val turnIntervalMinutes: Int? = null,
+    val plazoCancelacionHorasInput: String = "",
     val hasRubroContext: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -413,6 +414,22 @@ data class ProviderAvailabilityUiState(
             selectedWorkDays.isNotEmpty() &&
             timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } &&
             (!requiresTurns || turnDurationMinutes != null)
+
+    val plazoCancelacionHorasError: String?
+        get() {
+            val trimmed = plazoCancelacionHorasInput.trim()
+            if (trimmed.isEmpty()) return null
+            val parsed = trimmed.toIntOrNull()
+            return if (parsed == null || parsed !in 1..24) {
+                "Ingrese un valor entre 1 y 24, o deje vacío"
+            } else null
+        }
+
+    val plazoCancelacionHoras: Int?
+        get() {
+            val trimmed = plazoCancelacionHorasInput.trim()
+            return trimmed.toIntOrNull()?.takeIf { it in 1..24 }
+        }
 }
 
 private object ProviderAvailabilityDefaults {
@@ -463,6 +480,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
                         requiresTurns = draft.requiresTurns,
                         turnDurationMinutes = draft.turnDurationMinutes,
                         turnIntervalMinutes = draft.turnIntervalMinutes,
+                        plazoCancelacionHorasInput = draft.plazoCancelacionHoras?.toString().orEmpty(),
                         hasRubroContext = draft.rubroId > 0 && draft.subRubroIds.isNotEmpty(),
                     )
                 }
@@ -511,6 +529,9 @@ class ProviderAvailabilityViewModel @Inject constructor(
     }
     fun onTurnDurationChanged(minutes: Int?) = _uiState.update { it.copy(turnDurationMinutes = minutes, error = null) }
     fun onTurnIntervalChanged(minutes: Int?) = _uiState.update { it.copy(turnIntervalMinutes = minutes, error = null) }
+    fun onPlazoCancelacionHorasChanged(value: String) = _uiState.update {
+        it.copy(plazoCancelacionHorasInput = value.filter { char -> char.isDigit() }, error = null)
+    }
 
     fun submit() {
         val state = _uiState.value
@@ -522,6 +543,10 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 else -> "Complete días, horarios y dónde atiende"
             }
             _uiState.update { it.copy(error = message) }
+            return
+        }
+        state.plazoCancelacionHorasError?.let { errorMessage ->
+            _uiState.update { it.copy(error = errorMessage) }
             return
         }
         viewModelScope.launch {
@@ -549,6 +574,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 requiresTurns = state.requiresTurns,
                 turnDurationMinutes = state.turnDurationMinutes,
                 turnIntervalMinutes = state.turnIntervalMinutes,
+                plazoCancelacionHoras = state.plazoCancelacionHoras,
             )
             registerTradeDraftRepository.save(updatedDraft)
             when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {

@@ -40,6 +40,7 @@ data class ManagedProviderService(
     val workSchedule: List<ManagedWorkSchedule>,
     val specialtySchedules: List<ManagedSpecialtySchedule> = emptyList(),
     val localDomicilio: ProviderLocalDomicilioRequest? = null,
+    val plazoCancelacionHoras: Int? = null,
 )
 
 data class ManagedSpecialtySchedule(

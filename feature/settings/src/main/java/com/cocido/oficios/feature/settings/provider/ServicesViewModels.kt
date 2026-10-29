@@ -213,6 +213,9 @@ class AddServiceViewModel @Inject constructor(
                     it.copy(requiresTurns = event.checked)
                 }
             }
+            is AddServiceEvent.PlazoCancelacionHorasChanged -> update {
+                it.copy(plazoCancelacionHorasInput = event.value.filter { char -> char.isDigit() }, errorMessage = null)
+            }
             is AddServiceEvent.EditorSpecialtySelected -> selectEditorSpecialty(event.id)
             is AddServiceEvent.LocalNameChanged -> update { it.copy(localName = event.value) }
             is AddServiceEvent.LocalBarrioChanged -> searchBarrio(event.value)
@@ -324,6 +327,10 @@ class AddServiceViewModel @Inject constructor(
 
     private fun next() {
         val state = _uiState.value
+        state.plazoCancelacionHorasError?.let { errorMessage ->
+            update { it.copy(errorMessage = errorMessage) }
+            return
+        }
         val error = when (state.step) {
             AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) {
                 "Seleccione al menos una especialidad."
@@ -381,6 +388,7 @@ class AddServiceViewModel @Inject constructor(
                 timeSlots = state.timeSlots,
                 weeklyAvailability = state.weeklyAvailability,
                 requiresTurns = state.requiresTurns,
+                plazoCancelacionHoras = state.plazoCancelacionHoras,
                 domicilioLocal = local,
                 paymentMethods = state.paymentMethods.toList(),
             )
@@ -568,6 +576,7 @@ class AddServiceViewModel @Inject constructor(
                 servesAtClientHome = service.subServices.any { sub -> sub.servesAtClientHome },
                 servesAtLocal = servesAtLocal,
                 requiresTurns = service.subServices.any { sub -> sub.requiresTurns },
+                plazoCancelacionHorasInput = service.plazoCancelacionHoras?.toString().orEmpty(),
                 localName = commercialLocal?.name.orEmpty(),
                 localBarrioId = if (servesAtLocal) commercialLocal?.barrioId else it.localBarrioId,
                 localBarrioQuery = if (servesAtLocal) commercialLocal?.barrioName.orEmpty() else it.localBarrioQuery,
