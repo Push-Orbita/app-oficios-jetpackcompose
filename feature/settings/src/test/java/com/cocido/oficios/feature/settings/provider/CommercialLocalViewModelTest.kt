@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -150,6 +151,23 @@ class CommercialLocalViewModelTest {
         assertEquals(7L, state.selectedBarrioId)
         assertEquals("Centro", state.barrioQuery)
         assertEquals(listOf("Centro"), state.barrioOptions.map { it.label })
+    }
+
+    @Test
+    fun `typing street and number moves pin without submit`() = runTest(testDispatcher) {
+        val accounts = FakeCommercialAccountRepository()
+        val viewModel = createViewModel(accounts)
+        advanceUntilIdle()
+        viewModel.onEvent(CommercialLocalEvent.CalleChanged("O'Higgins"))
+        viewModel.onEvent(CommercialLocalEvent.NumeroChanged("206"))
+        advanceTimeBy(FormosaAddressGeocoding.LIVE_DEBOUNCE_MS)
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals(-26.1849, state.latitud)
+        assertEquals(-58.1731, state.longitud)
+        assertEquals(AddressLocationPhase.Preview, state.locationPhase)
+        assertFalse(state.location.confirmed)
+        assertEquals(null, accounts.replacedId)
     }
 
     @Test

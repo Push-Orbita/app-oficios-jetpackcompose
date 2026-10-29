@@ -22,6 +22,9 @@ import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.LocationRepository
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.domain.model.AddressLocationPhase
+import com.cocido.oficios.domain.model.FormosaAddressGeocoding
+import com.cocido.oficios.domain.model.GeocodedPlace
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,6 +32,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -108,6 +112,25 @@ class MisUbicacionesViewModelTest {
         assertEquals("Ingrese la altura.", state.addressNumberError)
         assertFalse(state.canSaveNew)
         assertEquals(null, state.errorMessage)
+    }
+
+    @Test
+    fun `typing street and number moves the pin after debounce`() = runTest(testDispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(MisUbicacionesEvent.AddClicked)
+        viewModel.onEvent(MisUbicacionesEvent.BarrioSelected(CatalogOption(7, "San Miguel")))
+        viewModel.onEvent(MisUbicacionesEvent.StreetChanged("O'Higgins"))
+        viewModel.onEvent(MisUbicacionesEvent.NumberChanged("206"))
+        advanceTimeBy(FormosaAddressGeocoding.LIVE_DEBOUNCE_MS)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as MisUbicacionesUiState.Success
+        assertEquals(-26.177, state.location.latitude)
+        assertEquals(-58.19, state.location.longitude)
+        assertEquals(AddressLocationPhase.Preview, state.location.phase)
+        assertFalse(state.location.confirmed)
+        assertTrue(state.canSaveNew)
     }
 
     @Test
@@ -217,4 +240,7 @@ private class FakeLocationsLocationRepository : LocationRepository {
     override suspend fun getCurrentLocation(requirePrecise: Boolean) =
         AppResult.Success(GeoPoint(-26.1849, -58.1731))
     override fun observeLocations(intervalMillis: Long): Flow<AppResult<GeoPoint>> = emptyFlow()
+    override suspend fun geocodeForward(query: String) = AppResult.Success(
+        listOf(GeocodedPlace(-26.177, -58.19, query)),
+    )
 }

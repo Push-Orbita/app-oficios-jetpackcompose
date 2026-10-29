@@ -87,6 +87,7 @@ object FormosaAddressGeocoding {
     const val EAST = -58.00
 
     const val CLUSTER_METERS = 200.0
+    const val LIVE_DEBOUNCE_MS = 400L
 
     const val PREVIEW_MESSAGE =
         "Así se verá la ubicación. Confirme el pin para guardarla. La calle escrita no se modifica."
@@ -151,6 +152,18 @@ object FormosaAddressGeocoding {
     }
 
     fun invalidate(): AddressLocationSnapshot = AddressLocationSnapshot()
+
+    /**
+     * Actualiza el pin mientras se escribe la dirección.
+     * Solo un resultado único mueve el mapa; GPS/arrastre se conservan si el geocode no es único.
+     */
+    fun applyLiveOutcome(
+        outcome: ForwardGeocodeOutcome,
+        current: AddressLocationSnapshot,
+    ): AddressLocationSnapshot {
+        val preview = snapshotFor(outcome)
+        return if (preview.latitude != null && preview.longitude != null) preview else current
+    }
 
     fun openMap(current: AddressLocationSnapshot): AddressLocationSnapshot = current.copy(
         phase = AddressLocationPhase.PickingMap,

@@ -38,6 +38,20 @@ class DomicilioFieldValidationTest {
     }
 
     @Test
+    fun `piso and departamento do not affect canSave`() {
+        val valid = DomicilioFieldValidation.validate(
+            barrioId = 7L,
+            barrioQuery = "San Miguel",
+            street = "O'Higgins",
+            number = "206",
+        )
+        assertTrue(valid.canSave)
+        assertNull(valid.barrioError)
+        assertNull(valid.streetError)
+        assertNull(valid.numberError)
+    }
+
+    @Test
     fun `complete address can save`() {
         val valid = DomicilioFieldValidation.validate(
             barrioId = 7L,

@@ -113,6 +113,39 @@ class FormosaAddressGeocodingTest {
     }
 
     @Test
+    fun `live unique outcome moves the pin without confirming`() {
+        val current = AddressLocationSnapshot(
+            latitude = -26.1849,
+            longitude = -58.1731,
+            phase = AddressLocationPhase.PickingMap,
+            confirmed = true,
+        )
+        val live = FormosaAddressGeocoding.applyLiveOutcome(
+            ForwardGeocodeOutcome.Unique(formosaPlace(-26.177, -58.19, "O'Higgins 206")),
+            current,
+        )
+        assertEquals(-26.177, live.latitude)
+        assertEquals(-58.19, live.longitude)
+        assertEquals(AddressLocationPhase.Preview, live.phase)
+        assertFalse(live.confirmed)
+        assertTrue(live.showMap)
+    }
+
+    @Test
+    fun `live miss keeps a gps or dragged pin`() {
+        val current = AddressLocationSnapshot(
+            latitude = -26.19,
+            longitude = -58.18,
+            phase = AddressLocationPhase.PickingMap,
+            confirmed = false,
+        )
+        val live = FormosaAddressGeocoding.applyLiveOutcome(ForwardGeocodeOutcome.None, current)
+        assertEquals(-26.19, live.latitude)
+        assertEquals(-58.18, live.longitude)
+        assertEquals(AddressLocationPhase.PickingMap, live.phase)
+    }
+
+    @Test
     fun `invalidate drops gps leftover coords`() {
         val dirty = AddressLocationSnapshot(
             latitude = 37.421998,

@@ -35,6 +35,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
+import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -184,6 +185,7 @@ class AddServiceViewModel @Inject constructor(
     private val _effects = Channel<AddServiceEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
     private var barrioSearchJob: Job? = null
+    private var geocodeJob: Job? = null
     private var originalAvailabilityBySubId: Map<Long, WeeklyAvailability> = emptyMap()
 
     init {
@@ -230,33 +232,44 @@ class AddServiceViewModel @Inject constructor(
                         localBarrioQuery = event.option.label,
                         localBarrioSuggestions = emptyList(),
                         isSearchingBarrios = false,
-                        localLocation = FormosaAddressGeocoding.invalidate(),
                     )
                 }
+                scheduleLiveGeocode()
             }
             AddServiceEvent.LocalBarrioSuggestionsDismissed -> {
                 barrioSearchJob?.cancel()
                 update { it.copy(localBarrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
-            is AddServiceEvent.LocalStreetChanged -> update {
-                it.copy(localStreet = event.value, localLocation = FormosaAddressGeocoding.invalidate())
+            is AddServiceEvent.LocalStreetChanged -> {
+                update { it.copy(localStreet = event.value) }
+                scheduleLiveGeocode()
             }
-            is AddServiceEvent.LocalNumberChanged -> update {
-                it.copy(localNumber = event.value, localLocation = FormosaAddressGeocoding.invalidate())
+            is AddServiceEvent.LocalNumberChanged -> {
+                update { it.copy(localNumber = event.value) }
+                scheduleLiveGeocode()
             }
-            is AddServiceEvent.LocalMapLocationSelected -> update {
-                it.copy(
-                    localLocation = FormosaAddressGeocoding.pinMoved(it.localLocation, event.latitude, event.longitude),
-                    errorMessage = null,
-                )
+            is AddServiceEvent.LocalMapLocationSelected -> {
+                cancelLiveGeocode()
+                update {
+                    it.copy(
+                        localLocation = FormosaAddressGeocoding.pinMoved(it.localLocation, event.latitude, event.longitude),
+                        errorMessage = null,
+                    )
+                }
             }
-            AddServiceEvent.LocateOnMap -> update {
-                val next = FormosaAddressGeocoding.openMap(it.localLocation)
-                it.copy(localLocation = next)
+            AddServiceEvent.LocateOnMap -> {
+                cancelLiveGeocode()
+                update {
+                    val next = FormosaAddressGeocoding.openMap(it.localLocation)
+                    it.copy(localLocation = next)
+                }
             }
-            AddServiceEvent.ConfirmPin -> update {
-                val confirmed = FormosaAddressGeocoding.confirmPin(it.localLocation)
-                it.copy(localLocation = confirmed)
+            AddServiceEvent.ConfirmPin -> {
+                cancelLiveGeocode()
+                update {
+                    val confirmed = FormosaAddressGeocoding.confirmPin(it.localLocation)
+                    it.copy(localLocation = confirmed)
+                }
             }
             is AddServiceEvent.WorkDayToggled -> update {
                 it.withWeek(it.weeklyAvailability.withToggledDay(event.day, event.checked))
@@ -425,6 +438,7 @@ class AddServiceViewModel @Inject constructor(
                 errorMessage = null,
             )
         }
+        if (!preserveSelection) scheduleLiveGeocode()
         barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
             previous = barrioSearchJob,
             query = query,
@@ -435,7 +449,32 @@ class AddServiceViewModel @Inject constructor(
         )
     }
 
+    private fun scheduleLiveGeocode() {
+        val state = _uiState.value
+        geocodeJob = viewModelScope.launchDebouncedForwardGeocode(
+            previous = geocodeJob,
+            query = LocalAddressQuery(
+                street = state.localStreet,
+                number = state.localNumber,
+                neighborhood = state.localBarrioQuery,
+            ),
+            geocode = geocodeLocalAddress,
+            onResult = { result ->
+                val outcome = (result as? AppResult.Success)?.data ?: return@launchDebouncedForwardGeocode
+                update {
+                    it.copy(localLocation = FormosaAddressGeocoding.applyLiveOutcome(outcome, it.localLocation))
+                }
+            },
+        )
+    }
+
+    private fun cancelLiveGeocode() {
+        geocodeJob?.cancel()
+        geocodeJob = null
+    }
+
     private fun resolveLocalFromAddress() {
+        cancelLiveGeocode()
         val state = _uiState.value
         if (state.isGeocoding) return
         viewModelScope.launch {
