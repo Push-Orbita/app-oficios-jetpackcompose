@@ -201,6 +201,9 @@
     <string name="services_local">Atiendo en mi local</string>
     <string name="services_requires_turns">Este servicio requiere turno</string>
     <string name="services_requires_turns_locked">Un servicio publicado con turnos no se puede pasar a sin turnos desde la app.</string>
+    <string name="services_cancellation_hours">Plazo de cancelación (horas)</string>
+    <string name="services_cancellation_hours_hint">Entre 1 y 24. Vacío = valor del catálogo.</string>
+    <string name="services_cancellation_hours_error">Ingrese un valor entre 1 y 24, o deje vacío</string>
     <string name="services_specialties_edit_locked">Las especialidades se eligen al publicar el servicio. Para sumar otra, agregue un servicio nuevo.</string>
     <string name="services_specialty_hours">%1$s: %2$s</string>
     <string name="services_schedule_pick_specialty">Especialidad de estos horarios</string>

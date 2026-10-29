@@ -383,6 +383,10 @@ private class UnusedAgendaApi : com.cocido.oficios.core.network.api.agenda.Agend
     override suspend fun getSesionesPorSubRubro(subRubroId: Long) = unused()
     override suspend fun createSesion(request: com.cocido.oficios.core.network.api.agenda.dto.CreateSesionRequestDto) =
         unused()
+    override suspend fun updateSesion(
+        id: Long,
+        request: com.cocido.oficios.core.network.api.agenda.dto.UpdateSesionRequestDto,
+    ) = unused()
     override suspend fun deleteSesion(id: Long) = unused()
 }
 
@@ -442,6 +446,17 @@ private class RecordingAgendaApi : com.cocido.oficios.core.network.api.agenda.Ag
             medidaIntervalo = request.medidaIntervalo,
             trabajadorOficioSubRubroId = request.trabajadorOficioSubRubroId,
         ).also { createSesionCalls += 1 }
+    override suspend fun updateSesion(
+        id: Long,
+        request: com.cocido.oficios.core.network.api.agenda.dto.UpdateSesionRequestDto,
+    ) = com.cocido.oficios.core.network.api.agenda.dto.SesionDto(
+        id = id,
+        duracion = request.duracion,
+        medidaDuracion = request.medidaDuracion,
+        intervalo = request.intervalo,
+        medidaIntervalo = request.medidaIntervalo,
+        trabajadorOficioSubRubroId = 0L,
+    )
     override suspend fun deleteSesion(id: Long) {
         deletedSesionIds += id
         sessions = sessions.filterNot { it.id == id }

@@ -60,3 +60,11 @@ data class CreateSesionRequestDto(
     val intervalo: String? = null,
     val medidaIntervalo: String? = null,
 )
+
+@Serializable
+data class UpdateSesionRequestDto(
+    val duracion: Int,
+    val medidaDuracion: String,
+    val intervalo: String? = null,
+    val medidaIntervalo: String? = null,
+)

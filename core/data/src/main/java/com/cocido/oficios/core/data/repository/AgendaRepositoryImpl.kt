@@ -12,6 +12,7 @@ import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.AgendaSlotsSnapshot
 import com.cocido.oficios.domain.model.CreateAgendaSlotParams
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSessionParams
 import com.cocido.oficios.domain.model.UpdateAgendaSlotParams
 import com.cocido.oficios.domain.repository.AgendaRepository
 import javax.inject.Inject
@@ -107,6 +108,17 @@ class AgendaRepositoryImpl @Inject constructor(
         withContext(dispatcherProvider.io) {
             remoteDataSource.createSesion(
                 subRubroId = params.subRubroId,
+                duracion = params.durationMinutes,
+                medidaDuracion = params.durationUnit,
+                intervalo = params.intervalMinutes?.toString(),
+                medidaIntervalo = params.intervalMinutes?.let { params.intervalUnit ?: "minutos" },
+            ).map { }.refreshCachedAgenda()
+        }
+
+    override suspend fun updateSession(params: UpdateAgendaSessionParams): AppResult<Unit> =
+        withContext(dispatcherProvider.io) {
+            remoteDataSource.updateSesion(
+                id = params.sessionId,
                 duracion = params.durationMinutes,
                 medidaDuracion = params.durationUnit,
                 intervalo = params.intervalMinutes?.toString(),

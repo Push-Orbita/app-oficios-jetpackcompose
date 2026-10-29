@@ -58,3 +58,11 @@ data class SaveAgendaSessionParams(
     val durationUnit: String = "minutos",
     val intervalUnit: String? = null,
 )
+
+data class UpdateAgendaSessionParams(
+    val sessionId: Long,
+    val durationMinutes: Int,
+    val intervalMinutes: Int?,
+    val durationUnit: String = "minutos",
+    val intervalUnit: String? = null,
+)

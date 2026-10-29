@@ -25,6 +25,7 @@ data class RegisterTradeDraft(
     val requiresTurns: Boolean = false,
     val turnDurationMinutes: Int? = null,
     val turnIntervalMinutes: Int? = null,
+    val plazoCancelacionHoras: Int? = null,
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
     val paymentMethods: List<String> = emptyList(),
 )

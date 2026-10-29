@@ -3,6 +3,7 @@ package com.cocido.oficios.core.data.remote
 import com.cocido.oficios.core.network.api.agenda.AgendaApi
 import com.cocido.oficios.core.network.api.agenda.dto.CreateSesionRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.CreateSlotTurnoRequestDto
+import com.cocido.oficios.core.network.api.agenda.dto.UpdateSesionRequestDto
 import com.cocido.oficios.core.network.api.agenda.dto.UpdateSlotTurnoRequestDto
 import com.cocido.oficios.core.network.safeApiCall
 import javax.inject.Inject
@@ -72,6 +73,24 @@ class AgendaRemoteDataSource @Inject constructor(
         agendaApi.createSesion(
             CreateSesionRequestDto(
                 trabajadorOficioSubRubroId = subRubroId,
+                duracion = duracion,
+                medidaDuracion = medidaDuracion,
+                intervalo = intervalo,
+                medidaIntervalo = medidaIntervalo,
+            ),
+        )
+    }
+
+    suspend fun updateSesion(
+        id: Long,
+        duracion: Int,
+        medidaDuracion: String,
+        intervalo: String?,
+        medidaIntervalo: String?,
+    ) = safeApiCall {
+        agendaApi.updateSesion(
+            id = id,
+            request = UpdateSesionRequestDto(
                 duracion = duracion,
                 medidaDuracion = medidaDuracion,
                 intervalo = intervalo,

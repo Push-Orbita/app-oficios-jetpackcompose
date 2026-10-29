@@ -47,6 +47,7 @@ data class AddServiceUiState(
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
     val requiresTurns: Boolean = false,
+    val plazoCancelacionHorasInput: String = "",
     val localName: String = "",
     val localBarrioQuery: String = "",
     val localBarrioId: Long? = null,
@@ -76,6 +77,23 @@ data class AddServiceUiState(
         .ifBlank { lockedRubroName }
     val localLatitude: Double? get() = localLocation.latitude
     val localLongitude: Double? get() = localLocation.longitude
+
+    val plazoCancelacionHorasError: String?
+        get() {
+            val trimmed = plazoCancelacionHorasInput.trim()
+            if (trimmed.isEmpty()) return null
+            val parsed = trimmed.toIntOrNull()
+            return if (parsed == null || parsed !in 1..24) {
+                "Ingrese un valor entre 1 y 24, o deje vacío"
+            } else null
+        }
+
+    val plazoCancelacionHoras: Int?
+        get() {
+            val trimmed = plazoCancelacionHorasInput.trim()
+            return trimmed.toIntOrNull()?.takeIf { it in 1..24 }
+        }
+
     /** Edición no carga categorías: el form ya tiene rubro/especialidades. */
     val hasFormContent: Boolean
         get() = if (isEditing) {
@@ -109,6 +127,7 @@ data class AddServiceUiState(
         servesAtClientHome = servesAtClientHome,
         servesAtLocal = servesAtLocal,
         requiresTurns = requiresTurns,
+        plazoCancelacionHoras = plazoCancelacionHoras,
         localName = localName,
         localBarrioId = localBarrioId,
         localStreet = localStreet,
@@ -124,6 +143,7 @@ data class AddServiceFormSnapshot(
     val servesAtClientHome: Boolean,
     val servesAtLocal: Boolean,
     val requiresTurns: Boolean,
+    val plazoCancelacionHoras: Int?,
     val localName: String,
     val localBarrioId: Long?,
     val localStreet: String,
@@ -144,6 +164,7 @@ sealed interface AddServiceEvent {
     data class ClientHomeChanged(val checked: Boolean) : AddServiceEvent
     data class LocalChanged(val checked: Boolean) : AddServiceEvent
     data class RequiresTurnsChanged(val checked: Boolean) : AddServiceEvent
+    data class PlazoCancelacionHorasChanged(val value: String) : AddServiceEvent
     data class LocalNameChanged(val value: String) : AddServiceEvent
     data class LocalBarrioChanged(val value: String) : AddServiceEvent
     data object LocalBarrioFocused : AddServiceEvent

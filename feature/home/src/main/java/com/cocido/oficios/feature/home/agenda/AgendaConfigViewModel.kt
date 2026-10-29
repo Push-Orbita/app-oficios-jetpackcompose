@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.SaveAgendaSessionParams
+import com.cocido.oficios.domain.model.UpdateAgendaSessionParams
 import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.GetMySubRubrosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -172,21 +173,38 @@ class AgendaConfigViewModel @Inject constructor(
             for (subRubroId in targets) {
                 val existing = agendaUseCases.getSessionsForSubRubro(subRubroId)
                 if (existing is AppResult.Success) {
-                    existing.data.forEach { session ->
-                        agendaUseCases.deleteSession(session.id)
+                    val sessions = existing.data
+                    val result = if (sessions.isEmpty()) {
+                        agendaUseCases.saveSession(
+                            SaveAgendaSessionParams(
+                                subRubroId = subRubroId,
+                                durationMinutes = duration,
+                                intervalMinutes = interval,
+                                durationUnit = state.durationUnit,
+                                intervalUnit = interval?.let { state.intervalUnit },
+                            ),
+                        )
+                    } else {
+                        val firstSession = sessions.first()
+                        sessions.drop(1).forEach { session ->
+                            agendaUseCases.deleteSession(session.id)
+                        }
+                        agendaUseCases.updateSession(
+                            UpdateAgendaSessionParams(
+                                sessionId = firstSession.id,
+                                durationMinutes = duration,
+                                intervalMinutes = interval,
+                                durationUnit = state.durationUnit,
+                                intervalUnit = interval?.let { state.intervalUnit },
+                            ),
+                        )
                     }
-                }
-                val result = agendaUseCases.saveSession(
-                    SaveAgendaSessionParams(
-                        subRubroId = subRubroId,
-                        durationMinutes = duration,
-                        intervalMinutes = interval,
-                        durationUnit = state.durationUnit,
-                        intervalUnit = interval?.let { state.intervalUnit },
-                    ),
-                )
-                if (result is AppResult.Error) {
-                    lastError = result.error.userMessage()
+                    if (result is AppResult.Error) {
+                        lastError = result.error.userMessage()
+                        break
+                    }
+                } else if (existing is AppResult.Error) {
+                    lastError = existing.error.userMessage()
                     break
                 }
             }

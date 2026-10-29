@@ -179,6 +179,7 @@ fun ProviderAvailabilityRoute(onSaved: () -> Unit, modifier: Modifier = Modifier
         onRequiresTurnsChanged = viewModel::onRequiresTurnsChanged,
         onTurnDurationChanged = viewModel::onTurnDurationChanged,
         onTurnIntervalChanged = viewModel::onTurnIntervalChanged,
+        onPlazoCancelacionHorasChanged = viewModel::onPlazoCancelacionHorasChanged,
         onSubmit = viewModel::submit,
     )
 }

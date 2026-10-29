@@ -230,6 +230,14 @@ class NetworkErrorMapperTest {
         assertTrue("Error de red" !in error.userMessage())
     }
 
+    @Test
+    fun `cancelation window expired maps to user friendly message`() {
+        val body = """{"code":"CANCELATION_WINDOW_EXPIRED","message":"Plazo de cancelación vencido"}"""
+        val error = httpError(400, body).toNetworkAppError()
+        assertTrue(error is AppError.Validation)
+        assertEquals("Ya no se puede cancelar este servicio. El plazo de cancelación venció.", error.message)
+    }
+
     private fun httpError(code: Int, body: String, mediaType: String = "application/json"): HttpException {
         val responseBody = body.toResponseBody(mediaType.toMediaType())
         return HttpException(Response.error<Unit>(code, responseBody))

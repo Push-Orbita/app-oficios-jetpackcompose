@@ -642,6 +642,7 @@ fun ProviderAvailabilityStepScreen(
     onRequiresTurnsChanged: (Boolean) -> Unit,
     onTurnDurationChanged: (Int?) -> Unit,
     onTurnIntervalChanged: (Int?) -> Unit,
+    onPlazoCancelacionHorasChanged: (String) -> Unit,
     onSubmit: () -> Unit,
 ) {
     OnboardingStepScaffold(
@@ -703,6 +704,19 @@ fun ProviderAvailabilityStepScreen(
                     )
                 }
             }
+        }
+
+        AvailabilitySection(title = "Plazo de cancelación") {
+            OficiosTextField(
+                value = uiState.plazoCancelacionHorasInput,
+                onValueChange = onPlazoCancelacionHorasChanged,
+                label = stringResource(R.string.onboarding_step_availability_cancellation_hours),
+                supportingText = uiState.plazoCancelacionHorasError
+                    ?: stringResource(R.string.onboarding_step_availability_cancellation_hours_hint),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = uiState.plazoCancelacionHorasError != null,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_schedule)) {
