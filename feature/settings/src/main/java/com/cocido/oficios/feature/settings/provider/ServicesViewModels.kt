@@ -7,6 +7,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.AddressLocationSnapshot
+import com.cocido.oficios.domain.model.AvailabilityPut
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
@@ -403,7 +404,7 @@ class AddServiceViewModel @Inject constructor(
             }
             when (result) {
                 is AppResult.Success -> {
-                    syncWeeklyAvailability(rubroId, state.weeklyAvailability)
+                    syncWeeklyAvailability(rubroId, state.weeklyAvailability, forceSync = state.isEditing)
                     emit(
                         AddServiceEffect.Saved(
                             if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
@@ -596,7 +597,7 @@ class AddServiceViewModel @Inject constructor(
         }
     }
 
-    private suspend fun syncWeeklyAvailability(rubroId: Long, week: WeeklyAvailability) {
+    private suspend fun syncWeeklyAvailability(rubroId: Long, week: WeeklyAvailability, forceSync: Boolean = false) {
         val details = when (val result = accountUseCases.getProfile()) {
             is AppResult.Success -> result.data.providerDetails
             is AppResult.Error -> return
@@ -606,13 +607,24 @@ class AddServiceViewModel @Inject constructor(
             .maxByOrNull { it.id }
             ?: return
         val state = _uiState.value
-        val puts = availabilityPutsForEdit(
-            persistedSubIds = service.subServices.map { sub -> sub.id },
-            originalBySubId = originalAvailabilityBySubId,
-            editorSourceSubId = state.editorSourceSubId,
-            wizardWeek = week,
-            draftBySubId = state.availabilityDrafts,
-        )
+        val puts = if (forceSync) {
+            service.subServices.filter { it.id > 0L }.map { sub ->
+                val week = if (sub.id == state.editorSourceSubId) {
+                    week
+                } else {
+                    state.availabilityDrafts[sub.id] ?: originalAvailabilityBySubId[sub.id] ?: week
+                }
+                AvailabilityPut(sub.id, week)
+            }
+        } else {
+            availabilityPutsForEdit(
+                persistedSubIds = service.subServices.map { sub -> sub.id },
+                originalBySubId = originalAvailabilityBySubId,
+                editorSourceSubId = state.editorSourceSubId,
+                wizardWeek = week,
+                draftBySubId = state.availabilityDrafts,
+            )
+        }
         for (put in puts) {
             availabilityUseCases.replaceWeekly(put.subRubroId, put.week)
         }
