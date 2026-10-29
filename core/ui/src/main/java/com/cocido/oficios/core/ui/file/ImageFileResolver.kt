@@ -45,6 +45,27 @@ fun compressImageFilePath(
     writeCompressedJpeg(context, bitmap, filePrefix)
 }.getOrNull()
 
+/**
+ * JPEG listo para multipart **sin recortar**: escala ≤ [ImageUploadContract.MAX_EDGE_PX]
+ * y comprime ≤ [ImageUploadContract.TARGET_MAX_BYTES], respetando EXIF.
+ * Usado por selfie / foto de rostro para no abrir el cropper.
+ */
+fun prepareImageForUpload(
+    context: Context,
+    uri: Uri?,
+    path: String?,
+    filePrefix: String,
+): String {
+    return when {
+        uri != null -> compressUriToJpegFile(context, uri, filePrefix)
+        !path.isNullOrBlank() && File(path).exists() -> {
+            compressImageFilePath(context, path, filePrefix)
+                ?: throw ClientValidationException(ImageUploadContract.IMAGE_READ_FAILED_MESSAGE)
+        }
+        else -> throw ClientValidationException(ImageUploadContract.IMAGE_READ_FAILED_MESSAGE)
+    }
+}
+
 internal fun compressUriToJpegFile(
     context: Context,
     uri: Uri,

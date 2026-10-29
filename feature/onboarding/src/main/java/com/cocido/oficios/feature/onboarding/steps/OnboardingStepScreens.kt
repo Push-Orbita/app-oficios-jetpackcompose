@@ -477,7 +477,7 @@ fun ProviderSelfieStepScreen(
         onImageSelected = onImageSelected,
         onPickError = onPickError,
         filePrefix = "selfie",
-        cropMode = ImageCropMode.Profile,
+        skipCrop = true,
     )
 
     OnboardingStepScaffold(
@@ -941,7 +941,7 @@ fun ProviderIdentityStepScreen(
         onImageSelected = onSelfieImageSelected,
         onPickError = onPickError,
         filePrefix = "selfie",
-        cropMode = ImageCropMode.Profile,
+        skipCrop = true,
     )
     val certificatePicker = rememberImageSourcePicker(
         title = pickerTitle,
