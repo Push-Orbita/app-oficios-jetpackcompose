@@ -493,6 +493,7 @@
     <string name="create_order_slots_title">Turnos disponibles</string>
     <string name="create_order_no_slots">Este trabajador no publicó turnos para las próximas semanas. Puede proponer una fecha.</string>
     <string name="create_order_day_unavailable">Ese día no tiene disponibilidad.</string>
+    <string name="create_order_no_free_hours">No quedan horarios libres ese día. Elija otra fecha.</string>
     <string name="create_order_propose">Proponer otra fecha y hora</string>
     <string name="create_order_pick_slot">Seleccione un día y una hora para continuar</string>
     <string name="create_order_date_time">Fecha y hora</string>
