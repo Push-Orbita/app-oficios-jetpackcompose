@@ -2,7 +2,9 @@ package com.cocido.oficios.feature.home.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -27,6 +29,13 @@ import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.model.formatStarRatingLabel
 import com.cocido.oficios.feature.home.R
 
+/**
+ * Figma 224:1013 — grilla fija de [RECENT_SLOTS] columnas. Con 1 o 2 recientes
+ * los slots libres quedan vacíos para que cada card conserve el ancho de 1/3
+ * (no se estira a todo el ancho de la pantalla).
+ */
+private const val RECENT_SLOTS = 3
+
 @Composable
 fun HomeRecentWorkersSection(
     workers: List<WorkerSummary>,
@@ -34,6 +43,7 @@ fun HomeRecentWorkersSection(
     modifier: Modifier = Modifier,
 ) {
     if (workers.isEmpty()) return
+    val visible = workers.take(RECENT_SLOTS)
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -49,13 +59,17 @@ fun HomeRecentWorkersSection(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.s10),
+            verticalAlignment = Alignment.Top,
         ) {
-            workers.take(3).forEach { worker ->
+            visible.forEach { worker ->
                 HomeRecentWorkerCard(
                     worker = worker,
                     onClick = { onWorkerClick(worker) },
                     modifier = Modifier.weight(1f),
                 )
+            }
+            repeat(RECENT_SLOTS - visible.size) {
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
@@ -81,6 +95,7 @@ private fun HomeRecentWorkerCard(
     }
     OficiosCard(
         onClick = onClick,
+        contentPadding = PaddingValues(OficiosSpacing.s10),
         modifier = modifier
             .heightIn(min = OficiosComponentSize.categoryCardSize)
             .semantics(mergeDescendants = true) {
@@ -89,53 +104,58 @@ private fun HomeRecentWorkerCard(
             },
     ) {
         Column(
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
         ) {
-        OficiosAvatar(
-            name = worker.displayName,
-            imageUrl = worker.avatarUrl,
-            size = OficiosComponentSize.avatarSm,
-            showBorder = true,
-            circular = true,
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
-        ) {
-            Text(
-                text = worker.displayName,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f, fill = false),
+            OficiosAvatar(
+                name = worker.displayName,
+                imageUrl = worker.avatarUrl,
+                size = OficiosComponentSize.avatarSm,
+                showBorder = true,
+                circular = true,
             )
-            if (worker.isVerified) {
-                OficiosVerifiedBadge(contentDescription = null)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(
+                    OficiosSpacing.xxs,
+                    Alignment.CenterHorizontally,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = worker.displayName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (worker.isVerified) {
+                    OficiosVerifiedBadge(contentDescription = null)
+                }
             }
-        }
-        val rating = worker.rating
-        if (rating != null) {
-            Text(
-                text = formatStarRatingLabel(rating, worker.reviewCount),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-            )
-        }
-        if (worker.specialtyLabel.isNotBlank()) {
-            Text(
-                text = worker.specialtyLabel,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-            )
-        }
+            val rating = worker.rating
+            if (rating != null) {
+                Text(
+                    text = formatStarRatingLabel(rating, worker.reviewCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            if (worker.specialtyLabel.isNotBlank()) {
+                Text(
+                    text = worker.specialtyLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }

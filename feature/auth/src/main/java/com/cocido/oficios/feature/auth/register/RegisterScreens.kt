@@ -21,7 +21,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.R as DesignSystemR
-import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandRow
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
@@ -250,7 +249,6 @@ fun RegisterFormScreen(
                 floatingLabel = false,
                 isError = confirmPasswordError != null,
                 supportingText = confirmPasswordError,
-                hiddenVisibilityIconRes = OficiosIcons.EyeClosed,
                 modifier = Modifier.focusRequester(confirmFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onEvent(RegisterFormEvent.Submit) }),

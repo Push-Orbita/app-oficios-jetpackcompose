@@ -23,6 +23,7 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val catalogRepository: CatalogRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val syncProviderBarrioDomicilio: ProviderBarrioDomicilioSync,
 ) {
     suspend operator fun invoke(requireDraft: Boolean = false): AppResult<Unit> {
         var draft = registerTradeDraftRepository.get()
@@ -41,6 +42,8 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
             }
         }
         draft = resolveBarrioId(draft)
+        // No depende del DNI aprobado (a diferencia del rubro): se intenta en cada envío y no bloquea.
+        draft.barrioId?.let { barrioId -> syncProviderBarrioDomicilio(barrioId, draft.neighborhoodQuery) }
 
         val infoResult = providerProfileRepository.updateProfessionalInfo(draft.toProfessionalInfoRequest())
         if (infoResult is AppResult.Error) return infoResult
@@ -121,18 +124,43 @@ class SyncRegisterTradeDraftFromProfileUseCase @Inject constructor(
     }
 }
 
+/**
+ * Guarda el domicilio principal del onboarding. Si ya existe uno (favorito o el único cargado) lo
+ * actualiza con PATCH en vez de crear otro: reintentar "Guardar" no debe duplicar domicilios.
+ */
 class SaveClientDomicilioUseCase @Inject constructor(
     private val clientProfileRepository: ClientProfileRepository,
 ) {
-    suspend operator fun invoke(request: ClientDomicilioRequest): AppResult<Unit> =
-        clientProfileRepository.saveDomicilio(request)
+    suspend operator fun invoke(request: ClientDomicilioRequest): AppResult<Unit> {
+        val existing = (clientProfileRepository.getMyDomicilios() as? AppResult.Success)?.data.orEmpty()
+        val reusable = ClientProfileReuse.domicilioToReuse(existing)
+        return if (reusable != null) {
+            clientProfileRepository.updateDomicilio(reusable.id, request)
+        } else {
+            clientProfileRepository.saveDomicilio(request)
+        }
+    }
 }
 
+/**
+ * Guarda el contacto principal. Reusa el contacto existente con el mismo WhatsApp o el favorito no
+ * verificado (PATCH) en vez de crear uno nuevo en cada intento. Devuelve el id del contacto.
+ */
 class SaveClientContactoUseCase @Inject constructor(
     private val clientProfileRepository: ClientProfileRepository,
 ) {
-    suspend operator fun invoke(request: ClientContactoRequest): AppResult<Long> =
-        clientProfileRepository.saveContacto(request)
+    suspend operator fun invoke(request: ClientContactoRequest): AppResult<Long> {
+        val existing = (clientProfileRepository.getMyContactos() as? AppResult.Success)?.data.orEmpty()
+        val reusable = ClientProfileReuse.contactoToReuse(existing, request)
+            ?: return clientProfileRepository.saveContacto(request)
+        if (!ClientProfileReuse.contactoNeedsUpdate(reusable, request)) {
+            return AppResult.Success(reusable.id)
+        }
+        return when (val result = clientProfileRepository.updateContacto(reusable.id, request)) {
+            is AppResult.Success -> AppResult.Success(reusable.id)
+            is AppResult.Error -> result
+        }
+    }
 }
 
 class GetClientDomiciliosUseCase @Inject constructor(

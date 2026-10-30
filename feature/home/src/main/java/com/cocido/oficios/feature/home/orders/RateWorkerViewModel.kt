@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.OrderUseCases
@@ -34,9 +35,9 @@ class RateWorkerViewModel @Inject constructor(
 
     fun onEvent(event: RateWorkerEvent) {
         when (event) {
-            is RateWorkerEvent.QualitySelected -> updateForm { copy(qualityStars = event.stars) }
-            is RateWorkerEvent.PunctualitySelected -> updateForm { copy(punctualityStars = event.stars) }
-            is RateWorkerEvent.CommentChanged -> updateForm { copy(comment = event.value) }
+            is RateWorkerEvent.QualitySelected -> updateForm { copy(qualityStars = event.stars, submitError = null) }
+            is RateWorkerEvent.PunctualitySelected -> updateForm { copy(punctualityStars = event.stars, submitError = null) }
+            is RateWorkerEvent.CommentChanged -> updateForm { copy(comment = event.value, submitError = null) }
             RateWorkerEvent.Submit -> submit()
         }
     }
@@ -48,12 +49,11 @@ class RateWorkerViewModel @Inject constructor(
         if (form.qualityStars == 0 || form.punctualityStars == 0) return
 
         viewModelScope.launch {
-            _uiState.update { form.copy(isSubmitting = true) }
-            // El diseño pide un único selector de estrellas 1-5; el backend real separa
-            // "calidad" (1-10) y "puntualidad" (1-5) — calidad se deriva como estrellas*2.
+            _uiState.update { form.copy(isSubmitting = true, hasAttemptedSubmit = true, submitError = null) }
+            // Backend: calidad y puntualidad en escala 1–5, igual que el selector.
             val result = orderUseCases.submitRating(
                 bookingId = bookingId,
-                quality = form.qualityStars * 2,
+                quality = form.qualityStars,
                 punctuality = form.punctualityStars,
                 comment = form.comment.ifBlank { null },
             )
@@ -63,14 +63,27 @@ class RateWorkerViewModel @Inject constructor(
                     _effects.send(RateWorkerEffect.RatingSubmittedSuccess)
                 }
                 is AppResult.Error -> {
-                    _uiState.update { form.copy(isSubmitting = false) }
-                    _effects.send(RateWorkerEffect.ShowMessage(result.error.userMessage()))
+                    val message = result.error.toRatingMessage()
+                    _uiState.update { form.copy(isSubmitting = false, hasAttemptedSubmit = true, submitError = message) }
+                    _effects.send(RateWorkerEffect.ShowMessage(message))
                 }
             }
         }
     }
 
+    private fun AppError.toRatingMessage(): String = when (this) {
+        is AppError.Validation -> RATING_VALIDATION_MESSAGE
+        is AppError.Conflict -> RATING_ALREADY_SENT_MESSAGE
+        else -> userMessage()
+    }
+
     private inline fun updateForm(transform: RateWorkerUiState.Form.() -> RateWorkerUiState.Form) {
         _uiState.update { current -> if (current is RateWorkerUiState.Form) current.transform() else current }
+    }
+
+    internal companion object {
+        const val RATING_VALIDATION_MESSAGE =
+            "No pudimos enviar la calificación. Revise las estrellas e intente nuevamente."
+        const val RATING_ALREADY_SENT_MESSAGE = "Este servicio ya fue calificado."
     }
 }

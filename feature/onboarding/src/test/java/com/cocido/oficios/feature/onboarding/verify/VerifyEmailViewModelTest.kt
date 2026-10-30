@@ -138,6 +138,34 @@ class VerifyEmailViewModelTest {
     }
 
     @Test
+    fun `resend clears typed code and previous error`() = runTest(dispatcher) {
+        val viewModel = createViewModel(
+            authRepository = FakeAuthRepository(
+                user = user,
+                verifyEmailResult = AppResult.Error(
+                    AppError.Validation(message = "Código incorrecto", backendCode = "VA01"),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+        viewModel.onCodeChanged("111111")
+        viewModel.submit()
+        advanceUntilIdle()
+        val rejected = viewModel.uiState.value
+        assertTrue(rejected.codeError != null || rejected.error != null)
+
+        viewModel.resendCode()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("", state.code)
+        assertNull(state.codeError)
+        assertNull(state.error)
+        assertFalse(state.canSubmit)
+        assertFalse(state.hasAttemptedSubmit)
+    }
+
+    @Test
     fun `invalid code cannot submit`() = runTest(dispatcher) {
         val viewModel = createViewModel()
         advanceUntilIdle()

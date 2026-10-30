@@ -87,6 +87,8 @@ class ClientContactoViewModelTest {
             object : ClientProfileRepository {
                 override suspend fun saveDomicilio(request: ClientDomicilioRequest) = AppResult.Success(Unit)
                 override suspend fun saveContacto(request: ClientContactoRequest) = AppResult.Success(1L)
+                override suspend fun updateDomicilio(id: Long, request: ClientDomicilioRequest) = AppResult.Success(Unit)
+                override suspend fun updateContacto(id: Long, request: ClientContactoRequest) = AppResult.Success(Unit)
                 override suspend fun sendPhoneVerificationCode(contactId: Long) =
                     AppResult.Success(com.cocido.oficios.domain.model.PhoneVerificationSendResult("ok", null))
                 override suspend fun verifyPhoneCode(contactId: Long, code: String) = AppResult.Success(Unit)

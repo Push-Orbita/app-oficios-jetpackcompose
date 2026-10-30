@@ -45,6 +45,26 @@ fun ClientDomicilioRequest.toDto() = CreateDomicilioRequestDto(
     favorito = favorito,
 )
 
+fun ClientDomicilioRequest.toUpdateDto() = UpdateDomicilioRequestDto(
+    barrioId = barrioId,
+    nombre = nombre,
+    calle = calle,
+    numero = numero,
+    casaTorre = casaTorre,
+    departamento = departamento,
+    piso = piso,
+    latitud = latitud,
+    longitud = longitud,
+    favorito = favorito,
+)
+
+fun ClientContactoRequest.toUpdateDto() = UpdateContactoRequestDto(
+    nombre = nombre,
+    telefonoWhatsapp = telefonoWhatsapp,
+    email = email,
+    favorito = favorito,
+)
+
 fun ClientContactoRequest.toDto() = CreateContactoRequestDto(
     nombre = nombre,
     telefonoWhatsapp = telefonoWhatsapp,

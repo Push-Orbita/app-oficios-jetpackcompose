@@ -192,7 +192,7 @@ fun RegisterTradeScreen(
                                     )
                                     OficiosDropdownField(
                                         value = slot.to,
-                                        options = uiState.timeOptions,
+                                        options = uiState.timeOptions.filter { slot.from.isBlank() || it > slot.from },
                                         onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotToChanged(index, it)) },
                                         label = stringResource(R.string.auth_register_trade_to_label),
                                         modifier = Modifier.weight(1f),

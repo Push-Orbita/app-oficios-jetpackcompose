@@ -102,4 +102,16 @@ class WeeklyAvailabilityTest {
         assertEquals("13:00", week.rangesOn("MARTES").single().end)
         assertFalse(week.includeSunday)
     }
+
+    @Test
+    fun changeRangeClearsEndWhenStartMovesPastIt() {
+        val week = WeeklyAvailability.default().changeRange("LUNES", 0, from = "10:00")
+        assertEquals("10:00", week.rangesOn("LUNES").single().start)
+        assertEquals("18:00", week.rangesOn("LUNES").single().end)
+
+        val cleared = week.changeRange("LUNES", 0, to = "12:00")
+            .changeRange("LUNES", 0, from = "14:00")
+        assertEquals("14:00", cleared.rangesOn("LUNES").single().start)
+        assertEquals("", cleared.rangesOn("LUNES").single().end)
+    }
 }

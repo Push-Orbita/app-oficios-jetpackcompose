@@ -14,6 +14,25 @@ import org.junit.Test
 class OnboardingMapperTest {
 
     @Test
+    fun `maps requisitosOnboardingCompletos for validated worker with only optional items left`() {
+        val status = TrabajadorPerfilEstadoDto(
+            estado = "VALIDADO",
+            perfilCompleto = true,
+            configuracionCompleta = true,
+            requisitos = com.cocido.oficios.core.network.api.auth.dto.TrabajadorPerfilEstadoRequisitosDto(
+                identidadVerificada = true,
+                perfilOperativo = true,
+                requisitosOnboardingCompletos = true,
+            ),
+            faltantes = emptyList(),
+        ).toDomain()
+
+        assertTrue(status.isOnboardingRequirementsComplete)
+        assertTrue(status.hasCompletedRequiredProfile)
+        assertTrue(status.toOnboardingSteps().isEmpty())
+    }
+
+    @Test
     fun `maps client status to onboarding steps`() {
         val status = ClientePerfilEstadoDto(
             perfilCompleto = false,

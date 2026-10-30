@@ -46,6 +46,14 @@ data class VerifyEmailUiState(
     val hasAttemptedSubmit: Boolean = false,
 )
 
+internal fun VerifyEmailUiState.clearedForResend() = copy(
+    code = "",
+    codeError = null,
+    error = null,
+    canSubmit = false,
+    hasAttemptedSubmit = false,
+)
+
 sealed interface VerifyEmailEffect {
     data object Verified : VerifyEmailEffect
 }
@@ -144,6 +152,8 @@ class VerifyEmailViewModel @Inject constructor(
     fun resendCode() {
         val state = _uiState.value
         if (state.isResending || state.isLoading || state.resendCooldownSeconds > 0) return
+        // El código anterior queda invalidado: limpiar lo tipeado y el error del intento previo.
+        _uiState.update { it.clearedForResend() }
         viewModelScope.launch { sendCode() }
     }
 

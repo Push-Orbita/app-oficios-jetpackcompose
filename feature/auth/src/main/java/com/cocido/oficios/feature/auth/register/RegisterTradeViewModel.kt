@@ -91,7 +91,10 @@ class RegisterTradeViewModel @Inject constructor(
                 update { it.copy(neighborhoodOptions = emptyList(), isSearchingBarrios = false) }
             }
             is RegisterTradeEvent.TimeSlotFromChanged -> update {
-                it.copy(timeSlots = it.timeSlots.updateAt(event.index) { slot -> slot.copy(from = event.value) })
+                it.copy(timeSlots = it.timeSlots.updateAt(event.index) { slot ->
+                    val newTo = if (slot.to.isNotBlank() && slot.to > event.value) slot.to else ""
+                    slot.copy(from = event.value, to = newTo)
+                })
             }
             is RegisterTradeEvent.TimeSlotToChanged -> update {
                 it.copy(timeSlots = it.timeSlots.updateAt(event.index) { slot -> slot.copy(to = event.value) })

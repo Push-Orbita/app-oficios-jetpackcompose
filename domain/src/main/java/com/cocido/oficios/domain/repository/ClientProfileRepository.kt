@@ -21,6 +21,8 @@ interface ClientProfileRepository {
 
     suspend fun saveDomicilio(request: ClientDomicilioRequest): AppResult<Unit>
     suspend fun saveContacto(request: ClientContactoRequest): AppResult<Long>
+    suspend fun updateDomicilio(id: Long, request: ClientDomicilioRequest): AppResult<Unit>
+    suspend fun updateContacto(id: Long, request: ClientContactoRequest): AppResult<Unit>
     suspend fun sendPhoneVerificationCode(contactId: Long): AppResult<PhoneVerificationSendResult>
     suspend fun verifyPhoneCode(contactId: Long, code: String): AppResult<Unit>
     suspend fun getMyDomicilios(): AppResult<List<ClientDomicilio>>

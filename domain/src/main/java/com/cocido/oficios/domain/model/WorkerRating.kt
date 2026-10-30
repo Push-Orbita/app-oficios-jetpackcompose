@@ -3,8 +3,8 @@ package com.cocido.oficios.domain.model
 import java.util.Locale
 
 /**
- * El backend mezcla escalas: promedio 0–5, puntajeGlobal 0–10 (estrellas × 2)
- * o calidad 1–10. La UI siempre muestra 0–5.
+ * El backend mezcla escalas: promedio 0–5, puntajeGlobal 0–10 (estrellas × 2).
+ * Calidad hoy es 1–5; reseñas viejas pueden traer 1–10. La UI siempre muestra 0–5.
  */
 fun normalizeStarRating(raw: Double?): Float? {
     if (raw == null || raw <= 0.0) return null

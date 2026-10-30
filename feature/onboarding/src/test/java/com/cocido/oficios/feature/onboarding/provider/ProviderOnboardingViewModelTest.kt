@@ -92,6 +92,10 @@ class ProviderOnboardingViewModelTest {
             ),
             retryPendingTradeDraftUseCase = RetryPendingTradeDraftUseCase(
                 SubmitRegisterTradeDraftUseCase(
+                    syncProviderBarrioDomicilio = object : com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                        override suspend fun invoke(barrioId: Long, barrioName: String) =
+                            com.cocido.oficios.core.common.result.AppResult.Success(Unit)
+                    },
                     providerProfileRepository = providerProfileRepository,
                     registerTradeDraftRepository = draftRepository,
                     catalogRepository = object : com.cocido.oficios.domain.repository.CatalogRepository {
@@ -276,6 +280,10 @@ class ProviderOnboardingViewModelTest {
             ),
             retryPendingTradeDraftUseCase = RetryPendingTradeDraftUseCase(
                 SubmitRegisterTradeDraftUseCase(
+                    syncProviderBarrioDomicilio = object : com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                        override suspend fun invoke(barrioId: Long, barrioName: String) =
+                            com.cocido.oficios.core.common.result.AppResult.Success(Unit)
+                    },
                     providerProfileRepository = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
                         override suspend fun updateProfessionalInfo(
                             request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
@@ -505,6 +513,10 @@ class ProviderOnboardingViewModelTest {
             ),
             retryPendingTradeDraftUseCase = RetryPendingTradeDraftUseCase(
                 SubmitRegisterTradeDraftUseCase(
+                    syncProviderBarrioDomicilio = object : com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                        override suspend fun invoke(barrioId: Long, barrioName: String) =
+                            com.cocido.oficios.core.common.result.AppResult.Success(Unit)
+                    },
                     providerProfileRepository = emptyProviderRepo,
                     registerTradeDraftRepository = emptyDraftRepo,
                     catalogRepository = object : com.cocido.oficios.domain.repository.CatalogRepository {

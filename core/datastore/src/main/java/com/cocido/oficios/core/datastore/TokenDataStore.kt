@@ -14,14 +14,20 @@ import javax.inject.Singleton
 class TokenDataStore @Inject constructor(
     @ApplicationContext context: Context,
 ) {
-    private val prefs: SharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        AppConstants.SESSION_PREFS_NAME,
-        MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+    private val prefs: SharedPreferences = SessionPrefsFactory.open(
+        context = context,
+        fileName = AppConstants.SESSION_PREFS_NAME,
+        createEncrypted = {
+            EncryptedSharedPreferences.create(
+                context,
+                AppConstants.SESSION_PREFS_NAME,
+                MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build(),
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
+        },
     )
 
     fun getAccessToken(): String? = prefs.getString(KEY_ACCESS_TOKEN, null)

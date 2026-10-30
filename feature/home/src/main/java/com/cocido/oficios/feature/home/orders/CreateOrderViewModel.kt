@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +15,6 @@ import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
@@ -212,10 +212,10 @@ class CreateOrderViewModel @Inject constructor(
     private fun loadAvailableSlots(subRubroId: Long) {
         viewModelScope.launch {
             updateSuccess { copy(isLoadingSlots = true, slotsErrorMessage = null) }
-            val zone = ZoneId.systemDefault()
-            val from = LocalDate.now().atStartOfDay(zone).toOffsetDateTime()
+            val zone = DisplayDateTime.ARGENTINA
+            val from = LocalDate.now(DisplayDateTime.ARGENTINA).atStartOfDay(zone).toOffsetDateTime()
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            val to = LocalDate.now().plusWeeks(4).atStartOfDay(zone).toOffsetDateTime()
+            val to = LocalDate.now(DisplayDateTime.ARGENTINA).plusWeeks(4).atStartOfDay(zone).toOffsetDateTime()
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
             when (val result = agendaUseCases.getAvailableSlots(subRubroId, from, to)) {
                 is AppResult.Success -> updateSuccess {
@@ -380,7 +380,7 @@ class CreateOrderViewModel @Inject constructor(
                     ),
                 )
             } else {
-                val zoned = dateTime!!.atZone(ZoneId.systemDefault())
+                val zoned = dateTime!!.atZone(DisplayDateTime.ARGENTINA)
                 createServiceRequestUseCase(
                     CreateServiceRequestParams(
                         trabajadorOficioSubRubroId = subRubroId,

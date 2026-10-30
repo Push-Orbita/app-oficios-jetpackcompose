@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+   Android 12+ (android:dataExtractionRules). Para API 30 o menor ver backup_rules.xml.
+
+   La sesión cifrada (AppConstants.SESSION_PREFS_NAME) se excluye: su keyset de Tink vive dentro
+   del mismo archivo y la MasterKey queda en el Keystore del equipo (no se respalda).
+-->
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="sharedpref" path="oficios_session_prefs.xml" />
-        <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs__" />
+        <exclude domain="sharedpref" path="oficios_session_encrypted.xml" />
     </cloud-backup>
     <device-transfer>
-        <exclude domain="sharedpref" path="oficios_session_prefs.xml" />
-        <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs__" />
+        <exclude domain="sharedpref" path="oficios_session_encrypted.xml" />
     </device-transfer>
 </data-extraction-rules>

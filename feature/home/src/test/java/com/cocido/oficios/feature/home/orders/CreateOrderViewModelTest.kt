@@ -167,6 +167,8 @@ private class FixedWorkerProfileRepository(
 private class FixedClientProfileRepository : ClientProfileRepository {
     override suspend fun saveDomicilio(request: ClientDomicilioRequest) = unused()
     override suspend fun saveContacto(request: ClientContactoRequest) = unused()
+    override suspend fun updateDomicilio(id: Long, request: ClientDomicilioRequest) = unused()
+    override suspend fun updateContacto(id: Long, request: ClientContactoRequest) = unused()
     override suspend fun sendPhoneVerificationCode(contactId: Long) = unused()
     override suspend fun verifyPhoneCode(contactId: Long, code: String) = unused()
     override suspend fun getMyDomicilios() = AppResult.Success(

@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,7 +8,6 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.OrderUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,7 +48,7 @@ class CounterOfferViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { form.copy(isSubmitting = true) }
-            val zoned = dateTime.atZone(ZoneId.systemDefault())
+            val zoned = dateTime.atZone(DisplayDateTime.ARGENTINA)
             val startIso = zoned.toInstant().toString()
             val endIso = zoned.plusHours(2).toInstant().toString()
             val price = form.price.toDoubleOrNull()

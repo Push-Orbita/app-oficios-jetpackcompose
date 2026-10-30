@@ -372,28 +372,9 @@ class ClientContactDomicilioViewModel @Inject constructor(
                         longitud = GeoCoordinates.roundForApi(location.longitude),
                         favorito = true,
                     )
-                    val existingContact = when (val contacts = getClientContactosUseCase()) {
-                        is AppResult.Success -> contacts.data.firstOrNull { it.id == contactId }
-                            ?: contacts.data.firstOrNull { it.favorito }
-                        is AppResult.Error -> null
-                    }
-                    val phoneVerified = existingContact?.telefonoVerificado == true
-                    if (!phoneVerified) {
-                        pendingClientOnboardingStore.pendingDomicilio = domicilioRequest
-                        _uiState.update { it.copy(isLoading = false) }
-                        _effects.emit(
-                            ClientContactDomicilioEffect.NavigateToPhoneVerification(
-                                contactId = contactId,
-                                telefono = AuthValidators.normalizeArgentinePhone(state.telefono),
-                            ),
-                        )
-                        return@launch
-                    }
+                    // El domicilio se guarda siempre, sin esperar al OTP de WhatsApp: si el envío del
+                    // código falla (VF06 / 503) el cliente no pierde la dirección ni queda trabado.
                     when (val domicilioResult = saveClientDomicilioUseCase(domicilioRequest)) {
-                        is AppResult.Success -> {
-                            _uiState.update { it.copy(isLoading = false) }
-                            _effects.emit(ClientContactDomicilioEffect.Saved)
-                        }
                         is AppResult.Error -> {
                             _uiState.update {
                                 it.copy(
@@ -401,7 +382,25 @@ class ClientContactDomicilioViewModel @Inject constructor(
                                     error = "Contacto guardado, pero el domicilio falló: ${domicilioResult.error.userMessage()}",
                                 )
                             }
+                            return@launch
                         }
+                        is AppResult.Success -> pendingClientOnboardingStore.pendingDomicilio = null
+                    }
+                    val savedContact = when (val contacts = getClientContactosUseCase()) {
+                        is AppResult.Success -> contacts.data.firstOrNull { it.id == contactId }
+                            ?: contacts.data.firstOrNull { it.favorito }
+                        is AppResult.Error -> null
+                    }
+                    _uiState.update { it.copy(isLoading = false) }
+                    if (savedContact?.telefonoVerificado == true) {
+                        _effects.emit(ClientContactDomicilioEffect.Saved)
+                    } else {
+                        _effects.emit(
+                            ClientContactDomicilioEffect.NavigateToPhoneVerification(
+                                contactId = contactId,
+                                telefono = AuthValidators.normalizeArgentinePhone(state.telefono),
+                            ),
+                        )
                     }
                 }
             }
