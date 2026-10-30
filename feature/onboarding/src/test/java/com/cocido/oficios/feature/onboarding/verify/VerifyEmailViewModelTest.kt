@@ -49,7 +49,7 @@ class VerifyEmailViewModelTest {
     }
 
     @Test
-    fun `loads email and sends code on init`() = runTest(dispatcher) {
+    fun `loads email and does not send code on init`() = runTest(dispatcher) {
         var sendCount = 0
         val viewModel = createViewModel(
             authRepository = FakeAuthRepository(
@@ -61,8 +61,33 @@ class VerifyEmailViewModelTest {
         advanceUntilIdle()
 
         assertEquals("user@test.com", viewModel.uiState.value.email)
+        assertEquals(0, sendCount)
+        assertNull(viewModel.uiState.value.infoMessage)
+        assertEquals(0, viewModel.uiState.value.resendCooldownSeconds)
+    }
+
+    @Test
+    fun `resend sends code and asks for the latest email`() = runTest(dispatcher) {
+        var sendCount = 0
+        val viewModel = createViewModel(
+            authRepository = FakeAuthRepository(
+                user = user,
+                onSendVerificationEmail = { sendCount++ },
+            ),
+        )
+        advanceUntilIdle()
+
+        viewModel.resendCode()
+        runCurrent()
+        while (viewModel.uiState.value.isResending) runCurrent()
+        runCurrent()
+
         assertEquals(1, sendCount)
-        assertEquals("Código de verificación reenviado a su correo", viewModel.uiState.value.infoMessage)
+        assertEquals(
+            "Le enviamos un nuevo código. Use el del correo más reciente.",
+            viewModel.uiState.value.infoMessage,
+        )
+        assertTrue(viewModel.uiState.value.resendCooldownSeconds > 0)
     }
 
     @Test
@@ -162,18 +187,19 @@ class VerifyEmailViewModelTest {
             ),
         )
         advanceUntilIdle()
+        assertEquals(0, sendCount)
 
         viewModel.resendCode()
         runCurrent()
         while (viewModel.uiState.value.isResending) runCurrent()
         runCurrent()
 
-        assertEquals(2, sendCount)
+        assertEquals(1, sendCount)
         assertTrue(viewModel.uiState.value.resendCooldownSeconds > 0)
 
         viewModel.resendCode()
         runCurrent()
-        assertEquals(2, sendCount)
+        assertEquals(1, sendCount)
 
         advanceTimeBy(30_000)
         runCurrent()
@@ -181,7 +207,7 @@ class VerifyEmailViewModelTest {
 
         viewModel.resendCode()
         advanceUntilIdle()
-        assertEquals(3, sendCount)
+        assertEquals(2, sendCount)
     }
 
     private fun createViewModel(
