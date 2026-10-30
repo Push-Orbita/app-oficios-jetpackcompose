@@ -4,13 +4,20 @@ import com.cocido.oficios.core.common.time.DisplayDateTime
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.CreateServiceRequestParams
+import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.model.agendaSlotEndExclusive
+import com.cocido.oficios.domain.model.agendaSlotStart
 import com.cocido.oficios.domain.repository.ClientProfileRepository
 import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.CreateServiceRequestUseCase
+import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
@@ -34,6 +41,7 @@ class CreateOrderViewModel @Inject constructor(
     private val createServiceRequestUseCase: CreateServiceRequestUseCase,
     private val agendaUseCases: AgendaUseCases,
     private val availabilityUseCases: AvailabilityUseCases,
+    private val orderUseCases: OrderUseCases,
 ) : ViewModel() {
 
     private val workerId: Long = savedStateHandle.get<Long>("workerId") ?: 0L
@@ -120,7 +128,8 @@ class CreateOrderViewModel @Inject constructor(
                 if (subRubroId != null) loadDaySchedule(subRubroId, event.date)
             }
             is CreateOrderEvent.HourSelected -> updateSuccess {
-                applyDateHour(selectedDate = selectedDate, selectedHour = event.hour)
+                copy(scheduleConflictMessage = null)
+                    .applyDateHour(selectedDate = selectedDate, selectedHour = event.hour)
             }
             is CreateOrderEvent.MonthChanged -> updateSuccess {
                 copy(visibleMonth = event.month)
@@ -186,15 +195,7 @@ class CreateOrderViewModel @Inject constructor(
         selectedDate: LocalDate?,
         selectedHour: java.time.LocalTime?,
     ): CreateOrderUiState.Success {
-        val hour = selectedHour?.takeIf {
-            CreateOrderSchedule.isHourSelectable(
-                hour = it,
-                date = selectedDate,
-                slots = availableSlots,
-                ranges = dayRanges,
-                dayHasAvailability = dayHasAvailability,
-            )
-        }
+        val hour = selectedHour?.takeIf { isHourSelectable(hour = it, date = selectedDate) }
         val slot = CreateOrderSchedule.matchingSlot(availableSlots, selectedDate, hour)
         return copy(
             selectedDate = selectedDate,
@@ -315,6 +316,24 @@ class CreateOrderViewModel @Inject constructor(
                 )
             }
             selectedSubRubroId?.let { loadAvailableSlots(it) }
+            loadWorkerBusyFromClientOrders()
+        }
+    }
+
+    /**
+     * La agenda pública de un oficio sin turnos no trae las reservas del trabajador,
+     * así que se suman los pedidos activos que este cliente ya tiene con él. Si falla,
+     * el backend sigue validando el solapamiento al enviar.
+     */
+    private fun loadWorkerBusyFromClientOrders() {
+        viewModelScope.launch {
+            val orders = (orderUseCases.getClientOrders() as? AppResult.Success)?.data ?: return@launch
+            val busy = orders.activeBusyIntervalsFor(workerId)
+            if (busy.isEmpty()) return@launch
+            updateSuccess {
+                copy(busyIntervals = (busyIntervals + busy).distinct())
+                    .applyDateHour(selectedDate, selectedHour)
+            }
         }
     }
 
@@ -328,13 +347,7 @@ class CreateOrderViewModel @Inject constructor(
                 selectedContactoId = state.selectedContactoId,
                 selectedDate = state.selectedDate,
                 selectedHour = state.selectedHour,
-            ) || !CreateOrderSchedule.isHourSelectable(
-                hour = state.selectedHour,
-                date = state.selectedDate,
-                slots = state.availableSlots,
-                ranges = state.dayRanges,
-                dayHasAvailability = state.dayHasAvailability,
-            )
+            ) || !state.isHourSelectable(state.selectedHour)
         ) {
             return
         }
@@ -387,7 +400,7 @@ class CreateOrderViewModel @Inject constructor(
                         domicilioId = domicilioId,
                         contactoId = contactoId,
                         proposedStartIso = zoned.toInstant().toString(),
-                        proposedEndIso = zoned.plusHours(DEFAULT_DURATION_HOURS).toInstant().toString(),
+                        proposedEndIso = zoned.plus(CreateOrderSchedule.DEFAULT_VISIT_DURATION).toInstant().toString(),
                         description = state.description.ifBlank { null },
                         idempotencyKey = key,
                     ),
@@ -399,14 +412,31 @@ class CreateOrderViewModel @Inject constructor(
                 }
                 is AppResult.Error -> {
                     val message = result.error.userMessage()
-                    _uiState.update {
-                        if (it is CreateOrderUiState.Success) {
-                            it.copy(isSubmitting = false, submitErrorMessage = message)
-                        } else {
-                            it
+                    if (result.error.isScheduleConflict()) {
+                        // Red de seguridad: el horario quedó ocupado. Se marca como ocupado,
+                        // se vuelve al formulario y el cliente elige otro sin reintentar el mismo.
+                        val rejected = dateTime?.let {
+                            BusyInterval(it, it.plus(CreateOrderSchedule.DEFAULT_VISIT_DURATION))
                         }
+                        updateSuccess {
+                            copy(
+                                isSubmitting = false,
+                                submitErrorMessage = null,
+                                step = CreateOrderStep.FORM,
+                                busyIntervals = (busyIntervals + listOfNotNull(rejected)).distinct(),
+                                scheduleConflictMessage = SCHEDULE_CONFLICT_MESSAGE,
+                            ).applyDateHour(selectedDate, selectedHour)
+                        }
+                    } else {
+                        _uiState.update {
+                            if (it is CreateOrderUiState.Success) {
+                                it.copy(isSubmitting = false, submitErrorMessage = message)
+                            } else {
+                                it
+                            }
+                        }
+                        _effects.send(CreateOrderEffect.ShowMessage(message))
                     }
-                    _effects.send(CreateOrderEffect.ShowMessage(message))
                     val date = (uiState.value as? CreateOrderUiState.Success)?.selectedDate
                     if (date != null) loadDaySchedule(subRubroId, date) else loadAvailableSlots(subRubroId)
                 }
@@ -435,6 +465,29 @@ class CreateOrderViewModel @Inject constructor(
     }
 
     private companion object {
-        const val DEFAULT_DURATION_HOURS = 2L
+        const val SCHEDULE_CONFLICT_MESSAGE =
+            "Ese horario ya está ocupado. Elija otro horario disponible."
     }
 }
+
+/** Solapamiento o turno tomado: el horario ya no se puede pedir. */
+internal fun AppError.isScheduleConflict(): Boolean {
+    if (backendCode == "AGENDA_SLOT_ALREADY_RESERVED" || backendCode == "AGENDA_SLOT_NOT_AVAILABLE") return true
+    val text = message.lowercase()
+    return "solapa" in text || "superpone" in text
+}
+
+/** Pedidos activos del cliente con [workerId] que ocupan una franja del trabajador. */
+internal fun List<ServiceOrderListItem>.activeBusyIntervalsFor(workerId: Long): List<BusyInterval> =
+    filter { item ->
+        item.workerId == workerId &&
+            item.status != ServiceRequestStatus.CANCELLED &&
+            item.status != ServiceRequestStatus.EXPIRED &&
+            item.bookingStatus != BookingStatus.CANCELLED &&
+            item.bookingStatus != BookingStatus.EXPIRED &&
+            item.bookingStatus != BookingStatus.FINISHED
+    }.mapNotNull { item ->
+        val start = item.agendaSlotStart(DisplayDateTime.ARGENTINA)?.toLocalDateTime() ?: return@mapNotNull null
+        val end = item.agendaSlotEndExclusive(DisplayDateTime.ARGENTINA)?.toLocalDateTime() ?: return@mapNotNull null
+        BusyInterval(start, end)
+    }

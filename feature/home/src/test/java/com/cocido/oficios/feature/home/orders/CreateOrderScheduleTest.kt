@@ -2,6 +2,8 @@ package com.cocido.oficios.feature.home.orders
 
 import com.cocido.oficios.domain.model.AgendaSlot
 import com.cocido.oficios.domain.model.AgendaSlotStatus
+import com.cocido.oficios.domain.model.TimeRange
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -59,7 +61,7 @@ class CreateOrderScheduleTest {
         assertNull(CreateOrderSchedule.matchingSlot(slots, date, LocalTime.of(10, 0)))
         assertNull(CreateOrderSchedule.matchingSlot(slots, date, LocalTime.of(11, 0)))
         assertEquals(4L, CreateOrderSchedule.matchingSlot(slots, date, LocalTime.of(12, 0))?.id)
-        assertEquals(setOf(12), CreateOrderSchedule.availableHoursForDate(slots, date))
+        assertEquals(listOf(LocalTime.of(12, 0)), CreateOrderSchedule.availableHoursForDate(slots, date))
         assertEquals(setOf(10, 11), CreateOrderSchedule.blockedHoursForDate(slots, date))
         val selectable = CreateOrderSchedule.selectableHours(
             slots = slots,
@@ -67,7 +69,7 @@ class CreateOrderScheduleTest {
             ranges = emptyList(),
             dayHasAvailability = true,
         )
-        assertEquals(setOf(12), selectable)
+        assertEquals(listOf(LocalTime.of(12, 0)), selectable)
         assertFalse(
             CreateOrderSchedule.isHourSelectable(
                 hour = LocalTime.of(10, 0),
@@ -77,6 +79,47 @@ class CreateOrderScheduleTest {
                 dayHasAvailability = true,
             ),
         )
+    }
+
+    @Test
+    fun `range hours leave room for the whole visit`() {
+        val hours = CreateOrderSchedule.hoursFittingRanges(
+            listOf(TimeRange("07:00", "20:00")),
+            Duration.ofHours(2),
+        )
+        assertEquals((7..18).toList(), hours)
+    }
+
+    @Test
+    fun `range hours skip busy intervals and past hours`() {
+        val date = LocalDate.of(2026, 10, 30)
+        val busy = listOf(BusyInterval(date.atTime(16, 0), date.atTime(18, 0)))
+        val hours = CreateOrderSchedule.selectableHours(
+            slots = emptyList(),
+            date = date,
+            ranges = listOf(TimeRange("07:00", "20:00")),
+            dayHasAvailability = true,
+            busy = busy,
+            now = date.atTime(9, 30),
+        )!!.map { it.hour }
+        assertEquals(listOf(10, 11, 12, 13, 14, 18), hours)
+    }
+
+    @Test
+    fun `free slots that overlap an occupied turn are not offered`() {
+        val date = LocalDate.of(2026, 10, 30)
+        val slots = listOf(
+            slot(id = 0, start = date.atTime(16, 0), status = AgendaSlotStatus.RESERVADO),
+            slot(id = 5, start = date.atTime(16, 0)),
+            slot(id = 6, start = date.atTime(17, 0)),
+        )
+        val hours = CreateOrderSchedule.selectableHours(
+            slots = slots,
+            date = date,
+            ranges = emptyList(),
+            dayHasAvailability = true,
+        )
+        assertEquals(listOf(LocalTime.of(17, 0)), hours)
     }
 
     @Test

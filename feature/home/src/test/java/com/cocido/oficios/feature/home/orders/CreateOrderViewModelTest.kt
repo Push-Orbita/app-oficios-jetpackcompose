@@ -26,6 +26,10 @@ import com.cocido.oficios.domain.repository.AvailabilityRepository
 import com.cocido.oficios.domain.usecase.AgendaUseCases
 import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.domain.usecase.CreateServiceRequestUseCase
+import com.cocido.oficios.domain.usecase.OrderUseCases
+import com.cocido.oficios.domain.model.ServiceOrderListItem
+import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import com.cocido.oficios.domain.usecase.worker.GetWorkerProfileUseCase
 import java.time.LocalDate
 import java.time.LocalTime
@@ -41,6 +45,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -126,6 +132,66 @@ class CreateOrderViewModelTest {
         assertTrue(effects.contains(CreateOrderEffect.RequestSent))
     }
 
+    @Test
+    fun `hour taken by an active order with the same worker cannot be picked`() = runTest(testDispatcher) {
+        val date = LocalDate.now().plusDays(1)
+        val start = date.atTime(16, 0).atZone(DisplayDateTime.ARGENTINA).toInstant()
+        val busyOrder = ServiceOrderListItem(
+            id = 70L,
+            counterpartName = "Emanuel Molina",
+            subRubroLabel = "Albañilería",
+            status = ServiceRequestStatus.PENDING,
+            bookingStatus = null,
+            scheduledLabel = null,
+            addressLabel = "",
+            workerId = 8L,
+            scheduledSortKey = start.toString(),
+            scheduledEndKey = start.plusSeconds(2 * 3600).toString(),
+        )
+        val viewModel = viewModel(orders = RecordingOrderRepository(clientOrderList = listOf(busyOrder)))
+        advanceUntilIdle()
+
+        viewModel.onEvent(CreateOrderEvent.DateSelected(date))
+        viewModel.onEvent(CreateOrderEvent.HourSelected(LocalTime.of(16, 0)))
+        advanceUntilIdle()
+        val blocked = viewModel.uiState.value as CreateOrderUiState.Success
+        assertNull(blocked.selectedHour)
+        assertFalse(LocalTime.of(15, 0) in blocked.selectableHours().orEmpty())
+        assertTrue(LocalTime.of(18, 0) in blocked.selectableHours().orEmpty())
+
+        viewModel.onEvent(CreateOrderEvent.HourSelected(LocalTime.of(18, 0)))
+        advanceUntilIdle()
+        assertEquals(LocalTime.of(18, 0), (viewModel.uiState.value as CreateOrderUiState.Success).selectedHour)
+    }
+
+    @Test
+    fun `overlap rejected by backend returns to form and blocks that hour`() = runTest(testDispatcher) {
+        val orders = RecordingOrderRepository(
+            createResult = AppResult.Error(
+                AppError.Conflict("El horario se solapa con otra reserva del trabajador."),
+            ),
+        )
+        val viewModel = viewModel(orders = orders)
+        advanceUntilIdle()
+        val date = LocalDate.now().plusDays(1)
+        viewModel.onEvent(CreateOrderEvent.DateSelected(date))
+        viewModel.onEvent(CreateOrderEvent.HourSelected(LocalTime.of(10, 0)))
+        viewModel.onEvent(CreateOrderEvent.ContinueToSummary)
+        advanceUntilIdle()
+
+        viewModel.onEvent(CreateOrderEvent.Submit)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value as CreateOrderUiState.Success
+        assertEquals(1, orders.createCalls.size)
+        assertEquals(CreateOrderStep.FORM, state.step)
+        assertNull(state.selectedHour)
+        assertTrue(state.scheduleConflictMessage != null)
+        assertFalse(state.isHourSelectable(LocalTime.of(10, 0)))
+        assertFalse(state.isHourSelectable(LocalTime.of(11, 0)))
+        assertTrue(state.isHourSelectable(LocalTime.of(12, 0)))
+    }
+
     private fun viewModel(
         orders: RecordingOrderRepository = RecordingOrderRepository(),
     ): CreateOrderViewModel {
@@ -152,6 +218,7 @@ class CreateOrderViewModelTest {
             createServiceRequestUseCase = CreateServiceRequestUseCase(orders),
             agendaUseCases = AgendaUseCases(EmptyAgendaRepository()),
             availabilityUseCases = AvailabilityUseCases(MissingDayAvailabilityRepository()),
+            orderUseCases = OrderUseCases(orders),
         )
     }
 }
@@ -233,14 +300,18 @@ private class EmptyAgendaRepository : AgendaRepository {
     private fun unused(): Nothing = error("unused")
 }
 
-private class RecordingOrderRepository : OrderRepository {
+private class RecordingOrderRepository(
+    private val clientOrderList: List<ServiceOrderListItem> = emptyList(),
+    private val createResult: AppResult<Long> = AppResult.Success(99L),
+) : OrderRepository {
     val createCalls = mutableListOf<CreateServiceRequestParams>()
     override val ordersChanged: SharedFlow<Unit> = MutableSharedFlow()
     override suspend fun createServiceRequest(params: CreateServiceRequestParams): AppResult<Long> {
         createCalls += params
-        return AppResult.Success(99L)
+        return createResult
     }
-    override suspend fun getClientOrders() = unused()
+    override suspend fun getClientOrders(): AppResult<List<ServiceOrderListItem>> =
+        AppResult.Success(clientOrderList)
     override suspend fun getWorkerOrders() = unused()
     override suspend fun getOrderDetail(orderId: Long) = unused()
     override suspend fun acceptOrder(orderId: Long) = unused()
