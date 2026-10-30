@@ -9,6 +9,8 @@
     <string name="onboarding_client_subtitle">Necesita estos datos para contratar servicios</string>
     <string name="onboarding_provider_title">Configure su perfil profesional</string>
     <string name="onboarding_provider_subtitle">Complete los pasos obligatorios para operar en la plataforma</string>
+    <string name="onboarding_docs_waiting_title">Documentación en revisión</string>
+    <string name="onboarding_docs_waiting_message">Sus fotos de DNI y selfie están siendo validadas por el equipo. Hasta que las aprueben, no podrá seguir configurando el perfil ni usar la app. Puede dejar esta pantalla abierta: se actualiza sola cuando esté lista.</string>
     <string name="onboarding_pending_title">Su perfil está en revisión</string>
     <string name="onboarding_pending_subtitle">Cuando lo aprobemos podrá recibir solicitudes de trabajo.</string>
     <string name="onboarding_rejected_title">Su perfil fue rechazado</string>

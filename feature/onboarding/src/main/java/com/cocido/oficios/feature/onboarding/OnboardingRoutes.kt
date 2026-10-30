@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.onboarding
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -10,6 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.feature.onboarding.client.ClientOnboardingViewModel
@@ -73,7 +75,15 @@ fun ProviderOnboardingRoute(
     val completionError by viewModel.completionError.collectAsStateWithLifecycle()
     val kycBannerMessage by viewModel.kycBannerMessage.collectAsStateWithLifecycle()
 
-    ReloadOnResume { viewModel.load() }
+    // Al volver a primer plano: refresh silencioso (sin flash de Loading).
+    ReloadOnResume { viewModel.load(silent = true) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(viewModel, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.keepIdentityStatusFresh()
+        }
+    }
 
     OnboardingChecklistRouteHost(
         completionPhase = completionPhase,
@@ -84,7 +94,7 @@ fun ProviderOnboardingRoute(
     ) {
         ProviderOnboardingChecklistScreen(
             uiState = uiState,
-            onRetry = viewModel::load,
+            onRetry = { viewModel.load(silent = false) },
             onLogout = logoutViewModel::logout,
             onStepClick = { step -> navigateToStep(step, onNavigateToStep) },
             onFinalizeProfile = viewModel::finalizeProfile,

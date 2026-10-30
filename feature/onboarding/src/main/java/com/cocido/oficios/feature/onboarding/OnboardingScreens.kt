@@ -16,7 +16,6 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
-import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
@@ -25,6 +24,8 @@ import com.cocido.oficios.core.ui.layout.CenterContent
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
 import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
+import com.cocido.oficios.feature.onboarding.common.hasStepsInReview
+import com.cocido.oficios.feature.onboarding.components.DocsWaitingCard
 import com.cocido.oficios.feature.onboarding.components.OnboardingStepCard
 import com.cocido.oficios.feature.onboarding.navigation.OnboardingStepNavigator
 import com.cocido.oficios.feature.onboarding.provider.ProviderStatusUiState
@@ -85,6 +86,7 @@ fun ProviderOnboardingChecklistScreen(
                     onFinalizeProfile = onFinalizeProfile,
                     isFinalizing = isFinalizing,
                     isLoggingOut = isLoggingOut,
+                    showDocsWaiting = state.steps.hasStepsInReview(),
                     extraMessage = finalizeError,
                 )
             }
@@ -234,6 +236,7 @@ private fun ChecklistContent(
     showFinalize: Boolean = false,
     onFinalizeProfile: (() -> Unit)? = null,
     isFinalizing: Boolean = false,
+    showDocsWaiting: Boolean = false,
 ) {
     OficiosScaffold(modifier = modifier.fillMaxSize()) { padding ->
         CenterContent(
@@ -245,6 +248,9 @@ private fun ChecklistContent(
             Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
                 Text(text = title, style = MaterialTheme.typography.headlineSmall)
                 Text(text = subtitle, style = MaterialTheme.typography.bodyMedium)
+                if (showDocsWaiting) {
+                    DocsWaitingCard()
+                }
                 if (extraMessage != null) {
                     Text(text = extraMessage, style = MaterialTheme.typography.bodyMedium)
                 }
