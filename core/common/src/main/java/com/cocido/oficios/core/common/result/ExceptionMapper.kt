@@ -100,9 +100,9 @@ fun String.isGenericValidationCopy(): Boolean {
 
 object VerificationCodeCopy {
     const val EMAIL =
-        "Ese código no es válido o ya venció. Revisá el correo o tocá Reenviar código."
-    const val PHONE = "Ese código no es válido o ya venció. Pedí uno nuevo."
-    const val RESET = "Ese código no es válido o ya venció. Solicitá uno nuevo."
+        "Ese código no es válido o ya venció. Revise el correo o toque Reenviar código."
+    const val PHONE = "Ese código no es válido o ya venció. Pida uno nuevo."
+    const val RESET = "Ese código no es válido o ya venció. Solicite uno nuevo."
 }
 
 private fun String.toProfessionalMessage(fallback: String): String {
