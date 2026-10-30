@@ -79,16 +79,26 @@ fun VerifyEmailStepScreen(
             size = OficiosButtonSize.Large,
         )
         
+        Text(
+            text = stringResource(R.string.onboarding_step_verify_email_code_sent),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = stringResource(R.string.onboarding_step_verify_email_use_latest),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = stringResource(R.string.onboarding_step_verify_email_spam_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         if (uiState.infoMessage != null) {
             Text(
                 text = uiState.infoMessage,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = stringResource(R.string.onboarding_step_verify_email_spam_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         
