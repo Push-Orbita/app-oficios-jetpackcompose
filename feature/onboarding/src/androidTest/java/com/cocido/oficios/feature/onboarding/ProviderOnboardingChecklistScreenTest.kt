@@ -61,4 +61,37 @@ class ProviderOnboardingChecklistScreenTest {
         composeTestRule.onNode(hasText("Finalizar perfil") and hasClickAction()).performClick()
         assertEquals(true, finalizeClicked)
     }
+
+    @Test
+    fun providerChecklistShowsDocsWaitingCopyWhenInReview() {
+        val steps = listOf(
+            OnboardingStep(
+                id = "dni_pendiente_revision",
+                title = "DNI en revisión",
+                description = "El equipo está validando su documento.",
+                status = OnboardingStepStatus.IN_REVIEW,
+            ),
+            OnboardingStep(
+                id = "selfie_pendiente_revision",
+                title = "Selfie en revisión",
+                description = "El equipo está validando su foto.",
+                status = OnboardingStepStatus.IN_REVIEW,
+            ),
+        )
+
+        composeTestRule.setContent {
+            OficiosTheme {
+                ProviderOnboardingChecklistScreen(
+                    uiState = OnboardingChecklistUiState.Success(steps),
+                    onRetry = {},
+                    onLogout = {},
+                    onStepClick = {},
+                    onFinalizeProfile = {},
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithText("Documentación en revisión").assertIsDisplayed()
+        composeTestRule.onNodeWithText("En revisión", substring = true).assertIsDisplayed()
+    }
 }

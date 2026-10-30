@@ -127,10 +127,16 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
     val stepMap = mapOf(
         "dni_numero" to ("DNI" to "Cargue su número de documento."),
         "dni_imagenes" to ("Fotos del DNI" to "Suba las imágenes de su documento."),
-        "dni_pendiente_revision" to ("DNI en revisión" to "Su documentación está siendo revisada."),
+        "dni_pendiente_revision" to (
+            "DNI en revisión" to
+                "El equipo está validando su documento. Hay que esperar la aprobación antes de usar la app."
+            ),
         "dni_rechazado" to ("DNI rechazado" to "Vuelva a cargar su documentación."),
         "selfie_imagen" to ("Foto de rostro" to "Suba una selfie para validar su identidad."),
-        "selfie_pendiente_revision" to ("Selfie en revisión" to "Su foto de rostro está siendo revisada."),
+        "selfie_pendiente_revision" to (
+            "Selfie en revisión" to
+                "El equipo está validando su foto. Hay que esperar la aprobación antes de usar la app."
+            ),
         "selfie_rechazada" to ("Selfie rechazada" to "Vuelva a cargar su foto de rostro."),
         "descripcion" to ("Descripción profesional" to "Cuente qué servicios ofrece."),
         "experiencia" to ("Experiencia" to "Indique su experiencia en el rubro."),
