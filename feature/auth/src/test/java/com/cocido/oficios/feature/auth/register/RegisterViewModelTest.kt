@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.auth.register
 
+import com.cocido.oficios.core.common.result.AppError
+import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
 import com.cocido.oficios.feature.auth.FakeAuthRepository
@@ -183,6 +185,59 @@ class RegisterViewModelTest {
         assertNotNull(request)
         assertEquals("Matias Federico", request!!.firstName)
         assertEquals("Britez", request.lastName)
+    }
+
+    @Test
+    fun `register va01 email field error is on the field not nest banner`() = runTest(dispatcher) {
+        val repository = FakeAuthRepository(
+            registerClientResult = AppResult.Error(
+                AppError.Validation(
+                    message = "Datos de entrada no válidos.",
+                    fieldErrors = mapOf("email" to "Ingrese un correo válido"),
+                    backendCode = "VA01",
+                ),
+            ),
+        )
+        val viewModel = RegisterViewModel(
+            RegisterClientUseCase(repository),
+            RegisterProviderUseCase(repository),
+        )
+        viewModel.setMode(RegisterMode.CLIENT)
+        fillValidClientForm(viewModel)
+        viewModel.onEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("Ingrese un correo válido", state.emailError)
+        assertNull(state.generalError)
+        assertTrue(state.hasAttemptedSubmit)
+    }
+
+    @Test
+    fun `register generic va01 does not show nest copy`() = runTest(dispatcher) {
+        val repository = FakeAuthRepository(
+            registerClientResult = AppResult.Error(
+                AppError.Validation(
+                    message = "Datos de entrada no válidos.",
+                    backendCode = "VA01",
+                ),
+            ),
+        )
+        val viewModel = RegisterViewModel(
+            RegisterClientUseCase(repository),
+            RegisterProviderUseCase(repository),
+        )
+        viewModel.setMode(RegisterMode.CLIENT)
+        fillValidClientForm(viewModel)
+        viewModel.onEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(
+            "No pudimos crear la cuenta. Revisá los datos e intentá de nuevo.",
+            state.generalError,
+        )
+        assertTrue("Datos de entrada no válidos" !in (state.generalError ?: ""))
     }
 
     @Test

@@ -56,5 +56,6 @@ class AuthApiSendVerificationEmailIntegrationTest {
         val request = server.takeRequest()
         assertEquals("POST", request.method)
         assertEquals("/auth/send-verification-email", request.path)
+        assertEquals(0, request.body.size)
     }
 }

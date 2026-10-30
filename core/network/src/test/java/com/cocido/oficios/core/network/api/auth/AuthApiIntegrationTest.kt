@@ -3,6 +3,8 @@ package com.cocido.oficios.core.network.api.auth
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.network.api.auth.dto.LoginRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.RequestPasswordResetCodeDto
+import com.cocido.oficios.core.network.api.auth.dto.VerifyEmailRequestDto
+import com.cocido.oficios.core.network.api.auth.dto.VerifyPasswordResetCodeDto
 import com.cocido.oficios.core.network.test.NetworkTestFactory
 import com.cocido.oficios.core.network.test.enqueueDisconnect
 import com.cocido.oficios.core.network.test.enqueueFixture
@@ -148,6 +150,39 @@ class AuthApiIntegrationTest {
         val request = server.takeRequest()
         assertEquals("POST", request.method)
         assertEquals("/auth/logout", request.path)
+    }
+
+    @Test
+    fun `verify email posts codigo as json string matching openapi`() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200))
+
+        api.verifyEmail(VerifyEmailRequestDto(codigo = "874987"))
+
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/auth/verify-email", request.path)
+        assertTrue(request.getHeader("Content-Type").orEmpty().contains("application/json"))
+        val body = request.body.readUtf8()
+        assertEquals("""{"codigo":"874987"}""", body)
+        assertTrue("\"code\"" !in body)
+        assertTrue(":874987" !in body.replace("\"874987\"", ""))
+    }
+
+    @Test
+    fun `password reset verify code posts codigo as json string`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"reset_token":"tmp"}""")
+                .addHeader("Content-Type", "application/json"),
+        )
+
+        api.verifyPasswordResetCode(VerifyPasswordResetCodeDto("123456"))
+
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/auth/password-reset/verify-code", request.path)
+        assertEquals("""{"codigo":"123456"}""", request.body.readUtf8())
     }
 
     @Test

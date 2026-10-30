@@ -2,6 +2,7 @@ package com.cocido.oficios.core.network
 
 import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.common.result.AppError
+import com.cocido.oficios.core.common.result.isGenericValidationCopy
 import com.cocido.oficios.core.common.result.toAppError
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -11,6 +12,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -51,13 +53,14 @@ private fun HttpException.toHttpAppError(): AppError {
         )
     }
     val backendCode = parseErrorCode(body)
+    val fieldErrors = parseFieldErrors(body)
     val parsedMessage = parseErrorMessage(body)
-    val message = messageForBackendCode(backendCode, parsedMessage) ?: message()
+    val message = messageForBackendCode(backendCode, parsedMessage, fieldErrors) ?: message()
 
     return when (httpCode) {
         400, 422 -> AppError.Validation(
             message = message.ifBlank { "Revise los datos ingresados" },
-            fieldErrors = parseFieldErrors(body),
+            fieldErrors = fieldErrors,
             backendCode = backendCode,
         )
         401 -> AppError.Unauthorized(
@@ -196,29 +199,72 @@ private val knownBackendMessages = mapOf(
     "VA01" to "Revise los datos ingresados",
 )
 
-private fun messageForBackendCode(code: String?, parsed: String?): String? {
+private fun messageForBackendCode(
+    code: String?,
+    parsed: String?,
+    fieldErrors: Map<String, String> = emptyMap(),
+): String? {
+    val usefulParsed = parsed?.takeIf { it.isNotBlank() && !it.isGenericValidationCopy() }
+    val fromFields = fieldErrors.values.firstOrNull { it.isNotBlank() && !it.isGenericValidationCopy() }
     if (code == "VA01") {
-        return parsed?.takeIf { it.isNotBlank() } ?: knownBackendMessages["VA01"]
+        return usefulParsed ?: fromFields ?: knownBackendMessages["VA01"]
     }
     knownBackendMessages[code]?.let { return it }
     if (code?.startsWith("DB") == true || code?.startsWith("SE") == true) {
         return "El servicio no está disponible en este momento. Intente más tarde."
     }
     knownBackendMessages.entries.firstOrNull { parsed?.contains(it.key) == true }?.let { return it.value }
-    return parsed
+    return usefulParsed ?: fromFields ?: parsed
 }
 
-private fun parseFieldErrors(body: String): Map<String, String> {
+internal fun parseFieldErrors(body: String): Map<String, String> {
     if (body.isBlank()) return emptyMap()
     return runCatching {
         val json = errorJson.parseToJsonElement(body).jsonObject
-        val errors = json["errors"]?.jsonObject ?: return emptyMap()
-        errors.mapValues { (_, value) ->
-            when {
-                value.jsonArray.isNotEmpty() -> value.jsonArray.first().jsonPrimitive.content
-                value.jsonPrimitive.isString -> value.jsonPrimitive.content
-                else -> value.toString()
+        val errorsElement = json["fieldErrors"] ?: json["errors"] ?: return emptyMap()
+        if (errorsElement !is JsonObject) return emptyMap()
+        errorsElement.mapNotNull { (field, value) ->
+            val messages = when (value) {
+                is JsonArray -> value.mapNotNull { it.jsonPrimitive.contentOrNull }
+                is JsonPrimitive -> listOfNotNull(value.contentOrNull)
+                else -> emptyList()
             }
-        }
+            val picked = pickUserFacingFieldMessage(field, messages) ?: return@mapNotNull null
+            field to picked
+        }.toMap()
     }.getOrNull().orEmpty()
+}
+
+internal fun pickUserFacingFieldMessage(field: String, messages: List<String>): String? {
+    val cleaned = messages.map { it.trim() }.filter { it.isNotBlank() }
+    if (cleaned.isEmpty()) return null
+    if (cleaned.all { message ->
+            val lower = message.lowercase()
+            lower.contains("should not exist") || lower.startsWith("property ")
+        }
+    ) {
+        return null
+    }
+    val userFacing = cleaned.filter { message ->
+        val lower = message.lowercase()
+        !message.isGenericValidationCopy() &&
+            !lower.contains("must be") &&
+            !lower.contains("should not") &&
+            !lower.startsWith("property ")
+    }
+    userFacing.firstOrNull()?.let { return it }
+    return classValidatorFallback(field, cleaned)
+}
+
+private fun classValidatorFallback(field: String, messages: List<String>): String? {
+    if (messages.isEmpty()) return null
+    val lowerField = field.lowercase()
+    val joined = messages.joinToString(" ").lowercase()
+    if (lowerField == "codigo") {
+        return "El código tiene que tener 6 dígitos"
+    }
+    if (lowerField == "email" && (joined.contains("email") || joined.contains("string"))) {
+        return "Ingrese un correo válido"
+    }
+    return null
 }

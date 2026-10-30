@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.onboarding.verify
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.VerificationCodeCopy
 import com.cocido.oficios.domain.model.AuthTokens
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
@@ -26,6 +27,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -88,6 +90,57 @@ class VerifyEmailViewModelTest {
     }
 
     @Test
+    fun `submit va01 maps to code field not nest banner`() = runTest(dispatcher) {
+        val viewModel = createViewModel(
+            authRepository = FakeAuthRepository(
+                user = user,
+                verifyEmailResult = AppResult.Error(
+                    AppError.Validation(
+                        message = "Datos de entrada no válidos.",
+                        backendCode = "VA01",
+                    ),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+
+        viewModel.onCodeChanged("874987")
+        viewModel.submit()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(VerificationCodeCopy.EMAIL, state.codeError)
+        assertNull(state.error)
+        assertTrue(state.hasAttemptedSubmit)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun `submit fieldErrors codigo shows backend spanish copy on the code`() = runTest(dispatcher) {
+        val viewModel = createViewModel(
+            authRepository = FakeAuthRepository(
+                user = user,
+                verifyEmailResult = AppResult.Error(
+                    AppError.Validation(
+                        message = "Datos de entrada no válidos.",
+                        fieldErrors = mapOf("codigo" to "El código debe tener 6 dígitos"),
+                        backendCode = "VA01",
+                    ),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+
+        viewModel.onCodeChanged("874987")
+        viewModel.submit()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("El código debe tener 6 dígitos", state.codeError)
+        assertNull(state.error)
+    }
+
+    @Test
     fun `submit shows validation error for empty code`() = runTest(dispatcher) {
         val viewModel = createViewModel()
         advanceUntilIdle()
@@ -142,6 +195,7 @@ class VerifyEmailViewModelTest {
     private class FakeAuthRepository(
         private val user: User,
         private val onSendVerificationEmail: () -> Unit = {},
+        private val verifyEmailResult: AppResult<Unit> = AppResult.Success(Unit),
     ) : AuthRepository {
         override suspend fun login(email: String, password: String) =
             AppResult.Success(UserSession(AuthTokens("a", "r"), user))
@@ -160,7 +214,7 @@ class VerifyEmailViewModelTest {
             onSendVerificationEmail()
             return AppResult.Success("Código de verificación reenviado a su correo")
         }
-        override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
+        override suspend fun verifyEmail(code: String) = verifyEmailResult
         override suspend fun getUserRoles() = AppResult.Success(
             listOf(UserRoleDefinition(1, "Cliente", UserRole.CLIENT)),
         )

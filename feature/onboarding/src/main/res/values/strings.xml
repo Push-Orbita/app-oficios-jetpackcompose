@@ -54,7 +54,7 @@
     <string name="onboarding_step_verify_email_resending">Enviando código…</string>
     <string name="onboarding_step_verify_email_submit">Continuar</string>
     <string name="onboarding_step_verify_email_code_validated">Código validado</string>
-    <string name="onboarding_step_verify_email_code_invalid">Código inválido</string>
+    <string name="onboarding_step_verify_email_code_invalid">Ese código no es válido o ya venció. Revisá el correo o tocá Reenviar código.</string>
     <string name="onboarding_step_contact_domicilio_title">Contacto y domicilio</string>
     <string name="onboarding_step_contact_domicilio_contact_section">Su contacto</string>
     <string name="onboarding_step_contact_domicilio_contact_hint">Guarde su contacto para recibir notificaciones sobre sus servicios.</string>

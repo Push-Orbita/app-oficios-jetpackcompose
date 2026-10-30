@@ -9,5 +9,8 @@ object PublicEndpoints {
         "auth/password-reset/verify-code",
     )
 
-    fun isPublic(path: String): Boolean = paths.any { path.contains(it) }
+    fun isPublic(path: String): Boolean {
+        val normalized = path.trim().trimStart('/').trimEnd('/')
+        return normalized in paths
+    }
 }

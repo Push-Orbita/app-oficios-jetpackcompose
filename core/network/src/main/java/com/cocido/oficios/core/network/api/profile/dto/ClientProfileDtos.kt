@@ -1,6 +1,7 @@
 package com.cocido.oficios.core.network.api.profile.dto
 
 import com.cocido.oficios.core.network.serialization.FlexibleBooleanSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -62,7 +63,7 @@ data class EnviarCodigoTelefonoResponseDto(
 
 @Serializable
 data class VerifyTelefonoCodigoRequestDto(
-    val codigo: String,
+    @SerialName("codigo") val codigo: String,
 )
 
 @Serializable

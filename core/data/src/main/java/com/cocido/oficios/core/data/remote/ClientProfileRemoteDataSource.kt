@@ -1,11 +1,13 @@
 package com.cocido.oficios.core.data.remote
 
+import com.cocido.oficios.core.common.result.ClientValidationException
 import com.cocido.oficios.core.network.api.profile.ClientProfileApi
 import com.cocido.oficios.core.network.api.profile.dto.CreateContactoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.CreateDomicilioRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateContactoRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateDomicilioRequestDto
 import com.cocido.oficios.core.network.api.profile.dto.UpdateFavoriteRequestDto
+import com.cocido.oficios.core.network.api.profile.dto.VerifyTelefonoCodigoRequestDto
 import com.cocido.oficios.core.network.safeApiCall
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,9 +33,13 @@ class ClientProfileRemoteDataSource @Inject constructor(
     }
 
     suspend fun verifyPhoneCode(contactId: Long, code: String) = safeApiCall {
+        val sanitized = code.filter(Char::isDigit)
+        if (sanitized.length != 6) {
+            throw ClientValidationException("El código tiene que tener 6 dígitos")
+        }
         clientProfileApi.verifyPhoneCode(
             contactId = contactId,
-            request = com.cocido.oficios.core.network.api.profile.dto.VerifyTelefonoCodigoRequestDto(codigo = code),
+            request = VerifyTelefonoCodigoRequestDto(codigo = sanitized),
         )
     }
 

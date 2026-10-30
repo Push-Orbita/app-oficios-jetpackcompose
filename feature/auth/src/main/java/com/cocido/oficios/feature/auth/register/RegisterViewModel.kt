@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.core.common.result.validationField
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
@@ -93,11 +94,7 @@ class RegisterViewModel @Inject constructor(
                         }
                         is AppResult.Error -> {
                             _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    generalError = result.error.toRegisterMessage(),
-                                    hasAttemptedSubmit = true,
-                                )
+                                it.copy(isLoading = false).withRegisterError(result.error)
                             }
                         }
                     }
@@ -120,11 +117,7 @@ class RegisterViewModel @Inject constructor(
                         }
                         is AppResult.Error -> {
                             _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    generalError = result.error.toRegisterMessage(),
-                                    hasAttemptedSubmit = true,
-                                )
+                                it.copy(isLoading = false).withRegisterError(result.error)
                             }
                         }
                     }
@@ -166,8 +159,34 @@ class RegisterViewModel @Inject constructor(
     }
 }
 
+private fun RegisterFormUiState.withRegisterError(error: AppError): RegisterFormUiState {
+    val mappedFirstName = error.validationField("nombres")
+    val mappedLastName = error.validationField("apellido")
+    val mappedEmail = error.validationField("email")
+    val mappedPassword = error.validationField("contrasena", "password")
+    val mappedDocument = error.validationField("documento")
+    val mappedToField = listOf(
+        mappedFirstName,
+        mappedLastName,
+        mappedEmail,
+        mappedPassword,
+        mappedDocument,
+    ).any { it != null }
+    return copy(
+        firstNameError = mappedFirstName ?: firstNameError,
+        lastNameError = mappedLastName ?: lastNameError,
+        emailError = mappedEmail ?: emailError,
+        passwordError = mappedPassword ?: passwordError,
+        documentError = mappedDocument ?: documentError,
+        generalError = if (mappedToField) null else error.toRegisterMessage(),
+        hasAttemptedSubmit = true,
+    )
+}
+
 private fun AppError.toRegisterMessage(): String = when (this) {
     is AppError.Conflict -> message.ifBlank { "Este correo ya está registrado" }
-    is AppError.Validation -> message.ifBlank { "Revise los datos ingresados" }
+    is AppError.Validation ->
+        validationField("nombres", "apellido", "email", "contrasena", "password", "documento", "rolId")
+            ?: "No pudimos crear la cuenta. Revisá los datos e intentá de nuevo."
     else -> userMessage()
 }
