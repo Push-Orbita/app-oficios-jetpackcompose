@@ -22,8 +22,13 @@ import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.usecase.search.GetRecentClientWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.ObserveRecentSearchesUseCase
 import com.cocido.oficios.domain.usecase.search.RemoveRecentSearchUseCase
+import com.cocido.oficios.domain.model.NotificationPage
+import com.cocido.oficios.domain.repository.NotificationsRepository
+import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import com.cocido.oficios.domain.usecase.search.SearchWorkersUseCase
 import com.cocido.oficios.domain.usecase.search.TrackRecentSearchUseCase
+import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
+import com.cocido.oficios.feature.home.orders.NoWorkerProfileRepository
 import kotlinx.coroutines.test.advanceTimeBy
 import com.cocido.oficios.feature.home.FakeRecentSearchRepository
 import kotlinx.coroutines.Dispatchers
@@ -259,8 +264,17 @@ class SearchResultsViewModelTest {
             getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(catalogRepository),
             getSubRubrosByRubroUseCase = GetSubRubrosByRubroUseCase(catalogRepository),
             searchBarriosUseCase = SearchBarriosUseCase(catalogRepository),
+            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(NoWorkerProfileRepository),
+            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(SearchTestNotificationsRepository()),
         )
     }
+}
+
+private class SearchTestNotificationsRepository : NotificationsRepository {
+    override suspend fun registerDeviceToken(fcmToken: String, deviceId: String?) = AppResult.Success(Unit)
+    override suspend fun markAsRead(notificationId: Long) = AppResult.Success(Unit)
+    override suspend fun getNotifications(pageNumber: Int, pageSize: Int, soloNoLeidas: Boolean) =
+        AppResult.Success(NotificationPage(emptyList(), 1, 1, false))
 }
 
 private class SearchTestOrderRepository : OrderRepository {

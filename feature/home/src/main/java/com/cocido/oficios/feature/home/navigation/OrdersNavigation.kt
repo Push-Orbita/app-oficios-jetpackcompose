@@ -113,7 +113,7 @@ fun NavGraphBuilder.ordersScreen(
         OrdersListRoute(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToOrderDetail = { orderId -> navController.navigate(OrdersDestination.orderDetail(orderId)) },
-            onNavigateToSearch = { navController.openClientTab(ClientHomeTab.INICIO, settingsRoute = "settings") },
+            onNavigateToSearch = { navController.openClientTab(ClientHomeTab.BUSCAR, settingsRoute = "settings") },
             showBackNavigation = false,
             onTabSelected = { navController.openClientTab(it, settingsRoute = "settings") },
         )

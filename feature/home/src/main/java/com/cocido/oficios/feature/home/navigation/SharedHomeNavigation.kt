@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.home.navigation
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.cocido.oficios.feature.home.common.ClientHomeTabNavigator
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.favorites.FavoritesRoute
 import com.cocido.oficios.feature.home.help.HelpRoute
@@ -58,7 +59,15 @@ fun NavHostController.navigateToFavorites() {
 
 fun NavHostController.openClientTab(tab: ClientHomeTab, settingsRoute: String) {
     val anchor = clientTabAnchor()
-    navigate(clientTabRoute(tab, anchor, settingsRoute)) {
+    val route = clientTabRoute(tab, anchor, settingsRoute)
+    val currentRoute = currentBackStackEntry?.destination?.route
+    val currentTab = ClientHomeTabNavigator.tabForDestination(currentRoute)
+    if (tab == currentTab) {
+        val alreadyAtRoot = currentRoute == route
+        val poppedToRoot = !alreadyAtRoot && popBackStack(route, inclusive = false)
+        if (alreadyAtRoot || poppedToRoot) return
+    }
+    navigate(route) {
         popUpTo(anchor) { saveState = true }
         launchSingleTop = true
         restoreState = true
@@ -67,6 +76,7 @@ fun NavHostController.openClientTab(tab: ClientHomeTab, settingsRoute: String) {
 
 fun clientTabRoute(tab: ClientHomeTab, anchor: String, settingsRoute: String): String = when (tab) {
     ClientHomeTab.INICIO -> anchor
+    ClientHomeTab.BUSCAR -> HomeDestination.categories
     ClientHomeTab.PEDIDOS -> OrdersDestination.ordersList
     ClientHomeTab.FAVORITOS -> SharedHomeDestination.favorites
     ClientHomeTab.AJUSTES -> settingsRoute
@@ -81,6 +91,7 @@ fun isClientTabRoute(route: String?, settingsRoute: String): Boolean = when (rou
 
 private val clientTabRootRoutes = setOf(
     HomeDestination.inicio,
+    HomeDestination.categories,
     ProviderHomeDestination.inicio,
     OrdersDestination.ordersList,
     SharedHomeDestination.favorites,

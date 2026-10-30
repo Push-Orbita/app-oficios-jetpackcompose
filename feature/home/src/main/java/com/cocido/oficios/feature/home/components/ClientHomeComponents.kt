@@ -1,29 +1,20 @@
 package com.cocido.oficios.feature.home.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cocido.oficios.feature.home.common.HomeChromeViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.avatar.OficiosAvatar
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton
@@ -41,8 +32,10 @@ fun ClientHomeHeader(
     profilePhotoUrl: String? = null,
     unreadNotificationCount: Int = 0,
     onNotificationsClick: () -> Unit,
+    onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val openProfileLabel = stringResource(R.string.home_open_profile)
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -51,7 +44,13 @@ fun ClientHomeHeader(
         Row(
             horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .semantics(mergeDescendants = true) {
+                    role = Role.Button
+                    contentDescription = openProfileLabel
+                }
+                .clickable(role = Role.Button, onClick = onProfileClick),
         ) {
             OficiosAvatar(
                 name = userName,
@@ -74,50 +73,6 @@ fun ClientHomeHeader(
 }
 
 @Composable
-fun HomeSearchBar(
-    hint: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(OficiosSpacing.sm))
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(OficiosSpacing.sm),
-            )
-            .semantics(mergeDescendants = true) { contentDescription = hint }
-            .clickable(onClick = onClick)
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = hint,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
-            Icon(
-                imageVector = ImageVector.vectorResource(OficiosIcons.Mic),
-                contentDescription = stringResource(R.string.home_voice_search),
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(OficiosComponentSize.iconMd),
-            )
-            Icon(
-                imageVector = ImageVector.vectorResource(OficiosIcons.Search),
-                contentDescription = stringResource(R.string.home_search),
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(OficiosComponentSize.iconMd),
-            )
-        }
-    }
-}
-
-@Composable
 fun ClientHomeBottomBar(
     selectedTab: ClientHomeTab,
     onTabSelected: (ClientHomeTab) -> Unit,
@@ -131,6 +86,9 @@ fun ClientHomeBottomBar(
     }
     val items = buildList {
         add(OficiosNavItem(ClientHomeTab.INICIO.route, stringResource(R.string.home_nav_inicio), OficiosIcons.House))
+        if (roleShowsFavorites) {
+            add(OficiosNavItem(ClientHomeTab.BUSCAR.route, stringResource(R.string.home_nav_buscar), OficiosIcons.Search))
+        }
         add(OficiosNavItem(ClientHomeTab.PEDIDOS.route, stringResource(R.string.home_nav_pedidos), OficiosIcons.ReceiptText))
         if (roleShowsFavorites) {
             add(OficiosNavItem(ClientHomeTab.FAVORITOS.route, stringResource(R.string.home_nav_favoritos), OficiosIcons.Heart))
@@ -149,6 +107,7 @@ fun ClientHomeBottomBar(
 
 enum class ClientHomeTab(val route: String) {
     INICIO("home_tab_inicio"),
+    BUSCAR("home_tab_buscar"),
     PEDIDOS("home_tab_pedidos"),
     FAVORITOS("home_tab_favoritos"),
     AJUSTES("home_tab_ajustes"),

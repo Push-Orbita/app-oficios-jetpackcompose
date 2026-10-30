@@ -233,9 +233,7 @@ fun AppNavHost(
                 }
             },
             onNavigateToSearch = {
-                navController.navigate(HomeDestination.categories) {
-                    launchSingleTop = true
-                }
+                navController.openClientTab(ClientHomeTab.BUSCAR, SettingsDestination.route)
             },
             settingsRoute = SettingsDestination.route,
         )
