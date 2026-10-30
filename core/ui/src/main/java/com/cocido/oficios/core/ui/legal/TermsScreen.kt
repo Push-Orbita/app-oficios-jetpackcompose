@@ -9,7 +9,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -22,6 +24,9 @@ fun TermsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val paragraphs = remember(context) { OfficialTermsDocument.loadParagraphs(context) }
+
     OficiosScaffold(
         modifier = modifier,
         topBar = {
@@ -36,33 +41,30 @@ fun TermsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = OficiosSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+                .padding(horizontal = OficiosSpacing.md)
+                .padding(bottom = OficiosSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
         ) {
-            Text(
-                text = stringResource(R.string.terms_intro),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            TermsBlock(R.string.terms_service_title, R.string.terms_service_body)
-            TermsBlock(R.string.terms_account_title, R.string.terms_account_body)
-            TermsBlock(R.string.terms_orders_title, R.string.terms_orders_body)
-            TermsBlock(R.string.terms_use_title, R.string.terms_use_body)
+            paragraphs.forEach { paragraph ->
+                when (paragraph) {
+                    is TermsParagraph.Heading -> {
+                        Text(
+                            text = paragraph.text,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(top = OficiosSpacing.sm),
+                        )
+                    }
+                    is TermsParagraph.Body -> {
+                        Text(
+                            text = paragraph.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
         }
     }
-}
-
-@Composable
-private fun TermsBlock(titleRes: Int, bodyRes: Int) {
-    Text(
-        text = stringResource(titleRes),
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface,
-    )
-    Text(
-        text = stringResource(bodyRes),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-    )
 }
