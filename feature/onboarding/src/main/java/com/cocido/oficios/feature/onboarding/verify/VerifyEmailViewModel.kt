@@ -7,6 +7,8 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.VerificationCodeCopy
 import com.cocido.oficios.core.common.result.toOtpCodeMessage
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
+import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.auth.SendVerificationEmailUseCase
 import com.cocido.oficios.domain.usecase.auth.VerifyEmailUseCase
@@ -26,6 +28,13 @@ import kotlinx.coroutines.launch
 
 data class VerifyEmailUiState(
     val email: String = "",
+    val draftEmail: String = "",
+    val isEditingEmail: Boolean = false,
+    val emailError: String? = null,
+    val isSavingEmail: Boolean = false,
+    val userId: Long = 0L,
+    val firstName: String = "",
+    val lastName: String = "",
     val code: String = "",
     val codeError: String? = null,
     val isLoading: Boolean = false,
@@ -46,6 +55,7 @@ class VerifyEmailViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val sendVerificationEmailUseCase: SendVerificationEmailUseCase,
     private val verifyEmailUseCase: VerifyEmailUseCase,
+    private val accountUseCases: AccountUseCases,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VerifyEmailUiState())
@@ -58,8 +68,8 @@ class VerifyEmailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            loadEmail()
-            sendCode()
+            // No reenviar OTP al abrir: el usuario pide código o corrige el correo.
+            loadUser()
         }
     }
 
@@ -71,6 +81,66 @@ class VerifyEmailViewModel @Inject constructor(
             error = null,
             canSubmit = AuthValidators.validateVerificationCode(sanitized) == null,
         )
+    }
+
+    fun onEditEmailClick() = _uiState.update {
+        it.copy(
+            isEditingEmail = true,
+            draftEmail = it.email,
+            emailError = null,
+            error = null,
+        )
+    }
+
+    fun onDraftEmailChanged(value: String) = _uiState.update {
+        it.copy(draftEmail = value, emailError = null, error = null)
+    }
+
+    fun onCancelEditEmail() = _uiState.update {
+        it.copy(isEditingEmail = false, draftEmail = it.email, emailError = null)
+    }
+
+    fun saveEmail() {
+        val state = _uiState.value
+        val emailError = AuthValidators.validateEmail(state.draftEmail.trim())
+        if (emailError != null) {
+            _uiState.update { it.copy(emailError = emailError) }
+            return
+        }
+        if (state.userId == 0L) {
+            _uiState.update { it.copy(error = "No pudimos cargar su perfil para actualizar el correo.") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSavingEmail = true, error = null) }
+            val request = UpdateAccountProfileRequest(
+                userId = state.userId,
+                firstName = state.firstName,
+                lastName = state.lastName,
+                email = state.draftEmail.trim(),
+            )
+            when (val result = accountUseCases.updateProfile(request)) {
+                is AppResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isSavingEmail = false,
+                            isEditingEmail = false,
+                            email = request.email,
+                            draftEmail = request.email,
+                            infoMessage = "Correo actualizado. Le enviamos un código nuevo.",
+                            code = "",
+                            canSubmit = false,
+                        )
+                    }
+                    sendCode()
+                }
+                is AppResult.Error -> {
+                    _uiState.update {
+                        it.copy(isSavingEmail = false, error = result.error.userMessage())
+                    }
+                }
+            }
+        }
     }
 
     fun resendCode() {
@@ -105,10 +175,19 @@ class VerifyEmailViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadEmail() {
+    private suspend fun loadUser() {
         when (val result = getCurrentUserUseCase()) {
             is AppResult.Success -> {
-                _uiState.update { it.copy(email = result.data.email) }
+                val user = result.data
+                _uiState.update {
+                    it.copy(
+                        email = user.email,
+                        draftEmail = user.email,
+                        userId = user.id,
+                        firstName = user.firstName,
+                        lastName = user.lastName,
+                    )
+                }
             }
             is AppResult.Error -> Unit
         }

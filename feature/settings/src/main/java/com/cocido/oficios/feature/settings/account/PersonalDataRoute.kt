@@ -14,6 +14,7 @@ import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 fun PersonalDataRoute(
     onNavigateBack: () -> Unit,
     onShowMessage: (String) -> Unit,
+    onNavigateToVerifyEmail: () -> Unit = {},
     viewModel: PersonalDataViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -36,6 +37,10 @@ fun PersonalDataRoute(
                 is PersonalDataEffect.Saved -> {
                     toastController.showSuccess(effect.message)
                     onNavigateBack()
+                }
+                is PersonalDataEffect.EmailChangedNeedsVerification -> {
+                    toastController.showSuccess(effect.message)
+                    onNavigateToVerifyEmail()
                 }
             }
         }

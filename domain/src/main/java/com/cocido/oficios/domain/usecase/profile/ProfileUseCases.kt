@@ -190,6 +190,23 @@ class ReplaceProviderSelfieUseCase @Inject constructor(
         identityDocumentRepository.replaceSelfie(documentId, imagePath)
 }
 
+class ReplaceProviderDniImagesUseCase @Inject constructor(
+    private val identityDocumentRepository: IdentityDocumentRepository,
+) {
+    suspend operator fun invoke(
+        documentId: Long,
+        frontImagePath: String?,
+        backImagePath: String?,
+    ): AppResult<Unit> = identityDocumentRepository.replaceDni(documentId, frontImagePath, backImagePath)
+}
+
+class DeleteProviderIdentityDocumentUseCase @Inject constructor(
+    private val identityDocumentRepository: IdentityDocumentRepository,
+) {
+    suspend operator fun invoke(documentId: Long): AppResult<Unit> =
+        identityDocumentRepository.deleteDocument(documentId)
+}
+
 class GetProviderSelfieUseCase @Inject constructor(
     private val identityDocumentRepository: IdentityDocumentRepository,
 ) {

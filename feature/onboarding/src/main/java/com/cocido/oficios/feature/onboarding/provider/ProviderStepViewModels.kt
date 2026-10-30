@@ -30,6 +30,8 @@ import com.cocido.oficios.domain.usecase.profile.GetWorkCertificatesUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitSecondaryProviderRubroUseCase
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
+import com.cocido.oficios.domain.usecase.profile.DeleteProviderIdentityDocumentUseCase
+import com.cocido.oficios.domain.usecase.profile.ReplaceProviderDniImagesUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
@@ -56,13 +58,28 @@ data class ProviderDniUiState(
     val backFileName: String? = null,
     val frontRemoteLoaded: Boolean = false,
     val backRemoteLoaded: Boolean = false,
+    val existingDocumentId: Long? = null,
+    val frontStatus: String? = null,
+    val backStatus: String? = null,
     val certificateName: String = "",
     val certificatePath: String? = null,
     val existingCertificateName: String? = null,
     val isLoading: Boolean = false,
     val isPreloading: Boolean = true,
     val error: String? = null,
-)
+) {
+    val isApproved: Boolean
+        get() = frontStatus?.equals("APROBADO", ignoreCase = true) == true &&
+            backStatus?.equals("APROBADO", ignoreCase = true) == true
+    val isRejected: Boolean
+        get() = frontStatus?.equals("RECHAZADO", ignoreCase = true) == true ||
+            backStatus?.equals("RECHAZADO", ignoreCase = true) == true
+    val isPendingReview: Boolean
+        get() = !isApproved && !isRejected && (
+            frontStatus?.equals("SUBIDO", ignoreCase = true) == true ||
+                backStatus?.equals("SUBIDO", ignoreCase = true) == true
+            )
+}
 
 sealed interface ProviderStepEffect {
     data object Saved : ProviderStepEffect
@@ -73,6 +90,8 @@ sealed interface ProviderStepEffect {
 class ProviderDniViewModel @Inject constructor(
     private val updateProviderDniNumberUseCase: UpdateProviderDniNumberUseCase,
     private val uploadProviderDniImagesUseCase: UploadProviderDniImagesUseCase,
+    private val replaceProviderDniImagesUseCase: ReplaceProviderDniImagesUseCase,
+    private val deleteProviderIdentityDocumentUseCase: DeleteProviderIdentityDocumentUseCase,
     private val getProviderDniDocumentsUseCase: GetProviderDniDocumentsUseCase,
     private val getProviderDocumentoUseCase: GetProviderDocumentoUseCase,
     private val uploadWorkCertificateUseCase: UploadWorkCertificateUseCase,
@@ -98,6 +117,9 @@ class ProviderDniViewModel @Inject constructor(
                 is AppResult.Success -> dniResult.data?.let { docs ->
                     _uiState.update {
                         it.copy(
+                            existingDocumentId = docs.id,
+                            frontStatus = docs.frontStatus,
+                            backStatus = docs.backStatus,
                             frontRemoteLoaded = !docs.frontUrl.isNullOrBlank(),
                             backRemoteLoaded = !docs.backUrl.isNullOrBlank(),
                             frontFileName = docs.frontFileName,
@@ -139,6 +161,12 @@ class ProviderDniViewModel @Inject constructor(
             _uiState.update { it.copy(error = "Complete el número y las fotos del DNI") }
             return
         }
+        if (state.isApproved && (front != null || back != null)) {
+            _uiState.update {
+                it.copy(error = "Su DNI ya fue aprobado y no puede reemplazarse.")
+            }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -152,7 +180,18 @@ class ProviderDniViewModel @Inject constructor(
             }
 
             if (front != null && back != null) {
-                when (val imagesResult = uploadProviderDniImagesUseCase(front, back)) {
+                val imagesResult = when {
+                    state.existingDocumentId != null && state.isRejected ->
+                        replaceProviderDniImagesUseCase(state.existingDocumentId, front, back)
+                    state.existingDocumentId != null && state.isPendingReview -> {
+                        when (val deleted = deleteProviderIdentityDocumentUseCase(state.existingDocumentId)) {
+                            is AppResult.Error -> deleted
+                            is AppResult.Success -> uploadProviderDniImagesUseCase(front, back)
+                        }
+                    }
+                    else -> uploadProviderDniImagesUseCase(front, back)
+                }
+                when (imagesResult) {
                     is AppResult.Error -> {
                         _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
                         return@launch

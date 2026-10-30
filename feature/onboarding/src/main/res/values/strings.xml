@@ -10,7 +10,7 @@
     <string name="onboarding_provider_title">Configure su perfil profesional</string>
     <string name="onboarding_provider_subtitle">Complete los pasos obligatorios para operar en la plataforma</string>
     <string name="onboarding_docs_waiting_title">Documentación en revisión</string>
-    <string name="onboarding_docs_waiting_message">El equipo está validando su DNI y selfie. Puede seguir completando el resto del perfil y, si se equivocó, tocar esos pasos para corregirlos hasta que los acepten. Esta pantalla se actualiza sola.</string>
+    <string name="onboarding_docs_waiting_message">El equipo está validando su documentación. Mientras no la acepten, puede tocar cualquier paso para corregir datos mal cargados (correo, DNI, selfie, personales, contacto, rubros, disponibilidad, pagos o local) y reenviarlos. Esta pantalla se actualiza sola.</string>
     <string name="onboarding_rubros_saved_draft">Categoría guardada. Complete disponibilidad y medios de cobro para enviarla.</string>
     <string name="onboarding_rubro_pending_kyc">Guardamos su configuración en el dispositivo. Se enviará cuando aprueben su documentación.</string>
     <string name="onboarding_pending_title">Su perfil está en revisión</string>
@@ -47,7 +47,12 @@
     <string name="onboarding_step_save">Guardar</string>
     <string name="onboarding_step_verify_email_title">Validación</string>
     <string name="onboarding_step_verify_email_subtitle">Le enviamos un código para validar el correo %1$s.</string>
-    <string name="onboarding_step_verify_email_subtitle_no_format">Le enviamos un código para validar el correo electrónico ingresado</string>
+    <string name="onboarding_step_verify_email_subtitle_no_format">Valide su correo electrónico con el código que le enviamos. Puede corregirlo si está mal escrito.</string>
+    <string name="onboarding_step_verify_email_wrong_email">El correo es incorrecto</string>
+    <string name="onboarding_step_verify_email_edit_label">Correo electrónico</string>
+    <string name="onboarding_step_verify_email_edit_hint">Al guardarlo le enviaremos un código al nuevo correo.</string>
+    <string name="onboarding_step_verify_email_edit_save">Guardar correo</string>
+    <string name="onboarding_step_verify_email_edit_cancel">Cancelar</string>
     <string name="onboarding_step_verify_email_open_email">Abrir correo</string>
     <string name="onboarding_step_verify_email_skip">Omitir por ahora</string>
     <string name="onboarding_step_verify_email_code_label">Código de verificación</string>

@@ -100,13 +100,16 @@ private fun ServicesUiState.phase(): OficiosContentPhase = when {
 @Composable
 private fun ServicesList(state: ServicesUiState, onEvent: (ServicesEvent) -> Unit) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = OficiosSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(OficiosSpacing.OficiosScreenPadding),
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         item {
             Text(
                 stringResource(R.string.services_intro),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         state.errorMessage?.let { message -> item { OficiosInlineAlert(message) } }
@@ -146,19 +149,34 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
         enabled = !disabled,
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-            Icon(Icons.Outlined.WorkOutline, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
-                Text(service.rubroName, style = MaterialTheme.typography.titleMedium)
+            Icon(
+                Icons.Outlined.WorkOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(horizontal = OficiosSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+            ) {
+                Text(
+                    service.rubroName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 if (service.isPrimary) {
                     Text(
                         stringResource(R.string.services_primary),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
                 Text(
-                    service.subServices.joinToString { it.name }.ifBlank { stringResource(R.string.services_no_specialties) },
-                    style = MaterialTheme.typography.bodyMedium,
+                    service.subServices.joinToString { it.name }
+                        .ifBlank { stringResource(R.string.services_no_specialties) },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 val modalities = buildList {
                     if (service.subServices.any { it.servesAtClientHome }) add(stringResource(R.string.services_at_home))

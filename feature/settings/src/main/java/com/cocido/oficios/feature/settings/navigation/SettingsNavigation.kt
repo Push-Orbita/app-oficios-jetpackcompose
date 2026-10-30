@@ -51,7 +51,15 @@ fun NavGraphBuilder.settingsScreen(
         ConfigurationRoute(onNavigateBack = { navController.popBackStack() })
     }
     composable(SettingsDestination.personalData) {
-        PersonalDataRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+        PersonalDataRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onShowMessage = onShowMessage,
+            onNavigateToVerifyEmail = {
+                navController.navigate(SettingsDestination.verifyEmail) {
+                    popUpTo(SettingsDestination.personalData) { inclusive = true }
+                }
+            },
+        )
     }
     composable(SettingsDestination.clientData) {
         ClientDataRoute(

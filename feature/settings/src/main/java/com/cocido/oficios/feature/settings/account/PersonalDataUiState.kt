@@ -38,4 +38,6 @@ sealed interface PersonalDataEvent {
 sealed interface PersonalDataEffect {
     data object NavigateBack : PersonalDataEffect
     data class Saved(val message: String) : PersonalDataEffect
+    /** Tras cambiar el correo: OTP con send-verification-email (OpenAPI PATCH /usuario/{id}). */
+    data class EmailChangedNeedsVerification(val message: String) : PersonalDataEffect
 }

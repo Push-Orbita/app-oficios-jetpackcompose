@@ -29,6 +29,10 @@ fun VerifyEmailRoute(
         onCodeChanged = viewModel::onCodeChanged,
         onResend = viewModel::resendCode,
         onSubmit = viewModel::submit,
+        onEditEmailClick = viewModel::onEditEmailClick,
+        onDraftEmailChanged = viewModel::onDraftEmailChanged,
+        onSaveEmail = viewModel::saveEmail,
+        onCancelEditEmail = viewModel::onCancelEditEmail,
         modifier = modifier,
     )
 }
