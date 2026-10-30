@@ -43,6 +43,14 @@ data class VerifyPhoneUiState(
     val codeSendFailed: Boolean = false,
 )
 
+internal fun VerifyPhoneUiState.clearedForResend() = copy(
+    code = "",
+    codeError = null,
+    error = null,
+    canSubmit = false,
+    hasAttemptedSubmit = false,
+)
+
 sealed interface VerifyPhoneEffect {
     data object Verified : VerifyPhoneEffect
 }
@@ -90,6 +98,8 @@ class VerifyPhoneViewModel @Inject constructor(
     fun resendCode() {
         val state = _uiState.value
         if (state.isResending || state.isLoading || state.resendCooldownSeconds > 0) return
+        // El código anterior queda invalidado: limpiar lo tipeado y el error del intento previo.
+        _uiState.update { it.clearedForResend() }
         viewModelScope.launch { sendCode() }
     }
 

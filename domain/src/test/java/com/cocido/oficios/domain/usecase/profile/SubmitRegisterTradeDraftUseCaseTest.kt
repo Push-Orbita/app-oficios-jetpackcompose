@@ -18,6 +18,45 @@ import org.junit.Test
 
 class SubmitRegisterTradeDraftUseCaseTest {
 
+    private val barrioSync = RecordingBarrioSync()
+
+    @Test
+    fun `saves selected barrio as worker domicilio even when rubro is rejected`() = runTest {
+        val draftRepository = FakeDraftRepository(
+            draft = sampleDraft().copy(neighborhoodQuery = "San Martín", barrioId = 42L, servesAtLocal = false),
+        )
+        val useCase = createUseCase(
+            draftRepository,
+            FakeProviderRepository(rubroResult = AppResult.Error(AppError.Validation("DNI pendiente"))),
+        )
+
+        useCase()
+
+        assertEquals(listOf(42L to "San Martín"), barrioSync.calls)
+    }
+
+    @Test
+    fun `barrio sync failure does not block rubro submission`() = runTest {
+        barrioSync.result = AppResult.Error(AppError.Validation("domicilio"))
+        val draftRepository = FakeDraftRepository(draft = sampleDraft().copy(barrioId = 42L))
+        val useCase = createUseCase(draftRepository)
+
+        val result = useCase()
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(1, barrioSync.calls.size)
+    }
+
+    @Test
+    fun `does not sync barrio when none was resolved`() = runTest {
+        val draftRepository = FakeDraftRepository(draft = sampleDraft().copy(neighborhoodQuery = "", barrioId = null))
+        val useCase = createUseCase(draftRepository)
+
+        useCase()
+
+        assertTrue(barrioSync.calls.isEmpty())
+    }
+
     @Test
     fun `keeps draft when rubro submission fails`() = runTest {
         val draftRepository = FakeDraftRepository(
@@ -53,6 +92,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
             barrios = listOf(CatalogOption(id = 99, label = "Centro")),
         )
         val useCase = SubmitRegisterTradeDraftUseCase(
+            syncProviderBarrioDomicilio = barrioSync,
             providerProfileRepository = FakeProviderRepository(
                 rubroResult = AppResult.Error(AppError.Validation("DNI pendiente")),
             ),
@@ -71,6 +111,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
         val remoteDraft = sampleDraft()
         val draftRepository = FakeDraftRepository(draft = null)
         val useCase = SubmitRegisterTradeDraftUseCase(
+            syncProviderBarrioDomicilio = barrioSync,
             providerProfileRepository = FakeProviderRepository(
                 tradeDraft = remoteDraft,
             ),
@@ -102,6 +143,7 @@ class SubmitRegisterTradeDraftUseCaseTest {
         draftRepository: FakeDraftRepository,
         providerRepository: FakeProviderRepository = FakeProviderRepository(),
     ) = SubmitRegisterTradeDraftUseCase(
+        syncProviderBarrioDomicilio = barrioSync,
         providerProfileRepository = providerRepository,
         registerTradeDraftRepository = draftRepository,
         catalogRepository = FakeCatalogRepository(),
@@ -127,6 +169,16 @@ class SubmitRegisterTradeDraftUseCaseTest {
         neighborhoodQuery = "Centro",
         timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
     )
+
+    private class RecordingBarrioSync : ProviderBarrioDomicilioSync {
+        val calls = mutableListOf<Pair<Long, String>>()
+        var result: AppResult<Unit> = AppResult.Success(Unit)
+
+        override suspend fun invoke(barrioId: Long, barrioName: String): AppResult<Unit> {
+            calls += barrioId to barrioName
+            return result
+        }
+    }
 
     private class FakeDraftRepository(
         private var draft: RegisterTradeDraft?,

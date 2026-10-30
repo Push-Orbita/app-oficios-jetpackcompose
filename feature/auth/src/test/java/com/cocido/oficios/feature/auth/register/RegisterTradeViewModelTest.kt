@@ -188,6 +188,10 @@ class RegisterTradeViewModelTest {
         searchBarriosUseCase = SearchBarriosUseCase(fakeCatalogRepository),
         registerTradeDraftRepository = fakeDraftRepository,
         submitRegisterTradeDraftUseCase = SubmitRegisterTradeDraftUseCase(
+            syncProviderBarrioDomicilio = object : com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                override suspend fun invoke(barrioId: Long, barrioName: String) =
+                    com.cocido.oficios.core.common.result.AppResult.Success(Unit)
+            },
             providerProfileRepository = fakeProviderProfileRepository,
             registerTradeDraftRepository = fakeDraftRepository,
             catalogRepository = fakeCatalogRepository,

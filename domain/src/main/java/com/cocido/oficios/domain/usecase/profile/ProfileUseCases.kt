@@ -23,6 +23,7 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val catalogRepository: CatalogRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
+    private val syncProviderBarrioDomicilio: ProviderBarrioDomicilioSync,
 ) {
     suspend operator fun invoke(requireDraft: Boolean = false): AppResult<Unit> {
         var draft = registerTradeDraftRepository.get()
@@ -41,6 +42,8 @@ class SubmitRegisterTradeDraftUseCase @Inject constructor(
             }
         }
         draft = resolveBarrioId(draft)
+        // No depende del DNI aprobado (a diferencia del rubro): se intenta en cada envío y no bloquea.
+        draft.barrioId?.let { barrioId -> syncProviderBarrioDomicilio(barrioId, draft.neighborhoodQuery) }
 
         val infoResult = providerProfileRepository.updateProfessionalInfo(draft.toProfessionalInfoRequest())
         if (infoResult is AppResult.Error) return infoResult
