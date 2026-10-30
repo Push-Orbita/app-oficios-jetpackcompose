@@ -39,6 +39,8 @@ data class VerifyPhoneUiState(
     val canSubmit: Boolean = false,
     val hasAttemptedSubmit: Boolean = false,
     val codeRejections: Int = 0,
+    /** El último envío del código falló (p. ej. VF06): el domicilio ya está guardado, se puede seguir. */
+    val codeSendFailed: Boolean = false,
 )
 
 sealed interface VerifyPhoneEffect {
@@ -172,6 +174,7 @@ class VerifyPhoneViewModel @Inject constructor(
                     it.copy(
                         isResending = false,
                         infoMessage = result.data.message,
+                        codeSendFailed = false,
                     )
                 }
                 startResendCooldown(result.data.resendCooldownSeconds ?: DEFAULT_RESEND_COOLDOWN_SECONDS)
@@ -181,6 +184,7 @@ class VerifyPhoneViewModel @Inject constructor(
                     it.copy(
                         isResending = false,
                         error = result.error.userMessage(),
+                        codeSendFailed = true,
                     )
                 }
                 startResendCooldown(DEFAULT_RESEND_COOLDOWN_SECONDS)

@@ -5,6 +5,7 @@ import com.cocido.oficios.core.common.result.map
 import com.cocido.oficios.core.data.cache.ClientProfileStore
 import com.cocido.oficios.core.data.mapper.toDomain
 import com.cocido.oficios.core.data.mapper.toDto
+import com.cocido.oficios.core.data.mapper.toUpdateDto
 import com.cocido.oficios.core.data.remote.ClientProfileRemoteDataSource
 import com.cocido.oficios.domain.model.ClientContacto
 import com.cocido.oficios.domain.model.ClientContactoRequest
@@ -30,6 +31,14 @@ class ClientProfileRepositoryImpl @Inject constructor(
 
     override suspend fun saveContacto(request: ClientContactoRequest): AppResult<Long> =
         remoteDataSource.createContacto(request.toDto()).map { it.id }
+            .also { if (it is AppResult.Success) getMyContactos() }
+
+    override suspend fun updateDomicilio(id: Long, request: ClientDomicilioRequest): AppResult<Unit> =
+        remoteDataSource.updateDomicilio(id, request.toUpdateDto())
+            .also { if (it is AppResult.Success) getMyDomicilios() }
+
+    override suspend fun updateContacto(id: Long, request: ClientContactoRequest): AppResult<Unit> =
+        remoteDataSource.updateContacto(id, request.toUpdateDto())
             .also { if (it is AppResult.Success) getMyContactos() }
 
     override suspend fun sendPhoneVerificationCode(contactId: Long) =

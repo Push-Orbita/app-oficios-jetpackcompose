@@ -31,6 +31,7 @@ import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -104,16 +105,154 @@ class ClientContactDomicilioViewModelTest {
         assertEquals("", viewModel.uiState.value.departamento)
     }
 
+    @Test
+    fun `submit saves domicilio before phone verification so a failed whatsapp send does not lose it`() =
+        runTest(dispatcher) {
+            val profile = RecordingProfile(initialContactos = emptyList(), newContactId = 15L)
+            val viewModel = createViewModel(profile)
+            val effects = mutableListOf<ClientContactDomicilioEffect>()
+            val job = launch { viewModel.effects.collect { effects += it } }
+            advanceUntilIdle()
+
+            fillAndConfirm(viewModel)
+            advanceUntilIdle()
+
+            assertEquals(1, profile.createdDomicilios)
+            assertEquals(1, profile.createdContactos)
+            assertEquals(0, profile.phoneCodesSent)
+            assertEquals(
+                listOf(ClientContactDomicilioEffect.NavigateToPhoneVerification(15L, "93704123456")),
+                effects,
+            )
+            job.cancel()
+        }
+
+    @Test
+    fun `retrying guardar reuses contacto and domicilio instead of duplicating`() = runTest(dispatcher) {
+        val profile = RecordingProfile(initialContactos = emptyList(), newContactId = 15L)
+        val viewModel = createViewModel(profile)
+        val job = launch { viewModel.effects.collect { } }
+        advanceUntilIdle()
+
+        fillAndConfirm(viewModel)
+        advanceUntilIdle()
+        viewModel.submit()
+        advanceUntilIdle()
+
+        assertEquals(1, profile.createdContactos)
+        assertEquals(1, profile.createdDomicilios)
+        assertEquals(listOf(1L), profile.updatedDomicilios)
+        job.cancel()
+    }
+
+    @Test
+    fun `verified contacto skips phone verification and completes step`() = runTest(dispatcher) {
+        val profile = RecordingProfile(
+            initialContactos = listOf(
+                ClientContacto(
+                    id = 3,
+                    nombre = "Ana Gómez",
+                    telefonoWhatsapp = "+5493704123456",
+                    telefonoVerificado = true,
+                    email = "ana@test.com",
+                    favorito = true,
+                ),
+            ),
+            newContactId = 99L,
+        )
+        val viewModel = createViewModel(profile)
+        val effects = mutableListOf<ClientContactDomicilioEffect>()
+        val job = launch { viewModel.effects.collect { effects += it } }
+        advanceUntilIdle()
+
+        fillAndConfirm(viewModel)
+        advanceUntilIdle()
+
+        assertEquals(0, profile.createdContactos)
+        assertEquals(1, profile.createdDomicilios)
+        assertEquals(listOf<ClientContactDomicilioEffect>(ClientContactDomicilioEffect.Saved), effects)
+        job.cancel()
+    }
+
+    private fun fillAndConfirm(viewModel: ClientContactDomicilioViewModel) {
+        viewModel.onNombreChanged("Ana Gómez")
+        viewModel.onTelefonoChanged("93704123456")
+        viewModel.onEmailChanged("ana@test.com")
+        viewModel.onBarrioSelected(CatalogOption(1, "Centro"))
+        viewModel.onCalleChanged("O'Higgins")
+        viewModel.onNumeroChanged("206")
+        viewModel.onMapLocationSelected(-26.1849, -58.1731)
+        viewModel.confirmPin()
+    }
+
+    private class RecordingProfile(
+        initialContactos: List<ClientContacto>,
+        private val newContactId: Long,
+    ) : ClientProfileRepository {
+        private val storedContactos = initialContactos.toMutableList()
+        private val storedDomicilios = mutableListOf<ClientDomicilio>()
+        var createdContactos = 0
+        var createdDomicilios = 0
+        val updatedDomicilios = mutableListOf<Long>()
+        var phoneCodesSent = 0
+
+        override suspend fun saveDomicilio(request: ClientDomicilioRequest): AppResult<Unit> {
+            createdDomicilios++
+            storedDomicilios += ClientDomicilio(
+                id = storedDomicilios.size + 1L,
+                barrioId = request.barrioId,
+                barrioName = "Centro",
+                nombre = request.nombre,
+                calle = request.calle,
+                numero = request.numero,
+                casaTorre = null,
+                departamento = request.departamento,
+                piso = request.piso,
+                favorito = true,
+            )
+            return AppResult.Success(Unit)
+        }
+        override suspend fun saveContacto(request: ClientContactoRequest): AppResult<Long> {
+            createdContactos++
+            storedContactos += ClientContacto(
+                id = newContactId,
+                nombre = request.nombre,
+                telefonoWhatsapp = "+54" + request.telefonoWhatsapp,
+                email = request.email,
+                favorito = true,
+            )
+            return AppResult.Success(newContactId)
+        }
+        override suspend fun updateDomicilio(id: Long, request: ClientDomicilioRequest): AppResult<Unit> {
+            updatedDomicilios += id
+            return AppResult.Success(Unit)
+        }
+        override suspend fun updateContacto(id: Long, request: ClientContactoRequest) = AppResult.Success(Unit)
+        override suspend fun sendPhoneVerificationCode(contactId: Long): AppResult<PhoneVerificationSendResult> {
+            phoneCodesSent++
+            return AppResult.Success(PhoneVerificationSendResult("ok", null))
+        }
+        override suspend fun verifyPhoneCode(contactId: Long, code: String) = AppResult.Success(Unit)
+        override suspend fun getMyDomicilios() = AppResult.Success(storedDomicilios.toList())
+        override suspend fun getMyContactos() = AppResult.Success(storedContactos.toList())
+    }
+
     private fun createViewModel(contactos: List<ClientContacto>): ClientContactDomicilioViewModel {
         val profile = object : ClientProfileRepository {
             override suspend fun saveDomicilio(request: ClientDomicilioRequest) = AppResult.Success(Unit)
             override suspend fun saveContacto(request: ClientContactoRequest) = AppResult.Success(1L)
+            override suspend fun updateDomicilio(id: Long, request: ClientDomicilioRequest) = AppResult.Success(Unit)
+            override suspend fun updateContacto(id: Long, request: ClientContactoRequest) = AppResult.Success(Unit)
             override suspend fun sendPhoneVerificationCode(contactId: Long) =
                 AppResult.Success(PhoneVerificationSendResult("ok", null))
             override suspend fun verifyPhoneCode(contactId: Long, code: String) = AppResult.Success(Unit)
             override suspend fun getMyDomicilios() = AppResult.Success(emptyList<ClientDomicilio>())
             override suspend fun getMyContactos() = AppResult.Success(contactos)
         }
+        return createViewModel(profile)
+    }
+
+    private fun createViewModel(profile: ClientProfileRepository): ClientContactDomicilioViewModel {
         return ClientContactDomicilioViewModel(
             saveClientContactoUseCase = SaveClientContactoUseCase(profile),
             saveClientDomicilioUseCase = SaveClientDomicilioUseCase(profile),

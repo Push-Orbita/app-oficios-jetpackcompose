@@ -148,6 +148,7 @@
     <string name="onboarding_step_verify_phone_resending">Enviando código…</string>
     <string name="onboarding_step_verify_phone_submit">Verificar teléfono</string>
     <string name="onboarding_step_verify_phone_edit_number">¿El número está mal? Edítelo</string>
+    <string name="onboarding_step_verify_phone_later">Verificar más tarde</string>
     <string name="onboarding_step_selfie_title">Foto de rostro</string>
     <string name="onboarding_step_selfie_hint">Suba una selfie con buena luz, sin anteojos ni gorro, mostrando su rostro completo.</string>
     <string name="onboarding_step_selfie_card_title">Su selfie</string>
