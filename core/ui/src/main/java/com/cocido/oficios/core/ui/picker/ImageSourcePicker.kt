@@ -31,11 +31,18 @@ import com.cocido.oficios.core.ui.crop.ImageCropRequest
 import com.cocido.oficios.core.ui.crop.prepareCropSource
 import com.cocido.oficios.core.ui.crop.rememberImageCropper
 import com.cocido.oficios.core.ui.file.createCameraImageCapture
+import com.cocido.oficios.core.ui.file.prepareImageForUpload
 
 class ImageSourcePickerState internal constructor(
     val requestImage: () -> Unit,
 )
 
+/**
+ * Picker cámara / galería. Por defecto abre [ImageCropScreen] según [cropMode].
+ *
+ * [skipCrop] = true entrega el JPEG completo (comprimido, sin recorte) — selfie /
+ * foto de rostro de identidad. Foto de perfil, DNI, galería y certificado siguen recortando.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun rememberImageSourcePicker(
@@ -47,6 +54,7 @@ fun rememberImageSourcePicker(
     onPickError: (String) -> Unit = {},
     filePrefix: String = "imagen",
     cropMode: ImageCropMode = ImageCropMode.Document,
+    skipCrop: Boolean = false,
 ): ImageSourcePickerState {
     val context = LocalContext.current
     var showSheet by remember { mutableStateOf(false) }
@@ -54,7 +62,16 @@ fun rememberImageSourcePicker(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val cropper = rememberImageCropper()
 
-    fun openCrop(uri: Uri?, path: String?) {
+    fun deliverPickedImage(uri: Uri?, path: String?) {
+        if (skipCrop) {
+            runCatching { prepareImageForUpload(context, uri, path, filePrefix) }
+                .onSuccess { preparedPath -> onImageSelected(preparedPath) }
+                .onFailure { error ->
+                    onPickError(ImageUploadContract.userFacingFileFailure(error))
+                    onImageSelected(null)
+                }
+            return
+        }
         runCatching { prepareCropSource(context, uri, path, filePrefix) }
             .onSuccess { workingPath ->
                 cropper.start(
@@ -82,7 +99,7 @@ fun rememberImageSourcePicker(
             onImageSelected(null)
             return@rememberLauncherForActivityResult
         }
-        openCrop(uri = uri, path = null)
+        deliverPickedImage(uri = uri, path = null)
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -92,7 +109,7 @@ fun rememberImageSourcePicker(
             onImageSelected(null)
             return@rememberLauncherForActivityResult
         }
-        openCrop(uri = null, path = rawPath)
+        deliverPickedImage(uri = null, path = rawPath)
     }
 
     fun launchCamera() {
