@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.home.agenda
 
+import com.cocido.oficios.core.common.time.DisplayDateTime
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
@@ -14,7 +15,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
-import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -123,7 +123,7 @@ class AgendaListViewModel @Inject constructor(
 
     private fun goToToday() {
         val state = _uiState.value as? AgendaListUiState.Success ?: return
-        val today = LocalDate.now()
+        val today = LocalDate.now(DisplayDateTime.ARGENTINA)
         val month = YearMonth.from(today)
         updateSuccess { it.copy(selectedDate = today, visibleMonth = month) }
         if (month != state.visibleMonth) state.selectedSubRubroId?.let { loadSlots(it, month) }
@@ -256,7 +256,7 @@ class AgendaListViewModel @Inject constructor(
         slotsJob = viewModelScope.launch {
             try {
                 updateSuccess { it.copy(isLoadingSlots = true, slotsError = null) }
-                val zone = ZoneId.systemDefault()
+                val zone = DisplayDateTime.ARGENTINA
                 val from = month.atDay(1).atStartOfDay(zone).toInstant().toString()
                 val to = month.atEndOfMonth().atTime(LocalTime.MAX).atZone(zone).toInstant().toString()
                 when (val result = agendaUseCases.getSlotsForSubRubro(subRubroId, from, to)) {
@@ -289,7 +289,7 @@ class AgendaListViewModel @Inject constructor(
 
     private fun openCreateSlot() {
         val state = _uiState.value as? AgendaListUiState.Success ?: return
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now(DisplayDateTime.ARGENTINA)
         val chosenDate = state.selectedDate.coerceAtLeast(now.toLocalDate())
         val start = if (chosenDate == now.toLocalDate()) {
             now.withMinute(0).withSecond(0).withNano(0).plusHours(1)
@@ -313,7 +313,7 @@ class AgendaListViewModel @Inject constructor(
 
     private fun openEditSlot(slotId: Long) {
         val slot = (_uiState.value as? AgendaListUiState.Success)?.slots?.firstOrNull { it.id == slotId } ?: return
-        if (slot.status != AgendaSlotStatus.DISPONIBLE || slot.end.isBefore(LocalDateTime.now())) return
+        if (slot.status != AgendaSlotStatus.DISPONIBLE || slot.end.isBefore(LocalDateTime.now(DisplayDateTime.ARGENTINA))) return
         updateSuccess {
             it.copy(
                 showSlotForm = true,
@@ -351,7 +351,7 @@ class AgendaListViewModel @Inject constructor(
         val end = state.slotEnd
         val issue = when {
             start == null || end == null -> AgendaSlotFormIssue.MISSING_DATE
-            start.isBefore(LocalDateTime.now()) -> AgendaSlotFormIssue.PAST_DATE
+            start.isBefore(LocalDateTime.now(DisplayDateTime.ARGENTINA)) -> AgendaSlotFormIssue.PAST_DATE
             else -> state.derivedFormIssue
         }
         if (issue != null) {
@@ -363,7 +363,7 @@ class AgendaListViewModel @Inject constructor(
 
         viewModelScope.launch {
             updateSuccess { it.copy(isSavingSlot = true, formIssue = null, formBackendError = null) }
-            val zone = ZoneId.systemDefault()
+            val zone = DisplayDateTime.ARGENTINA
             val result: AppResult<Unit> = if (state.editingSlotId == null) {
                 when (
                     val createResult = agendaUseCases.createSlot(
@@ -405,7 +405,7 @@ class AgendaListViewModel @Inject constructor(
 
     private fun requestDeleteSlot(slotId: Long) {
         val slot = (_uiState.value as? AgendaListUiState.Success)?.slots?.firstOrNull { it.id == slotId } ?: return
-        if (slot.status == AgendaSlotStatus.DISPONIBLE && slot.end.isAfter(LocalDateTime.now())) {
+        if (slot.status == AgendaSlotStatus.DISPONIBLE && slot.end.isAfter(LocalDateTime.now(DisplayDateTime.ARGENTINA))) {
             updateSuccess { it.copy(slotPendingDeleteId = slotId) }
         }
     }
