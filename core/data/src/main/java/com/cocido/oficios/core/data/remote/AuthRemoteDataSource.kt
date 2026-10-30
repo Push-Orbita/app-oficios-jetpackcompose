@@ -1,6 +1,7 @@
 package com.cocido.oficios.core.data.remote
 
 import com.cocido.oficios.core.common.result.AppResult
+import com.cocido.oficios.core.common.result.ClientValidationException
 import com.cocido.oficios.core.network.api.auth.AuthApi
 import com.cocido.oficios.core.network.api.auth.dto.LoginRequestDto
 import com.cocido.oficios.core.network.api.auth.dto.RefreshTokenRequestDto
@@ -53,7 +54,9 @@ class AuthRemoteDataSource @Inject constructor(
     }
 
     suspend fun verifyPasswordResetCode(code: String): AppResult<String> = when (
-        val result = safeApiCall { authApi.verifyPasswordResetCode(VerifyPasswordResetCodeDto(code)) }
+        val result = safeApiCall {
+            authApi.verifyPasswordResetCode(VerifyPasswordResetCodeDto(sanitizeVerificationCode(code)))
+        }
     ) {
         is AppResult.Success -> {
             val token = result.data["reset_token"] ?: result.data["resetToken"]
@@ -81,7 +84,7 @@ class AuthRemoteDataSource @Inject constructor(
     }
 
     suspend fun verifyEmail(code: String) = safeApiCall {
-        authApi.verifyEmail(VerifyEmailRequestDto(codigo = code))
+        authApi.verifyEmail(VerifyEmailRequestDto(codigo = sanitizeVerificationCode(code)))
     }
 
     suspend fun getUserRoles() = safeApiCall {
@@ -95,6 +98,14 @@ class AuthRemoteDataSource @Inject constructor(
     suspend fun getProviderProfileStatus() = safeApiCall { authApi.getProviderProfileStatus() }
 
     suspend fun getProviderProfile() = safeApiCall { authApi.getProviderProfile() }
+
+    private fun sanitizeVerificationCode(code: String): String {
+        val sanitized = code.filter(Char::isDigit)
+        if (sanitized.length != 6) {
+            throw ClientValidationException("El código tiene que tener 6 dígitos")
+        }
+        return sanitized
+    }
 
     private fun parseRoles(response: Map<String, kotlinx.serialization.json.JsonElement>): List<RolUsuarioDto> {
         val dataElement = response["data"] ?: response["items"] ?: return emptyList()

@@ -47,6 +47,23 @@ class ExceptionMapperTest {
     }
 
     @Test
+    fun `generic nest va01 is never shown as the only copy`() {
+        val error = AppError.Validation(
+            message = "Datos de entrada no válidos.",
+            backendCode = "VA01",
+        )
+        assertEquals(
+            "No pudimos guardar los cambios. Revise los datos e intente nuevamente.",
+            error.userMessage(),
+        )
+        assertTrue("Datos de entrada no válidos" !in error.userMessage())
+        assertEquals(
+            VerificationCodeCopy.EMAIL,
+            error.toOtpCodeMessage(VerificationCodeCopy.EMAIL),
+        )
+    }
+
+    @Test
     fun `unknown error hides technical message`() {
         val error = RuntimeException("Internal boom").toAppError()
 

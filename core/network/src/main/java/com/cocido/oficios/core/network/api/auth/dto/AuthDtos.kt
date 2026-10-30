@@ -92,12 +92,12 @@ data class RequestPasswordResetCodeDto(
 
 @Serializable
 data class VerifyPasswordResetCodeDto(
-    val codigo: String,
+    @SerialName("codigo") val codigo: String,
 )
 
 @Serializable
 data class VerifyEmailRequestDto(
-    val codigo: String,
+    @SerialName("codigo") val codigo: String,
 )
 
 @Serializable

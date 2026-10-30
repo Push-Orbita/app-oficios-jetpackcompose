@@ -51,7 +51,9 @@ fun AppError.userMessage(): String = when (this) {
     }
     is AppError.Validation -> {
         val fromFields = fieldErrors.values.firstOrNull { value ->
-            value.isNotBlank() && !value.containsTechnicalDetail()
+            value.isNotBlank() &&
+                !value.containsTechnicalDetail() &&
+                !value.isGenericValidationCopy()
         }
         (fromFields ?: message).toProfessionalMessage(
             fallback = "No pudimos guardar los cambios. Revise los datos e intente nuevamente.",
@@ -72,9 +74,41 @@ fun AppError.userMessage(): String = when (this) {
     is AppError.Unknown -> "Algo salió mal. Intente de nuevo."
 }
 
+fun AppError.validationField(vararg keys: String): String? {
+    val errors = (this as? AppError.Validation)?.fieldErrors ?: return null
+    return keys.firstNotNullOfOrNull { key ->
+        errors.entries.firstOrNull { it.key.equals(key, ignoreCase = true) }?.value
+            ?.takeIf { it.isNotBlank() && !it.isGenericValidationCopy() }
+    }
+}
+
+fun AppError.toOtpCodeMessage(fallback: String): String {
+    validationField("codigo", "code")?.let { return it }
+    if (this is AppError.Validation &&
+        (backendCode.equals("VA01", ignoreCase = true) || message.isGenericValidationCopy())
+    ) {
+        return fallback
+    }
+    return userMessage()
+}
+
+fun String.isGenericValidationCopy(): Boolean {
+    val value = trim().lowercase().trimEnd('.')
+    return value == "datos de entrada no válidos" ||
+        value == "datos de entrada no validos"
+}
+
+object VerificationCodeCopy {
+    const val EMAIL =
+        "Ese código no es válido o ya venció. Revisá el correo o tocá Reenviar código."
+    const val PHONE = "Ese código no es válido o ya venció. Pedí uno nuevo."
+    const val RESET = "Ese código no es válido o ya venció. Solicitá uno nuevo."
+}
+
 private fun String.toProfessionalMessage(fallback: String): String {
     val normalized = trim()
     if (normalized.isBlank()) return fallback
+    if (normalized.isGenericValidationCopy()) return fallback
     if (normalized.isInfrastructureFailure()) {
         return "El servicio no está disponible en este momento. Intente más tarde."
     }

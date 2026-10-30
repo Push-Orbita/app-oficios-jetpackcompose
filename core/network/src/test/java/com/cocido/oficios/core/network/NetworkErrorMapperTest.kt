@@ -160,12 +160,14 @@ class NetworkErrorMapperTest {
     }
 
     @Test
-    fun `va01 generic message keeps backend copy not photo hint`() {
+    fun `va01 generic message does not keep nest copy and never uses photo hint`() {
         val body = """{"code":"VA01","message":"Datos de entrada no válidos."}"""
         val error = httpError(400, body).toNetworkAppError()
         assertTrue(error is AppError.Validation)
-        assertEquals("Datos de entrada no válidos.", error.message)
+        assertEquals("Revise los datos ingresados", error.message)
         assertTrue("JPG" !in error.message)
+        assertTrue("Datos de entrada no válidos" !in error.message)
+        assertEquals("Revise los datos ingresados", error.userMessage())
     }
 
     @Test
@@ -181,6 +183,57 @@ class NetworkErrorMapperTest {
         val body = """{"code":"VA01","message":"No es su galería"}"""
         val error = httpError(400, body).toNetworkAppError()
         assertEquals("No es su galería", error.message)
+    }
+
+    @Test
+    fun `prod envelope fieldErrors codigo surfaces spanish copy not nest va01`() {
+        val body = """
+            {
+              "error": true,
+              "code": "VA01",
+              "message": "Datos de entrada no válidos.",
+              "fieldErrors": {
+                "codigo": [
+                  "El código debe tener 6 dígitos",
+                  "codigo must be a string",
+                  "codigo must be longer than or equal to 6 characters",
+                  "codigo should not be empty"
+                ]
+              },
+              "traceId": "14ad0bdc-3d39-4d65-9c17-1087c3a5f056"
+            }
+        """.trimIndent()
+        val error = httpError(400, body).toNetworkAppError()
+        assertTrue(error is AppError.Validation)
+        val validation = error as AppError.Validation
+        assertEquals("VA01", validation.backendCode)
+        assertEquals("El código debe tener 6 dígitos", validation.fieldErrors["codigo"])
+        assertEquals("El código debe tener 6 dígitos", validation.message)
+        assertEquals("El código debe tener 6 dígitos", error.userMessage())
+        assertTrue("Datos de entrada no válidos" !in error.userMessage())
+    }
+
+    @Test
+    fun `prod envelope extra code alias does not hide missing codigo`() {
+        val body = """
+            {
+              "error": true,
+              "code": "VA01",
+              "message": "Datos de entrada no válidos.",
+              "fieldErrors": {
+                "code": ["property code should not exist"],
+                "codigo": [
+                  "El código debe tener 6 dígitos",
+                  "codigo must be a string",
+                  "codigo should not be empty"
+                ]
+              }
+            }
+        """.trimIndent()
+        val error = httpError(400, body).toNetworkAppError() as AppError.Validation
+        assertEquals("El código debe tener 6 dígitos", error.fieldErrors["codigo"])
+        assertTrue(error.fieldErrors["code"].isNullOrBlank())
+        assertEquals("El código debe tener 6 dígitos", error.userMessage())
     }
 
     @Test
