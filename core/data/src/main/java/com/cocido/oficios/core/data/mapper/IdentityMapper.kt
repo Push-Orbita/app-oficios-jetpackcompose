@@ -22,6 +22,7 @@ fun CertificadoTrabajoDto.toDomain() = WorkCertificateInfo(
 fun JsonElement.toProviderDniDocuments(): ProviderDniDocuments? {
     val document = findDocumentByType("dni") ?: return null
     return ProviderDniDocuments(
+        id = document.longOrNull("id"),
         frontUrl = document.stringOrNull("frenteUrl"),
         backUrl = document.stringOrNull("reversoUrl"),
         frontStatus = document.stringOrNull("frenteEstado"),

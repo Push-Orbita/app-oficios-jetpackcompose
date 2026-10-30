@@ -25,6 +25,15 @@ class IdentityDocumentRepositoryImpl @Inject constructor(
     override suspend fun replaceSelfie(documentId: Long, imagePath: String) =
         remoteDataSource.replaceSelfie(documentId, imagePath).map { }
 
+    override suspend fun replaceDni(
+        documentId: Long,
+        frontImagePath: String?,
+        backImagePath: String?,
+    ) = remoteDataSource.replaceDni(documentId, frontImagePath, backImagePath).map { }
+
+    override suspend fun deleteDocument(documentId: Long) =
+        remoteDataSource.deleteDocument(documentId).map { }
+
     override suspend fun getMyDniDocuments(): AppResult<com.cocido.oficios.domain.model.ProviderDniDocuments?> {
         val workerId = accountRepository.providerDetails.value?.workerId
         if (workerId == null) {

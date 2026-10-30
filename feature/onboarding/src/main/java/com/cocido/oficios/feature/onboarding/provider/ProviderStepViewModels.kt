@@ -30,6 +30,8 @@ import com.cocido.oficios.domain.usecase.profile.GetWorkCertificatesUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitSecondaryProviderRubroUseCase
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
+import com.cocido.oficios.domain.usecase.profile.DeleteProviderIdentityDocumentUseCase
+import com.cocido.oficios.domain.usecase.profile.ReplaceProviderDniImagesUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderDniNumberUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
@@ -56,13 +58,28 @@ data class ProviderDniUiState(
     val backFileName: String? = null,
     val frontRemoteLoaded: Boolean = false,
     val backRemoteLoaded: Boolean = false,
+    val existingDocumentId: Long? = null,
+    val frontStatus: String? = null,
+    val backStatus: String? = null,
     val certificateName: String = "",
     val certificatePath: String? = null,
     val existingCertificateName: String? = null,
     val isLoading: Boolean = false,
     val isPreloading: Boolean = true,
     val error: String? = null,
-)
+) {
+    val isApproved: Boolean
+        get() = frontStatus?.equals("APROBADO", ignoreCase = true) == true &&
+            backStatus?.equals("APROBADO", ignoreCase = true) == true
+    val isRejected: Boolean
+        get() = frontStatus?.equals("RECHAZADO", ignoreCase = true) == true ||
+            backStatus?.equals("RECHAZADO", ignoreCase = true) == true
+    val isPendingReview: Boolean
+        get() = !isApproved && !isRejected && (
+            frontStatus?.equals("SUBIDO", ignoreCase = true) == true ||
+                backStatus?.equals("SUBIDO", ignoreCase = true) == true
+            )
+}
 
 sealed interface ProviderStepEffect {
     data object Saved : ProviderStepEffect
@@ -73,6 +90,8 @@ sealed interface ProviderStepEffect {
 class ProviderDniViewModel @Inject constructor(
     private val updateProviderDniNumberUseCase: UpdateProviderDniNumberUseCase,
     private val uploadProviderDniImagesUseCase: UploadProviderDniImagesUseCase,
+    private val replaceProviderDniImagesUseCase: ReplaceProviderDniImagesUseCase,
+    private val deleteProviderIdentityDocumentUseCase: DeleteProviderIdentityDocumentUseCase,
     private val getProviderDniDocumentsUseCase: GetProviderDniDocumentsUseCase,
     private val getProviderDocumentoUseCase: GetProviderDocumentoUseCase,
     private val uploadWorkCertificateUseCase: UploadWorkCertificateUseCase,
@@ -98,6 +117,9 @@ class ProviderDniViewModel @Inject constructor(
                 is AppResult.Success -> dniResult.data?.let { docs ->
                     _uiState.update {
                         it.copy(
+                            existingDocumentId = docs.id,
+                            frontStatus = docs.frontStatus,
+                            backStatus = docs.backStatus,
                             frontRemoteLoaded = !docs.frontUrl.isNullOrBlank(),
                             backRemoteLoaded = !docs.backUrl.isNullOrBlank(),
                             frontFileName = docs.frontFileName,
@@ -139,6 +161,12 @@ class ProviderDniViewModel @Inject constructor(
             _uiState.update { it.copy(error = "Complete el número y las fotos del DNI") }
             return
         }
+        if (state.isApproved && (front != null || back != null)) {
+            _uiState.update {
+                it.copy(error = "Su DNI ya fue aprobado y no puede reemplazarse.")
+            }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -152,7 +180,18 @@ class ProviderDniViewModel @Inject constructor(
             }
 
             if (front != null && back != null) {
-                when (val imagesResult = uploadProviderDniImagesUseCase(front, back)) {
+                val imagesResult = when {
+                    state.existingDocumentId != null && state.isRejected ->
+                        replaceProviderDniImagesUseCase(state.existingDocumentId, front, back)
+                    state.existingDocumentId != null && state.isPendingReview -> {
+                        when (val deleted = deleteProviderIdentityDocumentUseCase(state.existingDocumentId)) {
+                            is AppResult.Error -> deleted
+                            is AppResult.Success -> uploadProviderDniImagesUseCase(front, back)
+                        }
+                    }
+                    else -> uploadProviderDniImagesUseCase(front, back)
+                }
+                when (imagesResult) {
                     is AppResult.Error -> {
                         _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
                         return@launch
@@ -263,11 +302,8 @@ class ProviderRubrosViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
-    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
-    private val submitSecondaryProviderRubroUseCase: SubmitSecondaryProviderRubroUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
-    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderRubrosUiState())
@@ -341,28 +377,15 @@ class ProviderRubrosViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
-                _uiState.update { it.copy(isLoading = false, error = message) }
-                return@launch
-            }
+            // No POST /full aquí: el body OpenAPI exige modalidad, días y medios de cobro.
+            // Solo persistimos el draft y avanzamos al checklist (disponibilidad / pagos).
             val draft = buildDraft(state, rubroId, categoryId) ?: run {
                 _uiState.update { it.copy(isLoading = false, error = "Seleccione categoría, rubro y especialidades") }
                 return@launch
             }
             registerTradeDraftRepository.save(draft)
-            val request = draft.toRubroFullRequest()
-            val result = if (state.isSecondaryRubro) {
-                submitSecondaryProviderRubroUseCase(request)
-            } else {
-                submitProviderRubroFullUseCase(request)
-            }
-            when (result) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(ProviderStepEffect.Saved)
-                }
-                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
-            }
+            _uiState.update { it.copy(isLoading = false) }
+            _effects.emit(ProviderStepEffect.Saved)
         }
     }
 
@@ -550,12 +573,12 @@ class ProviderAvailabilityViewModel @Inject constructor(
             _uiState.update { it.copy(error = errorMessage) }
             return
         }
+        if (!state.servesAtClientHome && !state.servesAtLocal) {
+            _uiState.update { it.copy(error = "Elija al menos una modalidad de atención") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
-                _uiState.update { it.copy(isLoading = false, error = message) }
-                return@launch
-            }
             val draft = registerTradeDraftRepository.get()
             if (draft == null || draft.subRubroIds.isEmpty()) {
                 _uiState.update {
@@ -578,12 +601,25 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 plazoCancelacionHoras = state.plazoCancelacionHoras,
             )
             registerTradeDraftRepository.save(updatedDraft)
+            // POST /full solo con body completo (incluye metodosPago). Si faltan pagos, solo draft.
+            if (updatedDraft.paymentMethods.isEmpty()) {
+                _uiState.update { it.copy(isLoading = false) }
+                _effects.emit(ProviderStepEffect.Saved)
+                return@launch
+            }
+            if (!isProviderIdentityVerified(getOnboardingStatusUseCase)) {
+                _uiState.update { it.copy(isLoading = false) }
+                _effects.emit(ProviderStepEffect.Saved)
+                return@launch
+            }
             when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {
                 is AppResult.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(ProviderStepEffect.Saved)
                 }
-                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+                is AppResult.Error -> _uiState.update {
+                    it.copy(isLoading = false, error = result.error.userMessage())
+                }
             }
         }
     }
@@ -842,6 +878,7 @@ data class ProviderPaymentMethodsUiState(
 @HiltViewModel
 class ProviderPaymentMethodsViewModel @Inject constructor(
     private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
@@ -876,25 +913,47 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
-                _uiState.update { it.copy(isLoading = false, error = message) }
-                return@launch
-            }
             val draft = registerTradeDraftRepository.get()
             val updatedDraft = draft?.copy(paymentMethods = methods)
             if (updatedDraft != null) {
                 registerTradeDraftRepository.save(updatedDraft)
             }
-            // Los métodos de pago pertenecen al perfil profesional y cuentan con un PATCH
-            // específico. Reenviar POST /trabajador-oficio-rubro/full intentaba crear por
-            // segunda vez el rubro principal y exponía al usuario un conflicto técnico.
+            val canSubmitFull = updatedDraft != null &&
+                updatedDraft.rubroId > 0 &&
+                updatedDraft.subRubroIds.isNotEmpty() &&
+                updatedDraft.workDays.isNotEmpty() &&
+                (updatedDraft.servesAtClientHome || updatedDraft.servesAtLocal) &&
+                updatedDraft.paymentMethods.isNotEmpty()
+            if (canSubmitFull) {
+                val fullDraft = updatedDraft!!
+                if (!isProviderIdentityVerified(getOnboardingStatusUseCase)) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                    return@launch
+                }
+                when (val fullResult = submitProviderRubroFullUseCase(fullDraft.toRubroFullRequest())) {
+                    is AppResult.Success -> {
+                        updateProviderProfessionalInfoUseCase(
+                            ProviderProfessionalInfoRequest(paymentMethods = methods),
+                        )
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.emit(ProviderStepEffect.Saved)
+                        return@launch
+                    }
+                    is AppResult.Error -> {
+                        _uiState.update {
+                            it.copy(isLoading = false, error = fullResult.error.userMessage())
+                        }
+                        return@launch
+                    }
+                }
+            }
+            // Perfil ya tiene rubro: solo PATCH de medios de cobro.
             val result = updateProviderProfessionalInfoUseCase(
                 ProviderProfessionalInfoRequest(paymentMethods = methods),
             )
             when (result) {
                 is AppResult.Success -> {
-                    // El backend llegó a responder 200 sin persistir metodosPago. No se
-                    // navega con un falso éxito: se confirma contra estado-perfil.
                     when (val status = getOnboardingStatusUseCase.getProviderStatus()) {
                         is AppResult.Success -> {
                             if ("metodos_pago" in status.data.missingSteps) {

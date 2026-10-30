@@ -23,6 +23,18 @@ class IdentityDocumentRemoteDataSource @Inject constructor(
         identityDocumentUploadDataSource.replaceSelfie(documentId, imagePath)
     }
 
+    suspend fun replaceDni(
+        documentId: Long,
+        frontImagePath: String?,
+        backImagePath: String?,
+    ) = safeApiCall {
+        identityDocumentUploadDataSource.replaceDni(documentId, frontImagePath, backImagePath)
+    }
+
+    suspend fun deleteDocument(documentId: Long) = safeApiCall {
+        identityDocumentUploadDataSource.deleteDocument(documentId)
+    }
+
     suspend fun searchDocuments(
         tipoDocumento: String? = null,
         trabajadorOficioId: Long? = null,

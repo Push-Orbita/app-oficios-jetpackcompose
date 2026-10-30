@@ -91,6 +91,21 @@ class ServicesViewModelTest {
     }
 
     @Test
+    fun `edit availability navigates to agenda hub`() = runTest(testDispatcher) {
+        val viewModel = ServicesViewModel(
+            AccountUseCases(FakeAccountRepository()),
+            AvailabilityUseCases(FakeAvailabilityRepository()),
+        )
+        advanceUntilIdle()
+        val effects = mutableListOf<ServicesEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+        viewModel.onEvent(ServicesEvent.EditAvailability(sampleService()))
+        advanceUntilIdle()
+        job.cancel()
+        assertTrue(effects.any { it is ServicesEffect.NavigateToAvailability })
+    }
+
+    @Test
     fun `list uses specialty availability hours instead of rubro dias laborales`() = runTest(testDispatcher) {
         val availability = FakeAvailabilityRepository(
             weeksBySub = mapOf(
@@ -290,13 +305,13 @@ class AddServiceViewModelTest {
         )
         advanceUntilIdle()
         viewModel.onEvent(AddServiceEvent.Next)
-        viewModel.onEvent(AddServiceEvent.Next)
-        viewModel.onEvent(AddServiceEvent.Next)
         viewModel.onEvent(AddServiceEvent.PaymentToggled("EFECTIVO", true))
-        viewModel.onEvent(AddServiceEvent.Next)
         viewModel.onEvent(AddServiceEvent.Save)
         advanceUntilIdle()
-        assertEquals(emptyList<Long>(), availability.replacedSubIds)
+        // Tras replaceService se re-sincroniza disponibilidad por especialidad, sin aplastar horarios.
+        assertEquals(listOf(1L, 2L), availability.replacedSubIds.sorted())
+        assertEquals(first, availability.replacedWeeks[1L])
+        assertEquals(second, availability.replacedWeeks[2L])
     }
 
     @Test
@@ -350,10 +365,12 @@ private class FakeAvailabilityRepository(
     private val weeksBySub: Map<Long, WeeklyAvailability> = emptyMap(),
 ) : AvailabilityRepository {
     val replacedSubIds = mutableListOf<Long>()
+    val replacedWeeks = mutableMapOf<Long, WeeklyAvailability>()
     override suspend fun getWeeklyAvailability(subRubroId: Long) =
         AppResult.Success(weeksBySub[subRubroId] ?: WeeklyAvailability.default())
     override suspend fun replaceWeeklyAvailability(subRubroId: Long, week: WeeklyAvailability): AppResult<WeeklyAvailability> {
         replacedSubIds += subRubroId
+        replacedWeeks[subRubroId] = week
         return AppResult.Success(week)
     }
     override suspend fun listBlocks(subRubroId: Long) = AppResult.Success(emptyList<AgendaBlock>())
