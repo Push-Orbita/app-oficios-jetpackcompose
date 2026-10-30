@@ -2,6 +2,7 @@ package com.cocido.oficios.feature.onboarding.provider
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.mapper.toRubroFullRequest
@@ -11,6 +12,7 @@ import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.FormosaAddressGeocoding
 import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.LocalAddressQuery
+import com.cocido.oficios.domain.model.ProviderDniDocuments
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
@@ -38,6 +40,7 @@ import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.usecase.profile.UploadProviderDniImagesUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadWorkCertificateUseCase
+import com.cocido.oficios.domain.validation.AuthValidators
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -52,12 +55,16 @@ import kotlinx.coroutines.launch
 
 data class ProviderDniUiState(
     val documento: String = "",
+    /** Número que ya está guardado en el servidor; sirve para no re-enviar si no cambió. */
+    val savedDocumento: String? = null,
     val frontImagePath: String? = null,
     val backImagePath: String? = null,
     val frontFileName: String? = null,
     val backFileName: String? = null,
     val frontRemoteLoaded: Boolean = false,
     val backRemoteLoaded: Boolean = false,
+    val frontRemoteUrl: String? = null,
+    val backRemoteUrl: String? = null,
     val existingDocumentId: Long? = null,
     val frontStatus: String? = null,
     val backStatus: String? = null,
@@ -67,18 +74,60 @@ data class ProviderDniUiState(
     val isLoading: Boolean = false,
     val isPreloading: Boolean = true,
     val error: String? = null,
+    /** Se muestra recién después del primer intento de envío, para no marcar errores mientras escribe. */
+    val showValidation: Boolean = false,
 ) {
     val isApproved: Boolean
-        get() = frontStatus?.equals("APROBADO", ignoreCase = true) == true &&
-            backStatus?.equals("APROBADO", ignoreCase = true) == true
+        get() = frontStatus.isDocumentStatus(DOCUMENT_STATUS_APPROVED) &&
+            backStatus.isDocumentStatus(DOCUMENT_STATUS_APPROVED)
     val isRejected: Boolean
-        get() = frontStatus?.equals("RECHAZADO", ignoreCase = true) == true ||
-            backStatus?.equals("RECHAZADO", ignoreCase = true) == true
+        get() = frontStatus.isDocumentStatus(DOCUMENT_STATUS_REJECTED) ||
+            backStatus.isDocumentStatus(DOCUMENT_STATUS_REJECTED)
     val isPendingReview: Boolean
         get() = !isApproved && !isRejected && (
-            frontStatus?.equals("SUBIDO", ignoreCase = true) == true ||
-                backStatus?.equals("SUBIDO", ignoreCase = true) == true
+            frontStatus.isDocumentStatus(DOCUMENT_STATUS_UPLOADED) ||
+                backStatus.isDocumentStatus(DOCUMENT_STATUS_UPLOADED)
             )
+
+    val frontSlot: DocumentSlot
+        get() = documentSlotOf(frontImagePath, frontRemoteLoaded, frontRemoteUrl, frontStatus)
+    val backSlot: DocumentSlot
+        get() = documentSlotOf(backImagePath, backRemoteLoaded, backRemoteUrl, backStatus)
+
+    /** El formulario se puede tocar: no está cargando datos ni enviando. */
+    val isEditable: Boolean get() = !isLoading && !isPreloading
+
+    /** El número ya fue validado junto con las fotos; no se edita más desde el registro. */
+    val isDocumentoLocked: Boolean get() = isApproved
+
+    val documentoError: String?
+        get() = AuthValidators.validateDocument(documento.trim())
+
+    val hasLocalImages: Boolean get() = frontImagePath != null || backImagePath != null
+
+    val hasPendingChanges: Boolean
+        get() = hasLocalImages || documento.trim() != savedDocumento.orEmpty()
+
+    /**
+     * El backend solo reemplaza lados sueltos de un DNI rechazado. Si está en
+     * revisión (SUBIDO) se borra y se vuelve a subir, así que hacen falta los dos.
+     */
+    val needsBothSidesToReplace: Boolean
+        get() = existingDocumentId != null && isPendingReview &&
+            (frontImagePath == null) != (backImagePath == null)
+
+    /** Un lado rechazado tiene que reemplazarse antes de poder enviar. */
+    val hasRejectedSideWithoutReplacement: Boolean
+        get() = (frontStatus.isDocumentStatus(DOCUMENT_STATUS_REJECTED) && frontImagePath == null) ||
+            (backStatus.isDocumentStatus(DOCUMENT_STATUS_REJECTED) && backImagePath == null)
+
+    val canSubmit: Boolean
+        get() = isEditable &&
+            documentoError == null &&
+            frontSlot.status.hasImage &&
+            backSlot.status.hasImage &&
+            !needsBothSidesToReplace &&
+            !hasRejectedSideWithoutReplacement
 }
 
 sealed interface ProviderStepEffect {
@@ -111,24 +160,15 @@ class ProviderDniViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isPreloading = true) }
             getProviderDocumentoUseCase()?.let { documento ->
-                _uiState.update { it.copy(documento = documento) }
-            }
-            when (val dniResult = getProviderDniDocumentsUseCase()) {
-                is AppResult.Success -> dniResult.data?.let { docs ->
-                    _uiState.update {
-                        it.copy(
-                            existingDocumentId = docs.id,
-                            frontStatus = docs.frontStatus,
-                            backStatus = docs.backStatus,
-                            frontRemoteLoaded = !docs.frontUrl.isNullOrBlank(),
-                            backRemoteLoaded = !docs.backUrl.isNullOrBlank(),
-                            frontFileName = docs.frontFileName,
-                            backFileName = docs.backFileName,
-                        )
-                    }
+                // No pisar lo que el usuario ya haya empezado a escribir.
+                _uiState.update {
+                    it.copy(
+                        documento = it.documento.ifBlank { documento },
+                        savedDocumento = documento,
+                    )
                 }
-                is AppResult.Error -> Unit
             }
+            refreshRemoteDni()
             when (val certResult = getWorkCertificatesUseCase()) {
                 is AppResult.Success -> certResult.data.firstOrNull()?.let { cert ->
                     _uiState.update { it.copy(existingCertificateName = cert.name) }
@@ -139,87 +179,164 @@ class ProviderDniViewModel @Inject constructor(
         }
     }
 
-    fun onDocumentoChanged(value: String) = _uiState.update { it.copy(documento = value, error = null) }
-    fun onFrontImage(path: String?) = _uiState.update {
-        it.copy(frontImagePath = path, frontFileName = path?.substringAfterLast('/'), error = null)
+    private suspend fun refreshRemoteDni() {
+        when (val dniResult = getProviderDniDocumentsUseCase()) {
+            is AppResult.Success -> _uiState.update { it.withRemoteDni(dniResult.data) }
+            is AppResult.Error -> Unit
+        }
     }
-    fun onBackImage(path: String?) = _uiState.update {
-        it.copy(backImagePath = path, backFileName = path?.substringAfterLast('/'), error = null)
+
+    private fun ProviderDniUiState.withRemoteDni(docs: ProviderDniDocuments?): ProviderDniUiState = copy(
+        existingDocumentId = docs?.id,
+        frontStatus = docs?.frontStatus,
+        backStatus = docs?.backStatus,
+        frontRemoteLoaded = !docs?.frontUrl.isNullOrBlank(),
+        backRemoteLoaded = !docs?.backUrl.isNullOrBlank(),
+        frontRemoteUrl = docs?.frontUrl,
+        backRemoteUrl = docs?.backUrl,
+        frontFileName = frontImagePath?.substringAfterLast('/') ?: docs?.frontFileName,
+        backFileName = backImagePath?.substringAfterLast('/') ?: docs?.backFileName,
+    )
+
+    fun onDocumentoChanged(value: String) {
+        if (_uiState.value.isDocumentoLocked) return
+        val digits = value.filter(Char::isDigit).take(DNI_MAX_LENGTH)
+        _uiState.update { it.copy(documento = digits, error = null) }
     }
+
+    /**
+     * `null` llega cuando el usuario cancela la cámara, la galería o el
+     * recorte: se conserva la foto anterior en vez de borrarla.
+     */
+    fun onFrontImage(path: String?) {
+        if (path == null || !_uiState.value.frontSlot.status.canReplace) return
+        _uiState.update {
+            it.copy(frontImagePath = path, frontFileName = path.substringAfterLast('/'), error = null)
+        }
+    }
+
+    fun onBackImage(path: String?) {
+        if (path == null || !_uiState.value.backSlot.status.canReplace) return
+        _uiState.update {
+            it.copy(backImagePath = path, backFileName = path.substringAfterLast('/'), error = null)
+        }
+    }
+
     fun onCertificateNameChanged(value: String) = _uiState.update { it.copy(certificateName = value, error = null) }
-    fun onCertificateSelected(path: String?) = _uiState.update { it.copy(certificatePath = path, error = null) }
+    fun onCertificateSelected(path: String?) {
+        if (path == null) return
+        _uiState.update { it.copy(certificatePath = path, error = null) }
+    }
 
     fun onPickError(message: String) = _uiState.update { it.copy(error = message) }
 
     fun submit() {
         val state = _uiState.value
-        val documento = state.documento.trim()
-        val front = state.frontImagePath
-        val back = state.backImagePath
-        val hasRemoteImages = state.frontRemoteLoaded && state.backRemoteLoaded
-        if (documento.isBlank() || (!hasRemoteImages && (front == null || back == null))) {
-            _uiState.update { it.copy(error = "Complete el número y las fotos del DNI") }
+        if (state.isLoading || state.isPreloading) return
+        if (!state.canSubmit) {
+            _uiState.update { it.copy(showValidation = true, error = it.blockingMessage()) }
             return
         }
-        if (state.isApproved && (front != null || back != null)) {
-            _uiState.update {
-                it.copy(error = "Su DNI ya fue aprobado y no puede reemplazarse.")
-            }
+        if (!state.hasPendingChanges && state.certificatePath == null) {
+            // Nada cambió: no hay que pegarle al backend, solo avanzar.
+            viewModelScope.launch { _effects.emit(ProviderStepEffect.Saved) }
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            when (val numberResult = updateProviderDniNumberUseCase(documento)) {
-                is AppResult.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = numberResult.error.userMessage()) }
-                    return@launch
+            _uiState.update { it.copy(isLoading = true, error = null, showValidation = true) }
+            val result = guardedSubmit { sendChanges(state) }
+            when (result) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
                 }
-                is AppResult.Success -> Unit
-            }
-
-            if (front != null && back != null) {
-                val imagesResult = when {
-                    state.existingDocumentId != null && state.isRejected ->
-                        replaceProviderDniImagesUseCase(state.existingDocumentId, front, back)
-                    state.existingDocumentId != null && state.isPendingReview -> {
-                        when (val deleted = deleteProviderIdentityDocumentUseCase(state.existingDocumentId)) {
-                            is AppResult.Error -> deleted
-                            is AppResult.Success -> uploadProviderDniImagesUseCase(front, back)
-                        }
-                    }
-                    else -> uploadProviderDniImagesUseCase(front, back)
-                }
-                when (imagesResult) {
-                    is AppResult.Error -> {
-                        _uiState.update { it.copy(isLoading = false, error = imagesResult.error.userMessage()) }
-                        return@launch
-                    }
-                    is AppResult.Success -> Unit
+                is AppResult.Error -> _uiState.update {
+                    it.copy(isLoading = false, error = result.error.userMessage())
                 }
             }
-
-            val certificatePath = state.certificatePath
-            val certificateName = state.certificateName.trim()
-            if (certificatePath != null && certificateName.isNotBlank()) {
-                when (val certResult = uploadWorkCertificateUseCase(certificateName, certificatePath)) {
-                    is AppResult.Error -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = "DNI enviado, pero el certificado falló: ${certResult.error.userMessage()}",
-                            )
-                        }
-                        return@launch
-                    }
-                    is AppResult.Success -> Unit
-                }
-            }
-
-            _uiState.update { it.copy(isLoading = false) }
-            _effects.emit(ProviderStepEffect.Saved)
         }
+    }
+
+    private suspend fun sendChanges(state: ProviderDniUiState): AppResult<Unit> {
+        val documento = state.documento.trim()
+        if (documento != state.savedDocumento) {
+            when (val numberResult = updateProviderDniNumberUseCase(documento)) {
+                is AppResult.Error -> return numberResult
+                is AppResult.Success -> _uiState.update { it.copy(savedDocumento = documento) }
+            }
+        }
+
+        val front = state.frontImagePath
+        val back = state.backImagePath
+        if (front != null || back != null) {
+            val imagesResult = uploadImages(state, front, back)
+            if (imagesResult is AppResult.Error) return imagesResult
+            // Las fotos ya están en el servidor: se limpian las locales y se
+            // refresca el documento (id y estado nuevos) por si el usuario vuelve.
+            _uiState.update {
+                it.copy(
+                    frontImagePath = null,
+                    backImagePath = null,
+                    frontRemoteLoaded = true,
+                    backRemoteLoaded = true,
+                    frontRemoteUrl = front ?: it.frontRemoteUrl,
+                    backRemoteUrl = back ?: it.backRemoteUrl,
+                    frontStatus = if (front != null) DOCUMENT_STATUS_UPLOADED else it.frontStatus,
+                    backStatus = if (back != null) DOCUMENT_STATUS_UPLOADED else it.backStatus,
+                )
+            }
+            refreshRemoteDni()
+        }
+
+        val certificatePath = state.certificatePath
+        val certificateName = state.certificateName.trim()
+        if (certificatePath != null && certificateName.isNotBlank()) {
+            when (val certResult = uploadWorkCertificateUseCase(certificateName, certificatePath)) {
+                is AppResult.Error -> return certResult
+                is AppResult.Success -> _uiState.update { it.copy(certificatePath = null) }
+            }
+        }
+        return AppResult.Success(Unit)
+    }
+
+    private suspend fun uploadImages(
+        state: ProviderDniUiState,
+        front: String?,
+        back: String?,
+    ): AppResult<Unit> {
+        val existingId = state.existingDocumentId
+        return when {
+            // Rechazado: el backend acepta reemplazar solo el lado que cambió.
+            existingId != null && state.isRejected ->
+                replaceProviderDniImagesUseCase(existingId, front, back)
+            // En revisión: no hay endpoint de reemplazo, se borra y se sube de nuevo.
+            existingId != null && state.isPendingReview && front != null && back != null -> {
+                when (val deleted = deleteProviderIdentityDocumentUseCase(existingId)) {
+                    is AppResult.Error -> deleted
+                    is AppResult.Success -> {
+                        // Si la subida falla, el reintento tiene que ser un alta limpia.
+                        _uiState.update { it.withRemoteDni(null) }
+                        uploadProviderDniImagesUseCase(front, back)
+                    }
+                }
+            }
+            front != null && back != null -> uploadProviderDniImagesUseCase(front, back)
+            else -> AppResult.Error(AppError.Validation(message = DNI_BOTH_SIDES_MESSAGE))
+        }
+    }
+
+    private fun ProviderDniUiState.blockingMessage(): String = documentoError ?: when {
+        !frontSlot.status.hasImage || !backSlot.status.hasImage -> "Cargue la foto del frente y del dorso del DNI."
+        hasRejectedSideWithoutReplacement -> "Reemplace la foto rechazada antes de enviar."
+        needsBothSidesToReplace -> DNI_BOTH_SIDES_MESSAGE
+        else -> "Revise los datos antes de enviar."
+    }
+
+    private companion object {
+        const val DNI_MAX_LENGTH = 11
+        const val DNI_BOTH_SIDES_MESSAGE =
+            "Para corregir un DNI en revisión, cargue de nuevo el frente y el dorso."
     }
 }
 

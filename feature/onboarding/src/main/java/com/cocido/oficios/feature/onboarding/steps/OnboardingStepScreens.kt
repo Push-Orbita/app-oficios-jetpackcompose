@@ -2,6 +2,20 @@ package com.cocido.oficios.feature.onboarding.steps
 
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import coil.compose.AsyncImage
+import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
+import com.cocido.oficios.feature.onboarding.provider.DocumentSlot
+import com.cocido.oficios.feature.onboarding.provider.DocumentSlotStatus
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -393,64 +407,79 @@ fun ProviderDniStepScreen(
         cropMode = ImageCropMode.Document,
     )
 
-    OficiosScaffold(modifier = Modifier.fillMaxSize()) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .consumeWindowInsets(padding)
-                .imePadding()
-                .padding(OficiosSpacing.md)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-        ) {
-            Text(
-                text = stringResource(R.string.onboarding_step_dni_title),
-                style = MaterialTheme.typography.headlineSmall,
+    val submitText = when {
+        !uiState.hasPendingChanges && uiState.frontSlot.status.hasImage && uiState.backSlot.status.hasImage ->
+            stringResource(R.string.onboarding_step_continue)
+        uiState.existingDocumentId != null -> stringResource(R.string.onboarding_step_dni_resubmit)
+        else -> stringResource(R.string.onboarding_step_submit_dni)
+    }
+
+    OnboardingStepScaffold(
+        title = stringResource(R.string.onboarding_step_dni_title),
+        error = uiState.error,
+        isLoading = uiState.isLoading,
+        // El CTA queda habilitado mientras se pueda editar: si falta algo, al
+        // tocarlo se explica qué. Un botón gris sin motivo deja al usuario trabado.
+        canSubmit = uiState.isEditable,
+        submitText = submitText,
+        onSubmit = onSubmit,
+    ) {
+        IdentitySubmitProgress(visible = uiState.isLoading)
+        when {
+            uiState.needsBothSidesToReplace -> IdentityHint(
+                text = stringResource(R.string.onboarding_step_dni_both_sides_hint),
+                tone = IdentityHintTone.Warning,
             )
-            if (uiState.error != null) {
-                OficiosInlineAlert(message = uiState.error)
-            }
+            uiState.isPendingReview && !uiState.hasPendingChanges -> IdentityHint(
+                text = stringResource(R.string.onboarding_step_dni_in_review_hint),
+                tone = IdentityHintTone.Info,
+            )
+        }
 
-            DniStepSection(
-                title = stringResource(R.string.onboarding_step_dni_number_section),
-                description = stringResource(R.string.onboarding_step_dni_number_hint),
-            ) {
-                OficiosTextField(
-                    value = uiState.documento,
-                    onValueChange = onDocumentoChanged,
-                    label = stringResource(R.string.onboarding_step_dni_number_label),
-                )
-            }
+        DniStepSection(
+            title = stringResource(R.string.onboarding_step_dni_number_section),
+            description = stringResource(R.string.onboarding_step_dni_number_hint),
+        ) {
+            val showNumberError = uiState.showValidation && uiState.documentoError != null
+            OficiosTextField(
+                value = uiState.documento,
+                onValueChange = onDocumentoChanged,
+                label = stringResource(R.string.onboarding_step_dni_number_label),
+                enabled = uiState.isEditable,
+                readOnly = uiState.isDocumentoLocked,
+                isError = showNumberError,
+                supportingText = when {
+                    uiState.isDocumentoLocked -> stringResource(R.string.onboarding_step_dni_number_locked)
+                    showNumberError -> uiState.documentoError
+                    else -> null
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.NumberPassword,
+                    imeAction = ImeAction.Done,
+                ),
+            )
+        }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
 
-            DniStepSection(
-                title = stringResource(R.string.onboarding_step_dni_photos_section),
-                description = stringResource(R.string.onboarding_step_dni_photos_hint),
-            ) {
-                DniImageUploadCard(
-                    title = stringResource(R.string.onboarding_step_dni_front_title),
-                    subtitle = stringResource(R.string.onboarding_step_dni_front_subtitle),
-                    isLoaded = uiState.frontImagePath != null || uiState.frontRemoteLoaded,
-                    onClick = frontPicker.requestImage,
-                )
-                DniImageUploadCard(
-                    title = stringResource(R.string.onboarding_step_dni_back_title),
-                    subtitle = stringResource(R.string.onboarding_step_dni_back_subtitle),
-                    isLoaded = uiState.backImagePath != null || uiState.backRemoteLoaded,
-                    onClick = backPicker.requestImage,
-                )
-                OficiosButton(
-                    text = stringResource(R.string.onboarding_step_submit_dni),
-                    onClick = onSubmit,
-                    enabled = !uiState.isLoading,
-                    loading = uiState.isLoading,
-                    modifier = Modifier.fillMaxWidth(),
-                    variant = OficiosButtonVariant.Secondary,
-                    size = OficiosButtonSize.Large,
-                )
-            }
+        DniStepSection(
+            title = stringResource(R.string.onboarding_step_dni_photos_section),
+            description = stringResource(R.string.onboarding_step_dni_photos_hint),
+        ) {
+            IdentityDocumentCard(
+                title = stringResource(R.string.onboarding_step_dni_front_title),
+                emptySubtitle = stringResource(R.string.onboarding_step_dni_front_subtitle),
+                slot = uiState.frontSlot,
+                enabled = uiState.isEditable,
+                onPick = frontPicker.requestImage,
+            )
+            IdentityDocumentCard(
+                title = stringResource(R.string.onboarding_step_dni_back_title),
+                emptySubtitle = stringResource(R.string.onboarding_step_dni_back_subtitle),
+                slot = uiState.backSlot,
+                enabled = uiState.isEditable,
+                onPick = backPicker.requestImage,
+            )
         }
     }
 }
@@ -478,28 +507,204 @@ fun ProviderSelfieStepScreen(
         skipCrop = true,
     )
 
+    val submitText = when {
+        !uiState.hasPendingChanges && uiState.slot.status.hasImage &&
+            uiState.slot.status != DocumentSlotStatus.Rejected -> stringResource(R.string.onboarding_step_continue)
+        uiState.existingDocumentId != null -> stringResource(R.string.onboarding_step_selfie_resubmit)
+        else -> stringResource(R.string.onboarding_step_selfie_submit)
+    }
+
     OnboardingStepScaffold(
         title = stringResource(R.string.onboarding_step_selfie_title),
         error = uiState.error,
-        isLoading = uiState.isLoading || uiState.isPreloading,
-        canSubmit = uiState.imagePath != null,
-        submitText = stringResource(R.string.onboarding_step_selfie_submit),
+        isLoading = uiState.isLoading,
+        canSubmit = uiState.isEditable,
+        submitText = submitText,
         onSubmit = onSubmit,
     ) {
+        IdentitySubmitProgress(visible = uiState.isLoading)
         Text(
             text = stringResource(R.string.onboarding_step_selfie_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (uiState.rejectionReason != null) {
+        if (uiState.rejectionReason != null && uiState.slot.status == DocumentSlotStatus.Rejected) {
             OficiosInlineAlert(message = uiState.rejectionReason)
         }
-        DniImageUploadCard(
+        IdentityDocumentCard(
             title = stringResource(R.string.onboarding_step_selfie_card_title),
-            subtitle = stringResource(R.string.onboarding_step_selfie_card_subtitle),
-            isLoaded = uiState.imagePath != null || uiState.remoteLoaded,
-            onClick = selfiePicker.requestImage,
+            emptySubtitle = stringResource(R.string.onboarding_step_selfie_card_subtitle),
+            slot = uiState.slot,
+            enabled = uiState.isEditable,
+            onPick = selfiePicker.requestImage,
         )
+    }
+}
+
+private enum class IdentityHintTone { Info, Warning }
+
+@Composable
+private fun IdentityHint(text: String, tone: IdentityHintTone) {
+    val colors = OficiosTheme.colors
+    val (container, accent) = when (tone) {
+        IdentityHintTone.Info -> colors.primaryContainer to colors.primary
+        IdentityHintTone.Warning -> colors.warningContainer to colors.warning
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .background(container)
+            .padding(OficiosSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(
+                if (tone == IdentityHintTone.Info) OficiosIcons.Clock else OficiosIcons.CircleAlert,
+            ),
+            contentDescription = null,
+            tint = accent,
+            modifier = Modifier.size(OficiosSpacing.md),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+/** Progreso visible y con texto: un spinner suelto parece que la pantalla se colgó. */
+@Composable
+private fun IdentitySubmitProgress(visible: Boolean) {
+    if (!visible) return
+    Column(
+        modifier = Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
+    ) {
+        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        Text(
+            text = stringResource(R.string.onboarding_step_sending),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * Foto de identidad con miniatura, estado y acción explícita de reemplazo.
+ * Toda la card abre el selector; "Reemplazar" lo hace evidente cuando ya hay foto.
+ */
+@Composable
+private fun IdentityDocumentCard(
+    title: String,
+    emptySubtitle: String,
+    slot: DocumentSlot,
+    enabled: Boolean,
+    onPick: () -> Unit,
+) {
+    val colors = OficiosTheme.colors
+    val status = slot.status
+    val canPick = enabled && status.canReplace
+    val statusLabel = stringResource(
+        when (status) {
+            DocumentSlotStatus.Empty -> R.string.onboarding_document_status_pending
+            DocumentSlotStatus.ReadyToSend -> R.string.onboarding_document_status_ready
+            DocumentSlotStatus.InReview -> R.string.onboarding_document_status_in_review
+            DocumentSlotStatus.Rejected -> R.string.onboarding_document_status_rejected
+            DocumentSlotStatus.Approved -> R.string.onboarding_document_status_approved
+        },
+    )
+    val subtitle = when (status) {
+        DocumentSlotStatus.Empty -> emptySubtitle
+        DocumentSlotStatus.ReadyToSend -> stringResource(R.string.onboarding_document_subtitle_ready)
+        DocumentSlotStatus.InReview -> stringResource(R.string.onboarding_document_subtitle_in_review)
+        DocumentSlotStatus.Rejected -> stringResource(R.string.onboarding_document_subtitle_rejected)
+        DocumentSlotStatus.Approved -> stringResource(R.string.onboarding_document_subtitle_approved)
+    }
+    val (badgeContainer, badgeContent) = when (status) {
+        DocumentSlotStatus.Empty -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+        DocumentSlotStatus.ReadyToSend -> colors.primaryContainer to colors.primary
+        DocumentSlotStatus.InReview -> colors.warningContainer to colors.warning
+        DocumentSlotStatus.Rejected -> colors.errorContainer to colors.error
+        DocumentSlotStatus.Approved -> colors.successContainer to colors.success
+    }
+
+    OficiosCard(
+        onClick = if (canPick) onPick else null,
+        selected = status == DocumentSlotStatus.ReadyToSend,
+        enabled = canPick,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IdentityDocumentThumbnail(
+                previewModel = slot.previewModel,
+                contentDescription = stringResource(R.string.onboarding_document_preview_a11y, title),
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
+            ) {
+                Text(text = title, style = MaterialTheme.typography.titleSmall)
+                OficiosBadge(
+                    label = statusLabel,
+                    containerColor = badgeContainer,
+                    contentColor = badgeContent,
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (status == DocumentSlotStatus.Rejected) colors.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        if (status.hasImage && status.canReplace) {
+            val replaceA11y = stringResource(R.string.onboarding_document_action_replace_a11y, title)
+            OficiosButton(
+                text = stringResource(R.string.onboarding_document_action_replace),
+                onClick = onPick,
+                enabled = canPick,
+                variant = OficiosButtonVariant.Tonal,
+                size = OficiosButtonSize.Small,
+                leadingIcon = ImageVector.vectorResource(OficiosIcons.RefreshCw),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = OficiosSpacing.sm)
+                    .semantics { contentDescription = replaceA11y },
+            )
+        }
+    }
+}
+
+@Composable
+private fun IdentityDocumentThumbnail(previewModel: String?, contentDescription: String) {
+    val shape = MaterialTheme.shapes.small
+    Box(
+        modifier = Modifier
+            .size(OficiosComponentSize.avatarMd)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(OficiosIcons.Camera),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(OficiosSpacing.lg),
+        )
+        if (previewModel != null) {
+            AsyncImage(
+                model = previewModel,
+                contentDescription = contentDescription,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
     }
 }
 
