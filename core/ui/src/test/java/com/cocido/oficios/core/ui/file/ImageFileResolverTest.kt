@@ -128,6 +128,71 @@ class ImageFileResolverTest {
     }
 
     @Test
+    fun `prepareImageForUpload keeps full landscape and jpeg under 900 kb`() {
+        val context = RuntimeEnvironment.getApplication()
+        val width = 1600
+        val height = 900
+        val source = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        source.eraseColor(Color.rgb(40, 90, 160))
+        for (x in 0 until 40) {
+            for (y in 0 until height) {
+                source.setPixel(x, y, Color.RED)
+            }
+        }
+        val jpegFile = File(context.cacheDir, "selfie-landscape.jpg")
+        jpegFile.outputStream().use { stream ->
+            assertTrue(source.compress(Bitmap.CompressFormat.JPEG, 95, stream))
+        }
+        source.recycle()
+
+        val fromPath = prepareImageForUpload(
+            context = context,
+            uri = null,
+            path = jpegFile.absolutePath,
+            filePrefix = "selfie",
+        )
+        val fromUri = prepareImageForUpload(
+            context = context,
+            uri = Uri.fromFile(jpegFile),
+            path = null,
+            filePrefix = "selfie",
+        )
+        listOf(fromPath, fromUri).forEach { path ->
+            val out = File(path)
+            assertTrue(out.exists())
+            assertTrue(out.name.startsWith("selfie_"))
+            assertTrue(out.name.endsWith(".jpg"))
+            assertTrue(out.length() <= ImageUploadContract.TARGET_MAX_BYTES)
+            val decoded = BitmapFactory.decodeFile(path)
+            checkNotNull(decoded)
+            assertTrue(
+                "selfie skip-crop must keep landscape, not square. ${decoded.width}x${decoded.height}",
+                decoded.width > decoded.height,
+            )
+            assertTrue(maxOf(decoded.width, decoded.height) <= ImageUploadContract.MAX_EDGE_PX)
+            val left = decoded.getPixel(2, decoded.height / 2)
+            assertTrue(
+                "left red strip must survive (square crop would drop it)",
+                Color.red(left) > 180,
+            )
+            decoded.recycle()
+        }
+    }
+
+    @Test
+    fun `prepareImageForUpload fails with usted copy when source is missing`() {
+        val context = RuntimeEnvironment.getApplication()
+        val error = runCatching {
+            prepareImageForUpload(context, uri = null, path = null, filePrefix = "selfie")
+        }.exceptionOrNull()
+        checkNotNull(error)
+        assertEquals(
+            ImageUploadContract.IMAGE_READ_FAILED_MESSAGE,
+            ImageUploadContract.userFacingFileFailure(error),
+        )
+    }
+
+    @Test
     fun `failed decode surfaces usted copy never english`() {
         val technical = IllegalStateException("Cannot decode image")
         assertEquals(
