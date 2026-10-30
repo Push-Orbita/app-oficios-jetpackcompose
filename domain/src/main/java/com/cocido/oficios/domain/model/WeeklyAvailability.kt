@@ -144,7 +144,13 @@ fun WeeklyAvailability.changeRange(
     val current = rangesOn(day).toMutableList()
     if (index !in current.indices) return this
     val range = current[index]
-    current[index] = TimeRange(start = from ?: range.start, end = to ?: range.end)
+    val nextStart = from ?: range.start
+    val nextEnd = when {
+        to != null -> to
+        from != null && range.end.isNotBlank() && range.end <= nextStart -> ""
+        else -> range.end
+    }
+    current[index] = TimeRange(start = nextStart, end = nextEnd)
     return withRange(day, current)
 }
 

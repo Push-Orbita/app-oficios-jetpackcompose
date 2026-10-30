@@ -43,6 +43,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleTimeOptions
+import com.cocido.oficios.core.ui.schedule.endTimeOptionsAfter
 import com.cocido.oficios.core.ui.R as UiR
 import com.cocido.oficios.domain.model.AgendaBlock
 import com.cocido.oficios.domain.model.CreateAgendaBlockParams
@@ -128,7 +129,10 @@ class AgendaBlocksViewModel @Inject constructor(
             AgendaBlocksEvent.Save -> save()
             is AgendaBlocksEvent.DateChanged -> _uiState.update { it.copy(date = event.value, errorMessage = null) }
             is AgendaBlocksEvent.FullDayChanged -> _uiState.update { it.copy(fullDay = event.checked, errorMessage = null) }
-            is AgendaBlocksEvent.FromChanged -> _uiState.update { it.copy(from = event.value, errorMessage = null) }
+            is AgendaBlocksEvent.FromChanged -> _uiState.update {
+                val newTo = if (it.to.isNotBlank() && it.to > event.value) it.to else ""
+                it.copy(from = event.value, to = newTo, errorMessage = null)
+            }
             is AgendaBlocksEvent.ToChanged -> _uiState.update { it.copy(to = event.value, errorMessage = null) }
             is AgendaBlocksEvent.ReasonChanged -> _uiState.update { it.copy(reason = event.value) }
             is AgendaBlocksEvent.RequestDelete -> _uiState.update { it.copy(pendingDeleteId = event.id) }
@@ -278,7 +282,7 @@ fun AgendaBlocksScreen(
                                     )
                                     OficiosDropdownField(
                                         value = state.to,
-                                        options = WeeklyScheduleTimeOptions,
+                                        options = endTimeOptionsAfter(state.from),
                                         onOptionSelected = { onEvent(AgendaBlocksEvent.ToChanged(it)) },
                                         label = stringResource(UiR.string.weekly_schedule_to),
                                         modifier = Modifier.weight(1f),

@@ -753,7 +753,7 @@ fun ProviderAvailabilityStepScreen(
                         )
                         OficiosDropdownField(
                             value = slot.to,
-                            options = uiState.timeOptions,
+                            options = uiState.timeOptions.filter { slot.from.isBlank() || it > slot.from },
                             onOptionSelected = { onTimeSlotToChanged(index, it) },
                             label = stringResource(R.string.onboarding_step_availability_to),
                             modifier = Modifier.weight(1f),

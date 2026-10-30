@@ -43,6 +43,18 @@ val WeeklyScheduleTimeOptions: List<String> = buildList {
     }
 }
 
+/**
+ * Opciones de "Hasta" estrictamente posteriores a [start] (HH:mm zero-padded).
+ * Si [start] está vacío, devuelve todas.
+ */
+fun endTimeOptionsAfter(
+    start: String,
+    all: List<String> = WeeklyScheduleTimeOptions,
+): List<String> {
+    if (start.isBlank()) return all
+    return all.filter { it > start }
+}
+
 @Composable
 fun WeeklyScheduleEditor(
     days: List<WeeklyScheduleDayUi>,
@@ -90,7 +102,7 @@ fun WeeklyScheduleEditor(
                                 )
                                 OficiosDropdownField(
                                     value = range.to,
-                                    options = WeeklyScheduleTimeOptions,
+                                    options = endTimeOptionsAfter(range.from),
                                     onOptionSelected = { onRangeToChanged(day.key, index, it) },
                                     label = stringResource(R.string.weekly_schedule_to),
                                     modifier = Modifier.weight(1f),

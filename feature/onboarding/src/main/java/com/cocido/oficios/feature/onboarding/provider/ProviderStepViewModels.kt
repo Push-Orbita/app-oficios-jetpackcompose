@@ -525,7 +525,9 @@ class ProviderAvailabilityViewModel @Inject constructor(
     fun onTimeSlotFromChanged(index: Int, value: String) = _uiState.update { state ->
         val slots = state.timeSlots.toMutableList()
         if (index in slots.indices) {
-            slots[index] = slots[index].copy(from = value)
+            val current = slots[index]
+            val newTo = if (current.to.isNotBlank() && current.to > value) current.to else ""
+            slots[index] = current.copy(from = value, to = newTo)
         }
         state.copy(timeSlots = slots, error = null)
     }
