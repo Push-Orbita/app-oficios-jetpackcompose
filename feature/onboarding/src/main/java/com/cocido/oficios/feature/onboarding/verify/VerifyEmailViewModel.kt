@@ -67,10 +67,9 @@ class VerifyEmailViewModel @Inject constructor(
     private var resendCooldownJob: Job? = null
 
     init {
-        viewModelScope.launch {
-            // No reenviar OTP al abrir: el usuario pide código o corrige el correo.
-            loadUser()
-        }
+        // El signup ya envía el OTP (emailSent). Reenviar acá invalidaría ese código.
+        // No sendCode en init: el usuario pide código o corrige el correo (#43 / #44).
+        viewModelScope.launch { loadUser() }
     }
 
     fun onCodeChanged(value: String) = _uiState.update {
@@ -127,7 +126,6 @@ class VerifyEmailViewModel @Inject constructor(
                             isEditingEmail = false,
                             email = request.email,
                             draftEmail = request.email,
-                            infoMessage = "Correo actualizado. Le enviamos un código nuevo.",
                             code = "",
                             canSubmit = false,
                         )
@@ -200,7 +198,9 @@ class VerifyEmailViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isResending = false,
-                        infoMessage = result.data,
+                        infoMessage = RESENT_INFO_MESSAGE,
+                        codeError = null,
+                        error = null,
                     )
                 }
                 startResendCooldown()
@@ -230,6 +230,8 @@ class VerifyEmailViewModel @Inject constructor(
     private companion object {
         const val RESEND_COOLDOWN_SECONDS = 30
         const val ONE_SECOND_MS = 1_000L
+        const val RESENT_INFO_MESSAGE =
+            "Le enviamos un nuevo código. Use el del correo más reciente."
     }
 }
 
@@ -242,3 +244,4 @@ private fun VerifyEmailUiState.withVerifyEmailError(error: AppError): VerifyEmai
     } else {
         copy(error = error.userMessage())
     }
+

@@ -61,7 +61,7 @@ class VerifyEmailViewModelTest {
     }
 
     @Test
-    fun `loads email without sending code on init`() = runTest(dispatcher) {
+    fun `loads email and does not send code on init`() = runTest(dispatcher) {
         var sendCount = 0
         val viewModel = createViewModel(
             authRepository = FakeAuthRepository(
@@ -75,6 +75,7 @@ class VerifyEmailViewModelTest {
         assertEquals("user@test.com", viewModel.uiState.value.email)
         assertEquals(0, sendCount)
         assertNull(viewModel.uiState.value.infoMessage)
+        assertEquals(0, viewModel.uiState.value.resendCooldownSeconds)
     }
 
     @Test
@@ -89,7 +90,7 @@ class VerifyEmailViewModelTest {
             accountRepository = FakeAccountRepository { request ->
                 updatedEmail = request.email
                 AppResult.Success(
-                    com.cocido.oficios.domain.model.AccountProfile(
+                    AccountProfile(
                         user = user.copy(email = request.email),
                     ),
                 )
@@ -106,6 +107,34 @@ class VerifyEmailViewModelTest {
         assertEquals("nuevo@test.com", viewModel.uiState.value.email)
         assertFalse(viewModel.uiState.value.isEditingEmail)
         assertEquals(1, sendCount)
+        assertEquals(
+            "Le enviamos un nuevo código. Use el del correo más reciente.",
+            viewModel.uiState.value.infoMessage,
+        )
+    }
+
+    @Test
+    fun `resend sends code and asks for the latest email`() = runTest(dispatcher) {
+        var sendCount = 0
+        val viewModel = createViewModel(
+            authRepository = FakeAuthRepository(
+                user = user,
+                onSendVerificationEmail = { sendCount++ },
+            ),
+        )
+        advanceUntilIdle()
+
+        viewModel.resendCode()
+        runCurrent()
+        while (viewModel.uiState.value.isResending) runCurrent()
+        runCurrent()
+
+        assertEquals(1, sendCount)
+        assertEquals(
+            "Le enviamos un nuevo código. Use el del correo más reciente.",
+            viewModel.uiState.value.infoMessage,
+        )
+        assertTrue(viewModel.uiState.value.resendCooldownSeconds > 0)
     }
 
     @Test
@@ -205,6 +234,7 @@ class VerifyEmailViewModelTest {
             ),
         )
         advanceUntilIdle()
+        assertEquals(0, sendCount)
 
         viewModel.resendCode()
         runCurrent()

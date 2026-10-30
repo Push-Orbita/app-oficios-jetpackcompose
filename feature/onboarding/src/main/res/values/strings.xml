@@ -56,14 +56,15 @@
     <string name="onboarding_step_verify_email_open_email">Abrir correo</string>
     <string name="onboarding_step_verify_email_skip">Omitir por ahora</string>
     <string name="onboarding_step_verify_email_code_label">Código de verificación</string>
-    <string name="onboarding_step_verify_email_code_sent">Le enviamos un código de 6 dígitos a su correo.</string>
+    <string name="onboarding_step_verify_email_code_sent">Le enviamos un código de 6 dígitos a su correo al registrarse.</string>
+    <string name="onboarding_step_verify_email_use_latest">Si reenvió el código, use el del correo más reciente.</string>
     <string name="onboarding_step_verify_email_spam_hint">Si no lo ve en unos minutos, revise la carpeta de spam o correo no deseado.</string>
     <string name="onboarding_step_verify_email_resend">Reenviar código</string>
     <string name="onboarding_step_verify_email_resend_cooldown">Reenviar código en %1$d s</string>
     <string name="onboarding_step_verify_email_resending">Enviando código…</string>
     <string name="onboarding_step_verify_email_submit">Continuar</string>
     <string name="onboarding_step_verify_email_code_validated">Código validado</string>
-    <string name="onboarding_step_verify_email_code_invalid">Ese código no es válido o ya venció. Revisá el correo o tocá Reenviar código.</string>
+    <string name="onboarding_step_verify_email_code_invalid">Ese código no es válido o ya venció. Revise el correo o toque Reenviar código.</string>
     <string name="onboarding_step_contact_domicilio_title">Contacto y domicilio</string>
     <string name="onboarding_step_contact_domicilio_contact_section">Su contacto</string>
     <string name="onboarding_step_contact_domicilio_contact_hint">Guarde su contacto para recibir notificaciones sobre sus servicios.</string>
