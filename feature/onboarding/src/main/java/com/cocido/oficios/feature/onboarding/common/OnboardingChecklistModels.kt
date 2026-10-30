@@ -26,5 +26,8 @@ fun List<OnboardingStep>.hasActionableRequiredSteps(): Boolean =
             (step.status == OnboardingStepStatus.PENDING || step.status == OnboardingStepStatus.REJECTED)
     }
 
+fun List<OnboardingStep>.hasStepsInReview(): Boolean =
+    any { it.status == OnboardingStepStatus.IN_REVIEW }
+
 fun List<OnboardingStep>.shouldAutoFinalizeProviderProfile(): Boolean =
     size == 1 && first().id == "finalizar_perfil"

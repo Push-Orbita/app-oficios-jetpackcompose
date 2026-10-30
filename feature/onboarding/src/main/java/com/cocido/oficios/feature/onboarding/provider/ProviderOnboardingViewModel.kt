@@ -16,15 +16,21 @@ import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistEffect
 import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
 import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionNavigator
 import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionPhase
+import com.cocido.oficios.feature.onboarding.common.hasStepsInReview
 import com.cocido.oficios.feature.onboarding.common.shouldAutoFinalizeProviderProfile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -70,28 +76,56 @@ class ProviderOnboardingViewModel @Inject constructor(
         _kycBannerMessage.update { null }
     }
 
-    fun load() {
+    fun load(silent: Boolean = false) {
         if (_completionPhase.value != OnboardingCompletionPhase.Idle) return
 
         viewModelScope.launch {
+            refreshStatus(silent = silent)
+        }
+    }
+
+    /**
+     * Mientras DNI/selfie estén En revisión, consulta el estado cada
+     * [IDENTITY_STATUS_REFRESH_MILLIS]. La Route lo llama dentro de
+     * `repeatOnLifecycle(STARTED)` para cancelar al salir de la pantalla.
+     */
+    suspend fun keepIdentityStatusFresh() {
+        uiState
+            .filterIsInstance<OnboardingChecklistUiState.Success>()
+            .map { it.steps.hasStepsInReview() }
+            .distinctUntilChanged()
+            .collectLatest { shouldPoll ->
+                if (!shouldPoll) return@collectLatest
+                while (true) {
+                    delay(IDENTITY_STATUS_REFRESH_MILLIS)
+                    refreshStatus(silent = true)
+                }
+            }
+    }
+
+    private suspend fun refreshStatus(silent: Boolean) {
+        if (_completionPhase.value != OnboardingCompletionPhase.Idle) return
+        if (!silent) {
             _uiState.update { OnboardingChecklistUiState.Loading }
-            when (val result = getOnboardingStatusUseCase.getProviderStatus()) {
-                is AppResult.Success -> {
-                    val status = syncTradeDraftIfNeeded(result.data)
-                    if (lastIdentityVerified == false && status.isIdentityVerified) {
-                        _kycBannerMessage.update {
-                            "Su documentación fue actualizada. Revise el estado en el checklist."
-                        }
-                    }
-                    lastIdentityVerified = status.isIdentityVerified
-                    val steps = getOnboardingStatusUseCase.getProviderSteps(status)
-                    when {
-                        steps.shouldAutoFinalizeProviderProfile() -> finalizeProfile()
-                        steps.isEmpty() -> completeAndNavigate()
-                        else -> _uiState.update { OnboardingChecklistUiState.Success(steps) }
+        }
+        when (val result = getOnboardingStatusUseCase.getProviderStatus()) {
+            is AppResult.Success -> {
+                val status = syncTradeDraftIfNeeded(result.data)
+                if (lastIdentityVerified == false && status.isIdentityVerified) {
+                    _kycBannerMessage.update {
+                        "Su documentación fue actualizada. Revise el estado en el checklist."
                     }
                 }
-                is AppResult.Error -> {
+                lastIdentityVerified = status.isIdentityVerified
+                val steps = getOnboardingStatusUseCase.getProviderSteps(status)
+                when {
+                    steps.shouldAutoFinalizeProviderProfile() -> finalizeProfile()
+                    steps.isEmpty() -> completeAndNavigate()
+                    else -> _uiState.update { OnboardingChecklistUiState.Success(steps) }
+                }
+            }
+            is AppResult.Error -> {
+                if (!silent || _uiState.value !is OnboardingChecklistUiState.Success) {
                     _uiState.update { OnboardingChecklistUiState.Error("No se pudo cargar el estado del perfil") }
                 }
             }
@@ -174,26 +208,16 @@ class ProviderOnboardingViewModel @Inject constructor(
     }
 
     private suspend fun reloadChecklist() {
-        when (val result = getOnboardingStatusUseCase.getProviderStatus()) {
-            is AppResult.Success -> {
-                val steps = getOnboardingStatusUseCase.getProviderSteps(result.data)
-                if (steps.isEmpty()) {
-                    completeAndNavigate()
-                } else {
-                    _uiState.update { OnboardingChecklistUiState.Success(steps) }
-                }
-            }
-            is AppResult.Error -> {
-                _uiState.update { OnboardingChecklistUiState.Error("No se pudo cargar el estado del perfil") }
-            }
-        }
+        refreshStatus(silent = true)
     }
 
-    private companion object {
+    companion object {
+        const val IDENTITY_STATUS_REFRESH_MILLIS = 12_000L
+
         // POST /trabajador-oficio-rubro/full sólo corresponde cuando todavía no existe
         // el servicio principal. Usarlo para disponibilidad, pagos o descripción sobre
         // un perfil existente intenta duplicar el rubro principal.
-        val TRADE_DRAFT_SYNC_TRIGGER_STEPS = setOf(
+        private val TRADE_DRAFT_SYNC_TRIGGER_STEPS = setOf(
             "rubro_principal",
             "subrubros",
         )

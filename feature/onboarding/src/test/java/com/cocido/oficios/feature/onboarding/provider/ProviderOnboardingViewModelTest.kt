@@ -22,8 +22,10 @@ import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -425,6 +427,154 @@ class ProviderOnboardingViewModelTest {
         advanceUntilIdle()
         assertTrue(finalizeCalled)
         navigation.cancel()
+    }
+
+    @Test
+    fun `polls identity status while docs are in review`() = runTest(dispatcher) {
+        var fetchCount = 0
+        val repository = object : OnboardingRepository {
+            override suspend fun getProviderProfileStatus(): AppResult<ProviderProfileStatus> {
+                fetchCount++
+                return AppResult.Success(
+                    ProviderProfileStatus(
+                        accountStatus = AccountStatus.PENDING_APPROVAL,
+                        isConfigurationComplete = false,
+                        isProfileComplete = false,
+                        isOperational = false,
+                        isIdentityVerified = false,
+                        missingSteps = listOf("dni_pendiente_revision", "selfie_pendiente_revision"),
+                    ),
+                )
+            }
+
+            override suspend fun getClientProfileStatus() = AppResult.Success(
+                ClientProfileStatus(
+                    isComplete = false,
+                    missingSteps = emptyList(),
+                    hasContact = false,
+                    hasAddress = false,
+                    emailVerified = false,
+                    accountStatus = AccountStatus.ACTIVE,
+                ),
+            )
+
+            override suspend fun getClientRequiredSteps(status: ClientProfileStatus) = emptyList<OnboardingStep>()
+
+            override suspend fun getProviderRequiredSteps(status: ProviderProfileStatus) = listOf(
+                OnboardingStep(
+                    id = "dni_pendiente_revision",
+                    title = "DNI en revisión",
+                    description = "Espere",
+                    status = OnboardingStepStatus.IN_REVIEW,
+                ),
+                OnboardingStep(
+                    id = "selfie_pendiente_revision",
+                    title = "Selfie en revisión",
+                    description = "Espere",
+                    status = OnboardingStepStatus.IN_REVIEW,
+                ),
+            )
+        }
+        val emptyDraftRepo = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+            override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
+            override suspend fun get() = null
+            override suspend fun clear() = Unit
+        }
+        val emptyProviderRepo = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
+            override suspend fun updateProfessionalInfo(
+                request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun submitRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun submitSecondaryRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun finalizeProfile() = AppResult.Success(Unit)
+            override suspend fun loadProviderProfileForSync() =
+                AppResult.Success(ProviderProfileSync(tradeDraft = null))
+            override suspend fun getMySubRubros() =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
+        }
+        val viewModel = ProviderOnboardingViewModel(
+            getOnboardingStatusUseCase = GetOnboardingStatusUseCase(repository),
+            registerTradeDraftRepository = emptyDraftRepo,
+            syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                providerProfileRepository = emptyProviderRepo,
+                registerTradeDraftRepository = emptyDraftRepo,
+            ),
+            retryPendingTradeDraftUseCase = RetryPendingTradeDraftUseCase(
+                SubmitRegisterTradeDraftUseCase(
+                    providerProfileRepository = emptyProviderRepo,
+                    registerTradeDraftRepository = emptyDraftRepo,
+                    catalogRepository = object : com.cocido.oficios.domain.repository.CatalogRepository {
+                        override suspend fun getCategories() =
+                            AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+                        override suspend fun getRubrosByCategory(categoryId: Long) =
+                            AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+                        override suspend fun getSubRubrosByRubro(rubroId: Long) =
+                            AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+                        override suspend fun searchBarrios(query: String) =
+                            AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+                    },
+                    syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
+                        providerProfileRepository = emptyProviderRepo,
+                        registerTradeDraftRepository = emptyDraftRepo,
+                    ),
+                ),
+            ),
+            finalizeProviderProfileUseCase = FinalizeProviderProfileUseCase(emptyProviderRepo),
+            resolveInitialDestinationUseCase = ResolveInitialDestinationUseCase(
+                sessionRepository = object : com.cocido.oficios.domain.repository.SessionRepository {
+                    override val authState = kotlinx.coroutines.flow.flowOf(
+                        com.cocido.oficios.domain.model.AuthState.Unauthenticated,
+                    )
+                    override suspend fun saveSession(
+                        tokens: com.cocido.oficios.domain.model.AuthTokens,
+                        user: com.cocido.oficios.domain.model.User,
+                    ) = Unit
+                    override suspend fun clearSession() = Unit
+                    override suspend fun getAccessToken() = "token"
+                    override suspend fun getRefreshToken() = null
+                    override suspend fun updateTokens(tokens: com.cocido.oficios.domain.model.AuthTokens) = Unit
+                    override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
+                    override suspend fun getCachedUser() = null
+                    override suspend fun updateCachedUser(user: com.cocido.oficios.domain.model.User) = Unit
+                },
+                authRepository = object : com.cocido.oficios.domain.repository.AuthRepository {
+                    override suspend fun login(email: String, password: String) =
+                        AppResult.Error(AppError.Unknown(""))
+                    override suspend fun registerClient(request: com.cocido.oficios.domain.model.RegisterClientRequest) =
+                        AppResult.Error(AppError.Unknown(""))
+                    override suspend fun registerProvider(request: com.cocido.oficios.domain.model.RegisterProviderRequest) =
+                        AppResult.Error(AppError.Unknown(""))
+                    override suspend fun refreshToken(refreshToken: String) = AppResult.Error(AppError.Unknown(""))
+                    override suspend fun getCurrentUser() = AppResult.Success(
+                        User(1, "user@test.com", "Juan", "Pérez", UserRole.PROVIDER, true),
+                    )
+                    override suspend fun logout() = AppResult.Success(Unit)
+                    override suspend fun requestPasswordReset(email: String) = AppResult.Success(Unit)
+                    override suspend fun verifyPasswordResetCode(code: String) = AppResult.Error(AppError.Unknown(""))
+                    override suspend fun resetPassword(
+                        resetToken: String,
+                        password: String,
+                        confirmPassword: String,
+                    ) = AppResult.Success(Unit)
+                    override suspend fun sendVerificationEmail() =
+                        AppResult.Success("Código de verificación reenviado a su correo")
+                    override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
+                    override suspend fun getUserRoles() =
+                        AppResult.Success(emptyList<com.cocido.oficios.domain.model.UserRoleDefinition>())
+                },
+                onboardingRepository = repository,
+            ),
+        )
+        advanceUntilIdle()
+        val afterLoad = fetchCount
+        backgroundScope.launch { viewModel.keepIdentityStatusFresh() }
+        advanceTimeBy(ProviderOnboardingViewModel.IDENTITY_STATUS_REFRESH_MILLIS)
+        runCurrent()
+        assertTrue(fetchCount > afterLoad)
     }
 
     private class FakeOnboardingRepository : OnboardingRepository {
