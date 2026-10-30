@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.feature.home.R
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun WorkerProfileRoute(
@@ -21,6 +22,8 @@ fun WorkerProfileRoute(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToFavorites: () -> Unit = {},
     onNavigateToOrders: () -> Unit = {},
+    onNavigateToInicio: () -> Unit = onNavigateBack,
+    onNavigateToSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: WorkerProfileViewModel = hiltViewModel(),
 ) {
@@ -48,7 +51,9 @@ fun WorkerProfileRoute(
     }
 
     ClientHomeTabRouteHost(
-        onStay = onNavigateBack,
+        selectedTab = ClientHomeTab.INICIO,
+        onStay = onNavigateToInicio,
+        onNavigateToSearch = onNavigateToSearch,
         onNavigateToOrders = onNavigateToOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,

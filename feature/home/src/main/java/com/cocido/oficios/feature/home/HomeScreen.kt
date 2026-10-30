@@ -26,7 +26,6 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
 import com.cocido.oficios.feature.home.components.HomeRecentWorkersSection
-import com.cocido.oficios.feature.home.components.HomeSearchEntryField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,14 +115,7 @@ private fun HomeSuccessContent(
             profilePhotoUrl = content.profilePhotoUrl,
             unreadNotificationCount = unreadNotificationCount,
             onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
-        )
-        HomeSearchEntryField(
-            query = "",
-            onQueryChange = {},
-            onSearch = { onEvent(HomeEvent.OpenSearch) },
-            onFieldClick = { onEvent(HomeEvent.OpenSearch) },
-            placeholder = stringResource(R.string.home_search_hint),
-            showMic = false,
+            onProfileClick = { onEvent(HomeEvent.NavigateToSettings) },
         )
         if (content.featuredWorkers.isNotEmpty()) {
             HomeRecentWorkersSection(

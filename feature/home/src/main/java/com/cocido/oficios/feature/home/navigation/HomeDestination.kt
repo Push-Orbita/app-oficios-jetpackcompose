@@ -6,6 +6,7 @@ object HomeDestination {
     const val graph = "home"
     const val inicio = "home/inicio"
     const val categories = "home/categories"
+    const val allRubrosCategoryId = -1L
     const val rubros = "home/rubros/{categoryId}?categoryName={categoryName}"
     const val searchResults =
         "home/search/results?rubroId={rubroId}&subRubroId={subRubroId}&barrioId={barrioId}" +

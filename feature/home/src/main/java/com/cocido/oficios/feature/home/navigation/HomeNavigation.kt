@@ -8,9 +8,12 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.cocido.oficios.feature.home.CategoriesRoute
 import com.cocido.oficios.feature.home.HomeRoute
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.rubros.RubrosRoute
-import com.cocido.oficios.feature.home.worker.WorkerProfileRoute
 import com.cocido.oficios.feature.home.search.SearchResultsRoute
+import com.cocido.oficios.feature.home.worker.WorkerProfileRoute
+
+private const val SettingsRoute = "settings"
 
 fun NavGraphBuilder.homeScreen(
     navController: NavHostController,
@@ -23,11 +26,7 @@ fun NavGraphBuilder.homeScreen(
     ) {
         composable(HomeDestination.inicio) {
             HomeRoute(
-                onNavigateToSearch = {
-                    navController.navigate(HomeDestination.categories) {
-                        launchSingleTop = true
-                    }
-                },
+                onNavigateToSearch = { navController.openClientTab(ClientHomeTab.BUSCAR, SettingsRoute) },
                 onNavigateToRubros = { categoryId, categoryName ->
                     navController.navigate(HomeDestination.rubros(categoryId, categoryName))
                 },
@@ -62,24 +61,23 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
-                onNavigateToMyOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
+                onNavigateToMyOrders = { navController.openClientTab(ClientHomeTab.PEDIDOS, SettingsRoute) },
                 onShowMessage = onShowMessage,
             )
         }
         composable(HomeDestination.categories) {
             CategoriesRoute(
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToInicio = { navController.openClientTab(ClientHomeTab.INICIO, SettingsRoute) },
+                onNavigateToSearch = { navController.openClientTab(ClientHomeTab.BUSCAR, SettingsRoute) },
                 onNavigateToRubros = { categoryId, categoryName ->
                     navController.navigate(HomeDestination.rubros(categoryId, categoryName))
-                },
-                onNavigateToSearchResults = { query ->
-                    navController.navigate(HomeDestination.searchResults(query = query))
                 },
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
-                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
+                onNavigateToOrders = { navController.openClientTab(ClientHomeTab.PEDIDOS, SettingsRoute) },
                 onShowMessage = onShowMessage,
             )
         }
@@ -92,13 +90,15 @@ fun NavGraphBuilder.homeScreen(
         ) {
             RubrosRoute(
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToInicio = { navController.openClientTab(ClientHomeTab.INICIO, SettingsRoute) },
+                onNavigateToSearch = { navController.openClientTab(ClientHomeTab.BUSCAR, SettingsRoute) },
                 onNavigateToSearchResults = { rubroId, rubroLabel, categoryId, categoryLabel, query ->
                     navController.navigate(
                         HomeDestination.searchResults(
                             rubroId = rubroId.takeIf { it >= 0 },
                             rubroLabel = rubroLabel.takeIf { it.isNotBlank() },
-                            categoryId = categoryId,
-                            categoryLabel = categoryLabel,
+                            categoryId = categoryId.takeIf { it >= 0 },
+                            categoryLabel = categoryLabel.takeIf { it.isNotBlank() },
                             query = query,
                         ),
                     )
@@ -106,7 +106,7 @@ fun NavGraphBuilder.homeScreen(
                 onShowMessage = onShowMessage,
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToFavorites = { navController.navigateToFavorites() },
-                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
+                onNavigateToOrders = { navController.openClientTab(ClientHomeTab.PEDIDOS, SettingsRoute) },
                 onNavigateToNotifications = { navController.navigateToNotifications() },
             )
         }
@@ -126,6 +126,8 @@ fun NavGraphBuilder.homeScreen(
         ) {
             SearchResultsRoute(
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToInicio = { navController.openClientTab(ClientHomeTab.INICIO, SettingsRoute) },
+                onNavigateToSearch = { navController.openClientTab(ClientHomeTab.BUSCAR, SettingsRoute) },
                 onNavigateToWorker = { workerId ->
                     navController.navigate(HomeDestination.workerProfile(workerId))
                 },
@@ -136,7 +138,7 @@ fun NavGraphBuilder.homeScreen(
                 onShowMessage = onShowMessage,
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToFavorites = { navController.navigateToFavorites() },
-                onNavigateToOrders = { navController.openClientTab(com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS, "settings") },
+                onNavigateToOrders = { navController.openClientTab(ClientHomeTab.PEDIDOS, SettingsRoute) },
             )
         }
         composable(
@@ -147,6 +149,8 @@ fun NavGraphBuilder.homeScreen(
         ) {
             WorkerProfileRoute(
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToInicio = { navController.openClientTab(ClientHomeTab.INICIO, SettingsRoute) },
+                onNavigateToSearch = { navController.openClientTab(ClientHomeTab.BUSCAR, SettingsRoute) },
                 onNavigateToHire = { workerId ->
                     navController.navigate(OrdersDestination.createOrder(workerId))
                 },
@@ -160,10 +164,7 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToFavorites = { navController.navigateToFavorites() },
                 onNavigateToOrders = {
-                    navController.openClientTab(
-                        com.cocido.oficios.feature.home.components.ClientHomeTab.PEDIDOS,
-                        "settings",
-                    )
+                    navController.openClientTab(ClientHomeTab.PEDIDOS, SettingsRoute)
                 },
             )
         }

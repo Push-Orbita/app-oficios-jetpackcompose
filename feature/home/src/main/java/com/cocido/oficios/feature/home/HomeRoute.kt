@@ -10,6 +10,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun HomeRoute(
@@ -68,6 +69,8 @@ fun HomeRoute(
     }
 
     ClientHomeTabRouteHost(
+        selectedTab = ClientHomeTab.INICIO,
+        onNavigateToSearch = onNavigateToSearch,
         onNavigateToOrders = onNavigateToMyOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,
@@ -88,13 +91,14 @@ fun HomeRoute(
 fun CategoriesRoute(
     onNavigateBack: () -> Unit,
     onNavigateToRubros: (Long, String) -> Unit,
-    onNavigateToSearchResults: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToHelp: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToOrders: () -> Unit,
     onShowMessage: (String) -> Unit,
+    onNavigateToInicio: () -> Unit = onNavigateBack,
+    onNavigateToSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: CategoriesViewModel = hiltViewModel(),
 ) {
@@ -107,7 +111,6 @@ fun CategoriesRoute(
             when (effect) {
                 CategoriesEffect.NavigateBack -> onNavigateBack()
                 is CategoriesEffect.NavigateToRubros -> onNavigateToRubros(effect.categoryId, effect.categoryName)
-                is CategoriesEffect.NavigateToSearchResults -> onNavigateToSearchResults(effect.query)
                 is CategoriesEffect.ShowMessage -> toastController.showError(effect.message)
                 CategoriesEffect.NavigateToNotifications -> onNavigateToNotifications()
             }
@@ -115,7 +118,9 @@ fun CategoriesRoute(
     }
 
     ClientHomeTabRouteHost(
-        onStay = onNavigateBack,
+        selectedTab = ClientHomeTab.BUSCAR,
+        onStay = onNavigateToInicio,
+        onNavigateToSearch = onNavigateToSearch,
         onNavigateToOrders = onNavigateToOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,

@@ -7,9 +7,7 @@ import com.cocido.oficios.domain.model.RecentSearchType
 sealed interface HomeEvent {
     data object Retry : HomeEvent
     data object Refresh : HomeEvent
-    data object OpenSearch : HomeEvent
     data object OpenNotifications : HomeEvent
-    data class SearchSubmitted(val query: String) : HomeEvent
     data class RecentSearchSelected(val entry: RecentSearchEntry) : HomeEvent
     data class CategorySelected(val category: HomeCategoryItem) : HomeEvent
     data object SeeAllCategories : HomeEvent
@@ -29,6 +27,7 @@ sealed interface CategoriesEvent {
     data object Back : CategoriesEvent
     data object OpenNotifications : CategoriesEvent
     data class CategorySelected(val category: HomeCategoryItem) : CategoriesEvent
+    data class QueryChanged(val query: String) : CategoriesEvent
     data class SearchSubmitted(val query: String) : CategoriesEvent
     data object SeeAll : CategoriesEvent
 }
@@ -61,5 +60,4 @@ sealed interface CategoriesEffect {
     data class ShowMessage(val message: String) : CategoriesEffect
     data object NavigateToNotifications : CategoriesEffect
     data class NavigateToRubros(val categoryId: Long, val categoryName: String) : CategoriesEffect
-    data class NavigateToSearchResults(val query: String) : CategoriesEffect
 }

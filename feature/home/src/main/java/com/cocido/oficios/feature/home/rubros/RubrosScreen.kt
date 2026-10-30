@@ -9,10 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosNotificationButton
@@ -39,8 +35,14 @@ fun RubrosScreen(
     onTabSelected: (ClientHomeTab) -> Unit = {},
     showFavorites: Boolean? = null,
 ) {
-    val topBarTitle = (uiState as? RubrosUiState.Success)?.categoryName
-        ?: stringResource(R.string.home_categories_title)
+    val topBarTitle = when (val state = uiState) {
+        is RubrosUiState.Success -> when {
+            state.categoryName.isNotBlank() -> state.categoryName
+            state.isAllRubros -> stringResource(R.string.home_all_oficios_title)
+            else -> stringResource(R.string.home_categories_title)
+        }
+        else -> stringResource(R.string.home_categories_title)
+    }
     OficiosScaffold(
         modifier = modifier,
         topBar = {
@@ -103,8 +105,6 @@ private fun RubrosContent(
     state: RubrosUiState.Success,
     onEvent: (RubrosEvent) -> Unit,
 ) {
-    var searchQuery by rememberSaveable { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -112,14 +112,24 @@ private fun RubrosContent(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         HomeSearchEntryField(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
+            query = state.query,
+            onQueryChange = { onEvent(RubrosEvent.QueryChanged(it)) },
             onSearch = { onEvent(RubrosEvent.SearchSubmitted(it)) },
-            placeholder = stringResource(R.string.home_search_hint),
+            placeholder = stringResource(R.string.home_search_rubros_hint),
         )
         HomeRubrosGrid(
-            rubros = state.rubros,
+            rubros = state.visibleRubros,
             onRubroClick = { onEvent(RubrosEvent.RubroSelected(it)) },
+            emptyTitle = if (state.query.isBlank()) {
+                stringResource(R.string.home_rubros_empty_title)
+            } else {
+                stringResource(R.string.home_rubros_filter_empty_title)
+            },
+            emptyDescription = if (state.query.isBlank()) {
+                stringResource(R.string.home_rubros_empty_description)
+            } else {
+                stringResource(R.string.home_rubros_filter_empty_description, state.query)
+            },
             modifier = Modifier.weight(1f),
         )
     }

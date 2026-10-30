@@ -8,6 +8,7 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.domain.model.NotificationPage
 import com.cocido.oficios.domain.repository.NotificationsRepository
+import com.cocido.oficios.domain.usecase.catalog.GetAllRubrosUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -46,7 +48,7 @@ class RubrosViewModelTest {
     }
 
     @Test
-    fun `search submitted emits navigate effect`() = runTest(testDispatcher) {
+    fun `search submitted filters visible rubros without leaving the grid`() = runTest(testDispatcher) {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
@@ -57,13 +59,27 @@ class RubrosViewModelTest {
         advanceUntilIdle()
         job.cancel()
 
-        assertTrue(effects.any { it is RubrosEffect.NavigateToSearchResults })
+        val success = viewModel.uiState.value as RubrosUiState.Success
+        assertEquals("gasista", success.query)
+        assertTrue(effects.none { it is RubrosEffect.NavigateToSearchResults })
     }
 
-    private fun createViewModel(): RubrosViewModel {
+    @Test
+    fun `all oficios loads catalog-wide rubros`() = runTest(testDispatcher) {
+        val viewModel = createViewModel(categoryId = -1L, categoryName = "")
+        advanceUntilIdle()
+        val success = viewModel.uiState.value as RubrosUiState.Success
+        assertTrue(success.isAllRubros)
+        assertEquals(listOf("Plomería"), success.rubros.map { it.label })
+    }
+
+    private fun createViewModel(
+        categoryId: Long = 1L,
+        categoryName: String = "Construcción",
+    ): RubrosViewModel {
         val catalogRepository = object : CatalogRepository {
             override suspend fun getCategories(): AppResult<List<CatalogOption>> =
-                AppResult.Success(emptyList())
+                AppResult.Success(listOf(CatalogOption(1L, "Construcción")))
             override suspend fun getRubrosByCategory(categoryId: Long): AppResult<List<CatalogOption>> =
                 AppResult.Success(listOf(CatalogOption(1L, "Plomería")))
             override suspend fun getSubRubrosByRubro(rubroId: Long): AppResult<List<CatalogOption>> =
@@ -74,11 +90,12 @@ class RubrosViewModelTest {
         return RubrosViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf(
-                    "categoryId" to 1L,
-                    "categoryName" to "Construcción",
+                    "categoryId" to categoryId,
+                    "categoryName" to categoryName,
                 ),
             ),
             getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(catalogRepository),
+            getAllRubrosUseCase = GetAllRubrosUseCase(catalogRepository),
             getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(object : NotificationsRepository {
                 override fun cachedUnreadCount(): Int? = 0
                 override suspend fun registerDeviceToken(fcmToken: String, deviceId: String?) = AppResult.Success(Unit)

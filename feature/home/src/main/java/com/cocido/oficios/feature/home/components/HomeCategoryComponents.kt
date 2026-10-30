@@ -205,11 +205,13 @@ fun HomeCategoriesGrid(
     showSeeAll: Boolean = true,
     onSeeAllClick: () -> Unit = {},
     lazy: Boolean = true,
+    emptyTitle: String = stringResource(R.string.home_categories_empty_title),
+    emptyDescription: String = stringResource(R.string.home_categories_empty_description),
 ) {
     if (categories.isEmpty()) {
         OficiosEmptyState(
-            title = stringResource(R.string.home_categories_empty_title),
-            description = stringResource(R.string.home_categories_empty_description),
+            title = emptyTitle,
+            description = emptyDescription,
             modifier = modifier.fillMaxWidth(),
         )
         return
@@ -290,11 +292,13 @@ fun HomeRubrosGrid(
     rubros: List<CatalogOption>,
     onRubroClick: (CatalogOption) -> Unit,
     modifier: Modifier = Modifier,
+    emptyTitle: String = stringResource(R.string.home_rubros_empty_title),
+    emptyDescription: String = stringResource(R.string.home_rubros_empty_description),
 ) {
     if (rubros.isEmpty()) {
         OficiosEmptyState(
-            title = stringResource(R.string.home_rubros_empty_title),
-            description = stringResource(R.string.home_rubros_empty_description),
+            title = emptyTitle,
+            description = emptyDescription,
             modifier = modifier.fillMaxWidth(),
         )
         return

@@ -1,7 +1,6 @@
 package com.cocido.oficios.feature.home
 
 import com.cocido.oficios.core.common.result.AppResult
-import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.domain.model.NotificationPage
@@ -54,7 +53,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `open search navigates to empty search results`() = runTest(testDispatcher) {
+    fun `see all categories navigates to buscar oficios tab`() = runTest(testDispatcher) {
         val repository = FakeHomeRepository()
         val viewModel = createViewModel(repository)
         advanceUntilIdle()
@@ -62,21 +61,15 @@ class HomeViewModelTest {
         val effects = mutableListOf<HomeEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.onEvent(HomeEvent.OpenSearch)
+        viewModel.onEvent(HomeEvent.SeeAllCategories)
         advanceUntilIdle()
         job.cancel()
 
-        assertTrue(
-            effects.any { effect ->
-                effect is HomeEffect.NavigateToSearchResults &&
-                    effect.query == null &&
-                    effect.rubroId == null
-            },
-        )
+        assertTrue(effects.any { it is HomeEffect.NavigateToSearch })
     }
 
     @Test
-    fun `search submitted emits navigate effect with query`() = runTest(testDispatcher) {
+    fun `profile click navigates to perfil tab`() = runTest(testDispatcher) {
         val repository = FakeHomeRepository()
         val viewModel = createViewModel(repository)
         advanceUntilIdle()
@@ -84,25 +77,11 @@ class HomeViewModelTest {
         val effects = mutableListOf<HomeEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.onEvent(HomeEvent.SearchSubmitted("plomero"))
+        viewModel.onEvent(HomeEvent.NavigateToSettings)
         advanceUntilIdle()
         job.cancel()
 
-        assertTrue(effects.any { it is HomeEffect.NavigateToSearchResults && it.query == "plomero" })
-    }
-
-    @Test
-    fun `search submitted does not persist recents before results`() = runTest(testDispatcher) {
-        val recents = FakeRecentSearchRepository()
-        val viewModel = HomeViewModel(
-            getClientHomeUseCase = GetClientHomeUseCase(FakeHomeRepository()),
-            trackRecentSearchUseCase = TrackRecentSearchUseCase(recents),
-            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeNotificationsRepository()),
-        )
-        advanceUntilIdle()
-        viewModel.onEvent(HomeEvent.SearchSubmitted("plomería"))
-        advanceUntilIdle()
-        assertTrue(recents.tracked.isEmpty())
+        assertTrue(effects.any { it is HomeEffect.NavigateToSettings })
     }
 
     @Test

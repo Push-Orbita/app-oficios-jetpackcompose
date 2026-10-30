@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun SearchResultsRoute(
@@ -19,6 +20,8 @@ fun SearchResultsRoute(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToFavorites: () -> Unit = {},
     onNavigateToOrders: () -> Unit = {},
+    onNavigateToInicio: () -> Unit = onNavigateBack,
+    onNavigateToSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: SearchResultsViewModel = hiltViewModel(),
 ) {
@@ -41,7 +44,9 @@ fun SearchResultsRoute(
     }
 
     ClientHomeTabRouteHost(
-        onStay = onNavigateBack,
+        selectedTab = ClientHomeTab.BUSCAR,
+        onStay = onNavigateToInicio,
+        onNavigateToSearch = onNavigateToSearch,
         onNavigateToOrders = onNavigateToOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,

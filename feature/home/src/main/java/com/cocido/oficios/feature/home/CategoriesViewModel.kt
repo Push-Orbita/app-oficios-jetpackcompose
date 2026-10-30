@@ -8,6 +8,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.usecase.GetHomeCategoriesUseCase
 import com.cocido.oficios.domain.usecase.TrackRecentCategoryUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
+import com.cocido.oficios.feature.home.navigation.HomeDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -55,18 +56,18 @@ class CategoriesViewModel @Inject constructor(
             CategoriesEvent.Back -> emitEffect(CategoriesEffect.NavigateBack)
             CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.NavigateToNotifications)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
-            is CategoriesEvent.SearchSubmitted -> onSearchSubmitted(event.query)
-            CategoriesEvent.SeeAll -> emitEffect(CategoriesEffect.NavigateToSearchResults(""))
+            is CategoriesEvent.QueryChanged -> onQueryChanged(event.query)
+            is CategoriesEvent.SearchSubmitted -> onQueryChanged(event.query)
+            CategoriesEvent.SeeAll -> emitEffect(
+                CategoriesEffect.NavigateToRubros(HomeDestination.allRubrosCategoryId, ""),
+            )
         }
     }
 
-    private fun onSearchSubmitted(query: String) {
-        val trimmed = query.trim()
-        if (trimmed.isEmpty()) {
-            emitEffect(CategoriesEffect.NavigateToSearchResults(""))
-            return
+    private fun onQueryChanged(query: String) {
+        _uiState.update { state ->
+            if (state is CategoriesUiState.Success) state.copy(query = query) else state
         }
-        emitEffect(CategoriesEffect.NavigateToSearchResults(trimmed))
     }
 
     private fun onCategorySelected(category: HomeCategoryItem) {
@@ -80,6 +81,7 @@ class CategoriesViewModel @Inject constructor(
     private fun loadCategories(refreshing: Boolean = false) {
         viewModelScope.launch {
             val previous = _uiState.value
+            val previousQuery = (previous as? CategoriesUiState.Success)?.query.orEmpty()
             try {
                 if (refreshing && previous is CategoriesUiState.Success) {
                     _uiState.update { previous.copy(isRefreshing = true) }
@@ -90,7 +92,9 @@ class CategoriesViewModel @Inject constructor(
                 }
                 when (val result = getHomeCategoriesUseCase()) {
                     is AppResult.Success -> {
-                        _uiState.update { CategoriesUiState.Success(result.data) }
+                        _uiState.update {
+                            CategoriesUiState.Success(categories = result.data, query = previousQuery)
+                        }
                     }
                     is AppResult.Error -> {
                         val message = result.error.userMessage()

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -174,13 +175,18 @@ private fun OficiosBottomNavItem(
                     .clip(CircleShape)
                     .background(indicatorColor, CircleShape),
             )
-            OficiosNotificationBadge(count = item.badgeCount) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(item.iconRes),
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(OficiosComponentSize.iconMd),
-                )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                OficiosNotificationBadge(count = item.badgeCount) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(item.iconRes),
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(OficiosComponentSize.iconMd),
+                    )
+                }
             }
         }
         Spacer(Modifier.height(OficiosSpacing.xxxs))
@@ -254,6 +260,7 @@ private fun BottomNavClienteLightPreview() {
     OficiosTheme {
         val items = listOf(
             OficiosNavItem("home", "Inicio", OficiosIcons.House),
+            OficiosNavItem("search", "Buscar", OficiosIcons.Search),
             OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
             OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
             OficiosNavItem("profile", "Perfil", OficiosIcons.User),
@@ -272,6 +279,7 @@ private fun BottomNavClientePreview() {
     OficiosTheme(darkTheme = true) {
         val items = listOf(
             OficiosNavItem("home", "Inicio", OficiosIcons.House),
+            OficiosNavItem("search", "Buscar", OficiosIcons.Search),
             OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
             OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
             OficiosNavItem("profile", "Perfil", OficiosIcons.User),

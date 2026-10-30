@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cocido.oficios.feature.home.common.ClientHomeTabRouteHost
+import com.cocido.oficios.feature.home.components.ClientHomeTab
 
 @Composable
 fun RubrosRoute(
@@ -18,6 +19,8 @@ fun RubrosRoute(
     onNavigateToFavorites: () -> Unit = {},
     onNavigateToOrders: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToInicio: () -> Unit = onNavigateBack,
+    onNavigateToSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: RubrosViewModel = hiltViewModel(),
 ) {
@@ -43,7 +46,9 @@ fun RubrosRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val unreadCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     ClientHomeTabRouteHost(
-        onStay = onNavigateBack,
+        selectedTab = ClientHomeTab.BUSCAR,
+        onStay = onNavigateToInicio,
+        onNavigateToSearch = onNavigateToSearch,
         onNavigateToOrders = onNavigateToOrders,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToFavorites = onNavigateToFavorites,

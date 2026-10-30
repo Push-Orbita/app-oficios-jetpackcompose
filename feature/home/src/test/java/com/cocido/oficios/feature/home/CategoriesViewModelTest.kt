@@ -4,6 +4,7 @@ import com.cocido.oficios.domain.model.HomeCategoryItem
 import com.cocido.oficios.domain.usecase.GetHomeCategoriesUseCase
 import com.cocido.oficios.domain.usecase.TrackRecentCategoryUseCase
 import com.cocido.oficios.domain.usecase.notifications.GetUnreadNotificationCountUseCase
+import com.cocido.oficios.feature.home.navigation.HomeDestination
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -13,6 +14,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -34,11 +36,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun `load emits success state`() = runTest(testDispatcher) {
-        val viewModel = CategoriesViewModel(
-            getHomeCategoriesUseCase = GetHomeCategoriesUseCase(FakeHomeRepository()),
-            trackRecentCategoryUseCase = TrackRecentCategoryUseCase(FakeHomeRepository()),
-            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeUnreadNotificationsRepository()),
-        )
+        val viewModel = createViewModel()
 
         advanceUntilIdle()
 
@@ -46,31 +44,47 @@ class CategoriesViewModelTest {
     }
 
     @Test
-    fun `search submitted emits navigate effect`() = runTest(testDispatcher) {
-        val viewModel = CategoriesViewModel(
-            getHomeCategoriesUseCase = GetHomeCategoriesUseCase(FakeHomeRepository()),
-            trackRecentCategoryUseCase = TrackRecentCategoryUseCase(FakeHomeRepository()),
-            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeUnreadNotificationsRepository()),
-        )
+    fun `query filters visible categories without leaving oficios`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
         advanceUntilIdle()
 
         val effects = mutableListOf<CategoriesEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.onEvent(CategoriesEvent.SearchSubmitted("electricista"))
+        viewModel.onEvent(CategoriesEvent.QueryChanged("hogar"))
+        viewModel.onEvent(CategoriesEvent.SearchSubmitted("hogar"))
         advanceUntilIdle()
         job.cancel()
 
-        assertTrue(effects.any { it is CategoriesEffect.NavigateToSearchResults })
+        val success = viewModel.uiState.value as CategoriesUiState.Success
+        assertEquals("hogar", success.query)
+        assertTrue(effects.none { it is CategoriesEffect.NavigateToRubros && it.categoryId < 0 })
+        assertTrue(effects.isEmpty())
+    }
+
+    @Test
+    fun `see all opens flat oficios list`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val effects = mutableListOf<CategoriesEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.onEvent(CategoriesEvent.SeeAll)
+        advanceUntilIdle()
+        job.cancel()
+
+        assertTrue(
+            effects.any { effect ->
+                effect is CategoriesEffect.NavigateToRubros &&
+                    effect.categoryId == HomeDestination.allRubrosCategoryId
+            },
+        )
     }
 
     @Test
     fun `invalid category id is ignored`() = runTest(testDispatcher) {
-        val viewModel = CategoriesViewModel(
-            getHomeCategoriesUseCase = GetHomeCategoriesUseCase(FakeHomeRepository()),
-            trackRecentCategoryUseCase = TrackRecentCategoryUseCase(FakeHomeRepository()),
-            getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeUnreadNotificationsRepository()),
-        )
+        val viewModel = createViewModel()
         advanceUntilIdle()
 
         viewModel.onEvent(
@@ -78,6 +92,12 @@ class CategoriesViewModelTest {
         )
         advanceUntilIdle()
     }
+
+    private fun createViewModel() = CategoriesViewModel(
+        getHomeCategoriesUseCase = GetHomeCategoriesUseCase(FakeHomeRepository()),
+        trackRecentCategoryUseCase = TrackRecentCategoryUseCase(FakeHomeRepository()),
+        getUnreadNotificationCountUseCase = GetUnreadNotificationCountUseCase(FakeUnreadNotificationsRepository()),
+    )
 }
 
 private class FakeUnreadNotificationsRepository : com.cocido.oficios.domain.repository.NotificationsRepository {

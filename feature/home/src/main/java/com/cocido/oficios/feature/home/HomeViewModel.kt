@@ -59,9 +59,7 @@ class HomeViewModel @Inject constructor(
         when (event) {
             HomeEvent.Retry -> loadHome()
             HomeEvent.Refresh -> loadHome(refreshing = true)
-            HomeEvent.OpenSearch -> emitEffect(HomeEffect.NavigateToSearchResults())
             HomeEvent.OpenNotifications -> emitEffect(HomeEffect.NavigateToNotifications)
-            is HomeEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             is HomeEvent.RecentSearchSelected -> onRecentSearchSelected(event.entry)
             is HomeEvent.CategorySelected -> onCategorySelected(event.category)
             HomeEvent.SeeAllCategories -> emitEffect(HomeEffect.NavigateToSearch)
@@ -133,15 +131,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    private fun onSearchSubmitted(query: String) {
-        val trimmed = query.trim()
-        if (trimmed.isEmpty()) {
-            emitEffect(HomeEffect.NavigateToSearchResults())
-            return
-        }
-        emitEffect(HomeEffect.NavigateToSearchResults(query = trimmed))
     }
 
     private fun loadHome(refreshing: Boolean = false, silent: Boolean = false) {

@@ -152,6 +152,7 @@ internal fun SearchScreenshotBottomNav(
                 currentRoute = selectedRoute,
                 items = listOf(
                     OficiosNavItem("home", "Inicio", OficiosIcons.House),
+                    OficiosNavItem("search", "Buscar", OficiosIcons.Search),
                     OficiosNavItem("orders", "Mis pedidos", OficiosIcons.ReceiptText, badgeCount = 3),
                     OficiosNavItem("favorites", "Favoritos", OficiosIcons.Heart),
                     OficiosNavItem("profile", "Perfil", OficiosIcons.User),
@@ -203,7 +204,7 @@ internal fun SearchScreenshotCategories(
     SearchScreenshotFrame(statusBar = statusBar, navigationBar = navigationBar, darkTheme = darkTheme) {
         CategoriesScreen(
             uiState = CategoriesUiState.Success(screenshotCategories),
-            selectedTab = ClientHomeTab.INICIO,
+            selectedTab = ClientHomeTab.BUSCAR,
             onEvent = {},
             onTabSelected = {},
             showFavorites = true,
@@ -224,6 +225,7 @@ internal fun SearchScreenshotRubros(
                 rubros = screenshotRubros,
             ),
             onEvent = {},
+            selectedTab = ClientHomeTab.BUSCAR,
             showFavorites = true,
         )
     }
@@ -247,6 +249,7 @@ internal fun SearchScreenshotResults(
             filterSheetState = FilterSheetUiState(),
             searchQuery = "",
             onEvent = {},
+            selectedTab = ClientHomeTab.BUSCAR,
             showFavorites = true,
         )
     }
