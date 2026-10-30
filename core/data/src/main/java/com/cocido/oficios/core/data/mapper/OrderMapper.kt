@@ -75,27 +75,52 @@ private fun String?.toZonedDateTimeOrNull(zone: ZoneId): ZonedDateTime? =
 private fun ZonedDateTime.formatDisplayLabel(): String =
     format(DISPLAY_FORMATTER).replace(".", "").replaceFirstChar { it.uppercase() }
 
-fun String.toRequestStatus(): ServiceRequestStatus = when (uppercase()) {
+fun String.toRequestStatus(): ServiceRequestStatus = when (trim().uppercase(Locale.ROOT)) {
     "PENDIENTE" -> ServiceRequestStatus.PENDING
     "CONTRAPROPUESTA" -> ServiceRequestStatus.COUNTER_OFFER
-    "ACEPTADA" -> ServiceRequestStatus.ACCEPTED
-    "CANCELADA" -> ServiceRequestStatus.CANCELLED
+    // La solicitud cerrada por un booking finalizado sigue siendo una solicitud aceptada:
+    // el detalle lo resuelve el estado del booking.
+    "ACEPTADA", "FINALIZADA", "FINALIZADO" -> ServiceRequestStatus.ACCEPTED
+    "CANCELADA", "RECHAZADA" -> ServiceRequestStatus.CANCELLED
     "EXPIRADA" -> ServiceRequestStatus.EXPIRED
     else -> ServiceRequestStatus.PENDING
 }
 
 fun String.toBookingStatus(): BookingStatus = when (trim().uppercase(Locale.ROOT)) {
     "PENDIENTE" -> BookingStatus.PENDING
-    "CONFIRMADA" -> BookingStatus.CONFIRMED
+    "CONFIRMADA", "CONFIRMADO" -> BookingStatus.CONFIRMED
     "EN_CAMINO" -> BookingStatus.EN_ROUTE
     // LLEGUE es el estado de tracking post-llegada. Si llega como estado del booking,
     // el pedido sigue vivo y la UI es la de código de finalización (igual que EN_CURSO).
     "EN_CURSO", "LLEGUE" -> BookingStatus.IN_PROGRESS
-    "FINALIZADA" -> BookingStatus.FINISHED
-    "CANCELADA" -> BookingStatus.CANCELLED
-    "EXPIRADA" -> BookingStatus.EXPIRED
+    "FINALIZADA", "FINALIZADO" -> BookingStatus.FINISHED
+    "CANCELADA", "CANCELADO" -> BookingStatus.CANCELLED
+    "EXPIRADA", "EXPIRADO" -> BookingStatus.EXPIRED
     else -> BookingStatus.PENDING
 }
+
+/**
+ * El booking es la fuente de verdad una vez que existe y avanzó: si está confirmado,
+ * en camino, en curso o finalizado, la solicitud ya fue aceptada aunque su `estado`
+ * venga desfasado (p. ej. PENDIENTE o un valor desconocido). Sin esto, un booking
+ * FINALIZADA mostraba «Pedido Pendiente» con Aceptar/Rechazar.
+ * Cancelación y expiración de la solicitud se respetan tal cual.
+ */
+internal fun resolveRequestStatus(estado: String, bookingStatus: BookingStatus?): ServiceRequestStatus {
+    val request = estado.toRequestStatus()
+    if (request == ServiceRequestStatus.CANCELLED || request == ServiceRequestStatus.EXPIRED) return request
+    return when (bookingStatus) {
+        BookingStatus.CONFIRMED,
+        BookingStatus.EN_ROUTE,
+        BookingStatus.IN_PROGRESS,
+        BookingStatus.FINISHED,
+        -> ServiceRequestStatus.ACCEPTED
+        else -> request
+    }
+}
+
+private fun BookingStatus?.isCancellable(): Boolean =
+    this != BookingStatus.FINISHED && this != BookingStatus.CANCELLED && this != BookingStatus.EXPIRED
 
 fun String.toCounterOfferStatus(): CounterOfferStatus = when (uppercase()) {
     "PENDIENTE" -> CounterOfferStatus.PENDING
@@ -140,6 +165,8 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
     val acceptedPrice = contrapropuestas
         .firstOrNull { it.estado.equals("ACEPTADA", ignoreCase = true) }
         ?.nuevoPrecio
+    val bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus()
+    val requestStatus = resolveRequestStatus(estado, bookingStatus)
 
     return ServiceOrder(
         id = id,
@@ -148,7 +175,7 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         workerId = trabajadorOficio?.id ?: 0L,
         rubroLabel = rubro?.nombre.orEmpty(),
         subRubroLabel = subRubro?.nombre.orEmpty(),
-        status = estado.toRequestStatus(),
+        status = requestStatus,
         description = descripcion.orEmpty(),
         addressLabel = domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre),
         addressLatitude = validCoordinate(domicilio?.latitud, domicilio?.longitud)?.first,
@@ -163,9 +190,10 @@ fun SolicitudServicioDto.toDomain(): ServiceOrder {
         rejectionReason = motivoRechazo,
         bookingId = booking?.id?.takeIf { it != 0L },
         scheduledLabel = booking?.scheduledLabel(),
-        bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
+        bookingStatus = bookingStatus,
         bookingType = bookingTypeLabel(booking?.tipo),
-        canCancelBooking = booking?.puedeCancelar ?: false,
+        // Un booking terminal no se cancela aunque el backend mande puedeCancelar=true.
+        canCancelBooking = (booking?.puedeCancelar ?: false) && bookingStatus.isCancellable(),
         cancellationDeadlineLabel = booking?.fechaLimiteCancelacion.toDisplayDateLabel(),
         pendingCounterOffer = pendingCounterOffer,
         acceptedPrice = acceptedPrice,
@@ -266,14 +294,16 @@ fun SolicitudServicioSimpleDto.toListItem(isWorkerViewing: Boolean): ServiceOrde
     } else {
         workerName.ifBlank { subRubro?.nombre.orEmpty() }
     }
+    val bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus()
+    val requestStatus = resolveRequestStatus(estado, bookingStatus)
     return ServiceOrderListItem(
         id = id,
         counterpartName = counterpart,
         subRubroLabel = subRubro?.nombre.orEmpty(),
-        status = estado.toRequestStatus(),
-        bookingStatus = booking?.estado?.takeIf { it.isNotBlank() }?.toBookingStatus(),
+        status = requestStatus,
+        bookingStatus = bookingStatus,
         scheduledLabel = booking?.scheduledLabel(),
-        addressLabel = if (isWorkerViewing && estado.toRequestStatus() != ServiceRequestStatus.ACCEPTED) {
+        addressLabel = if (isWorkerViewing && requestStatus != ServiceRequestStatus.ACCEPTED) {
             ""
         } else {
             domicilioLabel(domicilio?.calle, domicilio?.numero, domicilio?.barrio?.nombre)

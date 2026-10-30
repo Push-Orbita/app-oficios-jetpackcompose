@@ -188,8 +188,15 @@ fun clientPrimaryAction(
     else -> null
 }
 
-/** El backend guarda calidad en escala 1–10 (estrellas × 2) y puntualidad en 1–5. */
-fun qualityStars(score: Int?): Int? = score?.div(2)?.coerceIn(1, 5)
+/**
+ * Calidad y puntualidad van en 1–5. Reseñas viejas pueden traer calidad 1–10
+ * (estrellas × 2): solo esas se convierten.
+ */
+fun qualityStars(score: Int?): Int? {
+    val value = score?.takeIf { it > 0 } ?: return null
+    val stars = if (value > 5) (value + 1) / 2 else value
+    return stars.coerceIn(1, 5)
+}
 
 fun punctualityStars(score: Int?): Int? = score?.coerceIn(1, 5)
 
