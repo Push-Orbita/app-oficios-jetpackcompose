@@ -3,16 +3,18 @@ package com.cocido.oficios.feature.onboarding.provider
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
 
+/**
+ * Ya no bloquea el alta post-identidad en la app.
+ * El backend puede exigir DNI aprobado en `POST .../rubro/full` (gap documentado);
+ * los ViewModels guardan draft y/o muestran el error de API con copy útil.
+ */
 internal suspend fun providerIdentityGateMessage(
+    @Suppress("UNUSED_PARAMETER") getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
+): String? = null
+
+internal suspend fun isProviderIdentityVerified(
     getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
-): String? = when (val status = getOnboardingStatusUseCase.getProviderStatus()) {
-    is AppResult.Success -> {
-        if (status.data.isIdentityVerified) {
-            null
-        } else {
-            "Su DNI debe estar aprobado antes de configurar rubros y servicios. " +
-                "Si ya lo cargó en el registro, quedó guardado en el dispositivo."
-        }
-    }
-    is AppResult.Error -> null
+): Boolean = when (val status = getOnboardingStatusUseCase.getProviderStatus()) {
+    is AppResult.Success -> status.data.isIdentityVerified
+    is AppResult.Error -> false
 }

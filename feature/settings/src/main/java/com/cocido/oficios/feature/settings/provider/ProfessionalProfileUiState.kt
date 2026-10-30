@@ -24,6 +24,7 @@ sealed interface ProfessionalProfileEvent {
     data object Retry : ProfessionalProfileEvent
     data object Back : ProfessionalProfileEvent
     data object EditRubro : ProfessionalProfileEvent
+    data object EditAvailability : ProfessionalProfileEvent
     data object AddWork : ProfessionalProfileEvent
     data object AddCertificate : ProfessionalProfileEvent
     data object DeleteAccount : ProfessionalProfileEvent
@@ -32,6 +33,7 @@ sealed interface ProfessionalProfileEvent {
 sealed interface ProfessionalProfileEffect {
     data object NavigateBack : ProfessionalProfileEffect
     data object NavigateToServices : ProfessionalProfileEffect
+    data object NavigateToAvailability : ProfessionalProfileEffect
     data object NavigateToPortfolio : ProfessionalProfileEffect
     data object NavigateToDeleteAccount : ProfessionalProfileEffect
 }

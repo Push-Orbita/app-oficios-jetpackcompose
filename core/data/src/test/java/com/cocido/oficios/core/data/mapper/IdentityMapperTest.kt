@@ -193,6 +193,7 @@ class IdentityMapperTest {
         val element = json.parseToJsonElement(response)
         val result = element.toProviderDniDocuments()
 
+        assertEquals(14L, result?.id)
         assertEquals("https://example.com/dni-front.jpg", result?.frontUrl)
         assertEquals("https://example.com/dni-back.jpg", result?.backUrl)
         assertEquals("APROBADO", result?.frontStatus)

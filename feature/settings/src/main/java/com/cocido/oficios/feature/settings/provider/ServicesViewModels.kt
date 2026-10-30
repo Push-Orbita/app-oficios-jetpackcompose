@@ -91,6 +91,7 @@ class ServicesViewModel @Inject constructor(
             ServicesEvent.Back -> emit(ServicesEffect.NavigateBack)
             ServicesEvent.AddService -> emit(ServicesEffect.NavigateToAdd)
             is ServicesEvent.EditService -> emit(ServicesEffect.NavigateToEdit(event.service.id))
+            is ServicesEvent.EditAvailability -> emit(ServicesEffect.NavigateToAvailability)
             is ServicesEvent.RequestDelete -> _uiState.update { it.copy(pendingDelete = event.service) }
             ServicesEvent.DismissDelete -> _uiState.update { it.copy(pendingDelete = null) }
             ServicesEvent.ConfirmDelete -> deletePending()
@@ -351,37 +352,63 @@ class AddServiceViewModel @Inject constructor(
             } else {
                 null
             }
-            AddServiceStep.MODALITY -> when {
-                !state.servesAtClientHome && !state.servesAtLocal -> "Elija al menos una modalidad de atención."
-                state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) -> "Complete el barrio y la calle de su local."
-                state.servesAtLocal && !state.localLocation.canPersist -> {
-                    if (state.localLocation.phase == AddressLocationPhase.Idle) {
-                        resolveLocalFromAddress()
-                    }
-                    state.localLocation.message ?: "Confirme la ubicación de su local."
-                }
-                else -> null
+            AddServiceStep.ATTENTION -> attentionValidationError(state)
+            AddServiceStep.CONFIRM -> if (state.paymentMethods.isEmpty()) {
+                "Elija al menos un medio de cobro."
+            } else {
+                null
             }
-            AddServiceStep.SCHEDULE -> when {
-                state.weeklyAvailability.activeDays.isEmpty() -> "Elija al menos un día de trabajo."
-                else -> TimeRangeValidation.validateWeek(state.weeklyAvailability)
-            }
-            AddServiceStep.PAYMENT -> if (state.paymentMethods.isEmpty()) "Elija al menos un medio de cobro." else null
-            AddServiceStep.REVIEW -> null
         }
-        if (error != null) update { it.copy(errorMessage = error) }
-        else update { it.copy(step = AddServiceStep.entries[(it.step.ordinal + 1).coerceAtMost(AddServiceStep.REVIEW.ordinal)], errorMessage = null) }
+        if (error != null) {
+            update { it.copy(errorMessage = error) }
+            return
+        }
+        when (state.step) {
+            AddServiceStep.TRADE -> update { it.copy(step = AddServiceStep.ATTENTION, errorMessage = null) }
+            AddServiceStep.ATTENTION -> update { it.copy(step = AddServiceStep.CONFIRM, errorMessage = null) }
+            AddServiceStep.CONFIRM -> Unit
+        }
+    }
+
+    private fun attentionValidationError(state: AddServiceUiState): String? = when {
+        !state.servesAtClientHome && !state.servesAtLocal ->
+            "Elija al menos una modalidad de atención."
+        state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) ->
+            "Complete el barrio y la calle de su local."
+        state.servesAtLocal && !state.localLocation.canPersist -> {
+            if (state.localLocation.phase == AddressLocationPhase.Idle) {
+                resolveLocalFromAddress()
+            }
+            state.localLocation.message ?: "Confirme la ubicación de su local."
+        }
+        state.weeklyAvailability.activeDays.isEmpty() ->
+            "Elija al menos un día de trabajo."
+        else -> TimeRangeValidation.validateWeek(state.weeklyAvailability)
     }
 
     private fun previous() {
         val state = _uiState.value
-        if (state.step == AddServiceStep.TRADE) emit(AddServiceEffect.NavigateBack)
-        else update { it.copy(step = AddServiceStep.entries[it.step.ordinal - 1], errorMessage = null) }
+        when (state.step) {
+            AddServiceStep.TRADE -> emit(AddServiceEffect.NavigateBack)
+            AddServiceStep.ATTENTION -> {
+                if (state.isEditing) emit(AddServiceEffect.NavigateBack)
+                else update { it.copy(step = AddServiceStep.TRADE, errorMessage = null) }
+            }
+            AddServiceStep.CONFIRM -> update { it.copy(step = AddServiceStep.ATTENTION, errorMessage = null) }
+        }
     }
 
     private fun save() {
         val state = _uiState.value
-        if (state.step != AddServiceStep.REVIEW) return
+        if (state.step != AddServiceStep.CONFIRM) return
+        attentionValidationError(state)?.let { message ->
+            update { it.copy(errorMessage = message) }
+            return
+        }
+        if (state.paymentMethods.isEmpty()) {
+            update { it.copy(errorMessage = "Elija al menos un medio de cobro.") }
+            return
+        }
         val rubroId = state.selectedRubroId ?: return
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
@@ -607,6 +634,8 @@ class AddServiceViewModel @Inject constructor(
                 isLoading = false,
                 loadFailed = false,
                 isEditing = true,
+                // Edición: salta el paso de rubro (solo lectura) y entra en modalidad/horarios.
+                step = AddServiceStep.ATTENTION,
                 editingServiceId = service.id,
                 isPrimaryService = service.isPrimary,
                 lockedRubroName = service.rubroName,

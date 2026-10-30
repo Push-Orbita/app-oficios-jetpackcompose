@@ -171,6 +171,12 @@ class ProviderIdentityViewModelTest {
             AppResult.Success(Unit)
         override suspend fun uploadSelfie(imagePath: String) = AppResult.Success(Unit)
         override suspend fun replaceSelfie(documentId: Long, imagePath: String) = AppResult.Success(Unit)
+        override suspend fun replaceDni(
+            documentId: Long,
+            frontImagePath: String?,
+            backImagePath: String?,
+        ) = AppResult.Success(Unit)
+        override suspend fun deleteDocument(documentId: Long) = AppResult.Success(Unit)
         override suspend fun getMyDniDocuments() = AppResult.Success<ProviderDniDocuments?>(null)
         override suspend fun getMySelfieDocument() = AppResult.Success<ProviderSelfieDocument?>(null)
     }
@@ -180,8 +186,15 @@ class ProviderIdentityViewModelTest {
             AppResult.Success(Unit)
         override suspend fun uploadSelfie(imagePath: String) = AppResult.Success(Unit)
         override suspend fun replaceSelfie(documentId: Long, imagePath: String) = AppResult.Success(Unit)
+        override suspend fun replaceDni(
+            documentId: Long,
+            frontImagePath: String?,
+            backImagePath: String?,
+        ) = AppResult.Success(Unit)
+        override suspend fun deleteDocument(documentId: Long) = AppResult.Success(Unit)
         override suspend fun getMyDniDocuments() = AppResult.Success(
             ProviderDniDocuments(
+                id = 14L,
                 frontUrl = "https://example.com/front.jpg",
                 backUrl = "https://example.com/back.jpg",
                 frontFileName = "front.jpg",

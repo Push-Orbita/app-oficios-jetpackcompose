@@ -27,6 +27,7 @@ fun NavGraphBuilder.settingsScreen(
     onNavigateToVerifyPhone: (Long, String) -> Unit,
     onNavigateToTerms: () -> Unit = {},
     onNavigateToHelp: () -> Unit = {},
+    onNavigateToAvailability: () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
 ) {
     composable(route = SettingsDestination.route) {
@@ -50,7 +51,15 @@ fun NavGraphBuilder.settingsScreen(
         ConfigurationRoute(onNavigateBack = { navController.popBackStack() })
     }
     composable(SettingsDestination.personalData) {
-        PersonalDataRoute(onNavigateBack = { navController.popBackStack() }, onShowMessage = onShowMessage)
+        PersonalDataRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onShowMessage = onShowMessage,
+            onNavigateToVerifyEmail = {
+                navController.navigate(SettingsDestination.verifyEmail) {
+                    popUpTo(SettingsDestination.personalData) { inclusive = true }
+                }
+            },
+        )
     }
     composable(SettingsDestination.clientData) {
         ClientDataRoute(
@@ -64,6 +73,7 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateBack = { navController.popBackStack() },
             onShowMessage = onShowMessage,
             onNavigateToServices = { navController.navigate(SettingsDestination.services) },
+            onNavigateToAvailability = onNavigateToAvailability,
             onNavigateToPortfolio = { navController.navigate(SettingsDestination.portfolio()) },
             onNavigateToDeleteAccount = { navController.navigate(SettingsDestination.deleteAccount) },
         )
@@ -73,6 +83,7 @@ fun NavGraphBuilder.settingsScreen(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToAdd = { navController.navigate(SettingsDestination.addService) },
             onNavigateToEdit = { serviceId -> navController.navigate(SettingsDestination.editService(serviceId)) },
+            onNavigateToAvailability = onNavigateToAvailability,
             onShowMessage = onShowMessage,
         )
     }

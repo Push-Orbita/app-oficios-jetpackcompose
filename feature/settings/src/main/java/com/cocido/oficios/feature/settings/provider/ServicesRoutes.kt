@@ -16,6 +16,7 @@ fun ServicesRoute(
     onNavigateBack: () -> Unit,
     onNavigateToAdd: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
+    onNavigateToAvailability: () -> Unit = {},
     onShowMessage: (String) -> Unit,
     viewModel: ServicesViewModel = hiltViewModel(),
 ) {
@@ -33,6 +34,7 @@ fun ServicesRoute(
                 ServicesEffect.NavigateBack -> onNavigateBack()
                 ServicesEffect.NavigateToAdd -> onNavigateToAdd()
                 is ServicesEffect.NavigateToEdit -> onNavigateToEdit(effect.serviceId)
+                ServicesEffect.NavigateToAvailability -> onNavigateToAvailability()
                 is ServicesEffect.ShowMessage -> toastController.showSuccess(effect.message)
             }
         }

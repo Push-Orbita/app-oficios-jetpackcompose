@@ -8,6 +8,7 @@ object OnboardingStepNavigator {
     fun isActionable(step: OnboardingStep): Boolean = when (step.status) {
         OnboardingStepStatus.PENDING -> true
         OnboardingStepStatus.REJECTED -> true
+        OnboardingStepStatus.IN_REVIEW -> true
         else -> false
     }
 
@@ -15,8 +16,10 @@ object OnboardingStepNavigator {
         "email_verificado" -> OnboardingDestination.VERIFY_EMAIL
         "telefono_verificado" -> OnboardingDestination.verifyPhoneRoute(contactId = -1L)
         "domicilio", "contacto" -> OnboardingDestination.CLIENT_CONTACT_DOMICILIO
-        "dni_numero", "dni_imagenes", "dni_rechazado" -> OnboardingDestination.PROVIDER_DNI
-        "selfie_imagen", "selfie_rechazada" -> OnboardingDestination.PROVIDER_SELFIE
+        "dni_numero", "dni_imagenes", "dni_rechazado", "dni_pendiente_revision" ->
+            OnboardingDestination.PROVIDER_DNI
+        "selfie_imagen", "selfie_rechazada", "selfie_pendiente_revision" ->
+            OnboardingDestination.PROVIDER_SELFIE
         "descripcion", "experiencia" -> OnboardingDestination.PROVIDER_PROFESSIONAL_INFO
         "rubro_principal", "subrubros" -> OnboardingDestination.PROVIDER_RUBROS
         "disponibilidad", "agenda_turnos" -> OnboardingDestination.PROVIDER_AVAILABILITY

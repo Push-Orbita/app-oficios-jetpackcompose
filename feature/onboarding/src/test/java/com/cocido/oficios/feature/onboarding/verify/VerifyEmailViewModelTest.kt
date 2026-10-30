@@ -3,17 +3,29 @@ package com.cocido.oficios.feature.onboarding.verify
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.VerificationCodeCopy
+import com.cocido.oficios.domain.model.AccountProfile
 import com.cocido.oficios.domain.model.AuthTokens
+import com.cocido.oficios.domain.model.ClientContactoRequest
+import com.cocido.oficios.domain.model.ClientDomicilioRequest
+import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
+import com.cocido.oficios.domain.model.RequestAccountDeletionParams
+import com.cocido.oficios.domain.model.UpdateAccountProfileRequest
+import com.cocido.oficios.domain.model.UpdateClientContactoRequest
+import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.domain.model.UserRoleDefinition
 import com.cocido.oficios.domain.model.UserSession
+import com.cocido.oficios.domain.repository.AccountRepository
 import com.cocido.oficios.domain.repository.AuthRepository
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.auth.SendVerificationEmailUseCase
 import com.cocido.oficios.domain.usecase.auth.VerifyEmailUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -64,6 +76,41 @@ class VerifyEmailViewModelTest {
         assertEquals(0, sendCount)
         assertNull(viewModel.uiState.value.infoMessage)
         assertEquals(0, viewModel.uiState.value.resendCooldownSeconds)
+    }
+
+    @Test
+    fun `saving corrected email updates profile and resends code`() = runTest(dispatcher) {
+        var sendCount = 0
+        var updatedEmail: String? = null
+        val viewModel = createViewModel(
+            authRepository = FakeAuthRepository(
+                user = user,
+                onSendVerificationEmail = { sendCount++ },
+            ),
+            accountRepository = FakeAccountRepository { request ->
+                updatedEmail = request.email
+                AppResult.Success(
+                    AccountProfile(
+                        user = user.copy(email = request.email),
+                    ),
+                )
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onEditEmailClick()
+        viewModel.onDraftEmailChanged("nuevo@test.com")
+        viewModel.saveEmail()
+        advanceUntilIdle()
+
+        assertEquals("nuevo@test.com", updatedEmail)
+        assertEquals("nuevo@test.com", viewModel.uiState.value.email)
+        assertFalse(viewModel.uiState.value.isEditingEmail)
+        assertEquals(1, sendCount)
+        assertEquals(
+            "Le enviamos un nuevo código. Use el del correo más reciente.",
+            viewModel.uiState.value.infoMessage,
+        )
     }
 
     @Test
@@ -212,10 +259,12 @@ class VerifyEmailViewModelTest {
 
     private fun createViewModel(
         authRepository: FakeAuthRepository = FakeAuthRepository(user),
+        accountRepository: FakeAccountRepository = FakeAccountRepository(),
     ): VerifyEmailViewModel = VerifyEmailViewModel(
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository),
         sendVerificationEmailUseCase = SendVerificationEmailUseCase(authRepository),
         verifyEmailUseCase = VerifyEmailUseCase(authRepository, FakeSessionRepository()),
+        accountUseCases = com.cocido.oficios.domain.usecase.account.AccountUseCases(accountRepository),
     )
 
     private class FakeAuthRepository(
@@ -247,7 +296,7 @@ class VerifyEmailViewModelTest {
     }
 
     private class FakeSessionRepository : com.cocido.oficios.domain.repository.SessionRepository {
-        override val authState = kotlinx.coroutines.flow.MutableStateFlow(
+        override val authState = MutableStateFlow(
             com.cocido.oficios.domain.model.AuthState.Unauthenticated,
         )
         override suspend fun saveSession(tokens: AuthTokens, user: User) = Unit
@@ -258,5 +307,51 @@ class VerifyEmailViewModelTest {
         override suspend fun getAccessTokenExpiresAtMillis(): Long? = null
         override suspend fun getCachedUser() = null
         override suspend fun updateCachedUser(user: User) = Unit
+    }
+
+    private class FakeAccountRepository(
+        private val onUpdate: suspend (UpdateAccountProfileRequest) -> AppResult<AccountProfile> = {
+            AppResult.Error(AppError.Unknown("unused"))
+        },
+    ) : AccountRepository {
+        private val unused = AppResult.Error(AppError.Unknown("unused"))
+        override val profile: StateFlow<AccountProfile?> = MutableStateFlow(null)
+        override val providerDetails: StateFlow<com.cocido.oficios.domain.model.ProviderAccountDetails?> =
+            MutableStateFlow(null)
+        override val domicilios: StateFlow<List<com.cocido.oficios.domain.model.ClientDomicilio>?> =
+            MutableStateFlow(null)
+        override val contactos: StateFlow<List<com.cocido.oficios.domain.model.ClientContacto>?> =
+            MutableStateFlow(null)
+        override suspend fun getProfile() = unused
+        override suspend fun updateProfile(request: UpdateAccountProfileRequest) = onUpdate(request)
+        override suspend fun changePassword(email: String, password: String, confirmation: String) = unused
+        override suspend fun getClientDomicilios() = unused
+        override suspend fun createClientDomicilio(request: ClientDomicilioRequest) = unused
+        override suspend fun updateClientDomicilio(id: Long, request: UpdateClientDomicilioRequest) = unused
+        override suspend fun deleteClientDomicilio(id: Long) = unused
+        override suspend fun setFavoriteDomicilio(id: Long, favorite: Boolean) = unused
+        override suspend fun getClientContactos() = unused
+        override suspend fun createClientContacto(request: ClientContactoRequest) = unused
+        override suspend fun updateClientContacto(id: Long, request: UpdateClientContactoRequest) = unused
+        override suspend fun deleteClientContacto(id: Long) = unused
+        override suspend fun setFavoriteContacto(id: Long, favorite: Boolean) = unused
+        override suspend fun updateProviderProfessionalInfo(request: ProviderProfessionalInfoRequest) = unused
+        override suspend fun addProviderService(request: ProviderRubroFullRequest) = unused
+        override suspend fun deleteProviderService(id: Long) = unused
+        override suspend fun replaceProviderService(
+            existingId: Long,
+            isPrimary: Boolean,
+            request: ProviderRubroFullRequest,
+        ) = unused
+        override suspend fun getCertificates() = unused
+        override suspend fun uploadCertificate(name: String, filePath: String) = unused
+        override suspend fun updateCertificate(id: Long, name: String, currentUrl: String?, filePath: String?) = unused
+        override suspend fun deleteCertificate(id: Long) = unused
+        override suspend fun getGallery() = unused
+        override suspend fun uploadGallery(filePaths: List<String>) = unused
+        override suspend fun deleteGalleryItem(id: Long) = unused
+        override suspend fun getCurrentDeletionRequest() = unused
+        override suspend fun requestAccountDeletion(params: RequestAccountDeletionParams) = unused
+        override suspend fun cancelAccountDeletion() = unused
     }
 }

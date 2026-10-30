@@ -28,6 +28,7 @@ class PersonalDataViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
     private var skipNextResume = true
     private var formDirty = false
+    private var loadedEmail: String = ""
 
     init {
         load()
@@ -78,6 +79,7 @@ class PersonalDataViewModel @Inject constructor(
                 is AppResult.Success -> {
                     val user = result.data.user
                     formDirty = false
+                    loadedEmail = user.email
                     _uiState.update {
                         PersonalDataUiState(
                             isLoading = false,
@@ -122,10 +124,12 @@ class PersonalDataViewModel @Inject constructor(
                 photoFilePath = state.selectedPhotoPath,
                 removePhoto = state.removePhoto,
             )
+            val emailChanged = request.email != loadedEmail
             when (val result = accountUseCases.updateProfile(request)) {
                 is AppResult.Success -> {
                     val user = result.data.user
                     formDirty = false
+                    loadedEmail = user.email
                     _uiState.update {
                         it.copy(
                             isSaving = false,
@@ -135,9 +139,18 @@ class PersonalDataViewModel @Inject constructor(
                             currentPhotoUrl = user.profilePhotoUrl,
                             selectedPhotoPath = null,
                             removePhoto = false,
+                            hasUnsavedChanges = false,
                         )
                     }
-                    emitEffect(PersonalDataEffect.Saved("Sus datos se actualizaron correctamente."))
+                    if (emailChanged) {
+                        emitEffect(
+                            PersonalDataEffect.EmailChangedNeedsVerification(
+                                "Correo actualizado. Valide el nuevo código para continuar.",
+                            ),
+                        )
+                    } else {
+                        emitEffect(PersonalDataEffect.Saved("Sus datos se actualizaron correctamente."))
+                    }
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isSaving = false, errorMessage = result.error.userMessage())

@@ -2,6 +2,7 @@ package com.cocido.oficios.core.network.api.profile
 
 import kotlinx.serialization.json.JsonElement
 import okhttp3.MultipartBody
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
@@ -20,6 +21,11 @@ interface IdentityDocumentApi {
         @Query("trabajadorOficioId") trabajadorOficioId: Long? = null,
     ): JsonElement
 
+    @DELETE("img-documento/{id}")
+    suspend fun deleteDocument(
+        @Path("id") documentId: Long,
+    ): JsonElement
+
     @Multipart
     @POST("img-documento/subir-documento-dni")
     suspend fun uploadDniDocuments(
@@ -31,6 +37,14 @@ interface IdentityDocumentApi {
     @POST("img-documento/subir-documento-selfie")
     suspend fun uploadSelfie(
         @Part selfieArchivo: MultipartBody.Part,
+    ): JsonElement
+
+    @Multipart
+    @PATCH("img-documento/{id}/reemplazar-dni")
+    suspend fun replaceDni(
+        @Path("id") documentId: Long,
+        @Part frenteArchivo: MultipartBody.Part?,
+        @Part dorsoArchivo: MultipartBody.Part?,
     ): JsonElement
 
     @Multipart

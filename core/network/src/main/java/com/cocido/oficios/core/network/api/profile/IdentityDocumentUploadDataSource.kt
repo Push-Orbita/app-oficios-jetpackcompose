@@ -39,4 +39,35 @@ class IdentityDocumentUploadDataSource @Inject constructor(
             selfieArchivo = createSelfieImagePart(file),
         )
     }
+
+    suspend fun replaceDni(
+        documentId: Long,
+        frontImagePath: String?,
+        backImagePath: String?,
+    ) {
+        require(!frontImagePath.isNullOrBlank() || !backImagePath.isNullOrBlank()) {
+            "Debe enviar frente y/o dorso"
+        }
+        identityDocumentApi.replaceDni(
+            documentId = documentId,
+            frenteArchivo = frontImagePath?.let { path ->
+                createDniImagePart(
+                    fieldName = DniImageUploadContract.PART_FRONT_FIELD,
+                    fileNamePrefix = DniImageUploadContract.FRONT_FILE_PREFIX,
+                    file = File(path),
+                )
+            },
+            dorsoArchivo = backImagePath?.let { path ->
+                createDniImagePart(
+                    fieldName = DniImageUploadContract.PART_BACK_FIELD,
+                    fileNamePrefix = DniImageUploadContract.BACK_FILE_PREFIX,
+                    file = File(path),
+                )
+            },
+        )
+    }
+
+    suspend fun deleteDocument(documentId: Long) {
+        identityDocumentApi.deleteDocument(documentId)
+    }
 }

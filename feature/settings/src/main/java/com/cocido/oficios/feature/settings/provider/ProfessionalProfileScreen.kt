@@ -2,7 +2,6 @@ package com.cocido.oficios.feature.settings.provider
 
 import com.cocido.oficios.feature.settings.R
 import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,23 +19,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextOverflow
 import com.cocido.oficios.core.designsystem.component.OficiosIcons
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.cards.DashedAddTile
+import com.cocido.oficios.core.designsystem.component.cards.OficiosSectionCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosContentPhase
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
-import com.cocido.oficios.core.designsystem.theme.OficiosRadius
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.gallery.GalleryMedia
 import com.cocido.oficios.core.ui.gallery.OficiosGalleryViewer
@@ -46,7 +42,7 @@ import com.cocido.oficios.core.ui.intent.openRemoteDocument
 import com.cocido.oficios.domain.model.WorkCertificateItem
 import com.cocido.oficios.domain.model.WorkGalleryItem
 
-/** Editar Perfil — no está en Flujos; fuente Rediseño `231:15`. */
+/** Datos profesionales del trabajador (Ajustes). */
 @Composable
 fun ProfessionalProfileScreen(
     uiState: ProfessionalProfileUiState,
@@ -95,7 +91,6 @@ private fun ProfessionalProfileForm(
     val context = LocalContext.current
     var photoViewerIndex by rememberSaveable { mutableStateOf(-1) }
     var certViewerIndex by rememberSaveable { mutableStateOf(-1) }
-    val fieldShape = RoundedCornerShape(OficiosRadius.sm)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,61 +99,78 @@ private fun ProfessionalProfileForm(
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         Text(
-            text = stringResource(R.string.professional_profile_oficios),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            text = stringResource(R.string.professional_profile_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        ReadOnlyField(value = state.oficiosLabel, shape = fieldShape)
-        Text(
-            text = stringResource(R.string.professional_profile_specialized),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        ReadOnlyField(value = state.specializedLabel, shape = fieldShape, minLines = 3)
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            OficiosButton(
-                text = stringResource(R.string.professional_profile_edit_rubro),
-                onClick = { onEvent(ProfessionalProfileEvent.EditRubro) },
-                variant = OficiosButtonVariant.Primary,
-                leadingIcon = ImageVector.vectorResource(OficiosIcons.Pencil),
+        OficiosSectionCard(title = stringResource(R.string.professional_profile_oficios)) {
+            Text(
+                text = state.oficiosLabel.ifBlank { "—" },
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = stringResource(R.string.professional_profile_specialized),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = OficiosSpacing.md),
+            )
+            Text(
+                text = state.specializedLabel.ifBlank { "—" },
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = OficiosSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                OficiosButton(
+                    text = stringResource(R.string.professional_profile_availability),
+                    onClick = { onEvent(ProfessionalProfileEvent.EditAvailability) },
+                    variant = OficiosButtonVariant.Primary,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OficiosButton(
+                    text = stringResource(R.string.professional_profile_edit_rubro),
+                    onClick = { onEvent(ProfessionalProfileEvent.EditRubro) },
+                    variant = OficiosButtonVariant.Secondary,
+                    leadingIcon = ImageVector.vectorResource(OficiosIcons.Pencil),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        OficiosSectionCard(title = stringResource(R.string.professional_profile_works)) {
+            OficiosPhotoMosaic(
+                items = state.gallery.map { it.toGalleryMedia() },
+                onItemClick = { photoViewerIndex = it },
+            )
+            DashedAddTile(
+                label = stringResource(R.string.professional_profile_add),
+                onClick = { onEvent(ProfessionalProfileEvent.AddWork) },
             )
         }
-        Text(
-            text = stringResource(R.string.professional_profile_works),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        OficiosPhotoMosaic(
-            items = state.gallery.map { it.toGalleryMedia() },
-            onItemClick = { photoViewerIndex = it },
-        )
-        DashedAddTile(
-            label = stringResource(R.string.professional_profile_add),
-            onClick = { onEvent(ProfessionalProfileEvent.AddWork) },
-        )
-        Text(
-            text = stringResource(R.string.professional_profile_certificates),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        OficiosPhotoMosaic(
-            items = state.certificates.map { cert ->
-                cert.toGalleryMedia(
-                    badge = stringResource(
-                        if (cert.validated) {
-                            R.string.professional_profile_validated
-                        } else {
-                            R.string.professional_profile_pending
-                        },
-                    ),
-                )
-            },
-            onItemClick = { certViewerIndex = it },
-        )
-        DashedAddTile(
-            label = stringResource(R.string.professional_profile_add),
-            onClick = { onEvent(ProfessionalProfileEvent.AddCertificate) },
-        )
+        OficiosSectionCard(title = stringResource(R.string.professional_profile_certificates)) {
+            OficiosPhotoMosaic(
+                items = state.certificates.map { cert ->
+                    cert.toGalleryMedia(
+                        badge = stringResource(
+                            if (cert.validated) {
+                                R.string.professional_profile_validated
+                            } else {
+                                R.string.professional_profile_pending
+                            },
+                        ),
+                    )
+                },
+                onItemClick = { certViewerIndex = it },
+            )
+            DashedAddTile(
+                label = stringResource(R.string.professional_profile_add),
+                onClick = { onEvent(ProfessionalProfileEvent.AddCertificate) },
+            )
+        }
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             OficiosButton(
                 text = stringResource(R.string.professional_profile_delete_account),
@@ -183,29 +195,6 @@ private fun ProfessionalProfileForm(
             initialIndex = certViewerIndex,
             onClose = { certViewerIndex = -1 },
             onOpenExternal = { openRemoteDocument(context, it) },
-        )
-    }
-}
-
-@Composable
-private fun ReadOnlyField(
-    value: String,
-    shape: RoundedCornerShape,
-    minLines: Int = 1,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.outline)
-            .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.sm),
-    ) {
-        Text(
-            text = value.ifBlank { "—" },
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            minLines = minLines,
-            overflow = TextOverflow.Ellipsis,
         )
     }
 }

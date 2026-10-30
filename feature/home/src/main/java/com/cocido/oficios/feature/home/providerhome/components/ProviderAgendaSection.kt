@@ -132,11 +132,11 @@ fun ProviderAgendaSection(
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    if (!hasAgendaConfigured && onConfigureAgenda != null) {
+                    if (onConfigureAgenda != null) {
                         Text(
-                            text = stringResource(R.string.provider_home_calendar_title),
+                            text = stringResource(R.string.provider_home_configure_agenda),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline,
                             modifier = Modifier
                                 .fillMaxWidth()

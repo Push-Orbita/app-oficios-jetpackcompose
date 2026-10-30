@@ -107,6 +107,7 @@
     <string name="personal_data_email_hint">Si lo cambia, es posible que deba volver a verificarlo.</string>
     <string name="personal_data_save">Guardar cambios</string>
     <string name="professional_profile_title">Editar Perfil</string>
+    <string name="professional_profile_subtitle">Revise su oficio, disponibilidad, trabajos y certificados. Puede corregir hasta que el equipo acepte su documentación.</string>
     <string name="professional_profile_edit_rubro">Editar Rubro o Especialidad</string>
     <string name="professional_profile_load_error">No pudimos cargar su perfil profesional</string>
     <string name="professional_profile_retry">Intente nuevamente.</string>
@@ -161,7 +162,7 @@
     <string name="change_password_submit">Actualizar contraseña</string>
     <string name="services_title">Servicios que ofrece</string>
     <string name="services_load_error">No pudimos cargar sus servicios</string>
-    <string name="services_intro">Cada servicio agrupa sus especialidades, modalidad y disponibilidad. Sume solo lo que realmente ofrece para recibir pedidos relevantes.</string>
+    <string name="services_intro">Gestione oficios, modalidad y horarios. Para cambiar solo la disponibilidad, use Horarios en cada tarjeta o Disponibilidad en su perfil.</string>
     <string name="services_empty_title">Todavía no publicó servicios</string>
     <string name="services_empty_description">Agregue su primer oficio para empezar a aparecer en búsquedas.</string>
     <string name="services_add">Agregar servicio</string>
@@ -185,7 +186,19 @@
     <string name="services_delete_action">Eliminar %1$s</string>
     <string name="services_add_title">Agregar servicio</string>
     <string name="services_form_error">No pudimos preparar el formulario</string>
-    <string name="services_step_counter">Paso %1$d de %2$d</string>
+    <!-- Contador legacy eliminado del wizard; no mostrar "Paso X". -->
+    <string name="services_step_counter"> </string>
+    <string name="services_attention_title">Dónde y cuándo atiende</string>
+    <string name="services_attention_title_edit">Disponibilidad y modalidad</string>
+    <string name="services_attention_body">Indique si atiende a domicilio o en local, y su disponibilidad habitual.</string>
+    <string name="services_attention_body_edit">Actualice modalidad y horarios. Los turnos concretos se administran desde Agenda.</string>
+    <string name="services_attention_where_title">Modalidad</string>
+    <string name="services_attention_when_title">Horarios habituales</string>
+    <string name="services_confirm_body">Elija cómo cobra y revise el resumen antes de guardar.</string>
+    <string name="services_confirm_summary_title">Resumen</string>
+    <string name="services_local_map_title">Ubicación del local</string>
+    <string name="services_edit_hours">Horarios</string>
+    <string name="professional_profile_availability">Disponibilidad</string>
     <string name="services_back">Atrás</string>
     <string name="services_publish">Publicar servicio</string>
     <string name="services_continue">Continuar</string>

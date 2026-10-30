@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
+import com.cocido.oficios.domain.usecase.profile.DeleteProviderIdentityDocumentUseCase
 import com.cocido.oficios.domain.usecase.profile.GetProviderSelfieUseCase
 import com.cocido.oficios.domain.usecase.profile.ReplaceProviderSelfieUseCase
 import com.cocido.oficios.domain.usecase.profile.UploadProviderSelfieUseCase
@@ -39,6 +40,7 @@ data class ProviderSelfieUiState(
 class ProviderSelfieViewModel @Inject constructor(
     private val uploadProviderSelfieUseCase: UploadProviderSelfieUseCase,
     private val replaceProviderSelfieUseCase: ReplaceProviderSelfieUseCase,
+    private val deleteProviderIdentityDocumentUseCase: DeleteProviderIdentityDocumentUseCase,
     private val getProviderSelfieUseCase: GetProviderSelfieUseCase,
 ) : ViewModel() {
 
@@ -101,10 +103,16 @@ class ProviderSelfieViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val result = if (state.existingDocumentId != null && (state.isRejected || state.isUploaded)) {
-                replaceProviderSelfieUseCase(state.existingDocumentId, imagePath)
-            } else {
-                uploadProviderSelfieUseCase(imagePath)
+            val result = when {
+                state.existingDocumentId != null && state.isRejected ->
+                    replaceProviderSelfieUseCase(state.existingDocumentId, imagePath)
+                state.existingDocumentId != null && state.isUploaded -> {
+                    when (val deleted = deleteProviderIdentityDocumentUseCase(state.existingDocumentId)) {
+                        is AppResult.Error -> deleted
+                        is AppResult.Success -> uploadProviderSelfieUseCase(imagePath)
+                    }
+                }
+                else -> uploadProviderSelfieUseCase(imagePath)
             }
 
             when (result) {

@@ -41,14 +41,22 @@ class OnboardingStepNavigatorTest {
     }
 
     @Test
-    fun `dni pending revision is not actionable`() {
+    fun `dni pending revision is actionable for corrections`() {
         val step = OnboardingStep(
             id = "dni_pendiente_revision",
             title = "DNI en revisión",
             description = "Espere",
             status = OnboardingStepStatus.IN_REVIEW,
         )
-        assertFalse(OnboardingStepNavigator.isActionable(step))
+        assertTrue(OnboardingStepNavigator.isActionable(step))
+        assertEquals(
+            OnboardingDestination.PROVIDER_DNI,
+            OnboardingStepNavigator.routeForStep("dni_pendiente_revision"),
+        )
+        assertEquals(
+            OnboardingDestination.PROVIDER_SELFIE,
+            OnboardingStepNavigator.routeForStep("selfie_pendiente_revision"),
+        )
     }
 
     @Test
