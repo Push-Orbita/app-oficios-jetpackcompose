@@ -143,6 +143,39 @@ class ProviderHomeProfileTilesTest {
         assertFalse(providerHome(100).showProfileCompletion)
     }
 
+    @Test
+    fun `showProfileCompletion hides card when required onboarding is complete even with optional tiles missing`() {
+        val content = providerHome(0).copy(isRequiredProfileComplete = true)
+        assertFalse(content.showProfileCompletion)
+    }
+
+    @Test
+    fun `hasCompletedRequiredProfile follows perfilCompleto or onboarding requirements without faltantes`() {
+        assertTrue(providerStatus(isProfileComplete = true, missing = emptyList()).hasCompletedRequiredProfile)
+        assertTrue(
+            providerStatus(isProfileComplete = false, onboardingComplete = true, missing = emptyList())
+                .hasCompletedRequiredProfile,
+        )
+        assertFalse(
+            providerStatus(isProfileComplete = false, onboardingComplete = true, missing = listOf("disponibilidad"))
+                .hasCompletedRequiredProfile,
+        )
+        assertFalse(providerStatus(isProfileComplete = false, missing = emptyList()).hasCompletedRequiredProfile)
+    }
+
+    private fun providerStatus(
+        isProfileComplete: Boolean,
+        missing: List<String>,
+        onboardingComplete: Boolean = false,
+    ) = ProviderProfileStatus(
+        accountStatus = AccountStatus.APPROVED,
+        isConfigurationComplete = true,
+        isProfileComplete = isProfileComplete,
+        isOperational = true,
+        missingSteps = missing,
+        isOnboardingRequirementsComplete = onboardingComplete,
+    )
+
     private fun providerHome(percent: Int) = ProviderHomeContent(
         userDisplayName = "Emanuel",
         isVerified = true,

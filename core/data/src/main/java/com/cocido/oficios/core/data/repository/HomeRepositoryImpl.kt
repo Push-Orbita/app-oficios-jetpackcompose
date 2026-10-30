@@ -88,7 +88,11 @@ class HomeRepositoryImpl @Inject constructor(
                                         .joinToString(" "),
                                     isVerified = status.isIdentityVerified,
                                     primarySpecialtyLabel = primarySpecialtyLabel,
-                                    profileCompletionPercent = tiles.completionPercent,
+                                    profileCompletionPercent = if (status.hasCompletedRequiredProfile) {
+                                        100
+                                    } else {
+                                        tiles.completionPercent
+                                    },
                                     missingProfileItems = missingItems,
                                     benefits = emptyList(),
                                     hasActiveBooking = upcomingOrders.any {
@@ -100,6 +104,7 @@ class HomeRepositoryImpl @Inject constructor(
                                     hasGalleryPhotos = tiles.gallery,
                                     hasCommercialLocal = tiles.local,
                                     hasCertificate = tiles.certificate,
+                                    isRequiredProfileComplete = status.hasCompletedRequiredProfile,
                                 ),
                             )
                         }
