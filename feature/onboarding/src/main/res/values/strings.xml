@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="onboarding_client_error_title">No pudimos cargar su perfil</string>
     <string name="onboarding_provider_error_title">No pudimos cargar su perfil profesional</string>
@@ -10,7 +10,7 @@
     <string name="onboarding_provider_title">Configure su perfil profesional</string>
     <string name="onboarding_provider_subtitle">Complete los pasos obligatorios para operar en la plataforma</string>
     <string name="onboarding_docs_waiting_title">Documentación en revisión</string>
-    <string name="onboarding_docs_waiting_message">El equipo está validando su documentación. Mientras no la acepten, puede tocar cualquier paso para corregir datos mal cargados (correo, DNI, selfie, personales, contacto, rubros, disponibilidad, pagos o local) y reenviarlos. Esta pantalla se actualiza sola.</string>
+    <string name="onboarding_docs_waiting_message">El equipo está validando su documentación. Por favor aguarde.</string>
     <string name="onboarding_rubros_saved_draft">Categoría guardada. Complete disponibilidad y medios de cobro para enviarla.</string>
     <string name="onboarding_rubro_pending_kyc">Guardamos su configuración en el dispositivo. Se enviará cuando aprueben su documentación.</string>
     <string name="onboarding_pending_title">Su perfil está en revisión</string>
