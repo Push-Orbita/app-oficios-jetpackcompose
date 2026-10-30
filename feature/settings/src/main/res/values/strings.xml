@@ -27,8 +27,8 @@
     <string name="settings_change_password_description">Actualice su acceso de forma segura</string>
     <string name="settings_delete_account">Eliminar cuenta</string>
     <string name="settings_delete_account_description">Darse de baja con un período de gracia de 3 días</string>
-    <string name="settings_terms">Términos y condiciones</string>
-    <string name="settings_terms_description">Cómo funciona Oficios y qué esperamos de cada cuenta</string>
+    <string name="settings_terms">Bases y condiciones</string>
+    <string name="settings_terms_description">Bases y condiciones oficiales de OFICIOS FORMOSA</string>
     <string name="settings_delete_account_intro">Esta acción programa la baja de su cuenta. Tiene 3 días para cancelarla si cambia de opinión. Escriba ELIMINAR para confirmar.</string>
     <string name="settings_delete_account_password">Contraseña actual</string>
     <string name="settings_delete_account_confirmation">Escriba ELIMINAR</string>
