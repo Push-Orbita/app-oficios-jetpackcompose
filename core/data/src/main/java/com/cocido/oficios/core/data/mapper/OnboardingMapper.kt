@@ -27,6 +27,7 @@ fun TrabajadorPerfilEstadoDto.toDomain(
     isProfileComplete = perfilCompleto,
     isOperational = requisitos?.perfilOperativo == true,
     isIdentityVerified = requisitos?.identidadVerificada == true,
+    hasDniDocuments = requisitos?.tieneDniNumero == true && requisitos?.tieneDniImagenes == true,
     missingSteps = faltantes,
     rejectionReason = rejectionReason,
     isOnboardingRequirementsComplete = requisitos?.requisitosOnboardingCompletos == true,

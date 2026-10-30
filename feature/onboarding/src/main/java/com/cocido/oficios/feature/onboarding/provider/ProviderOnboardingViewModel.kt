@@ -128,7 +128,7 @@ class ProviderOnboardingViewModel @Inject constructor(
                 val steps = getOnboardingStatusUseCase.getProviderSteps(status)
                     .withLocalDraftProgress(
                         draft = registerTradeDraftRepository.get(),
-                        isIdentityVerified = status.isIdentityVerified,
+                        isIdentityVerified = status.isDniApproved,
                     )
                 when {
                     steps.shouldAutoFinalizeProviderProfile() -> finalizeProfile()
@@ -136,7 +136,7 @@ class ProviderOnboardingViewModel @Inject constructor(
                     else -> _uiState.update {
                         OnboardingChecklistUiState.Success(
                             steps = steps,
-                            savedWaitingForKyc = !status.isIdentityVerified && steps.hasSavedSteps(),
+                            savedWaitingForKyc = !status.isDniApproved && steps.hasSavedSteps(),
                         )
                     }
                 }
@@ -155,7 +155,7 @@ class ProviderOnboardingViewModel @Inject constructor(
         syncRegisterTradeDraftFromProfileUseCase()
 
         if (status.missingSteps.none { it in TRADE_DRAFT_SYNC_TRIGGER_STEPS }) return status
-        if (!status.isIdentityVerified) return status
+        if (!status.isDniApproved) return status
 
         val draft = registerTradeDraftRepository.get()
         if (draft == null || draft.subRubroIds.isEmpty()) return status
