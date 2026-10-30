@@ -19,10 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
@@ -30,6 +27,7 @@ import androidx.compose.ui.unit.Dp
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandBlock
 import com.cocido.oficios.core.designsystem.component.brand.OficiosBrandScale
 import com.cocido.oficios.core.designsystem.component.inputs.LocalScrollViewportHeightPx
+import com.cocido.oficios.core.designsystem.component.inputs.ScrollViewportHeight
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -50,20 +48,21 @@ fun AuthScreenLayout(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // El scaffold no consume el IME: el único inset del teclado es imePadding() del Column.
-    var viewportHeightPx by remember { mutableIntStateOf(0) }
+    // Holder mutable: onSizeChanged escribe px sin invalidar CompositionLocal cada frame del IME.
+    val viewportHeight = remember { ScrollViewportHeight() }
     OficiosScaffold(
         modifier = modifier.fillMaxSize(),
         isLoading = isLoading,
         contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime),
     ) { padding ->
-        CompositionLocalProvider(LocalScrollViewportHeightPx provides viewportHeightPx) {
+        CompositionLocalProvider(LocalScrollViewportHeightPx provides viewportHeight) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .consumeWindowInsets(padding)
                     .imePadding()
-                    .onSizeChanged { viewportHeightPx = it.height }
+                    .onSizeChanged { viewportHeight.px = it.height }
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = OficiosSpacing.xl)
                     .padding(top = contentTopPadding, bottom = OficiosSpacing.lg),
