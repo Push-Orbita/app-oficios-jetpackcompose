@@ -10,8 +10,8 @@ class OfficialTermsDocumentTest {
 
     @Test
     fun `official asset has no draft placeholder copy and keeps section headings`() {
-        val asset = File("src/main/assets/legal/oficios_formosa_bases_y_condiciones.txt")
-        assertTrue("falta el asset oficial: ${asset.absolutePath}", asset.isFile)
+        val asset = File("src/main/res/raw/oficios_formosa_bases_y_condiciones.txt")
+        assertTrue("falta el raw oficial: ${asset.absolutePath}", asset.isFile)
 
         val raw = asset.readText(Charsets.UTF_8)
         assertFalse(raw.contains("versión definitiva", ignoreCase = true))

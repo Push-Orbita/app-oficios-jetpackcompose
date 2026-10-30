@@ -1,15 +1,15 @@
 package com.cocido.oficios.core.ui.legal
 
 import android.content.Context
+import com.cocido.oficios.core.ui.R
 import java.nio.charset.StandardCharsets
 
 /**
  * Bases y Condiciones oficiales de OFICIOS FORMOSA (texto del DOCX de Matías).
- * Fuente embebida: assets/legal/oficios_formosa_bases_y_condiciones.txt
+ * Fuente embebida: res/raw/oficios_formosa_bases_y_condiciones.txt
+ * (no usar assets/: está en .gitignore del repo por material de diseño).
  */
 internal object OfficialTermsDocument {
-
-    private const val ASSET_PATH = "legal/oficios_formosa_bases_y_condiciones.txt"
 
     /** Títulos/secciones del documento oficial (tal cual, sin inventar). */
     private val sectionHeadings = setOf(
@@ -35,7 +35,7 @@ internal object OfficialTermsDocument {
     )
 
     fun loadParagraphs(context: Context): List<TermsParagraph> {
-        val raw = context.assets.open(ASSET_PATH).use { input ->
+        val raw = context.resources.openRawResource(R.raw.oficios_formosa_bases_y_condiciones).use { input ->
             input.bufferedReader(StandardCharsets.UTF_8).readText()
         }
         return parse(raw)
