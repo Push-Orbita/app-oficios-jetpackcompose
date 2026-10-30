@@ -63,7 +63,7 @@ class RubrosViewModel @Inject constructor(
             RubrosEvent.Back -> emitEffect(RubrosEffect.NavigateBack)
             is RubrosEvent.RubroSelected -> onRubroSelected(event.rubro)
             is RubrosEvent.QueryChanged -> onQueryChanged(event.query)
-            is RubrosEvent.SearchSubmitted -> onQueryChanged(event.query)
+            is RubrosEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             RubrosEvent.OpenNotifications -> emitEffect(RubrosEffect.NavigateToNotifications)
         }
     }
@@ -72,6 +72,25 @@ class RubrosViewModel @Inject constructor(
         _uiState.update { state ->
             if (state is RubrosUiState.Success) state.copy(query = query) else state
         }
+    }
+
+    /**
+     * El texto puede ser el nombre de un trabajador: abre resultados con `q` sin rubro.
+     * Sin chip de categoría: la API no filtra por categoría y el chip mentiría.
+     */
+    private fun onSearchSubmitted(query: String) {
+        onQueryChanged(query)
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return
+        emitEffect(
+            RubrosEffect.NavigateToSearchResults(
+                rubroId = -1L,
+                rubroLabel = "",
+                categoryId = -1L,
+                categoryLabel = "",
+                query = trimmed,
+            ),
+        )
     }
 
     private fun onRubroSelected(rubro: CatalogOption) {

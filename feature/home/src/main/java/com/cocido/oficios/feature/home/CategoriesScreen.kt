@@ -22,6 +22,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeCategoriesGrid
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
+import com.cocido.oficios.feature.home.components.SearchWorkersByNameRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,6 +109,12 @@ private fun CategoriesContent(
             onSearch = { onEvent(CategoriesEvent.SearchSubmitted(it)) },
             placeholder = stringResource(R.string.home_search_categories_hint),
         )
+        if (state.query.isNotBlank()) {
+            SearchWorkersByNameRow(
+                query = state.query,
+                onClick = { onEvent(CategoriesEvent.SearchSubmitted(state.query)) },
+            )
+        }
         HomeCategoriesGrid(
             categories = state.visibleCategories,
             onCategoryClick = { onEvent(CategoriesEvent.CategorySelected(it)) },

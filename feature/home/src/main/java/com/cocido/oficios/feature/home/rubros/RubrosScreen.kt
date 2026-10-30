@@ -23,6 +23,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeRubrosGrid
 import com.cocido.oficios.feature.home.components.HomeSearchEntryField
+import com.cocido.oficios.feature.home.components.SearchWorkersByNameRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,6 +118,12 @@ private fun RubrosContent(
             onSearch = { onEvent(RubrosEvent.SearchSubmitted(it)) },
             placeholder = stringResource(R.string.home_search_rubros_hint),
         )
+        if (state.query.isNotBlank()) {
+            SearchWorkersByNameRow(
+                query = state.query,
+                onClick = { onEvent(RubrosEvent.SearchSubmitted(state.query)) },
+            )
+        }
         HomeRubrosGrid(
             rubros = state.visibleRubros,
             onRubroClick = { onEvent(RubrosEvent.RubroSelected(it)) },
