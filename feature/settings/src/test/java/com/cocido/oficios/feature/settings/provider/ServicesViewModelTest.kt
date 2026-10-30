@@ -91,6 +91,21 @@ class ServicesViewModelTest {
     }
 
     @Test
+    fun `edit availability navigates to agenda hub`() = runTest(testDispatcher) {
+        val viewModel = ServicesViewModel(
+            AccountUseCases(FakeAccountRepository()),
+            AvailabilityUseCases(FakeAvailabilityRepository()),
+        )
+        advanceUntilIdle()
+        val effects = mutableListOf<ServicesEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+        viewModel.onEvent(ServicesEvent.EditAvailability(sampleService()))
+        advanceUntilIdle()
+        job.cancel()
+        assertTrue(effects.any { it is ServicesEffect.NavigateToAvailability })
+    }
+
+    @Test
     fun `list uses specialty availability hours instead of rubro dias laborales`() = runTest(testDispatcher) {
         val availability = FakeAvailabilityRepository(
             weeksBySub = mapOf(

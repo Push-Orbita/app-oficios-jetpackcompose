@@ -12,6 +12,7 @@ fun ProfessionalProfileRoute(
     onNavigateBack: () -> Unit,
     onShowMessage: (String) -> Unit,
     onNavigateToServices: () -> Unit = {},
+    onNavigateToAvailability: () -> Unit = {},
     onNavigateToPortfolio: () -> Unit = {},
     onNavigateToDeleteAccount: () -> Unit = {},
     viewModel: ProfessionalProfileViewModel = hiltViewModel(),
@@ -23,6 +24,7 @@ fun ProfessionalProfileRoute(
             when (effect) {
                 ProfessionalProfileEffect.NavigateBack -> onNavigateBack()
                 ProfessionalProfileEffect.NavigateToServices -> onNavigateToServices()
+                ProfessionalProfileEffect.NavigateToAvailability -> onNavigateToAvailability()
                 ProfessionalProfileEffect.NavigateToPortfolio -> onNavigateToPortfolio()
                 ProfessionalProfileEffect.NavigateToDeleteAccount -> onNavigateToDeleteAccount()
             }

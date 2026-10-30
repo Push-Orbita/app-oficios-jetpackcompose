@@ -116,12 +116,22 @@ private fun ProfessionalProfileForm(
         )
         ReadOnlyField(value = state.specializedLabel, shape = fieldShape, minLines = 3)
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            OficiosButton(
-                text = stringResource(R.string.professional_profile_edit_rubro),
-                onClick = { onEvent(ProfessionalProfileEvent.EditRubro) },
-                variant = OficiosButtonVariant.Primary,
-                leadingIcon = ImageVector.vectorResource(OficiosIcons.Pencil),
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                OficiosButton(
+                    text = stringResource(R.string.professional_profile_availability),
+                    onClick = { onEvent(ProfessionalProfileEvent.EditAvailability) },
+                    variant = OficiosButtonVariant.Primary,
+                )
+                OficiosButton(
+                    text = stringResource(R.string.professional_profile_edit_rubro),
+                    onClick = { onEvent(ProfessionalProfileEvent.EditRubro) },
+                    variant = OficiosButtonVariant.Secondary,
+                    leadingIcon = ImageVector.vectorResource(OficiosIcons.Pencil),
+                )
+            }
         }
         Text(
             text = stringResource(R.string.professional_profile_works),

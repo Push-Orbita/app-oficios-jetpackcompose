@@ -263,11 +263,8 @@ class ProviderRubrosViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getRubrosByCategoryUseCase: GetRubrosByCategoryUseCase,
     private val getSubRubrosByRubroUseCase: GetSubRubrosByRubroUseCase,
-    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
-    private val submitSecondaryProviderRubroUseCase: SubmitSecondaryProviderRubroUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
-    private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProviderRubrosUiState())
@@ -341,28 +338,15 @@ class ProviderRubrosViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
-                _uiState.update { it.copy(isLoading = false, error = message) }
-                return@launch
-            }
+            // No POST /full aquí: el body OpenAPI exige modalidad, días y medios de cobro.
+            // Solo persistimos el draft y avanzamos al checklist (disponibilidad / pagos).
             val draft = buildDraft(state, rubroId, categoryId) ?: run {
                 _uiState.update { it.copy(isLoading = false, error = "Seleccione categoría, rubro y especialidades") }
                 return@launch
             }
             registerTradeDraftRepository.save(draft)
-            val request = draft.toRubroFullRequest()
-            val result = if (state.isSecondaryRubro) {
-                submitSecondaryProviderRubroUseCase(request)
-            } else {
-                submitProviderRubroFullUseCase(request)
-            }
-            when (result) {
-                is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _effects.emit(ProviderStepEffect.Saved)
-                }
-                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
-            }
+            _uiState.update { it.copy(isLoading = false) }
+            _effects.emit(ProviderStepEffect.Saved)
         }
     }
 
@@ -550,12 +534,12 @@ class ProviderAvailabilityViewModel @Inject constructor(
             _uiState.update { it.copy(error = errorMessage) }
             return
         }
+        if (!state.servesAtClientHome && !state.servesAtLocal) {
+            _uiState.update { it.copy(error = "Elija al menos una modalidad de atención") }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
-                _uiState.update { it.copy(isLoading = false, error = message) }
-                return@launch
-            }
             val draft = registerTradeDraftRepository.get()
             if (draft == null || draft.subRubroIds.isEmpty()) {
                 _uiState.update {
@@ -578,12 +562,25 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 plazoCancelacionHoras = state.plazoCancelacionHoras,
             )
             registerTradeDraftRepository.save(updatedDraft)
+            // POST /full solo con body completo (incluye metodosPago). Si faltan pagos, solo draft.
+            if (updatedDraft.paymentMethods.isEmpty()) {
+                _uiState.update { it.copy(isLoading = false) }
+                _effects.emit(ProviderStepEffect.Saved)
+                return@launch
+            }
+            if (!isProviderIdentityVerified(getOnboardingStatusUseCase)) {
+                _uiState.update { it.copy(isLoading = false) }
+                _effects.emit(ProviderStepEffect.Saved)
+                return@launch
+            }
             when (val result = submitProviderRubroFullUseCase(updatedDraft.toRubroFullRequest())) {
                 is AppResult.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(ProviderStepEffect.Saved)
                 }
-                is AppResult.Error -> _uiState.update { it.copy(isLoading = false, error = result.error.userMessage()) }
+                is AppResult.Error -> _uiState.update {
+                    it.copy(isLoading = false, error = result.error.userMessage())
+                }
             }
         }
     }
@@ -842,6 +839,7 @@ data class ProviderPaymentMethodsUiState(
 @HiltViewModel
 class ProviderPaymentMethodsViewModel @Inject constructor(
     private val updateProviderProfessionalInfoUseCase: UpdateProviderProfessionalInfoUseCase,
+    private val submitProviderRubroFullUseCase: SubmitProviderRubroFullUseCase,
     private val registerTradeDraftRepository: RegisterTradeDraftRepository,
     private val syncRegisterTradeDraftFromProfileUseCase: SyncRegisterTradeDraftFromProfileUseCase,
     private val getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
@@ -876,25 +874,47 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            providerIdentityGateMessage(getOnboardingStatusUseCase)?.let { message ->
-                _uiState.update { it.copy(isLoading = false, error = message) }
-                return@launch
-            }
             val draft = registerTradeDraftRepository.get()
             val updatedDraft = draft?.copy(paymentMethods = methods)
             if (updatedDraft != null) {
                 registerTradeDraftRepository.save(updatedDraft)
             }
-            // Los métodos de pago pertenecen al perfil profesional y cuentan con un PATCH
-            // específico. Reenviar POST /trabajador-oficio-rubro/full intentaba crear por
-            // segunda vez el rubro principal y exponía al usuario un conflicto técnico.
+            val canSubmitFull = updatedDraft != null &&
+                updatedDraft.rubroId > 0 &&
+                updatedDraft.subRubroIds.isNotEmpty() &&
+                updatedDraft.workDays.isNotEmpty() &&
+                (updatedDraft.servesAtClientHome || updatedDraft.servesAtLocal) &&
+                updatedDraft.paymentMethods.isNotEmpty()
+            if (canSubmitFull) {
+                val fullDraft = updatedDraft!!
+                if (!isProviderIdentityVerified(getOnboardingStatusUseCase)) {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _effects.emit(ProviderStepEffect.Saved)
+                    return@launch
+                }
+                when (val fullResult = submitProviderRubroFullUseCase(fullDraft.toRubroFullRequest())) {
+                    is AppResult.Success -> {
+                        updateProviderProfessionalInfoUseCase(
+                            ProviderProfessionalInfoRequest(paymentMethods = methods),
+                        )
+                        _uiState.update { it.copy(isLoading = false) }
+                        _effects.emit(ProviderStepEffect.Saved)
+                        return@launch
+                    }
+                    is AppResult.Error -> {
+                        _uiState.update {
+                            it.copy(isLoading = false, error = fullResult.error.userMessage())
+                        }
+                        return@launch
+                    }
+                }
+            }
+            // Perfil ya tiene rubro: solo PATCH de medios de cobro.
             val result = updateProviderProfessionalInfoUseCase(
                 ProviderProfessionalInfoRequest(paymentMethods = methods),
             )
             when (result) {
                 is AppResult.Success -> {
-                    // El backend llegó a responder 200 sin persistir metodosPago. No se
-                    // navega con un falso éxito: se confirma contra estado-perfil.
                     when (val status = getOnboardingStatusUseCase.getProviderStatus()) {
                         is AppResult.Success -> {
                             if ("metodos_pago" in status.data.missingSteps) {

@@ -146,10 +146,16 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
         enabled = !disabled,
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-            Icon(Icons.Outlined.WorkOutline, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+            Icon(Icons.Outlined.WorkOutline, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f).padding(horizontal = OficiosSpacing.sm), verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
                 Text(service.rubroName, style = MaterialTheme.typography.titleMedium)
-                if (service.isPrimary) Text(stringResource(R.string.services_primary), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary)
+                if (service.isPrimary) {
+                    Text(
+                        stringResource(R.string.services_primary),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Text(
                     service.subServices.joinToString { it.name }.ifBlank { stringResource(R.string.services_no_specialties) },
                     style = MaterialTheme.typography.bodyMedium,
@@ -159,7 +165,11 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                     if (service.subServices.any { it.servesAtLocal }) add(stringResource(R.string.services_at_local))
                     if (service.subServices.any { it.requiresTurns }) add(stringResource(R.string.services_with_turns))
                 }
-                Text(modalities.joinToString(" · ").ifBlank { stringResource(R.string.services_modality_unknown) }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    modalities.joinToString(" · ").ifBlank { stringResource(R.string.services_modality_unknown) },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 val days = dayOptions()
                 if (service.specialtySchedules.size > 1) {
                     for (specialty in service.specialtySchedules) {
@@ -179,11 +189,13 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (service.isPrimary) {
-                    Text(stringResource(R.string.services_primary_locked), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                } else {
-                    Text(stringResource(R.string.services_tap_to_edit), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                OficiosButton(
+                    text = stringResource(R.string.services_edit_hours),
+                    onClick = { onEvent(ServicesEvent.EditAvailability(service)) },
+                    enabled = !disabled,
+                    variant = OficiosButtonVariant.Ghost,
+                    size = OficiosButtonSize.Small,
+                )
             }
             if (!service.isPrimary) {
                 IconButton(enabled = !disabled, onClick = { onEvent(ServicesEvent.RequestDelete(service)) }) {
@@ -196,10 +208,10 @@ private fun ServiceCard(service: ManagedProviderService, disabled: Boolean, onEv
 
 @Composable
 fun AddServiceScreen(uiState: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    // Intra-wizard: Back vuelve al paso anterior. Descartar solo al salir del Paso 1.
-    val leavingForm = uiState.step == AddServiceStep.TRADE
+    val atRootStep = uiState.step == AddServiceStep.TRADE ||
+        (uiState.isEditing && uiState.step == AddServiceStep.ATTENTION)
     val handleBack = rememberConfirmDiscardBackHandler(
-        hasUnsavedChanges = leavingForm && uiState.hasUnsavedChanges,
+        hasUnsavedChanges = atRootStep && uiState.hasUnsavedChanges,
         enabled = true,
         onConfirmExit = { onEvent(AddServiceEvent.Previous) },
     )
@@ -242,23 +254,30 @@ internal fun AddServiceUiState.phase(): OficiosContentPhase = when {
 
 @Composable
 private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    val showBackInFooter = when (state.step) {
+        AddServiceStep.TRADE -> false
+        AddServiceStep.ATTENTION -> !state.isEditing
+        AddServiceStep.CONFIRM -> true
+    }
     OficiosFormColumn(
         footer = {
             OficiosFormActionsBar(
-                primaryLabel = when {
-                    state.step != AddServiceStep.REVIEW -> stringResource(R.string.services_continue)
-                    state.isEditing -> stringResource(R.string.services_save_changes)
-                    else -> stringResource(R.string.services_publish)
+                primaryLabel = when (state.step) {
+                    AddServiceStep.CONFIRM -> if (state.isEditing) {
+                        stringResource(R.string.services_save_changes)
+                    } else {
+                        stringResource(R.string.services_publish)
+                    }
+                    else -> stringResource(R.string.services_continue)
                 },
                 onPrimary = {
-                    onEvent(if (state.step == AddServiceStep.REVIEW) AddServiceEvent.Save else AddServiceEvent.Next)
+                    onEvent(
+                        if (state.step == AddServiceStep.CONFIRM) AddServiceEvent.Save
+                        else AddServiceEvent.Next,
+                    )
                 },
-                backLabel = if (state.step != AddServiceStep.TRADE) {
-                    stringResource(R.string.services_back)
-                } else {
-                    null
-                },
-                onBack = if (state.step != AddServiceStep.TRADE) {
+                backLabel = if (showBackInFooter) stringResource(R.string.services_back) else null,
+                onBack = if (showBackInFooter) {
                     { onEvent(AddServiceEvent.Previous) }
                 } else {
                     null
@@ -268,15 +287,20 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
             )
         },
     ) {
-        Text(stringResource(R.string.services_step_counter, state.step.ordinal + 1, AddServiceStep.entries.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
-        Text(stepTitle(state.step, state.isEditing), style = MaterialTheme.typography.headlineSmall)
-        Text(stepDescription(state.step, state.isEditing), style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = stepTitle(state.step, state.isEditing),
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = stepDescription(state.step, state.isEditing),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         when (state.step) {
             AddServiceStep.TRADE -> TradeStep(state, onEvent)
-            AddServiceStep.MODALITY -> ModalityStep(state, onEvent)
-            AddServiceStep.SCHEDULE -> ScheduleStep(state, onEvent)
-            AddServiceStep.PAYMENT -> PaymentStep(state, onEvent)
-            AddServiceStep.REVIEW -> ReviewStep(state)
+            AddServiceStep.ATTENTION -> AttentionStep(state, onEvent)
+            AddServiceStep.CONFIRM -> ConfirmStep(state, onEvent)
         }
         state.errorMessage?.let { OficiosInlineAlert(it) }
     }
@@ -284,39 +308,6 @@ private fun AddServiceForm(state: AddServiceUiState, onEvent: (AddServiceEvent) 
 
 @Composable
 private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    if (state.isEditing) {
-        Text(state.selectedRubroLabel, style = MaterialTheme.typography.titleMedium)
-        if (state.isPrimaryService) {
-            Text(
-                text = stringResource(R.string.services_primary_rubro_locked),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Text(stringResource(R.string.services_specialties), style = MaterialTheme.typography.titleMedium)
-        val published = state.subRubros.filter { it.id in state.selectedSubRubroIds }
-        if (published.isEmpty()) {
-            Text(
-                stringResource(R.string.services_no_specialties),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        } else {
-            published.forEach { option ->
-                Text(option.label, style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-        Text(
-            stringResource(R.string.services_specialties_edit_locked),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        return
-    }
-    Text(
-        text = stringResource(R.string.services_elegi_rubro_title),
-        style = MaterialTheme.typography.headlineLarge,
-        color = MaterialTheme.colorScheme.onBackground,
-    )
     Text(
         text = stringResource(R.string.services_elegi_rubro_hint),
         style = MaterialTheme.typography.bodyLarge,
@@ -353,9 +344,34 @@ private fun TradeStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Un
 }
 
 @Composable
-private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    OficiosCheckbox(state.servesAtClientHome, { onEvent(AddServiceEvent.ClientHomeChanged(it)) }, stringResource(R.string.services_client_home))
-    OficiosCheckbox(state.servesAtLocal, { onEvent(AddServiceEvent.LocalChanged(it)) }, stringResource(R.string.services_local))
+private fun AttentionStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    if (state.isEditing) {
+        Text(
+            text = state.selectedRubroLabel,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = state.subRubros.filter { it.id in state.selectedSubRubroIds }.joinToString { it.label }
+                .ifBlank { stringResource(R.string.services_no_specialties) },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    Text(
+        text = stringResource(R.string.services_attention_where_title),
+        style = MaterialTheme.typography.titleMedium,
+    )
+    OficiosCheckbox(
+        state.servesAtClientHome,
+        { onEvent(AddServiceEvent.ClientHomeChanged(it)) },
+        stringResource(R.string.services_client_home),
+    )
+    OficiosCheckbox(
+        state.servesAtLocal,
+        { onEvent(AddServiceEvent.LocalChanged(it)) },
+        stringResource(R.string.services_local),
+    )
     OficiosCheckbox(
         checked = state.requiresTurns,
         onCheckedChange = { onEvent(AddServiceEvent.RequiresTurnsChanged(it)) },
@@ -380,7 +396,12 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
     )
     if (state.servesAtLocal) {
         Text(stringResource(R.string.services_local_address), style = MaterialTheme.typography.titleMedium)
-        OficiosTextField(state.localName, { onEvent(AddServiceEvent.LocalNameChanged(it)) }, stringResource(R.string.services_local_name), placeholder = stringResource(R.string.services_local_name_hint))
+        OficiosTextField(
+            state.localName,
+            { onEvent(AddServiceEvent.LocalNameChanged(it)) },
+            stringResource(R.string.services_local_name),
+            placeholder = stringResource(R.string.services_local_name_hint),
+        )
         OficiosAutocompleteField(
             value = state.localBarrioQuery,
             onValueChange = { onEvent(AddServiceEvent.LocalBarrioChanged(it)) },
@@ -393,8 +414,16 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             onFocused = { onEvent(AddServiceEvent.LocalBarrioFocused) },
             onSuggestionsDismissed = { onEvent(AddServiceEvent.LocalBarrioSuggestionsDismissed) },
         )
-        OficiosTextField(state.localStreet, { onEvent(AddServiceEvent.LocalStreetChanged(it)) }, stringResource(R.string.services_street))
-        OficiosTextField(state.localNumber, { onEvent(AddServiceEvent.LocalNumberChanged(it)) }, stringResource(R.string.commercial_local_number))
+        OficiosTextField(
+            state.localStreet,
+            { onEvent(AddServiceEvent.LocalStreetChanged(it)) },
+            stringResource(R.string.services_street),
+        )
+        OficiosTextField(
+            state.localNumber,
+            { onEvent(AddServiceEvent.LocalNumberChanged(it)) },
+            stringResource(R.string.commercial_local_number),
+        )
         OficiosAddressLocationPicker(
             latitude = state.localLocation.latitude,
             longitude = state.localLocation.longitude,
@@ -410,17 +439,22 @@ private fun ModalityStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
             },
             onConfirmPin = { onEvent(AddServiceEvent.ConfirmPin) },
             locateOnMapLabel = state.localLocation.locateOnMapLabel,
-            title = "Ubicación del local",
+            title = stringResource(R.string.services_local_map_title),
             hint = state.localLocation.message,
         )
     }
-}
-
-@Composable
-private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    Text(
+        text = stringResource(R.string.services_attention_when_title),
+        style = MaterialTheme.typography.titleMedium,
+    )
+    Text(
+        text = stringResource(R.string.services_step_schedule_body),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
     if (state.isEditing && state.editorSpecialties.isNotEmpty()) {
         if (state.editorSpecialties.size > 1) {
-            Text(stringResource(R.string.services_schedule_pick_specialty), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.services_schedule_pick_specialty), style = MaterialTheme.typography.titleSmall)
             state.editorSpecialties.forEach { option ->
                 OficiosFilterChip(
                     label = option.label,
@@ -432,7 +466,7 @@ private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
         if (state.editorSpecialtyName.isNotBlank()) {
             Text(
                 stringResource(R.string.services_schedule_for_specialty, state.editorSpecialtyName),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -450,66 +484,79 @@ private fun ScheduleStep(state: AddServiceUiState, onEvent: (AddServiceEvent) ->
 }
 
 @Composable
-private fun PaymentStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
-    paymentOptions().forEach { (id, label) -> OficiosCheckbox(id in state.paymentMethods, { onEvent(AddServiceEvent.PaymentToggled(id, it)) }, label) }
-}
-
-@Composable
-private fun ReviewStep(state: AddServiceUiState) {
+private fun ConfirmStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -> Unit) {
+    Text(
+        text = stringResource(R.string.services_step_payment_title),
+        style = MaterialTheme.typography.titleMedium,
+    )
+    paymentOptions().forEach { (id, label) ->
+        OficiosCheckbox(
+            id in state.paymentMethods,
+            { onEvent(AddServiceEvent.PaymentToggled(id, it)) },
+            label,
+        )
+    }
+    Text(
+        text = stringResource(R.string.services_confirm_summary_title),
+        style = MaterialTheme.typography.titleMedium,
+    )
     OficiosCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
             Text(state.selectedRubroLabel, style = MaterialTheme.typography.titleLarge)
             Text(state.subRubros.filter { it.id in state.selectedSubRubroIds }.joinToString { it.label })
-            Text(buildList { if (state.servesAtClientHome) add(stringResource(R.string.services_at_home)); if (state.servesAtLocal) add(stringResource(R.string.services_at_local)); if (state.requiresTurns) add(stringResource(R.string.services_with_turns)) }.joinToString(" · "))
+            Text(
+                buildList {
+                    if (state.servesAtClientHome) add(stringResource(R.string.services_at_home))
+                    if (state.servesAtLocal) add(stringResource(R.string.services_at_local))
+                    if (state.requiresTurns) add(stringResource(R.string.services_with_turns))
+                }.joinToString(" · "),
+            )
             val days = dayOptions()
-            val payments = paymentOptions()
             val hours = state.weeklyAvailability.days.filter { it.ranges.isNotEmpty() }.joinToString { day ->
                 val label = days.firstOrNull { it.first == day.day }?.second ?: day.day
                 "$label ${day.ranges.joinToString { "${it.start}–${it.end}" }}"
             }
-            Text(
-                if (state.isEditing && state.editorSpecialtyName.isNotBlank() && hours.isNotBlank()) {
-                    stringResource(R.string.services_specialty_hours, state.editorSpecialtyName, hours)
-                } else {
-                    hours
-                },
-            )
-            Text(state.paymentMethods.joinToString { id -> payments.firstOrNull { it.first == id }?.second ?: id })
+            if (hours.isNotBlank()) {
+                Text(hours, style = MaterialTheme.typography.bodyMedium)
+            }
             if (state.servesAtLocal) {
                 Text(
-                    if (state.localLatitude != null && state.localLongitude != null) stringResource(R.string.services_location_confirmed) else stringResource(R.string.services_location_pending),
+                    if (state.localLatitude != null && state.localLongitude != null) {
+                        stringResource(R.string.services_location_confirmed)
+                    } else {
+                        stringResource(R.string.services_location_pending)
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
     }
-    Text(stringResource(R.string.services_review_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(
+        stringResource(R.string.services_review_note),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable
 private fun stepTitle(step: AddServiceStep, isEditing: Boolean) = when (step) {
-    AddServiceStep.TRADE -> stringResource(
-        if (isEditing) R.string.services_edit_trade_title else R.string.services_step_trade_title,
+    AddServiceStep.TRADE -> stringResource(R.string.services_step_trade_title)
+    AddServiceStep.ATTENTION -> stringResource(
+        if (isEditing) R.string.services_attention_title_edit else R.string.services_attention_title,
     )
-    AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_title)
-    AddServiceStep.SCHEDULE -> stringResource(R.string.services_step_schedule_title)
-    AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_title)
-    AddServiceStep.REVIEW -> stringResource(
+    AddServiceStep.CONFIRM -> stringResource(
         if (isEditing) R.string.services_step_review_title_edit else R.string.services_step_review_title,
     )
 }
+
 @Composable
 private fun stepDescription(step: AddServiceStep, isEditing: Boolean) = when (step) {
-    AddServiceStep.TRADE -> stringResource(
-        if (isEditing) R.string.services_edit_trade_hint else R.string.services_step_trade_body,
+    AddServiceStep.TRADE -> stringResource(R.string.services_step_trade_body)
+    AddServiceStep.ATTENTION -> stringResource(
+        if (isEditing) R.string.services_attention_body_edit else R.string.services_attention_body,
     )
-    AddServiceStep.MODALITY -> stringResource(R.string.services_step_modality_body)
-    AddServiceStep.SCHEDULE -> stringResource(
-        if (isEditing) R.string.services_step_schedule_body_edit else R.string.services_step_schedule_body,
-    )
-    AddServiceStep.PAYMENT -> stringResource(R.string.services_step_payment_body)
-    AddServiceStep.REVIEW -> stringResource(R.string.services_step_review_body)
+    AddServiceStep.CONFIRM -> stringResource(R.string.services_confirm_body)
 }
 
 @Composable

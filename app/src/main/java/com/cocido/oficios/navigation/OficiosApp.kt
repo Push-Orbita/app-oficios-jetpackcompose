@@ -25,6 +25,7 @@ import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.HomeDestination
 import com.cocido.oficios.feature.home.navigation.OrdersDestination
 import com.cocido.oficios.feature.home.navigation.SharedHomeDestination
+import com.cocido.oficios.feature.home.navigation.AgendaDestination
 import com.cocido.oficios.feature.home.navigation.agendaScreen
 import com.cocido.oficios.feature.home.navigation.homeScreen
 import com.cocido.oficios.feature.home.navigation.openClientTab
@@ -206,6 +207,9 @@ fun AppNavHost(
             },
             onNavigateToVerifyPhone = { contactId, telefono ->
                 navController.navigate(OnboardingDestination.verifyPhoneRoute(contactId, telefono))
+            },
+            onNavigateToAvailability = {
+                navController.navigate(AgendaDestination.availability)
             },
             bottomBar = {
                 ClientHomeBottomBar(

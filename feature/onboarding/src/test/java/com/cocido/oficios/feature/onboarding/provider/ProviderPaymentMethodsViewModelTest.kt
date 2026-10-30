@@ -15,6 +15,7 @@ import com.cocido.oficios.domain.repository.OnboardingRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitProviderRubroFullUseCase
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.UpdateProviderProfessionalInfoUseCase
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +51,7 @@ class ProviderPaymentMethodsViewModelTest {
         val providerRepository = FakeProviderRepository(draft)
         val viewModel = ProviderPaymentMethodsViewModel(
             updateProviderProfessionalInfoUseCase = UpdateProviderProfessionalInfoUseCase(providerRepository),
+            submitProviderRubroFullUseCase = SubmitProviderRubroFullUseCase(providerRepository),
             registerTradeDraftRepository = draftRepository,
             syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
                 providerRepository,
@@ -65,6 +67,7 @@ class ProviderPaymentMethodsViewModelTest {
         viewModel.submit()
         advanceUntilIdle()
 
+        // Draft sin workDays → no reenvía /full; solo PATCH de pagos.
         assertEquals(0, providerRepository.fullSubmissions)
         assertEquals(
             setOf(ProviderPaymentMethods.EFECTIVO, ProviderPaymentMethods.TRANSFERENCIA),
@@ -81,6 +84,7 @@ class ProviderPaymentMethodsViewModelTest {
         val providerRepository = FakeProviderRepository(draft)
         val viewModel = ProviderPaymentMethodsViewModel(
             updateProviderProfessionalInfoUseCase = UpdateProviderProfessionalInfoUseCase(providerRepository),
+            submitProviderRubroFullUseCase = SubmitProviderRubroFullUseCase(providerRepository),
             registerTradeDraftRepository = draftRepository,
             syncRegisterTradeDraftFromProfileUseCase = SyncRegisterTradeDraftFromProfileUseCase(
                 providerRepository,
@@ -161,11 +165,8 @@ class ProviderPaymentMethodsViewModelTest {
                 isProfileComplete = false,
                 isOperational = false,
                 isIdentityVerified = true,
-                missingSteps = if (paymentPersists && providerStatusCalls++ > 0) {
-                    emptyList()
-                } else {
-                    listOf("metodos_pago")
-                },
+                // Con paymentPersists el PATCH se considera confirmado en la verificación post-guardado.
+                missingSteps = if (paymentPersists) emptyList() else listOf("metodos_pago"),
             ),
         )
 

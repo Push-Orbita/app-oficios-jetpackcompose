@@ -114,35 +114,25 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
 }
 
 fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList {
-    val preIdentityStepIds = setOf(
-        "dni_numero",
-        "dni_imagenes",
-        "dni_pendiente_revision",
-        "dni_rechazado",
-        "selfie_imagen",
-        "selfie_pendiente_revision",
-        "selfie_rechazada",
-        "email_verificado",
-    )
     val stepMap = mapOf(
         "dni_numero" to ("DNI" to "Cargue su número de documento."),
         "dni_imagenes" to ("Fotos del DNI" to "Suba las imágenes de su documento."),
         "dni_pendiente_revision" to (
             "DNI en revisión" to
-                "El equipo está validando su documento. Hay que esperar la aprobación antes de usar la app."
+                "Puede corregir y volver a enviar su documento hasta que el equipo lo acepte."
             ),
         "dni_rechazado" to ("DNI rechazado" to "Vuelva a cargar su documentación."),
         "selfie_imagen" to ("Foto de rostro" to "Suba una selfie para validar su identidad."),
         "selfie_pendiente_revision" to (
             "Selfie en revisión" to
-                "El equipo está validando su foto. Hay que esperar la aprobación antes de usar la app."
+                "Puede corregir y volver a enviar su foto hasta que el equipo la acepte."
             ),
         "selfie_rechazada" to ("Selfie rechazada" to "Vuelva a cargar su foto de rostro."),
         "descripcion" to ("Descripción profesional" to "Cuente qué servicios ofrece."),
         "experiencia" to ("Experiencia" to "Indique su experiencia en el rubro."),
         "rubro_principal" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
         "subrubros" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
-        "disponibilidad" to ("Días laborables" to "Configure sus días y horarios."),
+        "disponibilidad" to ("Disponibilidad" to "Configure modalidad, días y horarios de atención."),
         "agenda_turnos" to ("Agenda de turnos" to "Configure turnos si aplica."),
         "local_comercial" to ("Local comercial" to "Agregue su local si atiende en sitio."),
         "metodos_pago" to ("Métodos de pago" to "Seleccione cómo quiere cobrar."),
@@ -152,7 +142,6 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
     )
 
     missingSteps.forEach { missing ->
-        if (!isIdentityVerified && missing !in preIdentityStepIds) return@forEach
         if (missing == "subrubros" && missingSteps.contains("rubro_principal")) return@forEach
         val (title, description) = stepMap[missing] ?: (missing to "Complete este paso.")
         val status = when (missing) {

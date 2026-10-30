@@ -45,6 +45,7 @@ class ProfessionalProfileViewModel @Inject constructor(
             ProfessionalProfileEvent.Retry -> load()
             ProfessionalProfileEvent.Back -> emit(ProfessionalProfileEffect.NavigateBack)
             ProfessionalProfileEvent.EditRubro -> emit(ProfessionalProfileEffect.NavigateToServices)
+            ProfessionalProfileEvent.EditAvailability -> emit(ProfessionalProfileEffect.NavigateToAvailability)
             ProfessionalProfileEvent.AddWork,
             ProfessionalProfileEvent.AddCertificate,
             -> emit(ProfessionalProfileEffect.NavigateToPortfolio)

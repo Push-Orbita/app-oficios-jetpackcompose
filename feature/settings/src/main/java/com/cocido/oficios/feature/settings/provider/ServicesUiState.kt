@@ -19,6 +19,7 @@ sealed interface ServicesEvent {
     data object Back : ServicesEvent
     data object AddService : ServicesEvent
     data class EditService(val service: ManagedProviderService) : ServicesEvent
+    data class EditAvailability(val service: ManagedProviderService) : ServicesEvent
     data class RequestDelete(val service: ManagedProviderService) : ServicesEvent
     data object ConfirmDelete : ServicesEvent
     data object DismissDelete : ServicesEvent
@@ -28,10 +29,12 @@ sealed interface ServicesEffect {
     data object NavigateBack : ServicesEffect
     data object NavigateToAdd : ServicesEffect
     data class NavigateToEdit(val serviceId: Long) : ServicesEffect
+    data object NavigateToAvailability : ServicesEffect
     data class ShowMessage(val message: String) : ServicesEffect
 }
 
-enum class AddServiceStep { TRADE, MODALITY, SCHEDULE, PAYMENT, REVIEW }
+/** Flujo compacto: oficio → dónde/cuándo → cobro y confirmar. */
+enum class AddServiceStep { TRADE, ATTENTION, CONFIRM }
 
 data class AddServiceUiState(
     val step: AddServiceStep = AddServiceStep.TRADE,

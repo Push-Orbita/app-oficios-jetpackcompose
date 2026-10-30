@@ -10,7 +10,9 @@
     <string name="onboarding_provider_title">Configure su perfil profesional</string>
     <string name="onboarding_provider_subtitle">Complete los pasos obligatorios para operar en la plataforma</string>
     <string name="onboarding_docs_waiting_title">Documentación en revisión</string>
-    <string name="onboarding_docs_waiting_message">Sus fotos de DNI y selfie están siendo validadas por el equipo. Hasta que las aprueben, no podrá seguir configurando el perfil ni usar la app. Puede dejar esta pantalla abierta: se actualiza sola cuando esté lista.</string>
+    <string name="onboarding_docs_waiting_message">El equipo está validando su DNI y selfie. Puede seguir completando el resto del perfil y, si se equivocó, tocar esos pasos para corregirlos hasta que los acepten. Esta pantalla se actualiza sola.</string>
+    <string name="onboarding_rubros_saved_draft">Categoría guardada. Complete disponibilidad y medios de cobro para enviarla.</string>
+    <string name="onboarding_rubro_pending_kyc">Guardamos su configuración en el dispositivo. Se enviará cuando aprueben su documentación.</string>
     <string name="onboarding_pending_title">Su perfil está en revisión</string>
     <string name="onboarding_pending_subtitle">Cuando lo aprobemos podrá recibir solicitudes de trabajo.</string>
     <string name="onboarding_rejected_title">Su perfil fue rechazado</string>

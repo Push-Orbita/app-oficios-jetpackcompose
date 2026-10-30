@@ -60,20 +60,21 @@ class OnboardingMapperTest {
     }
 
     @Test
-    fun `hides rubro steps until identity is verified`() {
+    fun `shows post identity steps while docs are still in review`() {
         val steps = ProviderProfileStatus(
             accountStatus = AccountStatus.PENDING_APPROVAL,
             isConfigurationComplete = false,
             isProfileComplete = false,
             isOperational = false,
             isIdentityVerified = false,
-            missingSteps = listOf("dni_pendiente_revision", "rubro_principal", "subrubros", "metodos_pago"),
+            missingSteps = listOf("dni_pendiente_revision", "rubro_principal", "subrubros", "metodos_pago", "disponibilidad"),
         ).toOnboardingSteps()
 
         assertTrue(steps.any { it.id == "dni_pendiente_revision" })
-        assertFalse(steps.any { it.id == "rubro_principal" })
-        assertFalse(steps.any { it.id == "subrubros" })
-        assertFalse(steps.any { it.id == "metodos_pago" })
+        assertTrue(steps.any { it.id == "rubro_principal" })
+        assertFalse(steps.any { it.id == "subrubros" }) // dedupe when rubro_principal presente
+        assertTrue(steps.any { it.id == "metodos_pago" })
+        assertTrue(steps.any { it.id == "disponibilidad" })
     }
 
     @Test
