@@ -14,12 +14,14 @@ data class ProviderHomeContent(
     val hasGalleryPhotos: Boolean = false,
     val hasCommercialLocal: Boolean = false,
     val hasCertificate: Boolean = false,
+    /** Onboarding obligatorio completo (API). Oculta "Complete su perfil" aunque falten opcionales. */
+    val isRequiredProfileComplete: Boolean = false,
 ) {
     val headerSubtitle: String?
         get() = if (isVerified) primarySpecialtyLabel else null
 
     val showProfileCompletion: Boolean
-        get() = profileCompletionPercent < 100
+        get() = !isRequiredProfileComplete && profileCompletionPercent < 100
 }
 
 data class ProviderBenefit(

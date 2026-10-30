@@ -85,7 +85,7 @@ private fun HttpException.toHttpAppError(): AppError {
             backendCode = backendCode,
         )
         in 500..599 -> AppError.Network(
-            message = "Error del servidor. Intente más tarde.",
+            message = serverErrorMessage(backendCode, parsedMessage),
             code = httpCode,
             backendCode = backendCode,
         )
@@ -197,7 +197,26 @@ private val knownBackendMessages = mapOf(
     "DB02" to "El servicio no está disponible en este momento. Intente más tarde.",
     "SE01" to "El servicio no está disponible en este momento. Intente más tarde.",
     "VA01" to "Revise los datos ingresados",
+    PHONE_CODE_DELIVERY_FAILED to PHONE_CODE_DELIVERY_FAILED_MESSAGE,
 )
+
+/** Backend: proveedor de WhatsApp/SMS no confirmó la entrega (OpenAPI 503 en enviar-codigo-telefono). */
+internal const val PHONE_CODE_DELIVERY_FAILED = "VF06"
+internal const val PHONE_CODE_DELIVERY_FAILED_MESSAGE =
+    "No se pudo enviar el código por WhatsApp. Intente más tarde."
+private const val GENERIC_SERVER_ERROR_MESSAGE = "Error del servidor. Intente más tarde."
+
+/**
+ * Los 5xx genéricos (SE01, DB02, sin código) siguen con copy genérico. Los códigos de verificación
+ * de teléfono (VFxx) son errores de negocio que el usuario puede entender: se muestra su copy.
+ */
+private fun serverErrorMessage(backendCode: String?, parsed: String?): String {
+    if (backendCode == PHONE_CODE_DELIVERY_FAILED) return PHONE_CODE_DELIVERY_FAILED_MESSAGE
+    if (backendCode?.startsWith("VF") == true) {
+        return parsed?.takeIf { isUserFacingErrorMessage(it) } ?: PHONE_CODE_DELIVERY_FAILED_MESSAGE
+    }
+    return GENERIC_SERVER_ERROR_MESSAGE
+}
 
 private fun messageForBackendCode(
     code: String?,

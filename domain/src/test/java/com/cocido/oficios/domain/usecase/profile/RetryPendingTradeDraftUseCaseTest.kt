@@ -50,6 +50,10 @@ class RetryPendingTradeDraftUseCaseTest {
             override suspend fun getMySubRubros() = AppResult.Success(emptyList<ProviderSubRubroOption>())
         }
         val submitUseCase = SubmitRegisterTradeDraftUseCase(
+            syncProviderBarrioDomicilio = object : com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                override suspend fun invoke(barrioId: Long, barrioName: String) =
+                    com.cocido.oficios.core.common.result.AppResult.Success(Unit)
+            },
             providerProfileRepository = providerProfileRepository,
             registerTradeDraftRepository = draftRepository,
             catalogRepository = object : CatalogRepository {

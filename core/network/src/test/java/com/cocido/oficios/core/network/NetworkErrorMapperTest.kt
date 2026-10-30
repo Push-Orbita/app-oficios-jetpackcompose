@@ -246,6 +246,51 @@ class NetworkErrorMapperTest {
     }
 
     @Test
+    fun `http 503 VF06 phone code maps to whatsapp copy not generic server error`() {
+        val body = """
+            {
+              "error": true,
+              "errorDetails": {
+                "code": "VF06",
+                "message": "No se pudo enviar el código. Intentá más tarde.",
+                "details": "{\"detail\":\"No se pudo entregar el código por el canal configurado\",\"canal\":\"whatsapp\"}"
+              }
+            }
+        """.trimIndent()
+        val error = httpError(503, body).toNetworkAppError()
+        assertTrue(error is AppError.Network)
+        assertEquals(503, (error as AppError.Network).code)
+        assertEquals("VF06", error.backendCode)
+        assertEquals("No se pudo enviar el código por WhatsApp. Intente más tarde.", error.userMessage())
+    }
+
+    @Test
+    fun `http 400 VF06 phone code also maps to whatsapp copy`() {
+        val body = """
+            {"error": true, "errorDetails": {"code": "VF06", "message": "No se pudo enviar el código. Intentá más tarde."}}
+        """.trimIndent()
+        val error = httpError(400, body).toNetworkAppError()
+        assertEquals("VF06", error.backendCode)
+        assertEquals("No se pudo enviar el código por WhatsApp. Intente más tarde.", error.userMessage())
+    }
+
+    @Test
+    fun `http 5xx other VF code keeps backend message`() {
+        val body = """
+            {"error": true, "errorDetails": {"code": "VF05", "message": "Espere 45 segundos para pedir otro código."}}
+        """.trimIndent()
+        val error = httpError(503, body).toNetworkAppError()
+        assertEquals("Espere 45 segundos para pedir otro código.", error.userMessage())
+    }
+
+    @Test
+    fun `http 503 without VF code stays generic server error`() {
+        val body = """{"error": true, "errorDetails": {"code": "SE01", "message": "boom"}}"""
+        val error = httpError(503, body).toNetworkAppError()
+        assertEquals("Error del servidor. Intente más tarde.", error.userMessage())
+    }
+
+    @Test
     fun `http 413 nginx html maps to payload too large never error de red`() {
         val body = """
             <html>

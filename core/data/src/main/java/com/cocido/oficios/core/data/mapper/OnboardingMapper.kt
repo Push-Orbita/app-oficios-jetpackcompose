@@ -29,6 +29,7 @@ fun TrabajadorPerfilEstadoDto.toDomain(
     isIdentityVerified = requisitos?.identidadVerificada == true,
     missingSteps = faltantes,
     rejectionReason = rejectionReason,
+    isOnboardingRequirementsComplete = requisitos?.requisitosOnboardingCompletos == true,
 )
 
 fun TrabajadorOficioPerfilMeDto.toRejectionReason(): String? =

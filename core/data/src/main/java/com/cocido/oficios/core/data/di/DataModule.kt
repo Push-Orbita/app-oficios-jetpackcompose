@@ -48,6 +48,8 @@ import com.cocido.oficios.domain.repository.SessionRepository
 import com.cocido.oficios.domain.repository.WorkCertificateRepository
 import com.cocido.oficios.domain.repository.WorkerProfileRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
+import com.cocido.oficios.domain.usecase.profile.EnsureProviderBarrioDomicilioUseCase
+import com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -112,6 +114,11 @@ abstract class DataModule {
     abstract fun bindProviderProfileRepository(
         impl: ProviderProfileRepositoryImpl,
     ): ProviderProfileRepository
+
+    @Binds
+    abstract fun bindProviderBarrioDomicilioSync(
+        impl: EnsureProviderBarrioDomicilioUseCase,
+    ): ProviderBarrioDomicilioSync
 
     @Binds
     @Singleton

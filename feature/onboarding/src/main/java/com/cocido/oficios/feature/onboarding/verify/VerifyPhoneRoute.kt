@@ -12,6 +12,7 @@ fun VerifyPhoneRoute(
     onVerified: () -> Unit,
     onEditNumber: () -> Unit,
     modifier: Modifier = Modifier,
+    onVerifyLater: () -> Unit = onVerified,
 ) {
     val viewModel: VerifyPhoneViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -27,5 +28,6 @@ fun VerifyPhoneRoute(
         onSubmit = viewModel::submit,
         onEditNumber = onEditNumber,
         modifier = modifier,
+        onVerifyLater = onVerifyLater,
     )
 }

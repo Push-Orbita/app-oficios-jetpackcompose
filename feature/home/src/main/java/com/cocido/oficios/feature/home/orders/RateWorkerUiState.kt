@@ -8,6 +8,8 @@ sealed interface RateWorkerUiState {
         val comment: String = "",
         val isSubmitting: Boolean = false,
         val hasAttemptedSubmit: Boolean = false,
+        /** Error del último envío; se limpia al tocar cualquier campo. */
+        val submitError: String? = null,
     ) : RateWorkerUiState {
         val canSubmit: Boolean get() = qualityStars > 0 && punctualityStars > 0
     }

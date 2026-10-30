@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Estados y acciones de las fotos de identidad (DNI y selfie) del registro del trabajador. -->
+<resources>
+    <string name="onboarding_document_status_pending">Pendiente</string>
+    <string name="onboarding_document_status_ready">Lista para enviar</string>
+    <string name="onboarding_document_status_in_review">En revisión</string>
+    <string name="onboarding_document_status_rejected">Rechazada</string>
+    <string name="onboarding_document_status_approved">Aprobada</string>
+
+    <string name="onboarding_document_subtitle_ready">Revise que se lea bien. Puede cambiarla antes de enviar.</string>
+    <string name="onboarding_document_subtitle_in_review">Ya la recibimos. Si se equivocó, puede reemplazarla.</string>
+    <string name="onboarding_document_subtitle_rejected">Cargue una foto nueva para continuar.</string>
+    <string name="onboarding_document_subtitle_approved">Validada por el equipo de Oficios.</string>
+
+    <string name="onboarding_document_action_replace">Reemplazar</string>
+    <string name="onboarding_document_action_replace_a11y">Reemplazar %1$s</string>
+    <string name="onboarding_document_preview_a11y">Vista previa de %1$s</string>
+
+    <string name="onboarding_step_dni_in_review_hint">Su DNI está en revisión. Si cargó algo mal, corríjalo y vuelva a enviarlo.</string>
+    <string name="onboarding_step_dni_both_sides_hint">Para corregir un DNI en revisión, cargue de nuevo el frente y el dorso.</string>
+    <string name="onboarding_step_dni_number_locked">El número ya fue validado junto con su DNI.</string>
+    <string name="onboarding_step_dni_resubmit">Reenviar documentación</string>
+    <string name="onboarding_step_selfie_resubmit">Reenviar selfie</string>
+    <string name="onboarding_step_continue">Continuar</string>
+    <string name="onboarding_step_sending">Enviando… no cierre la app.</string>
+</resources>

@@ -29,6 +29,7 @@ fun VerifyPhoneStepScreen(
     onSubmit: () -> Unit,
     onEditNumber: () -> Unit,
     modifier: Modifier = Modifier,
+    onVerifyLater: () -> Unit = {},
 ) {
     val shake = rememberOficiosRejectShake(rejectionKey = uiState.codeRejections.takeIf { it > 0 })
     OnboardingStepScaffold(
@@ -100,6 +101,15 @@ fun VerifyPhoneStepScreen(
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Form,
             )
+            if (uiState.codeSendFailed) {
+                OficiosButton(
+                    text = stringResource(R.string.onboarding_step_verify_phone_later),
+                    onClick = onVerifyLater,
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Ghost,
+                )
+            }
         }
     }
 }
