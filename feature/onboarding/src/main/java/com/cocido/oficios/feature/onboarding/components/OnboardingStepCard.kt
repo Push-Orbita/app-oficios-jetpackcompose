@@ -68,6 +68,7 @@ fun OnboardingStepCard(
                     OnboardingStepStatus.REJECTED -> MaterialTheme.colorScheme.error
                     OnboardingStepStatus.BLOCKED -> MaterialTheme.colorScheme.onSurfaceVariant
                     OnboardingStepStatus.PENDING -> MaterialTheme.colorScheme.error
+                    OnboardingStepStatus.SAVED -> MaterialTheme.colorScheme.primary
                 },
             )
         }

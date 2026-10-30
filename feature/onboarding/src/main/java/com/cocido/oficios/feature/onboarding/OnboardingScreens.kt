@@ -76,6 +76,11 @@ fun ProviderOnboardingChecklistScreen(
                 val showFinalize = state.steps.any {
                     it.id == "finalizar_perfil" && it.status != OnboardingStepStatus.COMPLETE
                 }
+                val savedWaitingMessage = if (state.savedWaitingForKyc) {
+                    stringResource(R.string.onboarding_rubro_pending_kyc)
+                } else {
+                    null
+                }
                 ChecklistContent(
                     title = stringResource(R.string.onboarding_provider_title),
                     subtitle = stringResource(R.string.onboarding_provider_subtitle),
@@ -87,7 +92,7 @@ fun ProviderOnboardingChecklistScreen(
                     isFinalizing = isFinalizing,
                     isLoggingOut = isLoggingOut,
                     showDocsWaiting = state.steps.hasStepsInReview(),
-                    extraMessage = finalizeError,
+                    extraMessage = finalizeError ?: savedWaitingMessage,
                 )
             }
         }
@@ -264,6 +269,7 @@ private fun ChecklistContent(
                             OnboardingStepStatus.REJECTED -> stringResource(R.string.onboarding_step_rejected)
                             OnboardingStepStatus.BLOCKED -> stringResource(R.string.onboarding_step_blocked)
                             OnboardingStepStatus.PENDING -> stringResource(R.string.onboarding_step_incomplete)
+                            OnboardingStepStatus.SAVED -> stringResource(R.string.onboarding_step_saved)
                         },
                         enabled = actionable,
                         onClick = if (actionable) {

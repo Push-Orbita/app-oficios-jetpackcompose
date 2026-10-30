@@ -108,6 +108,17 @@ class OnboardingStepNavigatorTest {
     }
 
     @Test
+    fun `saved step stays actionable so the worker can review it`() {
+        val step = OnboardingStep(
+            id = "disponibilidad",
+            title = "Disponibilidad",
+            description = "Guardado",
+            status = OnboardingStepStatus.SAVED,
+        )
+        assertTrue(OnboardingStepNavigator.isActionable(step))
+    }
+
+    @Test
     fun `maps provider selfie route`() {
         assertEquals(
             OnboardingDestination.PROVIDER_SELFIE,

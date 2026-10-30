@@ -31,6 +31,7 @@
     <string name="onboarding_step_in_review">En revisión</string>
     <string name="onboarding_step_rejected">Rechazado</string>
     <string name="onboarding_step_blocked">Bloqueado</string>
+    <string name="onboarding_step_saved">Guardado</string>
     <string name="onboarding_provider_identity_gate_error">Su DNI tiene que estar aprobado antes de configurar rubros y servicios. Si ya lo cargó en el registro, quedó guardado en el dispositivo.</string>
     <string name="onboarding_finalize_profile">Finalizar perfil</string>
     <string name="onboarding_finalize_submitting">Enviando su perfil…</string>

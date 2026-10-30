@@ -16,8 +16,11 @@ import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistEffect
 import com.cocido.oficios.feature.onboarding.common.OnboardingChecklistUiState
 import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionNavigator
 import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionPhase
+import com.cocido.oficios.feature.onboarding.common.hasSavedSteps
 import com.cocido.oficios.feature.onboarding.common.hasStepsInReview
+import com.cocido.oficios.feature.onboarding.common.isReadyForRubroFull
 import com.cocido.oficios.feature.onboarding.common.shouldAutoFinalizeProviderProfile
+import com.cocido.oficios.feature.onboarding.common.withLocalDraftProgress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -68,6 +71,9 @@ class ProviderOnboardingViewModel @Inject constructor(
 
     private var lastIdentityVerified: Boolean? = null
 
+    /** Error del último reintento automático de `POST /full`, mostrado en el checklist. */
+    private var draftSyncError: String? = null
+
     init {
         load()
     }
@@ -92,7 +98,9 @@ class ProviderOnboardingViewModel @Inject constructor(
     suspend fun keepIdentityStatusFresh() {
         uiState
             .filterIsInstance<OnboardingChecklistUiState.Success>()
-            .map { it.steps.hasStepsInReview() }
+            // También mientras rubro/disponibilidad esperan el DNI aprobado: al aprobarse,
+            // el refresh envía el draft y el checklist avanza solo.
+            .map { it.steps.hasStepsInReview() || it.savedWaitingForKyc }
             .distinctUntilChanged()
             .collectLatest { shouldPoll ->
                 if (!shouldPoll) return@collectLatest
@@ -118,10 +126,19 @@ class ProviderOnboardingViewModel @Inject constructor(
                 }
                 lastIdentityVerified = status.isIdentityVerified
                 val steps = getOnboardingStatusUseCase.getProviderSteps(status)
+                    .withLocalDraftProgress(
+                        draft = registerTradeDraftRepository.get(),
+                        isIdentityVerified = status.isIdentityVerified,
+                    )
                 when {
                     steps.shouldAutoFinalizeProviderProfile() -> finalizeProfile()
                     steps.isEmpty() -> completeAndNavigate()
-                    else -> _uiState.update { OnboardingChecklistUiState.Success(steps) }
+                    else -> _uiState.update {
+                        OnboardingChecklistUiState.Success(
+                            steps = steps,
+                            savedWaitingForKyc = !status.isIdentityVerified && steps.hasSavedSteps(),
+                        )
+                    }
                 }
             }
             is AppResult.Error -> {
@@ -143,7 +160,16 @@ class ProviderOnboardingViewModel @Inject constructor(
         val draft = registerTradeDraftRepository.get()
         if (draft == null || draft.subRubroIds.isEmpty()) return status
 
-        retryPendingTradeDraftUseCase()
+        when (val retry = retryPendingTradeDraftUseCase()) {
+            is AppResult.Success -> clearDraftSyncError()
+            // Con draft incompleto (sin disponibilidad o medios de cobro) el rechazo es
+            // esperable: el checklist ya marca el rubro "Guardado" y dice qué paso falta.
+            is AppResult.Error -> if (draft.isReadyForRubroFull()) {
+                val message = retry.error.userMessage().ifBlank { DRAFT_SYNC_FALLBACK_ERROR }
+                draftSyncError = "$DRAFT_SYNC_ERROR_PREFIX $message"
+                _completionError.update { draftSyncError }
+            }
+        }
 
         return when (val refreshed = getOnboardingStatusUseCase.getProviderStatus()) {
             is AppResult.Success -> refreshed.data
@@ -187,6 +213,12 @@ class ProviderOnboardingViewModel @Inject constructor(
         }
     }
 
+    private fun clearDraftSyncError() {
+        val previous = draftSyncError ?: return
+        draftSyncError = null
+        _completionError.update { current -> if (current == previous) null else current }
+    }
+
     private suspend fun completeAndNavigate() {
         OnboardingCompletionNavigator.resolveAndNavigate(
             resolveInitialDestinationUseCase = resolveInitialDestinationUseCase,
@@ -213,6 +245,10 @@ class ProviderOnboardingViewModel @Inject constructor(
 
     companion object {
         const val IDENTITY_STATUS_REFRESH_MILLIS = 12_000L
+
+        private const val DRAFT_SYNC_ERROR_PREFIX = "No pudimos enviar su rubro y disponibilidad."
+        private const val DRAFT_SYNC_FALLBACK_ERROR =
+            "Revise Rubro y especialidades e intente nuevamente."
 
         // POST /trabajador-oficio-rubro/full sólo corresponde cuando todavía no existe
         // el servicio principal. Usarlo para disponibilidad, pagos o descripción sobre

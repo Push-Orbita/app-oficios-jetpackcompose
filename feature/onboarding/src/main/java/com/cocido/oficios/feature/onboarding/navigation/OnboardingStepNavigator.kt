@@ -9,6 +9,8 @@ object OnboardingStepNavigator {
         OnboardingStepStatus.PENDING -> true
         OnboardingStepStatus.REJECTED -> true
         OnboardingStepStatus.IN_REVIEW -> true
+        // Guardado en el dispositivo: puede volver a abrirlo para revisar o corregir.
+        OnboardingStepStatus.SAVED -> true
         else -> false
     }
 

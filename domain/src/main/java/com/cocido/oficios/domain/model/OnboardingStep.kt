@@ -6,6 +6,12 @@ enum class OnboardingStepStatus {
     COMPLETE,
     BLOCKED,
     REJECTED,
+
+    /**
+     * Completado en el dispositivo (draft local) pero la API todavía lo lista en `faltantes`
+     * porque el envío espera otra condición (p. ej. DNI aprobado o métodos de pago).
+     */
+    SAVED,
 }
 
 data class OnboardingStep(
