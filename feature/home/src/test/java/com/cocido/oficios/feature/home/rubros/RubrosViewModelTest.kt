@@ -48,20 +48,38 @@ class RubrosViewModelTest {
     }
 
     @Test
-    fun `search submitted filters visible rubros without leaving the grid`() = runTest(testDispatcher) {
+    fun `typing filters visible rubros without leaving the grid`() = runTest(testDispatcher) {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
         val effects = mutableListOf<RubrosEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
-        viewModel.onEvent(RubrosEvent.SearchSubmitted("gasista"))
+        viewModel.onEvent(RubrosEvent.QueryChanged("gasista"))
         advanceUntilIdle()
         job.cancel()
 
         val success = viewModel.uiState.value as RubrosUiState.Success
         assertEquals("gasista", success.query)
         assertTrue(effects.none { it is RubrosEffect.NavigateToSearchResults })
+    }
+
+    @Test
+    fun `search submitted opens worker results by name without rubro`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val effects = mutableListOf<RubrosEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.onEvent(RubrosEvent.SearchSubmitted("Facundo"))
+        advanceUntilIdle()
+        job.cancel()
+
+        val navigation = effects.filterIsInstance<RubrosEffect.NavigateToSearchResults>().single()
+        assertEquals("Facundo", navigation.query)
+        assertEquals(-1L, navigation.rubroId)
+        assertEquals(-1L, navigation.categoryId)
     }
 
     @Test

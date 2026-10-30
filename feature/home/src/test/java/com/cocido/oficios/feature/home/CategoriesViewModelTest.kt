@@ -44,7 +44,7 @@ class CategoriesViewModelTest {
     }
 
     @Test
-    fun `query filters visible categories without leaving oficios`() = runTest(testDispatcher) {
+    fun `typing filters visible categories without leaving oficios`() = runTest(testDispatcher) {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
@@ -52,14 +52,28 @@ class CategoriesViewModelTest {
         val job = launch { viewModel.effects.collect { effects.add(it) } }
 
         viewModel.onEvent(CategoriesEvent.QueryChanged("hogar"))
-        viewModel.onEvent(CategoriesEvent.SearchSubmitted("hogar"))
         advanceUntilIdle()
         job.cancel()
 
         val success = viewModel.uiState.value as CategoriesUiState.Success
         assertEquals("hogar", success.query)
-        assertTrue(effects.none { it is CategoriesEffect.NavigateToRubros && it.categoryId < 0 })
         assertTrue(effects.isEmpty())
+    }
+
+    @Test
+    fun `search submitted opens worker results by name without rubro`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val effects = mutableListOf<CategoriesEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+
+        viewModel.onEvent(CategoriesEvent.SearchSubmitted("  Facundo Barberis "))
+        viewModel.onEvent(CategoriesEvent.SearchSubmitted("   "))
+        advanceUntilIdle()
+        job.cancel()
+
+        assertEquals(listOf(CategoriesEffect.NavigateToSearchResults("Facundo Barberis")), effects)
     }
 
     @Test

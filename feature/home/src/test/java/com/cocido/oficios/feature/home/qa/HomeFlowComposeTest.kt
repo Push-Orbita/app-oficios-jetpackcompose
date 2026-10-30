@@ -132,7 +132,7 @@ class HomeFlowComposeTest {
                 )
             }
         }
-        composeRule.onNodeWithText("¿Qué oficio estás buscando?").assertIsDisplayed()
+        composeRule.onNodeWithText("Busque un oficio o un trabajador por nombre").assertIsDisplayed()
         composeRule.onNodeWithText("Oficios").assertIsDisplayed()
         composeRule.onNodeWithText("Hogar").assertIsDisplayed()
     }
@@ -152,7 +152,7 @@ class HomeFlowComposeTest {
                 )
             }
         }
-        composeRule.onNodeWithText("¿Qué oficio estás buscando?").assertIsDisplayed()
+        composeRule.onNodeWithText("Busque un oficio o un trabajador por nombre").assertIsDisplayed()
         composeRule.onNodeWithText("Construcción").assertIsDisplayed()
         composeRule.onNodeWithText("Plomería").assertIsDisplayed()
     }

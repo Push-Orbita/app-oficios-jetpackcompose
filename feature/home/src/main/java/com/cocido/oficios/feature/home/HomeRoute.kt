@@ -99,6 +99,7 @@ fun CategoriesRoute(
     onShowMessage: (String) -> Unit,
     onNavigateToInicio: () -> Unit = onNavigateBack,
     onNavigateToSearch: () -> Unit = {},
+    onNavigateToSearchResults: (query: String) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: CategoriesViewModel = hiltViewModel(),
 ) {
@@ -113,6 +114,7 @@ fun CategoriesRoute(
                 is CategoriesEffect.NavigateToRubros -> onNavigateToRubros(effect.categoryId, effect.categoryName)
                 is CategoriesEffect.ShowMessage -> toastController.showError(effect.message)
                 CategoriesEffect.NavigateToNotifications -> onNavigateToNotifications()
+                is CategoriesEffect.NavigateToSearchResults -> onNavigateToSearchResults(effect.query)
             }
         }
     }
