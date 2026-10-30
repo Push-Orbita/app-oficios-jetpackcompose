@@ -5,6 +5,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +16,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Place as FilledPlace
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -33,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -51,6 +57,8 @@ import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import kotlinx.coroutines.delay
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraMoveStartedReason
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -93,13 +101,17 @@ fun OficiosLocationPicker(
 
     LaunchedEffect(selected, mapLoad.state.loaded, mapLoad.state.unavailable) {
         val target = selected ?: return@LaunchedEffect
-        cameraPositionState.moveSafely(
+        cameraPositionState.followSelection(
             target = target,
-            zoom = 16f,
             mapLoaded = mapLoad.state.loaded,
             mapUnavailable = mapLoad.state.unavailable,
         )
     }
+    CenterPinSelectionEffect(
+        cameraPositionState = cameraPositionState,
+        enabled = enabled,
+        onPinMoved = onLocationSelected,
+    )
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
         Text(
@@ -108,40 +120,46 @@ fun OficiosLocationPicker(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = "Toque el mapa o «Usar mi ubicación» para marcar la entrada. Complete los campos de barrio y calle arriba para que coincidan con el pin.",
+            text = "Mueva el mapa hasta que el pin quede en la entrada, o toque «Usar mi ubicación». Complete barrio y calle arriba para que coincidan con el pin.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(260.dp)
+                .height(PICKER_MAP_HEIGHT)
                 .clip(RoundedCornerShape(16.dp))
                 .then(mapLoad.visibilityModifier)
                 .semantics { contentDescription = "Mapa para seleccionar la ubicación" },
         ) {
             if (mapLoad.state.showGoogleMap) {
                 key(mapLoad.state.generation) {
-                    GoogleMap(
-                        modifier = Modifier.matchParentSize(),
-                        cameraPositionState = cameraPositionState,
-                        properties = MapProperties(isMyLocationEnabled = showMyLocation),
-                        uiSettings = MapUiSettings(
-                            compassEnabled = true,
-                            myLocationButtonEnabled = false,
-                            zoomControlsEnabled = false,
-                            mapToolbarEnabled = false,
-                        ),
-                        onMapClick = { if (enabled) onLocationSelected(it.latitude, it.longitude) },
-                        onMapLoaded = mapLoad.onLoaded,
+                    Box(
+                        Modifier
+                            .matchParentSize()
+                            .then(if (enabled) Modifier.keepGesturesInsideMap() else Modifier),
                     ) {
-                        selected?.let {
-                            Marker(
-                                state = remember(it) { MarkerState(position = it) },
-                                title = "Ubicación seleccionada",
-                            )
-                        }
+                        GoogleMap(
+                            modifier = Modifier.matchParentSize(),
+                            cameraPositionState = cameraPositionState,
+                            properties = MapProperties(isMyLocationEnabled = showMyLocation),
+                            uiSettings = pickerUiSettings(interactive = enabled),
+                            onMapClick = { point ->
+                                if (enabled) {
+                                    onLocationSelected(point.latitude, point.longitude)
+                                }
+                            },
+                            onMapLoaded = mapLoad.onLoaded,
+                        )
                     }
+                }
+                if (mapLoad.state.loaded) {
+                    CenterPin(
+                        lifted = cameraPositionState.isMoving &&
+                            cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE,
+                        dimmed = selected == null,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
                 }
             }
             if (mapLoad.state.showSpinner) {
@@ -225,13 +243,29 @@ fun OficiosAddressLocationPicker(
     LaunchedEffect(selected, mapLoad.state.loaded, mapLoad.state.unavailable) {
         val target = selected ?: FormosaCenter
         markerState.position = target
-        cameraPositionState.moveSafely(
-            target = target,
-            zoom = if (selected == null) 12f else 16f,
-            mapLoaded = mapLoad.state.loaded,
-            mapUnavailable = mapLoad.state.unavailable,
-        )
+        if (selected == null) {
+            cameraPositionState.moveSafely(
+                target = target,
+                zoom = 12f,
+                mapLoaded = mapLoad.state.loaded,
+                mapUnavailable = mapLoad.state.unavailable,
+            )
+        } else {
+            cameraPositionState.followSelection(
+                target = target,
+                mapLoaded = mapLoad.state.loaded,
+                mapUnavailable = mapLoad.state.unavailable,
+            )
+        }
     }
+    CenterPinSelectionEffect(
+        cameraPositionState = cameraPositionState,
+        enabled = pinDraggable,
+        onPinMoved = { lat, lng ->
+            markerState.position = LatLng(lat, lng)
+            onPinChanged(lat, lng)
+        },
+    )
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs)) {
         Text(
@@ -248,38 +282,49 @@ fun OficiosAddressLocationPicker(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp)
+                    .height(PICKER_MAP_HEIGHT)
                     .clip(RoundedCornerShape(16.dp))
                     .then(mapLoad.visibilityModifier)
                     .semantics { contentDescription = "Mapa para confirmar la ubicación" },
             ) {
                 if (mapLoad.state.showGoogleMap) {
                     key(mapLoad.state.generation) {
-                        GoogleMap(
-                            modifier = Modifier.matchParentSize(),
-                            cameraPositionState = cameraPositionState,
-                            properties = MapProperties(isMyLocationEnabled = false),
-                            uiSettings = MapUiSettings(
-                                compassEnabled = true,
-                                myLocationButtonEnabled = false,
-                                zoomControlsEnabled = false,
-                                mapToolbarEnabled = false,
-                                scrollGesturesEnabled = pinDraggable,
-                            ),
-                            onMapClick = { point ->
-                                if (pinDraggable) {
-                                    markerState.position = point
-                                    onPinChanged(point.latitude, point.longitude)
-                                }
-                            },
-                            onMapLoaded = mapLoad.onLoaded,
+                        Box(
+                            Modifier
+                                .matchParentSize()
+                                .then(if (pinDraggable) Modifier.keepGesturesInsideMap() else Modifier),
                         ) {
-                            Marker(
-                                state = markerState,
-                                title = "Entrada del local",
-                                draggable = pinDraggable,
-                            )
+                            GoogleMap(
+                                modifier = Modifier.matchParentSize(),
+                                cameraPositionState = cameraPositionState,
+                                properties = MapProperties(isMyLocationEnabled = false),
+                                uiSettings = pickerUiSettings(interactive = pinDraggable),
+                                onMapClick = { point ->
+                                    if (pinDraggable) {
+                                        markerState.position = point
+                                        onPinChanged(point.latitude, point.longitude)
+                                    }
+                                },
+                                onMapLoaded = mapLoad.onLoaded,
+                            ) {
+                                // Ajustando: el pin fijo al centro reemplaza al marker (se mueve el
+                                // mapa, no el pin). En vista previa queda el marker de siempre.
+                                if (!pinDraggable) {
+                                    Marker(
+                                        state = markerState,
+                                        title = "Entrada del local",
+                                    )
+                                }
+                            }
                         }
+                    }
+                    if (pinDraggable && mapLoad.state.loaded) {
+                        CenterPin(
+                            lifted = cameraPositionState.isMoving &&
+                                cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE,
+                            dimmed = false,
+                            modifier = Modifier.align(Alignment.Center),
+                        )
                     }
                 }
                 if (mapLoad.state.showSpinner) {
@@ -294,6 +339,13 @@ fun OficiosAddressLocationPicker(
                         onRetry = mapLoad.onRetry,
                     )
                 }
+            }
+            if (pinDraggable) {
+                Text(
+                    text = "Arrastre el mapa con un dedo y acerque con dos; el pin marca la entrada.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             if (selected != null) {
                 Text(
@@ -584,3 +636,69 @@ private fun MapLoadFallback(
 private fun android.content.Context.hasAnyLocationPermission(): Boolean =
     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
         ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+private val PICKER_MAP_HEIGHT = 320.dp
+
+/** Gestos de selección: pan y pinch fluidos; sin rotar ni inclinar para que el pin no confunda. */
+private fun pickerUiSettings(interactive: Boolean) = MapUiSettings(
+    compassEnabled = false,
+    myLocationButtonEnabled = false,
+    zoomControlsEnabled = false,
+    mapToolbarEnabled = false,
+    rotationGesturesEnabled = false,
+    tiltGesturesEnabled = false,
+    scrollGesturesEnabled = interactive,
+    zoomGesturesEnabled = interactive,
+    scrollGesturesEnabledDuringRotateOrZoom = interactive,
+)
+
+/**
+ * Patrón "pin al centro": el usuario mueve el mapa y, cuando suelta, el centro de la cámara
+ * pasa a ser la ubicación. Solo reacciona a gestos (no a animaciones nuestras), así seguir
+ * la selección no vuelve a disparar otra selección.
+ */
+@Composable
+private fun CenterPinSelectionEffect(
+    cameraPositionState: CameraPositionState,
+    enabled: Boolean,
+    onPinMoved: (Double, Double) -> Unit,
+) {
+    val moving = cameraPositionState.isMoving
+    LaunchedEffect(moving, enabled) {
+        if (!enabled || moving) return@LaunchedEffect
+        if (cameraPositionState.cameraMoveStartedReason != CameraMoveStartedReason.GESTURE) return@LaunchedEffect
+        val target = cameraPositionState.position.target
+        onPinMoved(target.latitude, target.longitude)
+    }
+}
+
+/** Pin fijo al centro del mapa; se levanta mientras se arrastra para que se vea dónde cae. */
+@Composable
+private fun CenterPin(
+    lifted: Boolean,
+    dimmed: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val lift by animateDpAsState(targetValue = if (lifted) 10.dp else 0.dp, label = "pinLift")
+    val alpha by animateFloatAsState(targetValue = if (dimmed) 0.75f else 1f, label = "pinAlpha")
+    Box(modifier = modifier.size(CENTER_PIN_SIZE * 2), contentAlignment = Alignment.Center) {
+        // Sombra en el punto exacto: la punta del pin cae acá.
+        Box(
+            Modifier
+                .size(if (lifted) 8.dp else 6.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)),
+        )
+        Icon(
+            imageVector = Icons.Filled.FilledPlace,
+            contentDescription = "Pin de ubicación",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .offset(y = -(CENTER_PIN_SIZE / 2) - lift)
+                .size(CENTER_PIN_SIZE)
+                .alpha(alpha),
+        )
+    }
+}
+
+private val CENTER_PIN_SIZE = 40.dp
