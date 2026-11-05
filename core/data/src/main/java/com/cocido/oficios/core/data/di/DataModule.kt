@@ -8,6 +8,7 @@ import java.time.Clock
 import com.cocido.oficios.core.data.logging.AndroidAppLogger
 import com.cocido.oficios.core.data.local.RecentSearchDataStore
 import com.cocido.oficios.core.data.register.RegisterTradeDraftDataStore
+import com.cocido.oficios.core.data.register.RegistrationDraftStore
 import com.cocido.oficios.core.data.repository.AgendaRepositoryImpl
 import com.cocido.oficios.core.data.repository.AvailabilityRepositoryImpl
 import com.cocido.oficios.core.data.repository.AccountRepositoryImpl
@@ -42,6 +43,7 @@ import com.cocido.oficios.domain.repository.OrderRepository
 import com.cocido.oficios.domain.repository.ProviderProfileRepository
 import com.cocido.oficios.domain.repository.RecentSearchRepository
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
+import com.cocido.oficios.domain.repository.RegistrationDraftRepository
 import com.cocido.oficios.domain.repository.ReportsRepository
 import com.cocido.oficios.domain.repository.SessionPreferencesRepository
 import com.cocido.oficios.domain.repository.SessionRepository
@@ -108,6 +110,12 @@ abstract class DataModule {
     abstract fun bindRegisterTradeDraftRepository(
         impl: RegisterTradeDraftDataStore,
     ): RegisterTradeDraftRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRegistrationDraftRepository(
+        impl: RegistrationDraftStore,
+    ): RegistrationDraftRepository
 
     @Binds
     @Singleton

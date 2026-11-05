@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.auth.navigation
 
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.feature.auth.forgot.ForgotPasswordRoute
@@ -11,8 +12,10 @@ import com.cocido.oficios.feature.auth.register.RegisterProviderRoute
 import com.cocido.oficios.feature.auth.register.RegisterRoleSelectionRoute
 import com.cocido.oficios.feature.auth.register.RegisterTradeRoute
 import com.cocido.oficios.feature.auth.splash.SplashRoute
+import com.cocido.oficios.feature.auth.wizard.registrationWizardGraph
 
 fun NavGraphBuilder.authGraph(
+    navController: NavHostController,
     onNavigateFromSplash: (InitialDestination) -> Unit,
     onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
@@ -66,6 +69,12 @@ fun NavGraphBuilder.authGraph(
             onContactSupport = onContactSupport,
         )
     }
+    registrationWizardGraph(
+        navController = navController,
+        onNavigateToOnboarding = onNavigateToOnboarding,
+        onNavigateToLogin = onNavigateToLogin,
+        onNavigateToTerms = onNavigateToTerms,
+    )
     composable(AuthDestination.FORGOT_PASSWORD) {
         ForgotPasswordRoute(
             onNavigateToReset = onNavigateToResetPassword,

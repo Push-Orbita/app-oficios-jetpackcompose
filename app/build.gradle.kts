@@ -76,6 +76,7 @@ android {
 
         // Firebase es opcional: false cuando google-services.json es stub o falta.
         buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
+        buildConfigField("boolean", "REGISTRATION_WIZARD_V2", "true")
     }
 
     flavorDimensions += "environment"

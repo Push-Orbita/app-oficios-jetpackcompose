@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.auth.navigation
 
+import com.cocido.oficios.domain.model.RegistrationRole
+
 object AuthDestination {
     const val SPLASH = "splash"
     const val LOGIN = "login"
@@ -9,4 +11,12 @@ object AuthDestination {
     const val REGISTER_PROVIDER = "register/provider"
     const val FORGOT_PASSWORD = "forgot-password"
     const val RESET_PASSWORD = "reset-password"
+
+    const val WIZARD_ROLE_ARG = "role"
+    const val WIZARD_GRAPH = "register/wizard/{$WIZARD_ROLE_ARG}"
+    const val WIZARD_PERSONAL = "wizard_personal"
+    const val WIZARD_PROFILE = "wizard_profile"
+    const val WIZARD_REVIEW = "wizard_review"
+
+    fun wizardGraph(role: RegistrationRole): String = "register/wizard/${role.name}"
 }

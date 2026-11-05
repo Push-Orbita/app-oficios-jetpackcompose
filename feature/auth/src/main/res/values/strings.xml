@@ -87,4 +87,15 @@
     <string name="splash_error_title">No pudimos iniciar</string>
     <string name="auth_register_trade_retry_catalog">Reintentar carga</string>
     <string name="auth_register_trade_loading_specializations">Cargando especializaciones…</string>
+    <string name="auth_wizard_profile_title">Datos de contacto</string>
+    <string name="auth_wizard_profile_subtitle">Los usamos para coordinar el servicio. Puede editarlos después.</string>
+    <string name="auth_wizard_contact_name">Nombre de contacto</string>
+    <string name="auth_wizard_whatsapp">Celular (WhatsApp)</string>
+    <string name="auth_wizard_barrio">Barrio</string>
+    <string name="auth_wizard_street">Calle</string>
+    <string name="auth_wizard_number">Número</string>
+    <string name="auth_wizard_floor">Piso</string>
+    <string name="auth_wizard_apartment">Departamento</string>
+    <string name="auth_wizard_review_title">Revise sus datos</string>
+    <string name="auth_wizard_review_subtitle">La cuenta se crea solo al confirmar. Si vuelve atrás, no pierde lo cargado.</string>
 </resources>

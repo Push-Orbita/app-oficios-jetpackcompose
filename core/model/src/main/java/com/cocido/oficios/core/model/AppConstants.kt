@@ -4,6 +4,7 @@ object AppConstants {
     const val DATABASE_NAME = "template_jetcom.db"
     const val DATASTORE_NAME = "user_preferences"
     const val SESSION_PREFS_NAME = "oficios_session_encrypted"
+    const val REGISTRATION_DRAFT_PREFS_NAME = "oficios_registration_draft_encrypted"
     const val MIN_PASSWORD_LENGTH = 6
     /**
      * Dirección pública de los términos. Vacía hasta que haya una URL que no redirija en loop:
