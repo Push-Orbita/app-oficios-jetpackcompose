@@ -57,6 +57,27 @@ class WorkerSearchApiIntegrationTest {
     }
 
     @Test
+    fun `search workers sends puntajeGlobal descending`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(NetworkTestFactory.loadFixture("search/workers_search_ok.json")),
+        )
+
+        api.searchWorkers(
+            rubroId = 3L,
+            orderBy = "puntajeGlobal",
+            orderDirection = "DESC",
+            pageNumber = 1,
+            pageSize = 20,
+        )
+
+        val request = server.takeRequest()
+        assertEquals("puntajeGlobal", request.requestUrl?.queryParameter("orderBy"))
+        assertEquals("DESC", request.requestUrl?.queryParameter("orderDirection"))
+    }
+
+    @Test
     fun `search workers empty list`() = runTest {
         server.enqueue(
             MockResponse()

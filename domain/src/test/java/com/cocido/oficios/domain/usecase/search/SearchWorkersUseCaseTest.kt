@@ -82,14 +82,39 @@ class SearchWorkersUseCaseTest {
         assertEquals(1, repository.sentQueries.size)
     }
 
-    private fun worker(id: Long, name: String) = WorkerSummary(
+    @Test
+    fun `results are ranked by bayesian score without dropping the name filter`() = runTest {
+        val repository = RecordingSearchRepository(
+            byQuery = mapOf(
+                "Carlos" to listOf(
+                    worker(1, "Carlos Uno", rating = 5f, reviews = 1),
+                    worker(2, "Carlos Dos", rating = 4.5f, reviews = 40),
+                    worker(3, "Carlos Tres", rating = null, reviews = null),
+                ),
+            ),
+        )
+        val useCase = SearchWorkersUseCase(repository, FakeTradeCatalogRepository())
+
+        val result = useCase(WorkerSearchFilters(query = "Carlos"), pageNumber = 1)
+
+        assertEquals(listOf(2L, 1L, 3L), (result as AppResult.Success).data.items.map { it.id })
+        assertEquals("Carlos", repository.lastFilters?.query)
+    }
+
+    private fun worker(
+        id: Long,
+        name: String,
+        rating: Float? = null,
+        reviews: Int? = null,
+    ) = WorkerSummary(
         id = id,
         displayName = name,
         specialtyLabel = "",
-        rating = null,
+        rating = rating,
         avatarUrl = null,
         isVerified = true,
         primaryRubroId = null,
+        reviewCount = reviews,
     )
 
     private class RecordingSearchRepository(
