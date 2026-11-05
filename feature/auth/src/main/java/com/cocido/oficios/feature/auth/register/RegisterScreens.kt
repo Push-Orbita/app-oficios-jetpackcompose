@@ -30,6 +30,9 @@ import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementItem
+import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementsChecklist
+import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
@@ -236,10 +239,13 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_password_label),
                 floatingLabel = false,
                 isError = passwordError != null,
-                supportingText = passwordError,
+                supportingText = passwordError.takeIf { it == PasswordPolicy.ERROR_BLANK || it == PasswordPolicy.ERROR_EDGES },
                 modifier = Modifier.focusRequester(passwordFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
+            )
+            PasswordRequirementsChecklist(
+                requirements = passwordRequirementItems(uiState.password),
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
@@ -320,3 +326,8 @@ private fun RegisterFormPreview() {
 private fun RegisterRolePreview() {
     OficiosTheme { RegisterRoleSelectionScreen({}, {}, {}) }
 }
+
+internal fun passwordRequirementItems(password: String): List<PasswordRequirementItem> =
+    PasswordPolicy.evaluate(password).requirements.map {
+        PasswordRequirementItem(label = it.label, satisfied = it.satisfied)
+    }

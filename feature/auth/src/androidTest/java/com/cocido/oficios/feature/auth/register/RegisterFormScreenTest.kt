@@ -101,13 +101,13 @@ class RegisterFormScreenTest {
                     mode = RegisterMode.PROVIDER,
                     uiState = RegisterFormUiState(
                         password = "xd123",
-                        passwordError = "La contraseña tiene que tener al menos 6 caracteres",
+                        passwordError = "Use entre 8 y 64 caracteres",
                     ),
                     onEvent = {},
                 )
             }
         }
-        composeTestRule.onNodeWithText("La contraseña tiene que tener al menos 6 caracteres")
+        composeTestRule.onNodeWithText("Entre 8 y 64 caracteres")
             .performScrollTo()
             .assertIsDisplayed()
     }

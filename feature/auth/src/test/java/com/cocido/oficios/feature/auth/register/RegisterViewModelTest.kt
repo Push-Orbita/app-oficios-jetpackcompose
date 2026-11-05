@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
+import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.feature.auth.FakeAuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -87,11 +88,11 @@ class RegisterViewModelTest {
         assertFalse(before.canSubmit)
         assertFalse(before.hasAttemptedSubmit)
         assertEquals(
-            "La contraseña tiene que tener al menos 6 caracteres",
+            PasswordPolicy.ERROR_LENGTH,
             before.passwordError,
         )
         assertEquals(
-            "La contraseña tiene que tener al menos 6 caracteres",
+            PasswordPolicy.ERROR_LENGTH,
             before.visibleFieldError(before.passwordError, before.password),
         )
 
@@ -103,7 +104,7 @@ class RegisterViewModelTest {
         assertFalse(after.isLoading)
         assertFalse(after.canSubmit)
         assertEquals(
-            "La contraseña tiene que tener al menos 6 caracteres",
+            PasswordPolicy.ERROR_LENGTH,
             after.passwordError,
         )
         assertNull(repository.lastProviderRequest)
@@ -115,11 +116,11 @@ class RegisterViewModelTest {
         val state = RegisterFormUiState(
             firstNameError = "Los nombres son obligatorios",
             password = "xd123",
-            passwordError = "La contraseña tiene que tener al menos 6 caracteres",
+            passwordError = PasswordPolicy.ERROR_LENGTH,
         )
         assertNull(state.visibleFieldError(state.firstNameError, state.firstName))
         assertEquals(
-            "La contraseña tiene que tener al menos 6 caracteres",
+            PasswordPolicy.ERROR_LENGTH,
             state.visibleFieldError(state.passwordError, state.password),
         )
 

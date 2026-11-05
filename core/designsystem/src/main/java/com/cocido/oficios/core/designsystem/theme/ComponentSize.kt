@@ -64,6 +64,12 @@ object OficiosComponentSize {
     val homeRecentsAfterSearchExtra = 6.dp
     /** Gap título Recientes → cards para dejar las cards en rel 199. */
     val homeRecentsTitleToCards = 13.dp
+    /**
+     * Card de Recientes: ancho propio (no 1/3 de la fila) para que el nombre entre
+     * en dos líneas legibles con avatar 64. Con más cards que ancho, la fila scrollea.
+     */
+    val homeRecentCardWidth = 150.dp
+    val homeRecentCardMinHeight = 188.dp
     /** Caps del label 20dp bajo el top de la card (includeFontPadding ≈ 6). */
     val homeRecentCardLabelTop = 14.dp
     /** Espacio óptico recents→soporte para dejar la card en y≈373. */

@@ -1,7 +1,6 @@
 package com.cocido.oficios.domain.validation
 
 object AuthValidators {
-    private const val MIN_PASSWORD_LENGTH = 6
     private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     private val DNI_REGEX = Regex("^[0-9]{7,11}$")
 
@@ -11,12 +10,11 @@ object AuthValidators {
         else -> null
     }
 
-    fun validatePassword(password: String): String? = when {
-        password.isBlank() -> "La contraseña es obligatoria"
-        password.length < MIN_PASSWORD_LENGTH ->
-            "La contraseña tiene que tener al menos $MIN_PASSWORD_LENGTH caracteres"
-        else -> null
-    }
+    fun validatePassword(password: String): String? = PasswordPolicy.validate(password)
+
+    /** Login no aplica la política de alta/cambio: solo exige que haya contraseña. */
+    fun validateLoginPassword(password: String): String? =
+        if (password.isBlank()) PasswordPolicy.ERROR_BLANK else null
 
     fun validatePasswordConfirmation(password: String, confirmation: String): String? = when {
         confirmation.isBlank() -> "Confirme su contraseña"

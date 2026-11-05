@@ -60,4 +60,5 @@ sealed interface CategoriesEffect {
     data class ShowMessage(val message: String) : CategoriesEffect
     data object NavigateToNotifications : CategoriesEffect
     data class NavigateToRubros(val categoryId: Long, val categoryName: String) : CategoriesEffect
+    data class NavigateToSearchResults(val query: String) : CategoriesEffect
 }

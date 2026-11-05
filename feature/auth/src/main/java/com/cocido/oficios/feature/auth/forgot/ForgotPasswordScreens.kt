@@ -26,6 +26,9 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosSuccessSta
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementItem
+import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementsChecklist
+import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.feature.auth.R
@@ -155,10 +158,17 @@ fun ResetPasswordScreen(
                 onValueChange = { onEvent(ResetPasswordEvent.PasswordChanged(it)) },
                 label = stringResource(R.string.auth_password_label),
                 isError = uiState.hasAttemptedSubmit && uiState.passwordError != null,
-                supportingText = if (uiState.hasAttemptedSubmit) uiState.passwordError else null,
+                supportingText = uiState.passwordError
+                    .takeIf { uiState.hasAttemptedSubmit }
+                    .takeIf { it == PasswordPolicy.ERROR_BLANK || it == PasswordPolicy.ERROR_EDGES },
                 modifier = Modifier.focusRequester(passwordFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
+            )
+            PasswordRequirementsChecklist(
+                requirements = PasswordPolicy.evaluate(uiState.password).requirements.map {
+                    PasswordRequirementItem(label = it.label, satisfied = it.satisfied)
+                },
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
