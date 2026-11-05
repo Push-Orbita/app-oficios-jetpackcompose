@@ -18,6 +18,8 @@ import androidx.navigation.compose.rememberNavController
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.core.ui.intent.openTermsAndConditions
 import com.cocido.oficios.core.ui.legal.TermsScreen
+import com.cocido.oficios.BuildConfig
+import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
@@ -86,6 +88,7 @@ fun AppNavHost(
         popExitTransition = transitions.popExit,
     ) {
         authGraph(
+            navController = navController,
             onNavigateFromSplash = { destination ->
                 navController.navigateToInitialDestination(destination)
             },
@@ -101,7 +104,13 @@ fun AppNavHost(
                 navController.navigate(AuthDestination.REGISTER_ROLE)
             },
             onNavigateToRegisterClient = {
-                navController.navigate(AuthDestination.REGISTER_CLIENT)
+                navController.navigate(
+                    if (BuildConfig.REGISTRATION_WIZARD_V2) {
+                        AuthDestination.wizardGraph(RegistrationRole.CLIENT)
+                    } else {
+                        AuthDestination.REGISTER_CLIENT
+                    },
+                )
             },
             onNavigateToRegisterTrade = {
                 navController.navigate(AuthDestination.REGISTER_TRADE) {

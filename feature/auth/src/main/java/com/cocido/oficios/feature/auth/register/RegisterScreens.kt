@@ -127,6 +127,7 @@ fun RegisterFormScreen(
     uiState: RegisterFormUiState,
     onEvent: (RegisterFormEvent) -> Unit,
     modifier: Modifier = Modifier,
+    submitLabel: String? = null,
 ) {
     val screenTitle = when (mode) {
         RegisterMode.CLIENT -> stringResource(R.string.auth_register_user_title)
@@ -279,7 +280,7 @@ fun RegisterFormScreen(
                 modifier = Modifier.weight(1f, fill = true),
             )
             OficiosButton(
-                text = stringResource(R.string.auth_next_button),
+                text = submitLabel ?: stringResource(R.string.auth_next_button),
                 onClick = { onEvent(RegisterFormEvent.Submit) },
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,

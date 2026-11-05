@@ -9,4 +9,5 @@
 -->
 <full-backup-content>
     <exclude domain="sharedpref" path="oficios_session_encrypted.xml" />
+    <exclude domain="sharedpref" path="oficios_registration_draft_encrypted.xml" />
 </full-backup-content>
