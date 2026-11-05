@@ -156,7 +156,7 @@
     <string name="portfolio_save">Guardar certificado</string>
     <string name="change_password_title">Cambiar contraseña</string>
     <string name="change_password_load_error">No pudimos validar su cuenta</string>
-    <string name="change_password_intro">Use una contraseña que no repita en otros servicios. Tiene que tener al menos 6 caracteres.</string>
+    <string name="change_password_intro">Use una contraseña que no repita en otros servicios. Debe tener entre 8 y 64 caracteres, al menos una letra y un número.</string>
     <string name="change_password_new">Nueva contraseña</string>
     <string name="change_password_repeat">Repetir nueva contraseña</string>
     <string name="change_password_submit">Actualizar contraseña</string>
