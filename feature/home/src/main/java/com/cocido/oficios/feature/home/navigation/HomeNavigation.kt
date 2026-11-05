@@ -73,6 +73,9 @@ fun NavGraphBuilder.homeScreen(
                 onNavigateToRubros = { categoryId, categoryName ->
                     navController.navigate(HomeDestination.rubros(categoryId, categoryName))
                 },
+                onNavigateToSearchResults = { query ->
+                    navController.navigate(HomeDestination.searchResults(query = query))
+                },
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToHelp = { navController.navigateToHelp() },
                 onNavigateToFavorites = { navController.navigateToFavorites() },
