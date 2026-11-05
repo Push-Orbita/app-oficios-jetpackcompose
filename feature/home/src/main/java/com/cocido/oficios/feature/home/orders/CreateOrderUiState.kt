@@ -37,6 +37,14 @@ sealed interface CreateOrderUiState {
         val monthSlots: List<AgendaSlot> = emptyList(),
         val dayRanges: List<TimeRange> = emptyList(),
         val dayHasAvailability: Boolean? = null,
+        /**
+         * Franjas en las que el trabajador ya está ocupado y que la agenda pública no
+         * muestra: pedidos activos del cliente con este trabajador y horarios que el
+         * backend rechazó por solapamiento en esta sesión.
+         */
+        val busyIntervals: List<BusyInterval> = emptyList(),
+        /** Aviso en el formulario cuando el horario elegido quedó ocupado al enviar. */
+        val scheduleConflictMessage: String? = null,
         val isLoadingSlots: Boolean = false,
         val slotsErrorMessage: String? = null,
         val submitErrorMessage: String? = null,
