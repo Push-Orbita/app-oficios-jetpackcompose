@@ -4,8 +4,11 @@ import com.cocido.oficios.domain.model.ClientContactoRequest
 import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest
+import com.cocido.oficios.domain.model.DayAvailability
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.TimeRange
+import com.cocido.oficios.domain.model.WeeklyAvailability
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -52,6 +55,7 @@ class ProfileMapperTest {
         assertEquals("12:00", dto.diasLaborales[0].horariosLaborales.single().horaFin)
         assertEquals("MARTES", dto.diasLaborales[1].diaInicio)
         assertEquals("MARTES", dto.diasLaborales[1].diaFin)
+        assertEquals("08:00", dto.diasLaborales[1].horariosLaborales.single().horaInicio)
         assertEquals(5L, dto.domicilioLocal?.barrioId)
         assertEquals("Av. Siempre Viva", dto.domicilioLocal?.calle)
         assertEquals("100", dto.domicilioLocal?.numero)
@@ -161,5 +165,32 @@ class ProfileMapperTest {
         assertEquals("Calle", domicilio.calle)
         assertEquals("Ana", contacto.nombre)
         assertEquals("1122334455", contacto.telefonoWhatsapp)
+    }
+
+    @Test
+    fun `maps distinct hours per weekday when weeklyAvailability is set`() {
+        val dto = ProviderRubroFullRequest(
+            rubroId = 10,
+            subRubroIds = listOf(100),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            workDays = listOf("LUNES", "MARTES"),
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+            weeklyAvailability = WeeklyAvailability(
+                days = listOf(
+                    DayAvailability("LUNES", listOf(TimeRange("08:00", "12:00"))),
+                    DayAvailability("MARTES", listOf(TimeRange("14:00", "18:00"))),
+                ),
+            ),
+        ).toDto()
+
+        assertEquals(2, dto.diasLaborales.size)
+        assertEquals("LUNES", dto.diasLaborales[0].diaInicio)
+        assertEquals("LUNES", dto.diasLaborales[0].diaFin)
+        assertEquals("08:00", dto.diasLaborales[0].horariosLaborales.single().horaInicio)
+        assertEquals("12:00", dto.diasLaborales[0].horariosLaborales.single().horaFin)
+        assertEquals("MARTES", dto.diasLaborales[1].diaInicio)
+        assertEquals("14:00", dto.diasLaborales[1].horariosLaborales.single().horaInicio)
+        assertEquals("18:00", dto.diasLaborales[1].horariosLaborales.single().horaFin)
     }
 }

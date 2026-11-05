@@ -498,6 +498,10 @@ private fun AttentionStep(state: AddServiceUiState, onEvent: (AddServiceEvent) -
         onRangeToChanged = { day, index, value -> onEvent(AddServiceEvent.WeekRangeTo(day, index, value)) },
         onAddRange = { onEvent(AddServiceEvent.AddWeekRange(it)) },
         onRemoveRange = { day, index -> onEvent(AddServiceEvent.RemoveWeekRange(day, index)) },
+        onInsertRange = { day, index, range ->
+            onEvent(AddServiceEvent.InsertWeekRange(day, index, range.from, range.to))
+        },
+        onCopyMondayToWeekdays = { onEvent(AddServiceEvent.CopyMondayToWeekdays) },
     )
 }
 

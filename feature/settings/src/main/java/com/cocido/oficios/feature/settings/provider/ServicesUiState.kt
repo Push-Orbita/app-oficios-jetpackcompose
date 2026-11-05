@@ -189,6 +189,8 @@ sealed interface AddServiceEvent {
     data class WeekRangeTo(val day: String, val index: Int, val value: String) : AddServiceEvent
     data class AddWeekRange(val day: String) : AddServiceEvent
     data class RemoveWeekRange(val day: String, val index: Int) : AddServiceEvent
+    data class InsertWeekRange(val day: String, val index: Int, val from: String, val to: String) : AddServiceEvent
+    data object CopyMondayToWeekdays : AddServiceEvent
     data class PaymentToggled(val method: String, val checked: Boolean) : AddServiceEvent
     data class EditorSpecialtySelected(val id: Long) : AddServiceEvent
     data object Save : AddServiceEvent

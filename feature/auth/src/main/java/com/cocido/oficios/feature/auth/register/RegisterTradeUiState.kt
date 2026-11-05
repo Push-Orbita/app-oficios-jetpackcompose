@@ -1,6 +1,7 @@
 package com.cocido.oficios.feature.auth.register
 
 import com.cocido.oficios.domain.model.CatalogOption
+import com.cocido.oficios.domain.model.WeeklyAvailability
 
 data class RegisterTradeTimeSlot(
     val from: String = "",
@@ -22,6 +23,14 @@ sealed interface RegisterTradeEvent {
     data class TimeSlotToChanged(val index: Int, val value: String) : RegisterTradeEvent
     data object AddTimeSlot : RegisterTradeEvent
     data class WorkDayToggled(val day: String, val checked: Boolean) : RegisterTradeEvent
+    data class IncludeSunday(val included: Boolean) : RegisterTradeEvent
+    data class WeekDayToggled(val day: String, val enabled: Boolean) : RegisterTradeEvent
+    data class WeekRangeFrom(val day: String, val index: Int, val value: String) : RegisterTradeEvent
+    data class WeekRangeTo(val day: String, val index: Int, val value: String) : RegisterTradeEvent
+    data class AddWeekRange(val day: String) : RegisterTradeEvent
+    data class RemoveWeekRange(val day: String, val index: Int) : RegisterTradeEvent
+    data class InsertWeekRange(val day: String, val index: Int, val from: String, val to: String) : RegisterTradeEvent
+    data object CopyMondayToWeekdays : RegisterTradeEvent
     data class ServesAtClientHomeChanged(val value: Boolean) : RegisterTradeEvent
     data class ServesAtLocalChanged(val value: Boolean) : RegisterTradeEvent
     data class RequiresTurnsChanged(val value: Boolean) : RegisterTradeEvent
@@ -55,7 +64,8 @@ data class RegisterTradeUiState(
     val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val selectedPaymentMethods: Set<String> = emptySet(),
-    val timeSlots: List<RegisterTradeTimeSlot> = listOf(RegisterTradeTimeSlot()),
+    val weeklySchedule: WeeklyAvailability = WeeklyAvailability.default(),
+    val timeSlots: List<RegisterTradeTimeSlot> = listOf(RegisterTradeTimeSlot("09:00", "18:00")),
     val isLoadingCatalog: Boolean = false,
     val isLoadingTrades: Boolean = false,
     val isLoadingSpecializations: Boolean = false,

@@ -1,15 +1,20 @@
 package com.cocido.oficios.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class TimeRange(
     val start: String,
     val end: String,
 )
 
+@Serializable
 data class DayAvailability(
     val day: String,
     val ranges: List<TimeRange>,
 )
 
+@Serializable
 data class WeeklyAvailability(
     val days: List<DayAvailability> = emptyList(),
     val includeSunday: Boolean = false,
@@ -161,8 +166,9 @@ fun WeeklyAvailability.addRange(day: String): WeeklyAvailability {
 
 fun WeeklyAvailability.removeRange(day: String, index: Int): WeeklyAvailability {
     val current = rangesOn(day).toMutableList()
-    if (index in current.indices) current.removeAt(index)
-    return withRange(day, current.ifEmpty { listOf(TimeRange("09:00", "18:00")) })
+    if (index !in current.indices) return this
+    current.removeAt(index)
+    return if (current.isEmpty()) withToggledDay(day, false) else withRange(day, current)
 }
 
 fun WeeklyAvailability.toReplaceDays(): List<DayAvailability> {

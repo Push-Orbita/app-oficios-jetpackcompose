@@ -114,4 +114,36 @@ class WeeklyAvailabilityTest {
         assertEquals("14:00", cleared.rangesOn("LUNES").single().start)
         assertEquals("", cleared.rangesOn("LUNES").single().end)
     }
+
+    @Test
+    fun copyMondayToWeekdaysCopiesRangesOntoTueFri() {
+        val monday = listOf(TimeRange("08:00", "12:00"), TimeRange("16:00", "20:00"))
+        val week = WeeklyAvailability.default()
+            .withRange("LUNES", monday)
+            .withRange("MIERCOLES", listOf(TimeRange("09:00", "11:00")))
+            .copyMondayToWeekdays()
+
+        for (day in listOf("MARTES", "MIERCOLES", "JUEVES", "VIERNES")) {
+            assertEquals(monday, week.rangesOn(day))
+        }
+        assertTrue(week.rangesOn("SABADO").isEmpty())
+        assertFalse("SABADO" in week.activeDays)
+    }
+
+    @Test
+    fun removeLastRangeDisablesTheDay() {
+        val week = WeeklyAvailability.default().removeRange("LUNES", 0)
+        assertTrue(week.rangesOn("LUNES").isEmpty())
+        assertFalse("LUNES" in week.activeDays)
+    }
+
+    @Test
+    fun insertRangeRestoresRemovedSlot() {
+        val original = TimeRange("09:00", "18:00")
+        val week = WeeklyAvailability.default()
+            .removeRange("LUNES", 0)
+            .insertRange("LUNES", 0, original)
+        assertEquals(listOf(original), week.rangesOn("LUNES"))
+        assertTrue("LUNES" in week.activeDays)
+    }
 }

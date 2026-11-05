@@ -18,6 +18,17 @@ import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.TimeRange
+import com.cocido.oficios.domain.model.WeeklyAvailability
+import com.cocido.oficios.domain.model.addRange
+import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.copyMondayToWeekdays
+import com.cocido.oficios.domain.model.insertRange
+import com.cocido.oficios.domain.model.removeRange
+import com.cocido.oficios.domain.model.resolvedSchedule
+import com.cocido.oficios.domain.model.toFlatTimeSlots
+import com.cocido.oficios.domain.model.withToggledDay
+import com.cocido.oficios.domain.validation.ScheduleValidator
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.auth.GetOnboardingStatusUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
@@ -537,6 +548,7 @@ class ProviderRubrosViewModel @Inject constructor(
 
 data class ProviderAvailabilityUiState(
     val workDayOptions: List<Pair<String, String>> = ProviderAvailabilityDefaults.workDays,
+    val weeklySchedule: WeeklyAvailability = WeeklyAvailability.default(),
     val selectedWorkDays: Set<String> = ProviderAvailabilityDefaults.defaultSelectedWorkDays,
     val timeSlots: List<RegisterTradeTimeSlotDraft> = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
     val timeOptions: List<String> = ProviderAvailabilityDefaults.timeOptions,
@@ -552,8 +564,7 @@ data class ProviderAvailabilityUiState(
 ) {
     val canSubmit: Boolean
         get() = hasRubroContext &&
-            selectedWorkDays.isNotEmpty() &&
-            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } &&
+            ScheduleValidator.validate(weeklySchedule) == null &&
             (!requiresTurns || turnDurationMinutes != null)
 
     val plazoCancelacionHorasError: String?
@@ -612,10 +623,13 @@ class ProviderAvailabilityViewModel @Inject constructor(
         viewModelScope.launch {
             val draft = syncRegisterTradeDraftFromProfileUseCase()
             if (draft != null) {
+                val schedule = draft.resolvedSchedule()
                 _uiState.update {
                     it.copy(
-                        selectedWorkDays = draft.workDays.toSet().ifEmpty { ProviderAvailabilityDefaults.defaultSelectedWorkDays },
-                        timeSlots = draft.timeSlots.ifEmpty { listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")) },
+                        weeklySchedule = schedule,
+                        selectedWorkDays = schedule.activeDays.toSet()
+                            .ifEmpty { ProviderAvailabilityDefaults.defaultSelectedWorkDays },
+                        timeSlots = schedule.toFlatTimeSlots(),
                         servesAtClientHome = draft.servesAtClientHome,
                         servesAtLocal = draft.servesAtLocal,
                         requiresTurns = draft.requiresTurns,
@@ -634,31 +648,52 @@ class ProviderAvailabilityViewModel @Inject constructor(
     }
 
     fun onWorkDayToggled(day: String, checked: Boolean) = _uiState.update {
-        val updated = it.selectedWorkDays.toMutableSet()
-        if (checked) updated.add(day) else updated.remove(day)
-        it.copy(selectedWorkDays = updated, error = null)
+        it.withWeek(it.weeklySchedule.withToggledDay(day, checked))
+    }
+
+    fun onIncludeSunday(included: Boolean) = _uiState.update {
+        it.withWeek(it.weeklySchedule.copy(includeSunday = included))
+    }
+
+    fun onWeekDayToggled(day: String, enabled: Boolean) = _uiState.update {
+        it.withWeek(it.weeklySchedule.withToggledDay(day, enabled))
+    }
+
+    fun onWeekRangeFrom(day: String, index: Int, value: String) = _uiState.update {
+        it.withWeek(it.weeklySchedule.changeRange(day, index, from = value))
+    }
+
+    fun onWeekRangeTo(day: String, index: Int, value: String) = _uiState.update {
+        it.withWeek(it.weeklySchedule.changeRange(day, index, to = value))
+    }
+
+    fun onAddWeekRange(day: String) = _uiState.update { it.withWeek(it.weeklySchedule.addRange(day)) }
+
+    fun onRemoveWeekRange(day: String, index: Int) = _uiState.update {
+        it.withWeek(it.weeklySchedule.removeRange(day, index))
+    }
+
+    fun onInsertWeekRange(day: String, index: Int, from: String, to: String) = _uiState.update {
+        it.withWeek(it.weeklySchedule.insertRange(day, index, TimeRange(from, to)))
+    }
+
+    fun onCopyMondayToWeekdays() = _uiState.update {
+        it.withWeek(it.weeklySchedule.copyMondayToWeekdays())
     }
 
     fun onTimeSlotFromChanged(index: Int, value: String) = _uiState.update { state ->
-        val slots = state.timeSlots.toMutableList()
-        if (index in slots.indices) {
-            val current = slots[index]
-            val newTo = if (current.to.isNotBlank() && current.to > value) current.to else ""
-            slots[index] = current.copy(from = value, to = newTo)
-        }
-        state.copy(timeSlots = slots, error = null)
+        val day = state.weeklySchedule.activeDays.firstOrNull() ?: return@update state
+        state.withWeek(state.weeklySchedule.changeRange(day, index, from = value))
     }
 
     fun onTimeSlotToChanged(index: Int, value: String) = _uiState.update { state ->
-        val slots = state.timeSlots.toMutableList()
-        if (index in slots.indices) {
-            slots[index] = slots[index].copy(to = value)
-        }
-        state.copy(timeSlots = slots, error = null)
+        val day = state.weeklySchedule.activeDays.firstOrNull() ?: return@update state
+        state.withWeek(state.weeklySchedule.changeRange(day, index, to = value))
     }
 
-    fun onAddTimeSlot() = _uiState.update {
-        it.copy(timeSlots = it.timeSlots + RegisterTradeTimeSlotDraft("", ""))
+    fun onAddTimeSlot() = _uiState.update { state ->
+        val day = state.weeklySchedule.activeDays.firstOrNull() ?: return@update state
+        state.withWeek(state.weeklySchedule.addRange(day))
     }
 
     fun onServesAtClientHomeChanged(value: Boolean) = _uiState.update { it.copy(servesAtClientHome = value, error = null) }
@@ -679,10 +714,10 @@ class ProviderAvailabilityViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         if (!state.canSubmit) {
+            val scheduleError = ScheduleValidator.validate(state.weeklySchedule)
             val message = when {
                 state.requiresTurns && state.turnDurationMinutes == null -> "Ingrese la duración del turno"
-                !state.selectedWorkDays.any() -> "Seleccione al menos un día laboral"
-                !state.timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } -> "Configure al menos un horario"
+                scheduleError != null -> scheduleError
                 else -> "Complete días, horarios y dónde atiende"
             }
             _uiState.update { it.copy(error = message) }
@@ -710,8 +745,9 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 return@launch
             }
             val updatedDraft = draft.copy(
-                workDays = state.selectedWorkDays.toList(),
-                timeSlots = state.timeSlots.filter { it.from.isNotBlank() && it.to.isNotBlank() },
+                workDays = state.weeklySchedule.activeDays,
+                timeSlots = state.weeklySchedule.toFlatTimeSlots(),
+                weeklySchedule = state.weeklySchedule,
                 servesAtClientHome = state.servesAtClientHome,
                 servesAtLocal = state.servesAtLocal,
                 requiresTurns = state.requiresTurns,
@@ -743,6 +779,13 @@ class ProviderAvailabilityViewModel @Inject constructor(
         }
     }
 }
+
+private fun ProviderAvailabilityUiState.withWeek(week: WeeklyAvailability) = copy(
+    weeklySchedule = week,
+    selectedWorkDays = week.activeDays.toSet(),
+    timeSlots = week.toFlatTimeSlots(),
+    error = null,
+)
 
 data class ProviderLocalUiState(
     val barrioQuery: String = "",

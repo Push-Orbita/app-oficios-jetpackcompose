@@ -63,7 +63,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.categories.CategoryGridItem
 import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
-import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PhoneCountryOption
@@ -72,6 +71,10 @@ import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.navigation.ConfirmDiscardOnSystemBack
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleDayUi
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleEditor
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleRangeUi
+import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.picker.rememberImageSourcePicker
 import com.cocido.oficios.core.ui.map.OficiosAddressLocationPicker
@@ -856,10 +859,14 @@ fun ProviderRubrosStepScreen(
 @Composable
 fun ProviderAvailabilityStepScreen(
     uiState: ProviderAvailabilityUiState,
-    onWorkDayToggled: (String, Boolean) -> Unit,
-    onTimeSlotFromChanged: (Int, String) -> Unit,
-    onTimeSlotToChanged: (Int, String) -> Unit,
-    onAddTimeSlot: () -> Unit,
+    onIncludeSunday: (Boolean) -> Unit,
+    onWeekDayToggled: (String, Boolean) -> Unit,
+    onWeekRangeFrom: (String, Int, String) -> Unit,
+    onWeekRangeTo: (String, Int, String) -> Unit,
+    onAddWeekRange: (String) -> Unit,
+    onRemoveWeekRange: (String, Int) -> Unit,
+    onInsertWeekRange: (String, Int, String, String) -> Unit,
+    onCopyMondayToWeekdays: () -> Unit,
     onServesAtClientHomeChanged: (Boolean) -> Unit,
     onServesAtLocalChanged: (Boolean) -> Unit,
     onRequiresTurnsChanged: (Boolean) -> Unit,
@@ -876,14 +883,18 @@ fun ProviderAvailabilityStepScreen(
         onSubmit = onSubmit,
     ) {
         AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_work_days)) {
-            uiState.workDayOptions.forEach { (dayId, dayLabel) ->
-                OficiosCheckbox(
-                    checked = dayId in uiState.selectedWorkDays,
-                    onCheckedChange = { onWorkDayToggled(dayId, it) },
-                    label = dayLabel,
-                    compactRow = true,
-                )
-            }
+            WeeklyScheduleEditor(
+                days = uiState.weeklySchedule.toEditorDays(uiState.workDayOptions.toMap()),
+                includeSunday = uiState.weeklySchedule.includeSunday,
+                onIncludeSundayChange = onIncludeSunday,
+                onToggleDay = onWeekDayToggled,
+                onRangeFromChanged = onWeekRangeFrom,
+                onRangeToChanged = onWeekRangeTo,
+                onAddRange = onAddWeekRange,
+                onRemoveRange = onRemoveWeekRange,
+                onInsertRange = { day, index, range -> onInsertWeekRange(day, index, range.from, range.to) },
+                onCopyMondayToWeekdays = onCopyMondayToWeekdays,
+            )
         }
 
         AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_service_location)) {
@@ -942,37 +953,6 @@ fun ProviderAvailabilityStepScreen(
             )
         }
 
-        AvailabilitySection(title = stringResource(R.string.onboarding_step_availability_schedule)) {
-            Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                uiState.timeSlots.forEachIndexed { index, slot ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                    ) {
-                        OficiosDropdownField(
-                            value = slot.from,
-                            options = uiState.timeOptions,
-                            onOptionSelected = { onTimeSlotFromChanged(index, it) },
-                            label = stringResource(R.string.onboarding_step_availability_from),
-                            modifier = Modifier.weight(1f),
-                        )
-                        OficiosDropdownField(
-                            value = slot.to,
-                            options = uiState.timeOptions.filter { slot.from.isBlank() || it > slot.from },
-                            onOptionSelected = { onTimeSlotToChanged(index, it) },
-                            label = stringResource(R.string.onboarding_step_availability_to),
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                }
-                OficiosButton(
-                    text = stringResource(R.string.onboarding_step_availability_add_schedule),
-                    onClick = onAddTimeSlot,
-                    modifier = Modifier.fillMaxWidth(),
-                    variant = OficiosButtonVariant.Outlined,
-                )
-            }
-        }
     }
 }
 
@@ -1297,5 +1277,18 @@ fun ProviderIdentityStepScreen(
                 }
             }
         }
+    }
+}
+
+private fun WeeklyAvailability.toEditorDays(labels: Map<String, String>): List<WeeklyScheduleDayUi> {
+    val keys = if (includeSunday) WeeklyAvailability.ALL_DAYS else WeeklyAvailability.WEEKDAYS
+    return keys.map { key ->
+        val ranges = rangesOn(key)
+        WeeklyScheduleDayUi(
+            key = key,
+            label = labels[key] ?: key,
+            enabled = ranges.isNotEmpty(),
+            ranges = ranges.map { WeeklyScheduleRangeUi(it.start, it.end) },
+        )
     }
 }
