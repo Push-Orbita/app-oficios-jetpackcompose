@@ -76,6 +76,14 @@ class LoginViewModelTest {
     }
 
     @Test
+    fun `login does not apply signup password policy`() {
+        val viewModel = createViewModel()
+        viewModel.onEvent(LoginEvent.EmailChanged("user@test.com"))
+        viewModel.onEvent(LoginEvent.PasswordChanged("abc12"))
+        assertTrue(viewModel.uiState.value.canSubmit)
+    }
+
+    @Test
     fun `login success clears loading`() = runTest(dispatcher) {
         val viewModel = createViewModel()
         viewModel.onEvent(LoginEvent.EmailChanged("user@test.com"))
