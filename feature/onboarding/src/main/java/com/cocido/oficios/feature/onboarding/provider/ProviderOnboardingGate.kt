@@ -15,6 +15,6 @@ internal suspend fun providerIdentityGateMessage(
 internal suspend fun isProviderIdentityVerified(
     getOnboardingStatusUseCase: GetOnboardingStatusUseCase,
 ): Boolean = when (val status = getOnboardingStatusUseCase.getProviderStatus()) {
-    is AppResult.Success -> status.data.isIdentityVerified
+    is AppResult.Success -> status.data.isDniApproved
     is AppResult.Error -> false
 }
