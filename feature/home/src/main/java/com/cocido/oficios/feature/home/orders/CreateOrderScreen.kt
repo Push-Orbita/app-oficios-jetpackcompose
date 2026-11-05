@@ -279,12 +279,14 @@ private fun CreateOrderForm(
             )
         } else {
             state.slotsErrorMessage?.let { OficiosInlineAlert(message = it) }
-            val selectableHours = CreateOrderSchedule.selectableHours(
-                slots = state.availableSlots,
-                date = state.selectedDate,
-                ranges = state.dayRanges,
-                dayHasAvailability = state.dayHasAvailability,
-            )
+            state.scheduleConflictMessage?.let { OficiosInlineAlert(message = it) }
+            val selectableHours = state.selectableHours()
+            if (state.selectedDate != null &&
+                selectableHours?.isEmpty() == true &&
+                state.slotsErrorMessage == null
+            ) {
+                OficiosInlineAlert(message = stringResource(R.string.create_order_no_free_hours))
+            }
             val displayHours = selectableHours ?: (0..23).map { java.time.LocalTime.of(it, 0) }
             OficiosHourGrid(
                 hours = displayHours,

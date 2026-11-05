@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.PagedWorkers
 import com.cocido.oficios.domain.model.WorkerSearchFilters
+import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.repository.CatalogRepository
 import com.cocido.oficios.domain.repository.WorkerSearchRepository
 import kotlinx.coroutines.test.runTest
@@ -37,16 +38,78 @@ class SearchWorkersUseCaseTest {
         assertNull(repository.lastFilters?.rubroId)
     }
 
-    private class RecordingSearchRepository : WorkerSearchRepository {
+    @Test
+    fun `name matching a trade prefix still finds the worker by name`() = runTest {
+        val repository = RecordingSearchRepository(
+            byQuery = mapOf("plom" to listOf(worker(7, "Plomeyer Juan"))),
+        )
+        val useCase = SearchWorkersUseCase(repository, FakeTradeCatalogRepository())
+
+        val result = useCase(WorkerSearchFilters(query = "plom"), pageNumber = 1)
+
+        assertEquals(listOf(7L), (result as AppResult.Success).data.items.map { it.id })
+        assertEquals("plom", repository.lastFilters?.query)
+        assertNull(repository.lastFilters?.rubroId)
+    }
+
+    @Test
+    fun `full name sends one word as q and keeps workers matching every word`() = runTest {
+        val repository = RecordingSearchRepository(
+            byQuery = mapOf(
+                "Barberis" to listOf(
+                    worker(1, "Facundo Barberis"),
+                    worker(2, "Lucía Barberis"),
+                ),
+            ),
+        )
+        val useCase = SearchWorkersUseCase(repository, FakeTradeCatalogRepository())
+
+        val result = useCase(WorkerSearchFilters(query = "facundo barberis"), pageNumber = 1)
+
+        assertEquals(listOf(1L), (result as AppResult.Success).data.items.map { it.id })
+        assertEquals(listOf("barberis"), repository.sentQueries.map { it?.lowercase() })
+    }
+
+    @Test
+    fun `name inside a rubro keeps rubroId and q together`() = runTest {
+        val repository = RecordingSearchRepository()
+        val useCase = SearchWorkersUseCase(repository, FakeTradeCatalogRepository())
+
+        useCase(WorkerSearchFilters(query = "Facundo", rubroId = 5), pageNumber = 1)
+
+        assertEquals("Facundo", repository.lastFilters?.query)
+        assertEquals(5L, repository.lastFilters?.rubroId)
+        assertEquals(1, repository.sentQueries.size)
+    }
+
+    private fun worker(id: Long, name: String) = WorkerSummary(
+        id = id,
+        displayName = name,
+        specialtyLabel = "",
+        rating = null,
+        avatarUrl = null,
+        isVerified = true,
+        primaryRubroId = null,
+    )
+
+    private class RecordingSearchRepository(
+        private val byQuery: Map<String, List<WorkerSummary>> = emptyMap(),
+    ) : WorkerSearchRepository {
         var lastFilters: WorkerSearchFilters? = null
+        val sentQueries = mutableListOf<String?>()
         override suspend fun searchWorkers(
             filters: WorkerSearchFilters,
             pageNumber: Int,
             pageSize: Int,
         ): AppResult<PagedWorkers> {
             lastFilters = filters
+            sentQueries += filters.query
+            val items = byQuery.entries
+                .firstOrNull { it.key.equals(filters.query, ignoreCase = true) }
+                ?.value
+                .orEmpty()
             return AppResult.Success(
-                PagedWorkers(items = emptyList(), pageNumber = 1, totalPages = 1, hasMore = false),
+                PagedWorkers(items = items, pageNumber = 1, totalPages = 1, hasMore = false),
             )
         }
     }

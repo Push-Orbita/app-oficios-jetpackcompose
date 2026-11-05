@@ -11,7 +11,7 @@
     <string name="home_my_orders_title">Mis pedidos</string>
     <string name="home_my_orders_description">Revise el estado de los servicios que solicitó.</string>
     <string name="home_my_orders_cta">Ver mis pedidos</string>
-    <string name="home_search_categories_hint">¿Qué oficio estás buscando?</string>
+    <string name="home_search_categories_hint">Busque un oficio o un trabajador por nombre</string>
     <string name="home_categories_title">Oficios</string>
     <string name="home_all_oficios_title">Todos los oficios</string>
     <string name="home_search_contact_limit">No puede contactar a más de 3 trabajadores en un lapso de 10 minutos*</string>
@@ -44,7 +44,8 @@
     <string name="home_coming_soon">Próximamente</string>
     <string name="home_open_settings">Abrir ajustes</string>
     <string name="home_rubros_loading">Cargando rubros…</string>
-    <string name="home_search_rubros_hint">¿Qué oficio estás buscando?</string>
+    <string name="home_search_rubros_hint">Busque un oficio o un trabajador por nombre</string>
+    <string name="home_search_workers_by_name">Buscar trabajadores: “%1$s”</string>
     <string name="home_search_results_loading">Buscando trabajadores…</string>
     <string name="home_search_results_empty_title">Sin resultados</string>
     <string name="home_search_results_empty_description">Pruebe ajustar los filtros o buscar otro rubro.</string>
@@ -346,7 +347,9 @@
     <string name="orders_dialog_cancel">Cancelar</string>
     <string name="orders_code_label">Código de 6 dígitos</string>
     <string name="orders_reason_message">Ingrese el motivo para que la otra persona lo vea.</string>
+    <string name="orders_reason_optional_message">Puede indicar un motivo para que el trabajador lo vea. Es opcional.</string>
     <string name="orders_reason_label">Motivo</string>
+    <string name="orders_reason_label_optional">Motivo (opcional)</string>
     <string name="agenda_title">Agenda</string>
     <string name="agenda_configure">Configurar agenda</string>
     <string name="agenda_loading">Cargando agenda…</string>
@@ -493,6 +496,7 @@
     <string name="create_order_slots_title">Turnos disponibles</string>
     <string name="create_order_no_slots">Este trabajador no publicó turnos para las próximas semanas. Puede proponer una fecha.</string>
     <string name="create_order_day_unavailable">Ese día no tiene disponibilidad.</string>
+    <string name="create_order_no_free_hours">No quedan horarios libres ese día. Elija otra fecha.</string>
     <string name="create_order_propose">Proponer otra fecha y hora</string>
     <string name="create_order_pick_slot">Seleccione un día y una hora para continuar</string>
     <string name="create_order_date_time">Fecha y hora</string>
