@@ -12,7 +12,9 @@ import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.worker.GetWorkerReviewsUseCase
 import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.CancellationPolicy
 import com.cocido.oficios.domain.model.ServiceRequestStatus
+import com.cocido.oficios.domain.model.cancellationPolicy
 import com.cocido.oficios.domain.model.withArrivedTracking
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -73,9 +75,21 @@ class OrderDetailViewModel @Inject constructor(
             }
             OrderDetailEvent.CancelBeforeAcceptance -> runAction("Pedido cancelado.") { orderUseCases.cancelOrderBeforeAcceptance(orderId) }
             is OrderDetailEvent.CancelConfirmed -> {
-                val motivo = event.reason?.trim().orEmpty()
-                if (motivo.isEmpty()) {
-                    emitEffect(OrderDetailEffect.ShowMessage("Ingrese el motivo de cancelación."))
+                val success = uiState.value as? OrderDetailUiState.Success
+                val role = success?.viewerRole ?: viewerRole
+                val policy = success?.order?.cancellationPolicy(role)
+                val motivo = if (policy != null) {
+                    policy.resolveReason(event.reason)
+                } else {
+                    val trimmed = event.reason?.trim().orEmpty()
+                    when {
+                        trimmed.isNotEmpty() -> trimmed
+                        role == UserRole.PROVIDER -> null
+                        else -> CancellationPolicy.DEFAULT_CLIENT_REASON
+                    }
+                }
+                if (motivo == null) {
+                    emitEffect(OrderDetailEffect.ShowMessage(CancellationPolicy.REASON_REQUIRED))
                     return
                 }
                 runAction("Pedido cancelado.") { orderUseCases.cancelConfirmedOrder(orderId, motivo) }

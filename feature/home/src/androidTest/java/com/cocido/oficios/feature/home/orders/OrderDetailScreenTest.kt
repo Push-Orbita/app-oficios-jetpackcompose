@@ -112,7 +112,7 @@ class OrderDetailScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Cancelar solicitud").performClick()
+        composeTestRule.onNodeWithText("Cancelar").performClick()
         composeTestRule.onNodeWithText("¿Seguro que quiere cancelar este pedido?").assertIsDisplayed()
         composeTestRule.onNodeWithText("Sí, cancelar").performClick()
 

@@ -97,6 +97,7 @@ import com.cocido.oficios.core.ui.map.OficiosTrackingMap
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.ServiceRequestStatus
 import com.cocido.oficios.domain.model.UserRole
+import com.cocido.oficios.domain.model.cancellationPolicy
 import com.cocido.oficios.domain.model.destinationPoint
 import com.cocido.oficios.domain.model.displayPrice
 import com.cocido.oficios.domain.model.enRouteWorkerPoint
@@ -185,6 +186,7 @@ private fun OrderDetailContent(
 ) {
     val order = state.order
     val isWorker = state.viewerRole == UserRole.PROVIDER
+    val cancellation = order.cancellationPolicy(state.viewerRole)
     val context = LocalContext.current
     val canShowPrivateDetails = !isWorker || order.status == ServiceRequestStatus.ACCEPTED
     var showRejectDialog by remember { mutableStateOf(false) }
@@ -286,14 +288,12 @@ private fun OrderDetailContent(
                 value = formatArsAmount(price),
             )
         }
-        if (order.status == ServiceRequestStatus.PENDING) {
-            order.cancellationDeadlineLabel?.takeIf { it.isNotBlank() }?.let { deadline ->
-                OrderDetailLabeledRow(
-                    icon = OficiosIcons.ClockCheck,
-                    label = stringResource(R.string.orders_field_cancel_deadline),
-                    value = deadline,
-                )
-            }
+        if (cancellation.showDeadline) {
+            OrderDetailLabeledRow(
+                icon = OficiosIcons.ClockCheck,
+                label = stringResource(R.string.orders_field_cancel_deadline),
+                value = cancellation.deadlineLabel.orEmpty(),
+            )
         }
 
         when {
@@ -329,7 +329,6 @@ private fun OrderDetailContent(
 
             order.status == ServiceRequestStatus.PENDING && !isWorker -> {
                 InfoText(stringResource(R.string.orders_waiting_worker))
-                CancelOrderButton(enabled = !state.isActionInProgress, onClick = { showCancelDialog = true })
             }
 
             order.status == ServiceRequestStatus.COUNTER_OFFER && order.pendingCounterOffer != null -> {
@@ -501,11 +500,10 @@ private fun OrderDetailContent(
             }
         }
 
-        if (order.canCancelBooking && order.status != ServiceRequestStatus.PENDING && order.status != ServiceRequestStatus.CANCELLED && order.status != ServiceRequestStatus.EXPIRED && order.bookingStatus != BookingStatus.EXPIRED) {
+        if (cancellation.canCancel) {
             CancelOrderButton(
                 enabled = !state.isActionInProgress,
                 onClick = { showCancelDialog = true },
-                size = OficiosButtonSize.Medium,
             )
         }
     }
@@ -523,18 +521,7 @@ private fun OrderDetailContent(
     }
 
     if (showCancelDialog) {
-        val confirmedCancel = order.canCancelBooking && order.status != ServiceRequestStatus.PENDING
-        if (confirmedCancel) {
-            ReasonDialog(
-                title = stringResource(R.string.orders_cancel_title),
-                confirmLabel = stringResource(R.string.orders_cancel_confirm),
-                onConfirm = { reason ->
-                    onEvent(OrderDetailEvent.CancelConfirmed(reason))
-                    showCancelDialog = false
-                },
-                onDismiss = { showCancelDialog = false },
-            )
-        } else {
+        if (cancellation.isBeforeAcceptance) {
             OficiosDialog(
                 title = stringResource(R.string.orders_cancel_title),
                 message = stringResource(R.string.orders_cancel_message),
@@ -544,6 +531,17 @@ private fun OrderDetailContent(
                 actionSize = OficiosButtonSize.Large,
                 onConfirm = {
                     onEvent(OrderDetailEvent.CancelBeforeAcceptance)
+                    showCancelDialog = false
+                },
+                onDismiss = { showCancelDialog = false },
+            )
+        } else {
+            ReasonDialog(
+                title = stringResource(R.string.orders_cancel_title),
+                confirmLabel = stringResource(R.string.orders_cancel_confirm),
+                reasonRequired = cancellation.requiresReason,
+                onConfirm = { reason ->
+                    onEvent(OrderDetailEvent.CancelConfirmed(reason))
                     showCancelDialog = false
                 },
                 onDismiss = { showCancelDialog = false },
@@ -1082,21 +1080,26 @@ private fun ReasonDialog(
     confirmLabel: String,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
+    reasonRequired: Boolean = true,
 ) {
     var reason by remember { mutableStateOf("") }
     OficiosDialog(
         title = title,
-        message = stringResource(R.string.orders_reason_message),
+        message = stringResource(
+            if (reasonRequired) R.string.orders_reason_message else R.string.orders_reason_optional_message,
+        ),
         confirmLabel = confirmLabel,
         isDangerous = true,
-        confirmEnabled = reason.isNotBlank(),
+        confirmEnabled = !reasonRequired || reason.isNotBlank(),
         onConfirm = { onConfirm(reason) },
         onDismiss = onDismiss,
         content = {
             OficiosTextField(
                 value = reason,
                 onValueChange = { reason = it },
-                label = stringResource(R.string.orders_reason_label),
+                label = stringResource(
+                    if (reasonRequired) R.string.orders_reason_label else R.string.orders_reason_label_optional,
+                ),
             )
         },
     )
