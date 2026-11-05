@@ -16,6 +16,33 @@ val localProperties = Properties().apply {
     }
 }
 
+/**
+ * Clave de Google Maps. local.properties no se versiona, así que un `git worktree`
+ * nuevo no la tiene y el APK sale con la clave vacía: todos los mapas de la app
+ * caen en "No pudimos cargar el mapa". Orden de búsqueda:
+ * 1. local.properties de este checkout
+ * 2. local.properties del checkout principal (si este es un worktree)
+ * 3. -PMAPS_API_KEY o ~/.gradle/gradle.properties
+ * 4. variable de entorno MAPS_API_KEY
+ */
+val mapsApiKey: String = run {
+    fun Properties.mapsKey(): String? = getProperty("MAPS_API_KEY")?.trim()?.takeIf { it.isNotEmpty() }
+    val mainCheckoutProperties = Properties().apply {
+        val dotGit = rootProject.file(".git")
+        if (!dotGit.isFile) return@apply
+        // .git de un worktree: "gitdir: <checkout principal>/.git/worktrees/<nombre>"
+        val gitDir = dotGit.readText().trim().removePrefix("gitdir:").trim()
+        val mainRoot = File(gitDir).parentFile?.parentFile?.parentFile ?: return@apply
+        val file = File(mainRoot, "local.properties")
+        if (file.exists()) file.inputStream().use { load(it) }
+    }
+    localProperties.mapsKey()
+        ?: mainCheckoutProperties.mapsKey()
+        ?: providers.gradleProperty("MAPS_API_KEY").orNull?.trim()?.takeIf { it.isNotEmpty() }
+        ?: providers.environmentVariable("MAPS_API_KEY").orNull?.trim()?.takeIf { it.isNotEmpty() }
+        ?: ""
+}
+
 val firebaseEnabled: Boolean = run {
     val googleServicesFile = file("google-services.json")
     if (!googleServicesFile.exists()) return@run false
@@ -45,7 +72,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Read from local.properties (never committed) — see MAPS_API_KEY below.
-        manifestPlaceholders["mapsApiKey"] = localProperties.getProperty("MAPS_API_KEY", "")
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
 
         // Firebase es opcional: false cuando google-services.json es stub o falta.
         buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
@@ -94,6 +121,24 @@ android {
         unitTests {
             isReturnDefaultValues = true
             isIncludeAndroidResources = true
+        }
+    }
+}
+
+// Un APK sin clave de Maps nunca debe salir: falla el empaquetado (no los tests unitarios).
+androidComponents {
+    onVariants { variant ->
+        val packageTask = "package" + variant.name.replaceFirstChar { it.uppercase() }
+        val keyMissing = mapsApiKey.isBlank()
+        tasks.matching { it.name == packageTask }.configureEach {
+            doFirst {
+                if (keyMissing) {
+                    throw GradleException(
+                        "MAPS_API_KEY vacío: el APK saldría sin mapas. Definilo en local.properties " +
+                            "(o en el del checkout principal si usás un worktree), -PMAPS_API_KEY o la variable de entorno MAPS_API_KEY.",
+                    )
+                }
+            }
         }
     }
 }
