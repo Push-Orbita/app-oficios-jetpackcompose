@@ -64,7 +64,7 @@ class LoginViewModel @Inject constructor(
 
     private fun submit() {
         val emailError = AuthValidators.validateEmail(_uiState.value.email)
-        val passwordError = AuthValidators.validatePassword(_uiState.value.password)
+        val passwordError = AuthValidators.validateLoginPassword(_uiState.value.password)
         if (emailError != null || passwordError != null) {
             _uiState.update {
                 it.copy(
@@ -117,6 +117,6 @@ class LoginViewModel @Inject constructor(
 
     private fun LoginUiState.validated(): LoginUiState = copy(
         canSubmit = AuthValidators.validateEmail(email) == null &&
-            AuthValidators.validatePassword(password) == null,
+            AuthValidators.validateLoginPassword(password) == null,
     )
 }

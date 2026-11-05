@@ -23,6 +23,9 @@ import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAler
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
+import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementItem
+import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementsChecklist
+import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -93,9 +96,16 @@ private fun ChangePasswordForm(
             onValueChange = { onEvent(ChangePasswordEvent.PasswordChanged(it)) },
             label = stringResource(R.string.change_password_new),
             isError = state.passwordError != null,
-            supportingText = state.passwordError,
+            supportingText = state.passwordError.takeIf {
+                it == PasswordPolicy.ERROR_BLANK || it == PasswordPolicy.ERROR_EDGES
+            },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
+        )
+        PasswordRequirementsChecklist(
+            requirements = PasswordPolicy.evaluate(state.password).requirements.map {
+                PasswordRequirementItem(label = it.label, satisfied = it.satisfied)
+            },
         )
         OficiosPasswordField(
             value = state.confirmation,

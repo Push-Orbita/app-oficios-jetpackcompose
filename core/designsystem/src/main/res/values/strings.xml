@@ -11,4 +11,9 @@
     <string name="ds_autocomplete_no_results">No se encontraron barrios</string>
     <string name="ds_autocomplete_loading">Buscando barrios</string>
     <string name="ds_support_help">Ayuda</string>
+    <string name="ds_password_requirement_met">Cumplido: %1$s</string>
+    <string name="ds_password_requirement_pending">Pendiente: %1$s</string>
+    <string name="ds_password_requirements_all_met">La contraseña cumple los requisitos</string>
+    <string name="ds_password_requirements_missing">Faltan requisitos: %1$s</string>
+    <string name="ds_password_symbols_optional">Los símbolos son opcionales.</string>
 </resources>

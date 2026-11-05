@@ -89,4 +89,20 @@ class AuthValidatorsTest {
         assertEquals(null, AuthValidators.validateOptionalEmail("ana@oficios.test"))
         assertEquals("Ingrese un correo válido", AuthValidators.validateOptionalEmail("mal"))
     }
+
+    @Test
+    fun `validatePassword delegates to PasswordPolicy`() {
+        assertEquals(PasswordPolicy.ERROR_BLANK, AuthValidators.validatePassword(""))
+        assertEquals(PasswordPolicy.ERROR_LENGTH, AuthValidators.validatePassword("xd123"))
+        assertEquals(PasswordPolicy.ERROR_LETTER, AuthValidators.validatePassword("12345678"))
+        assertEquals(PasswordPolicy.ERROR_DIGIT, AuthValidators.validatePassword("abcdefgh"))
+        assertEquals(null, AuthValidators.validatePassword("secret123"))
+    }
+
+    @Test
+    fun `validateLoginPassword only requires a non-blank value`() {
+        assertEquals(PasswordPolicy.ERROR_BLANK, AuthValidators.validateLoginPassword(""))
+        assertEquals(null, AuthValidators.validateLoginPassword("xd123"))
+        assertEquals(null, AuthValidators.validateLoginPassword("abc"))
+    }
 }
