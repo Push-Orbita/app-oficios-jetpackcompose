@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.getOrNull
 import com.cocido.oficios.domain.model.PagedWorkers
 import com.cocido.oficios.domain.model.RecentSearchEntry
+import com.cocido.oficios.domain.model.WorkerRanking
 import com.cocido.oficios.domain.model.WorkerSearchFilters
 import com.cocido.oficios.domain.model.WorkerSummary
 import com.cocido.oficios.domain.model.normalizeSearchText
@@ -39,15 +40,16 @@ class SearchWorkersUseCase @Inject constructor(
         val query = filters.query?.trim().orEmpty()
         if (query.isEmpty()) {
             return workerSearchRepository.searchWorkers(filters.copy(query = null), pageNumber, pageSize)
+                .ranked()
         }
-        val byName = searchByName(filters, query, pageNumber, pageSize)
+        val byName = searchByName(filters, query, pageNumber, pageSize).ranked()
         val hasTradeFilter = filters.rubroId != null || filters.subRubroId != null
         if (hasTradeFilter) return byName
         if (byName is AppResult.Success && byName.data.items.isNotEmpty()) return byName
 
         val resolved = resolveTradeFilters(filters)
         if (resolved == filters) return byName
-        return workerSearchRepository.searchWorkers(resolved, pageNumber, pageSize)
+        return workerSearchRepository.searchWorkers(resolved, pageNumber, pageSize).ranked()
     }
 
     private suspend fun searchByName(
@@ -80,6 +82,11 @@ class SearchWorkersUseCase @Inject constructor(
         val rubros = catalogRepository.getAllRubros().getOrNull().orEmpty()
         val subRubros = catalogRepository.getAllSubRubros().getOrNull().orEmpty()
         return filters.withResolvedTrade(rubros = rubros, subRubros = subRubros)
+    }
+
+    private fun AppResult<PagedWorkers>.ranked(): AppResult<PagedWorkers> = when (this) {
+        is AppResult.Success -> AppResult.Success(data.copy(items = WorkerRanking.rank(data.items)))
+        is AppResult.Error -> this
     }
 
     private companion object {

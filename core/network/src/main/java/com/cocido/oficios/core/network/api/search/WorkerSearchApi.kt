@@ -16,6 +16,8 @@ interface WorkerSearchApi {
         @Query("barrioId") barrioId: Long? = null,
         @Query("fechaDeseada") fechaDeseada: String? = null,
         @Query("q") query: String? = null,
+        @Query("orderBy") orderBy: String? = null,
+        @Query("orderDirection") orderDirection: String? = null,
         @Query("pageNumber") pageNumber: Int = 1,
         @Query("pageSize") pageSize: Int = 20,
     ): PaginatedResponseDto<WorkerSearchItemDto>
