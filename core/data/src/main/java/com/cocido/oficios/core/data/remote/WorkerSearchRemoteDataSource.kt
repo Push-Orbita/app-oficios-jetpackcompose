@@ -3,7 +3,7 @@ package com.cocido.oficios.core.data.remote
 import com.cocido.oficios.core.network.api.catalog.dto.PaginatedResponseDto
 import com.cocido.oficios.core.network.api.search.WorkerSearchApi
 import com.cocido.oficios.core.network.api.search.dto.WorkerSearchItemDto
-import com.cocido.oficios.domain.model.AttentionModality
+import com.cocido.oficios.domain.model.WorkerRanking
 import com.cocido.oficios.domain.model.WorkerSearchFilters
 import javax.inject.Inject
 
@@ -23,6 +23,8 @@ class WorkerSearchRemoteDataSource @Inject constructor(
             barrioId = filters.barrioId,
             fechaDeseada = filters.fechaDeseada,
             query = filters.query?.takeIf { it.isNotBlank() },
+            orderBy = WorkerRanking.ORDER_BY_PUNTAJE_GLOBAL,
+            orderDirection = WorkerRanking.ORDER_DIRECTION_DESC,
             pageNumber = pageNumber,
             pageSize = pageSize,
         )
