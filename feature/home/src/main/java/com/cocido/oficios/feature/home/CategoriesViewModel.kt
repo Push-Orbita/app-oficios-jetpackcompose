@@ -57,7 +57,7 @@ class CategoriesViewModel @Inject constructor(
             CategoriesEvent.OpenNotifications -> emitEffect(CategoriesEffect.NavigateToNotifications)
             is CategoriesEvent.CategorySelected -> onCategorySelected(event.category)
             is CategoriesEvent.QueryChanged -> onQueryChanged(event.query)
-            is CategoriesEvent.SearchSubmitted -> onQueryChanged(event.query)
+            is CategoriesEvent.SearchSubmitted -> onSearchSubmitted(event.query)
             CategoriesEvent.SeeAll -> emitEffect(
                 CategoriesEffect.NavigateToRubros(HomeDestination.allRubrosCategoryId, ""),
             )
@@ -68,6 +68,17 @@ class CategoriesViewModel @Inject constructor(
         _uiState.update { state ->
             if (state is CategoriesUiState.Success) state.copy(query = query) else state
         }
+    }
+
+    /**
+     * Enter / voz / "Buscar trabajadores": el texto puede ser un nombre. Va a resultados
+     * con `q` (la API busca nombre, apellido, email o DNI) sin pedir rubro antes.
+     */
+    private fun onSearchSubmitted(query: String) {
+        onQueryChanged(query)
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return
+        emitEffect(CategoriesEffect.NavigateToSearchResults(query = trimmed))
     }
 
     private fun onCategorySelected(category: HomeCategoryItem) {
