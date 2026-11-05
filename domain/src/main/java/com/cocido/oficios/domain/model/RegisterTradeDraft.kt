@@ -29,4 +29,6 @@ data class RegisterTradeDraft(
     val timeSlots: List<RegisterTradeTimeSlotDraft>,
     val weeklySchedule: WeeklyScheduleDraft? = null,
     val paymentMethods: List<String> = emptyList(),
+    val localCalle: String? = null,
+    val localNumero: String? = null,
 )

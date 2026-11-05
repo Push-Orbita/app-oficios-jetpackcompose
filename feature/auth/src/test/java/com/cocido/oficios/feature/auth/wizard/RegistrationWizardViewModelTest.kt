@@ -79,6 +79,42 @@ class RegistrationWizardViewModelTest {
     }
 
     @Test
+    fun `provider personal submit goes to oficio instead of client profile`() = runTest(dispatcher) {
+        val env = createEnv()
+        val providerVm = RegistrationWizardViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("role" to "PROVIDER")),
+            draftRepository = env.drafts,
+            committer = RegistrationCommitter(
+                registerClientUseCase = RegisterClientUseCase(env.auth),
+                registerProviderUseCase = RegisterProviderUseCase(env.auth),
+                saveClientContactoUseCase = SaveClientContactoUseCase(FakeClientProfiles()),
+                saveClientDomicilioUseCase = SaveClientDomicilioUseCase(FakeClientProfiles()),
+                draftRepository = env.drafts,
+                registerTradeDraftRepository = object :
+                    com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+                    override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
+                    override suspend fun get() = null
+                    override suspend fun clear() = Unit
+                },
+                submitRegisterTradeDraftUseCase = noopTradeSubmit(),
+                sessionRepository = FakeSession(),
+            ),
+            searchBarriosUseCase = SearchBarriosUseCase(FakeCatalog()),
+        )
+        val effects = mutableListOf<RegistrationWizardEffect>()
+        val job = kotlinx.coroutines.CoroutineScope(dispatcher).launch {
+            providerVm.effects.collect { effects += it }
+        }
+        fillPersonal(providerVm)
+        providerVm.onPersonalEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+        assertTrue(effects.contains(RegistrationWizardEffect.GoToOficio))
+        assertFalse(effects.contains(RegistrationWizardEffect.GoToProfile))
+        assertEquals(0, env.auth.clientAttempts)
+        job.cancel()
+    }
+
+    @Test
     fun `create account is the only signup call`() = runTest(dispatcher) {
         val env = createEnv()
         fillPersonal(env.viewModel)
@@ -167,6 +203,12 @@ class RegistrationWizardViewModelTest {
             saveClientContactoUseCase = SaveClientContactoUseCase(profiles),
             saveClientDomicilioUseCase = SaveClientDomicilioUseCase(profiles),
             draftRepository = drafts,
+            registerTradeDraftRepository = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+                override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
+                override suspend fun get() = null
+                override suspend fun clear() = Unit
+            },
+            submitRegisterTradeDraftUseCase = noopTradeSubmit(),
             sessionRepository = FakeSession(),
         )
         val viewModel = RegistrationWizardViewModel(
@@ -257,5 +299,45 @@ class RegistrationWizardViewModelTest {
         override suspend fun getRubrosByCategory(categoryId: Long) = AppResult.Success(emptyList<CatalogOption>())
         override suspend fun getSubRubrosByRubro(rubroId: Long) = AppResult.Success(emptyList<CatalogOption>())
         override suspend fun searchBarrios(query: String) = AppResult.Success(listOf(CatalogOption(4, "Centro")))
+    }
+
+    private fun noopTradeSubmit(): com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase {
+        val tradeDrafts = object : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+            override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) = Unit
+            override suspend fun get() = null
+            override suspend fun clear() = Unit
+        }
+        val provider = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
+            override suspend fun updateProfessionalInfo(
+                request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun submitRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun submitSecondaryRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun finalizeProfile() = AppResult.Success(Unit)
+            override suspend fun loadProviderProfileForSync() = AppResult.Success(
+                com.cocido.oficios.domain.model.ProviderProfileSync(null, emptyList()),
+            )
+            override suspend fun getMySubRubros() =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
+        }
+        val catalog = FakeCatalog()
+        return com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase(
+            providerProfileRepository = provider,
+            registerTradeDraftRepository = tradeDrafts,
+            catalogRepository = catalog,
+            syncRegisterTradeDraftFromProfileUseCase =
+                com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase(
+                    provider,
+                    tradeDrafts,
+                ),
+            syncProviderBarrioDomicilio = object :
+                com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                override suspend fun invoke(barrioId: Long, barrioName: String) = AppResult.Success(Unit)
+            },
+        )
     }
 }

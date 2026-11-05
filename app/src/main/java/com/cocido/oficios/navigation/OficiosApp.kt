@@ -118,7 +118,13 @@ fun AppNavHost(
                 }
             },
             onNavigateToRegisterProvider = {
-                navController.navigate(AuthDestination.REGISTER_PROVIDER)
+                navController.navigate(
+                    if (BuildConfig.REGISTRATION_WIZARD_V2) {
+                        AuthDestination.wizardGraph(RegistrationRole.PROVIDER)
+                    } else {
+                        AuthDestination.REGISTER_PROVIDER
+                    },
+                )
             },
             onNavigateToForgotPassword = {
                 navController.navigate(AuthDestination.FORGOT_PASSWORD)

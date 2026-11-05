@@ -40,6 +40,10 @@ fun RegisterTradeScreen(
     uiState: RegisterTradeUiState,
     onEvent: (RegisterTradeEvent) -> Unit,
     modifier: Modifier = Modifier,
+    section: RegisterTradeFormSection = RegisterTradeFormSection.FULL,
+    showContinue: Boolean = true,
+    continueLabel: String? = null,
+    onContinue: (() -> Unit)? = null,
 ) {
     ConfirmDiscardOnSystemBack(hasUnsavedChanges = uiState.selectedCategoryId != null)
 
@@ -48,10 +52,25 @@ fun RegisterTradeScreen(
         isLoading = uiState.isLoading || uiState.isLoadingCatalog,
     ) {
         Text(
-            text = stringResource(R.string.auth_register_trade_title),
+            text = stringResource(
+                when (section) {
+                    RegisterTradeFormSection.ZONA -> R.string.auth_wizard_zona_title
+                    RegisterTradeFormSection.AGENDA -> R.string.auth_wizard_agenda_title
+                    RegisterTradeFormSection.COBRO -> R.string.auth_wizard_cobro_title
+                    RegisterTradeFormSection.IDENTIDAD -> R.string.auth_wizard_identidad_title
+                    else -> R.string.auth_register_trade_title
+                },
+            ),
             style = OficiosRegisterTradeTitleStyle,
             color = MaterialTheme.colorScheme.onBackground,
         )
+
+        val afterCategory = section != RegisterTradeFormSection.FULL || uiState.selectedCategoryId != null
+        val showOficio = section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.OFICIO
+        val showZona = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.ZONA)
+        val showAgenda = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.AGENDA)
+        val showCobro = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.COBRO)
+        val showIdentidad = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.IDENTIDAD)
 
         uiState.catalogError?.let { message ->
             OficiosInlineAlert(message = message)
@@ -63,7 +82,7 @@ fun RegisterTradeScreen(
             )
         }
 
-        if (uiState.selectedCategoryId == null && uiState.categoryOptions.isNotEmpty()) {
+        if (showOficio && uiState.selectedCategoryId == null && uiState.categoryOptions.isNotEmpty()) {
             Text(
                 text = stringResource(R.string.auth_register_trade_category_label),
                 style = MaterialTheme.typography.titleMedium,
@@ -78,7 +97,7 @@ fun RegisterTradeScreen(
                     }
                 },
             )
-        } else {
+        } else if (showOficio) {
             FieldAndCtaBlock {
                 Text(
                     text = uiState.selectedCategory,
@@ -128,151 +147,176 @@ fun RegisterTradeScreen(
                             placeholder = stringResource(R.string.auth_register_trade_experience_hint),
                         )
                     }
+                }
+            }
+        }
 
-                    RegisterTradeLabeledSection(
-                        title = stringResource(R.string.auth_register_trade_neighborhood_label),
-                    ) {
-                        OficiosAutocompleteField(
-                            value = uiState.neighborhoodQuery,
-                            onValueChange = { onEvent(RegisterTradeEvent.NeighborhoodQueryChanged(it)) },
-                            suggestions = uiState.neighborhoodOptions,
-                            onSuggestionSelected = { onEvent(RegisterTradeEvent.NeighborhoodSelected(it)) },
-                            suggestionLabel = { it.label },
-                            label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
-                            placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
-                            isLoading = uiState.isSearchingBarrios,
-                            onFocused = { onEvent(RegisterTradeEvent.NeighborhoodFocused) },
-                            onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
-                        )
-                    }
+        if (showZona) {
+            RegisterTradeLabeledSection(
+                title = stringResource(R.string.auth_register_trade_neighborhood_label),
+            ) {
+                OficiosAutocompleteField(
+                    value = uiState.neighborhoodQuery,
+                    onValueChange = { onEvent(RegisterTradeEvent.NeighborhoodQueryChanged(it)) },
+                    suggestions = uiState.neighborhoodOptions,
+                    onSuggestionSelected = { onEvent(RegisterTradeEvent.NeighborhoodSelected(it)) },
+                    suggestionLabel = { it.label },
+                    label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
+                    placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
+                    isLoading = uiState.isSearchingBarrios,
+                    onFocused = { onEvent(RegisterTradeEvent.NeighborhoodFocused) },
+                    onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
+                )
+            }
+            RegisterTradeLabeledSection(
+                title = stringResource(R.string.auth_register_trade_service_location_label),
+            ) {
+                OficiosCheckbox(
+                    checked = uiState.servesAtClientHome,
+                    onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtClientHomeChanged(it)) },
+                    label = stringResource(R.string.auth_register_trade_serves_at_home),
+                    compactRow = true,
+                )
+                OficiosCheckbox(
+                    checked = uiState.servesAtLocal,
+                    onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtLocalChanged(it)) },
+                    label = stringResource(R.string.auth_register_trade_serves_at_local),
+                    compactRow = true,
+                )
+            }
+        }
 
-                    RegisterTradeLabeledSection(
-                        title = stringResource(R.string.auth_register_trade_work_days_label),
-                    ) {
-                        WeeklyScheduleEditor(
-                            days = uiState.weeklySchedule.toEditorDays(
-                                RegisterTradeUiState.defaultWorkDays.toMap(),
-                            ),
-                            includeSunday = uiState.weeklySchedule.includeSunday,
-                            onIncludeSundayChange = { onEvent(RegisterTradeEvent.IncludeSunday(it)) },
-                            onToggleDay = { day, enabled -> onEvent(RegisterTradeEvent.WeekDayToggled(day, enabled)) },
-                            onRangeFromChanged = { day, index, value ->
-                                onEvent(RegisterTradeEvent.WeekRangeFrom(day, index, value))
-                            },
-                            onRangeToChanged = { day, index, value ->
-                                onEvent(RegisterTradeEvent.WeekRangeTo(day, index, value))
-                            },
-                            onAddRange = { onEvent(RegisterTradeEvent.AddWeekRange(it)) },
-                            onRemoveRange = { day, index -> onEvent(RegisterTradeEvent.RemoveWeekRange(day, index)) },
-                            onInsertRange = { day, index, range ->
-                                onEvent(RegisterTradeEvent.InsertWeekRange(day, index, range.from, range.to))
-                            },
-                            onCopyMondayToWeekdays = { onEvent(RegisterTradeEvent.CopyMondayToWeekdays) },
-                        )
-                    }
-
-                    RegisterTradeLabeledSection(
-                        title = stringResource(R.string.auth_register_trade_service_location_label),
-                    ) {
-                        OficiosCheckbox(
-                            checked = uiState.servesAtClientHome,
-                            onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtClientHomeChanged(it)) },
-                            label = stringResource(R.string.auth_register_trade_serves_at_home),
-                            compactRow = true,
-                        )
-                        OficiosCheckbox(
-                            checked = uiState.servesAtLocal,
-                            onCheckedChange = { onEvent(RegisterTradeEvent.ServesAtLocalChanged(it)) },
-                            label = stringResource(R.string.auth_register_trade_serves_at_local),
-                            compactRow = true,
-                        )
-                    }
-
-
-                    RegisterTradeLabeledSection(
-                        title = stringResource(R.string.auth_register_trade_turns_label),
-                    ) {
-                        OficiosCheckbox(
-                            checked = uiState.requiresTurns,
-                            onCheckedChange = { onEvent(RegisterTradeEvent.RequiresTurnsChanged(it)) },
-                            label = stringResource(R.string.auth_register_trade_requires_turns),
-                            compactRow = true,
-                        )
-                        if (uiState.requiresTurns) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                            ) {
-                                OficiosTextField(
-                                    value = uiState.turnDurationMinutes,
-                                    onValueChange = { onEvent(RegisterTradeEvent.TurnDurationChanged(it)) },
-                                    label = stringResource(R.string.auth_register_trade_turn_duration),
-                                    placeholder = "60",
-                                    supportingText = stringResource(R.string.auth_register_trade_turn_duration_hint),
-                                    modifier = Modifier.weight(1f),
-                                )
-                                OficiosTextField(
-                                    value = uiState.turnIntervalMinutes,
-                                    onValueChange = { onEvent(RegisterTradeEvent.TurnIntervalChanged(it)) },
-                                    label = stringResource(R.string.auth_register_trade_turn_interval),
-                                    placeholder = "0",
-                                    supportingText = stringResource(R.string.auth_register_trade_turn_interval_hint),
-                                    modifier = Modifier.weight(1f),
-                                )
-                            }
-                        }
-                    }
-
-                    RegisterTradeLabeledSection(
-                        title = stringResource(R.string.auth_register_trade_payment_label),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.auth_register_trade_payment_hint),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        OficiosCheckbox(
-                            checked = ProviderPaymentMethods.EFECTIVO in uiState.selectedPaymentMethods,
-                            onCheckedChange = {
-                                onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, it))
-                            },
-                            label = stringResource(R.string.auth_register_trade_payment_efectivo),
-                            compactRow = true,
-                        )
-                        OficiosCheckbox(
-                            checked = ProviderPaymentMethods.TRANSFERENCIA in uiState.selectedPaymentMethods,
-                            onCheckedChange = {
-                                onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.TRANSFERENCIA, it))
-                            },
-                            label = stringResource(R.string.auth_register_trade_payment_transferencia),
-                            compactRow = true,
-                        )
-                        OficiosCheckbox(
-                            checked = ProviderPaymentMethods.MERCADOPAGO in uiState.selectedPaymentMethods,
-                            onCheckedChange = {
-                                onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.MERCADOPAGO, it))
-                            },
-                            label = stringResource(R.string.auth_register_trade_payment_mercadopago),
-                            compactRow = true,
-                        )
-                    }
+        if (showAgenda) {
+            RegisterTradeLabeledSection(
+                title = stringResource(R.string.auth_register_trade_work_days_label),
+            ) {
+                WeeklyScheduleEditor(
+                    days = uiState.weeklySchedule.toEditorDays(
+                        RegisterTradeUiState.defaultWorkDays.toMap(),
+                    ),
+                    includeSunday = uiState.weeklySchedule.includeSunday,
+                    onIncludeSundayChange = { onEvent(RegisterTradeEvent.IncludeSunday(it)) },
+                    onToggleDay = { day, enabled -> onEvent(RegisterTradeEvent.WeekDayToggled(day, enabled)) },
+                    onRangeFromChanged = { day, index, value ->
+                        onEvent(RegisterTradeEvent.WeekRangeFrom(day, index, value))
+                    },
+                    onRangeToChanged = { day, index, value ->
+                        onEvent(RegisterTradeEvent.WeekRangeTo(day, index, value))
+                    },
+                    onAddRange = { onEvent(RegisterTradeEvent.AddWeekRange(it)) },
+                    onRemoveRange = { day, index -> onEvent(RegisterTradeEvent.RemoveWeekRange(day, index)) },
+                    onInsertRange = { day, index, range ->
+                        onEvent(RegisterTradeEvent.InsertWeekRange(day, index, range.from, range.to))
+                    },
+                    onCopyMondayToWeekdays = { onEvent(RegisterTradeEvent.CopyMondayToWeekdays) },
+                )
+            }
+            RegisterTradeLabeledSection(
+                title = stringResource(R.string.auth_register_trade_turns_label),
+            ) {
+                OficiosCheckbox(
+                    checked = uiState.requiresTurns,
+                    onCheckedChange = { onEvent(RegisterTradeEvent.RequiresTurnsChanged(it)) },
+                    label = stringResource(R.string.auth_register_trade_requires_turns),
+                    compactRow = true,
+                )
+                if (uiState.requiresTurns) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = OficiosComponentSize.buttonHeight),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
-                        OficiosButton(
-                            text = stringResource(R.string.auth_continue),
-                            onClick = { onEvent(RegisterTradeEvent.Continue) },
-                            variant = OficiosButtonVariant.Primary,
-                            size = OficiosButtonSize.Form,
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !uiState.isLoading,
-                            loading = uiState.isLoading,
+                        OficiosTextField(
+                            value = uiState.turnDurationMinutes,
+                            onValueChange = { onEvent(RegisterTradeEvent.TurnDurationChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_turn_duration),
+                            placeholder = "60",
+                            supportingText = stringResource(R.string.auth_register_trade_turn_duration_hint),
+                            modifier = Modifier.weight(1f),
+                        )
+                        OficiosTextField(
+                            value = uiState.turnIntervalMinutes,
+                            onValueChange = { onEvent(RegisterTradeEvent.TurnIntervalChanged(it)) },
+                            label = stringResource(R.string.auth_register_trade_turn_interval),
+                            placeholder = "0",
+                            supportingText = stringResource(R.string.auth_register_trade_turn_interval_hint),
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
+            }
+        }
+
+        if (showCobro) {
+            RegisterTradeLabeledSection(
+                title = stringResource(R.string.auth_register_trade_payment_label),
+            ) {
+                Text(
+                    text = stringResource(R.string.auth_register_trade_payment_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OficiosCheckbox(
+                    checked = ProviderPaymentMethods.EFECTIVO in uiState.selectedPaymentMethods,
+                    onCheckedChange = {
+                        onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.EFECTIVO, it))
+                    },
+                    label = stringResource(R.string.auth_register_trade_payment_efectivo),
+                    compactRow = true,
+                )
+                OficiosCheckbox(
+                    checked = ProviderPaymentMethods.TRANSFERENCIA in uiState.selectedPaymentMethods,
+                    onCheckedChange = {
+                        onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.TRANSFERENCIA, it))
+                    },
+                    label = stringResource(R.string.auth_register_trade_payment_transferencia),
+                    compactRow = true,
+                )
+                OficiosCheckbox(
+                    checked = ProviderPaymentMethods.MERCADOPAGO in uiState.selectedPaymentMethods,
+                    onCheckedChange = {
+                        onEvent(RegisterTradeEvent.PaymentMethodToggled(ProviderPaymentMethods.MERCADOPAGO, it))
+                    },
+                    label = stringResource(R.string.auth_register_trade_payment_mercadopago),
+                    compactRow = true,
+                )
+            }
+        }
+
+        if (showIdentidad && uiState.servesAtLocal) {
+            RegisterTradeLabeledSection(
+                title = stringResource(R.string.auth_wizard_local_address),
+            ) {
+                OficiosTextField(
+                    value = uiState.localCalle,
+                    onValueChange = { onEvent(RegisterTradeEvent.LocalCalleChanged(it)) },
+                    label = stringResource(R.string.auth_wizard_street),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OficiosTextField(
+                    value = uiState.localNumero,
+                    onValueChange = { onEvent(RegisterTradeEvent.LocalNumeroChanged(it)) },
+                    label = stringResource(R.string.auth_wizard_number),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        if (showContinue) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = OficiosComponentSize.buttonHeight),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OficiosButton(
+                    text = continueLabel ?: stringResource(R.string.auth_continue),
+                    onClick = { onContinue?.invoke() ?: onEvent(RegisterTradeEvent.Continue) },
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Form,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !uiState.isLoading,
+                    loading = uiState.isLoading,
+                )
             }
         }
     }
