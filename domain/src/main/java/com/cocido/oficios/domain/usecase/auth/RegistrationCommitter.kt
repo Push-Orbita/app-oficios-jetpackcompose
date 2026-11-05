@@ -10,10 +10,12 @@ import com.cocido.oficios.domain.model.RegisterProviderRequest
 import com.cocido.oficios.domain.model.RegistrationCommitPhase
 import com.cocido.oficios.domain.model.RegistrationDraft
 import com.cocido.oficios.domain.model.RegistrationRole
+import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.repository.RegistrationDraftRepository
 import com.cocido.oficios.domain.repository.SessionRepository
 import com.cocido.oficios.domain.usecase.profile.SaveClientContactoUseCase
 import com.cocido.oficios.domain.usecase.profile.SaveClientDomicilioUseCase
+import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import com.cocido.oficios.domain.validation.AuthValidators
 import javax.inject.Inject
 
@@ -33,6 +35,8 @@ class RegistrationCommitter @Inject constructor(
     private val saveClientContactoUseCase: SaveClientContactoUseCase,
     private val saveClientDomicilioUseCase: SaveClientDomicilioUseCase,
     private val draftRepository: RegistrationDraftRepository,
+    private val registerTradeDraftRepository: RegisterTradeDraftRepository,
+    private val submitRegisterTradeDraftUseCase: SubmitRegisterTradeDraftUseCase,
     private val sessionRepository: SessionRepository,
 ) {
     suspend fun commit(draft: RegistrationDraft, password: String): RegistrationCommitResult {
@@ -61,6 +65,13 @@ class RegistrationCommitter @Inject constructor(
                 is Step.Ok -> Unit
                 is Step.Conflict -> return RegistrationCommitResult.EmailConflict(profile.message)
                 is Step.Fail -> return RegistrationCommitResult.Failed(profile.message)
+            }
+        }
+        if (afterAccount.draft.role == RegistrationRole.PROVIDER) {
+            when (val trade = saveProviderTrade(afterAccount.draft)) {
+                is Step.Ok -> Unit
+                is Step.Conflict -> return RegistrationCommitResult.EmailConflict(trade.message)
+                is Step.Fail -> return RegistrationCommitResult.Failed(trade.message)
             }
         }
         draftRepository.clear()
@@ -151,6 +162,17 @@ class RegistrationCommitter @Inject constructor(
             is AppResult.Error -> return Step.Fail(domicilio.error.userMessage())
             is AppResult.Success -> Unit
         }
+        val next = draft.copy(commitPhase = RegistrationCommitPhase.PROFILE_SAVED)
+        draftRepository.save(next)
+        return Step.Ok(next)
+    }
+
+    private suspend fun saveProviderTrade(draft: RegistrationDraft): Step {
+        val trade = draft.provider
+            ?: return Step.Fail("Complete oficio, zona, agenda y cobro antes de crear la cuenta")
+        registerTradeDraftRepository.save(trade)
+        // El POST de rubro suele fallar hasta que el DNI esté aprobado; el checklist reintenta.
+        submitRegisterTradeDraftUseCase(requireDraft = true)
         val next = draft.copy(commitPhase = RegistrationCommitPhase.PROFILE_SAVED)
         draftRepository.save(next)
         return Step.Ok(next)

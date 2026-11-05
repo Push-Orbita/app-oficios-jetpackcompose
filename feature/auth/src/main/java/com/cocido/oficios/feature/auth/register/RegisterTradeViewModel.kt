@@ -163,6 +163,8 @@ class RegisterTradeViewModel @Inject constructor(
                 if (event.checked) updated.add(event.method) else updated.remove(event.method)
                 it.copy(selectedPaymentMethods = updated)
             }
+            is RegisterTradeEvent.LocalCalleChanged -> update { it.copy(localCalle = event.value) }
+            is RegisterTradeEvent.LocalNumeroChanged -> update { it.copy(localNumero = event.value) }
             RegisterTradeEvent.Continue -> continueToOnboarding()
             RegisterTradeEvent.RetryLoadCatalog -> loadCategories()
         }
@@ -279,36 +281,9 @@ class RegisterTradeViewModel @Inject constructor(
             _uiState.update { it.copy(catalogError = "Complete los datos del oficio antes de continuar") }
             return
         }
-        val categoryId = state.selectedCategoryId ?: return
-        val rubroId = state.selectedTradeId ?: return
-
-        val subRubroIds = state.selectedSpecializations.mapNotNull { it.toLongOrNull() }
-        val durationMinutes = state.turnDurationMinutes.toIntOrNull()?.coerceIn(15, 480)
-        val intervalMinutes = state.turnIntervalMinutes.toIntOrNull()?.coerceIn(0, 240)
-
+        val draft = snapshotDraft() ?: return
         viewModelScope.launch {
-            registerTradeDraftRepository.save(
-                RegisterTradeDraft(
-                    categoryId = categoryId,
-                    categoryName = state.selectedCategory,
-                    rubroId = rubroId,
-                    rubroName = state.selectedTrade,
-                    subRubroIds = subRubroIds,
-                    otherSpecialization = state.otherSpecialization.trim().ifBlank { null },
-                    experienceRange = state.selectedExperienceRange,
-                    neighborhoodQuery = state.neighborhoodQuery,
-                    barrioId = state.selectedBarrioId,
-                    workDays = state.weeklySchedule.activeDays,
-                    servesAtClientHome = state.servesAtClientHome,
-                    servesAtLocal = state.servesAtLocal,
-                    requiresTurns = state.requiresTurns,
-                    turnDurationMinutes = durationMinutes,
-                    turnIntervalMinutes = intervalMinutes,
-                    paymentMethods = state.selectedPaymentMethods.toList(),
-                    timeSlots = state.weeklySchedule.toFlatTimeSlots(),
-                    weeklySchedule = state.weeklySchedule,
-                ),
-            )
+            registerTradeDraftRepository.save(draft)
             // Intento inmediato: casi siempre falla porque el DNI todavía no está aprobado
             // en este punto (recién se sube en onboarding); el checklist reintenta esto
             // mismo una vez que la identidad quede verificada (ProviderOnboardingViewModel).
@@ -317,6 +292,60 @@ class RegisterTradeViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false) }
             _effects.emit(RegisterTradeEffect.NavigateToOnboarding)
         }
+    }
+
+    fun applyDraft(draft: RegisterTradeDraft) {
+        update {
+            it.copy(
+                selectedCategoryId = draft.categoryId,
+                selectedTradeId = draft.rubroId,
+                selectedSpecializations = draft.subRubroIds.map { id -> id.toString() }.toSet(),
+                otherSpecialization = draft.otherSpecialization.orEmpty(),
+                selectedExperienceRange = draft.experienceRange,
+                neighborhoodQuery = draft.neighborhoodQuery,
+                selectedBarrioId = draft.barrioId,
+                servesAtClientHome = draft.servesAtClientHome,
+                servesAtLocal = draft.servesAtLocal,
+                requiresTurns = draft.requiresTurns,
+                turnDurationMinutes = draft.turnDurationMinutes?.toString().orEmpty(),
+                turnIntervalMinutes = draft.turnIntervalMinutes?.toString().orEmpty(),
+                selectedPaymentMethods = draft.paymentMethods.toSet(),
+                localCalle = draft.localCalle.orEmpty(),
+                localNumero = draft.localNumero.orEmpty(),
+            ).withWeek(draft.weeklySchedule ?: WeeklyAvailability.default())
+        }
+        loadRubros(draft.categoryId)
+        loadSubRubros(draft.rubroId)
+    }
+
+    fun snapshotDraft(): RegisterTradeDraft? {
+        val state = _uiState.value
+        val categoryId = state.selectedCategoryId ?: return null
+        val rubroId = state.selectedTradeId ?: return null
+        val durationMinutes = state.turnDurationMinutes.toIntOrNull()?.coerceIn(15, 480)
+        val intervalMinutes = state.turnIntervalMinutes.toIntOrNull()?.coerceIn(0, 240)
+        return RegisterTradeDraft(
+            categoryId = categoryId,
+            categoryName = state.selectedCategory,
+            rubroId = rubroId,
+            rubroName = state.selectedTrade,
+            subRubroIds = state.selectedSpecializations.mapNotNull { it.toLongOrNull() },
+            otherSpecialization = state.otherSpecialization.trim().ifBlank { null },
+            experienceRange = state.selectedExperienceRange,
+            neighborhoodQuery = state.neighborhoodQuery,
+            barrioId = state.selectedBarrioId,
+            workDays = state.weeklySchedule.activeDays,
+            servesAtClientHome = state.servesAtClientHome,
+            servesAtLocal = state.servesAtLocal,
+            requiresTurns = state.requiresTurns,
+            turnDurationMinutes = durationMinutes,
+            turnIntervalMinutes = intervalMinutes,
+            paymentMethods = state.selectedPaymentMethods.toList(),
+            timeSlots = state.weeklySchedule.toFlatTimeSlots(),
+            weeklySchedule = state.weeklySchedule,
+            localCalle = state.localCalle.trim().ifBlank { null },
+            localNumero = state.localNumero.trim().ifBlank { null },
+        )
     }
 
     private fun onNeighborhoodQueryChanged(query: String, preserveSelection: Boolean = false) {

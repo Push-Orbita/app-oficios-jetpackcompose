@@ -114,6 +114,55 @@ class RegistrationCommitterTest {
         assertEquals(1, profiles.createdDomicilios)
     }
 
+    @Test
+    fun `provider commit signs up and keeps trade draft for onboarding retry`() = runTest {
+        val trade = com.cocido.oficios.domain.model.RegisterTradeDraft(
+            categoryId = 1,
+            categoryName = "Hogar",
+            rubroId = 2,
+            rubroName = "Plomería",
+            subRubroIds = listOf(3),
+            otherSpecialization = null,
+            experienceRange = "3 a 5 años",
+            neighborhoodQuery = "Centro",
+            barrioId = 4,
+            timeSlots = listOf(com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft("09:00", "18:00")),
+            paymentMethods = listOf("EFECTIVO"),
+        )
+        val drafts = InMemoryDraftRepository()
+        val tradeDrafts = FakeTradeDrafts()
+        val auth = FakeAuth(
+            registerClientResult = AppResult.Error(AppError.Unknown()),
+        ).apply {
+            registerProviderResult = AppResult.Success(
+                UserSession(
+                    tokens = AuthTokens("access", "refresh"),
+                    user = User(1, "ana@test.com", "Ana", "López", UserRole.PROVIDER, false, personaId = 99),
+                ),
+            )
+        }
+        val committer = RegistrationCommitter(
+            registerClientUseCase = RegisterClientUseCase(auth),
+            registerProviderUseCase = RegisterProviderUseCase(auth),
+            saveClientContactoUseCase = SaveClientContactoUseCase(FakeClientProfiles()),
+            saveClientDomicilioUseCase = SaveClientDomicilioUseCase(FakeClientProfiles()),
+            draftRepository = drafts,
+            registerTradeDraftRepository = tradeDrafts,
+            submitRegisterTradeDraftUseCase = noopTradeSubmit(tradeDrafts),
+            sessionRepository = FakeSession(),
+        )
+
+        val result = committer.commit(
+            sampleDraft().copy(role = RegistrationRole.PROVIDER, provider = trade),
+            "secret123",
+        )
+
+        assertEquals(RegistrationCommitResult.Completed, result)
+        assertEquals(1, auth.providerAttempts)
+        assertEquals(2L, tradeDrafts.draft?.rubroId)
+        assertNull(drafts.draft)
+    }
+
     private fun committer(
         auth: FakeAuth,
         drafts: InMemoryDraftRepository,
@@ -125,6 +174,8 @@ class RegistrationCommitterTest {
         saveClientContactoUseCase = SaveClientContactoUseCase(profiles),
         saveClientDomicilioUseCase = SaveClientDomicilioUseCase(profiles),
         draftRepository = drafts,
+        registerTradeDraftRepository = FakeTradeDrafts(),
+        submitRegisterTradeDraftUseCase = noopTradeSubmit(),
         sessionRepository = session,
     )
 
@@ -195,8 +246,10 @@ class RegistrationCommitterTest {
                 user = User(1, "ana@test.com", "Ana", "López", UserRole.CLIENT, false, personaId = 99),
             ),
         ),
+        var registerProviderResult: AppResult<UserSession> = AppResult.Error(AppError.Unknown()),
     ) : AuthRepository {
         var clientAttempts = 0
+        var providerAttempts = 0
         var lastClientRequest: RegisterClientRequest? = null
         override suspend fun login(email: String, password: String) = AppResult.Error(AppError.Unknown())
         override suspend fun registerClient(request: RegisterClientRequest): AppResult<UserSession> {
@@ -204,7 +257,10 @@ class RegistrationCommitterTest {
             lastClientRequest = request
             return registerClientResult
         }
-        override suspend fun registerProvider(request: RegisterProviderRequest) = AppResult.Error(AppError.Unknown())
+        override suspend fun registerProvider(request: RegisterProviderRequest): AppResult<UserSession> {
+            providerAttempts++
+            return registerProviderResult
+        }
         override suspend fun refreshToken(refreshToken: String) = AppResult.Error(AppError.Unknown())
         override suspend fun getCurrentUser() = AppResult.Error(AppError.Unknown())
         override suspend fun logout() = AppResult.Success(Unit)
@@ -235,5 +291,63 @@ class RegistrationCommitterTest {
         override suspend fun verifyPhoneCode(contactId: Long, code: String) = AppResult.Success(Unit)
         override suspend fun getMyDomicilios(): AppResult<List<ClientDomicilio>> = AppResult.Success(emptyList())
         override suspend fun getMyContactos(): AppResult<List<ClientContacto>> = AppResult.Success(emptyList())
+    }
+
+    private class FakeTradeDrafts(
+        var draft: com.cocido.oficios.domain.model.RegisterTradeDraft? = null,
+    ) : com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+        override suspend fun save(draft: com.cocido.oficios.domain.model.RegisterTradeDraft) {
+            this.draft = draft
+        }
+        override suspend fun get() = draft
+        override suspend fun clear() {
+            draft = null
+        }
+    }
+
+    private fun noopTradeSubmit(
+        tradeDrafts: FakeTradeDrafts = FakeTradeDrafts(),
+    ): com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase {
+        val provider = object : com.cocido.oficios.domain.repository.ProviderProfileRepository {
+            override suspend fun updateProfessionalInfo(
+                request: com.cocido.oficios.domain.model.ProviderProfessionalInfoRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun submitRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun submitSecondaryRubroFull(
+                request: com.cocido.oficios.domain.model.ProviderRubroFullRequest,
+            ) = AppResult.Success(Unit)
+            override suspend fun finalizeProfile() = AppResult.Success(Unit)
+            override suspend fun loadProviderProfileForSync() = AppResult.Success(
+                com.cocido.oficios.domain.model.ProviderProfileSync(null, emptyList()),
+            )
+            override suspend fun getMySubRubros() =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.ProviderSubRubroOption>())
+        }
+        val catalog = object : com.cocido.oficios.domain.repository.CatalogRepository {
+            override suspend fun getCategories() =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+            override suspend fun getRubrosByCategory(categoryId: Long) =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+            override suspend fun getSubRubrosByRubro(rubroId: Long) =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+            override suspend fun searchBarrios(query: String) =
+                AppResult.Success(emptyList<com.cocido.oficios.domain.model.CatalogOption>())
+        }
+        return com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase(
+            providerProfileRepository = provider,
+            registerTradeDraftRepository = tradeDrafts,
+            catalogRepository = catalog,
+            syncRegisterTradeDraftFromProfileUseCase =
+                com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase(
+                    provider,
+                    tradeDrafts,
+                ),
+            syncProviderBarrioDomicilio = object :
+                com.cocido.oficios.domain.usecase.profile.ProviderBarrioDomicilioSync {
+                override suspend fun invoke(barrioId: Long, barrioName: String) = AppResult.Success(Unit)
+            },
+        )
     }
 }

@@ -37,6 +37,8 @@ sealed interface RegisterTradeEvent {
     data class TurnDurationChanged(val value: String) : RegisterTradeEvent
     data class TurnIntervalChanged(val value: String) : RegisterTradeEvent
     data class PaymentMethodToggled(val method: String, val checked: Boolean) : RegisterTradeEvent
+    data class LocalCalleChanged(val value: String) : RegisterTradeEvent
+    data class LocalNumeroChanged(val value: String) : RegisterTradeEvent
     data object Continue : RegisterTradeEvent
     data object RetryLoadCatalog : RegisterTradeEvent
 }
@@ -64,6 +66,8 @@ data class RegisterTradeUiState(
     val isSearchingBarrios: Boolean = false,
     val selectedBarrioId: Long? = null,
     val selectedPaymentMethods: Set<String> = emptySet(),
+    val localCalle: String = "",
+    val localNumero: String = "",
     val weeklySchedule: WeeklyAvailability = WeeklyAvailability.default(),
     val timeSlots: List<RegisterTradeTimeSlot> = listOf(RegisterTradeTimeSlot("09:00", "18:00")),
     val isLoadingCatalog: Boolean = false,
@@ -84,6 +88,27 @@ data class RegisterTradeUiState(
         get() = tradeOptions.firstOrNull { it.id == selectedTradeId }?.label.orEmpty()
 
     val isTradeEnabled: Boolean get() = selectedCategoryId != null && !isLoadingTrades
+
+    val canContinueOficio: Boolean
+        get() = selectedCategoryId != null &&
+            selectedTradeId != null &&
+            selectedSpecializations.isNotEmpty() &&
+            selectedExperienceRange.isNotBlank()
+
+    val canContinueZona: Boolean
+        get() = selectedBarrioId != null &&
+            neighborhoodQuery.isNotBlank() &&
+            (servesAtClientHome || servesAtLocal)
+
+    val canContinueAgenda: Boolean
+        get() = com.cocido.oficios.domain.validation.ScheduleValidator.validate(weeklySchedule) == null &&
+            (!requiresTurns || turnDurationMinutes.toIntOrNull()?.let { it in 15..480 } == true)
+
+    val canContinueCobro: Boolean
+        get() = selectedPaymentMethods.isNotEmpty()
+
+    val canContinueIdentidad: Boolean
+        get() = !servesAtLocal || localCalle.isNotBlank()
 
     companion object {
         val defaultExperienceRanges = listOf(
@@ -116,4 +141,13 @@ data class RegisterTradeUiState(
 
 sealed interface RegisterTradeEffect {
     data object NavigateToOnboarding : RegisterTradeEffect
+}
+
+enum class RegisterTradeFormSection {
+    FULL,
+    OFICIO,
+    ZONA,
+    AGENDA,
+    COBRO,
+    IDENTIDAD,
 }

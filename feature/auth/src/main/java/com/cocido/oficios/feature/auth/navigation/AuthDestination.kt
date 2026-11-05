@@ -16,6 +16,11 @@ object AuthDestination {
     const val WIZARD_GRAPH = "register/wizard/{$WIZARD_ROLE_ARG}"
     const val WIZARD_PERSONAL = "wizard_personal"
     const val WIZARD_PROFILE = "wizard_profile"
+    const val WIZARD_OFICIO = "wizard_oficio"
+    const val WIZARD_ZONA = "wizard_zona"
+    const val WIZARD_AGENDA = "wizard_agenda"
+    const val WIZARD_COBRO = "wizard_cobro"
+    const val WIZARD_IDENTIDAD = "wizard_identidad"
     const val WIZARD_REVIEW = "wizard_review"
 
     fun wizardGraph(role: RegistrationRole): String = "register/wizard/${role.name}"
