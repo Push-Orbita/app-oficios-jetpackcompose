@@ -1,7 +1,10 @@
 package com.cocido.oficios.domain.mapper
 
+import com.cocido.oficios.domain.model.DayAvailability
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.TimeRange
+import com.cocido.oficios.domain.model.WeeklyAvailability
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -34,6 +37,39 @@ class RegisterTradeDraftMapperTest {
         assertEquals(listOf("LUNES", "VIERNES"), request.workDays)
         assertTrue(request.servesAtClientHome)
         assertEquals(listOf("EFECTIVO", "TRANSFERENCIA"), request.paymentMethods)
+        val week = request.weeklyAvailability
+        assertEquals(listOf("LUNES", "VIERNES"), week?.activeDays)
+        assertEquals("09:00", week?.rangesOn("LUNES")?.single()?.start)
+        assertEquals("18:00", week?.rangesOn("VIERNES")?.single()?.end)
+    }
+
+    @Test
+    fun `toRubroFullRequest keeps distinct ranges per day`() {
+        val week = WeeklyAvailability(
+            days = listOf(
+                DayAvailability("LUNES", listOf(TimeRange("08:00", "12:00"))),
+                DayAvailability("MARTES", listOf(TimeRange("14:00", "18:00"))),
+            ),
+        )
+        val request = RegisterTradeDraft(
+            categoryId = 1,
+            categoryName = "Hogar",
+            rubroId = 11,
+            rubroName = "Plomería",
+            subRubroIds = listOf(101L),
+            otherSpecialization = null,
+            experienceRange = "3 a 5 años",
+            neighborhoodQuery = "Centro",
+            workDays = listOf("LUNES", "MARTES"),
+            servesAtClientHome = true,
+            servesAtLocal = false,
+            timeSlots = listOf(RegisterTradeTimeSlotDraft("09:00", "18:00")),
+            weeklySchedule = week,
+        ).toRubroFullRequest()
+
+        assertEquals(week, request.weeklyAvailability)
+        assertEquals("08:00", request.weeklyAvailability?.rangesOn("LUNES")?.single()?.start)
+        assertEquals("14:00", request.weeklyAvailability?.rangesOn("MARTES")?.single()?.start)
     }
 
     @Test

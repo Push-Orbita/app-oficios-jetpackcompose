@@ -24,6 +24,10 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleDayUi
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleEditor
+import com.cocido.oficios.core.ui.schedule.WeeklyScheduleRangeUi
+import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosRegisterTradeTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -145,16 +149,26 @@ fun RegisterTradeScreen(
                     RegisterTradeLabeledSection(
                         title = stringResource(R.string.auth_register_trade_work_days_label),
                     ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs)) {
-                            RegisterTradeUiState.defaultWorkDays.forEach { (dayId, dayLabel) ->
-                                OficiosCheckbox(
-                                    checked = dayId in uiState.selectedWorkDays,
-                                    onCheckedChange = { onEvent(RegisterTradeEvent.WorkDayToggled(dayId, it)) },
-                                    label = dayLabel,
-                                    compactRow = true,
-                                )
-                            }
-                        }
+                        WeeklyScheduleEditor(
+                            days = uiState.weeklySchedule.toEditorDays(
+                                RegisterTradeUiState.defaultWorkDays.toMap(),
+                            ),
+                            includeSunday = uiState.weeklySchedule.includeSunday,
+                            onIncludeSundayChange = { onEvent(RegisterTradeEvent.IncludeSunday(it)) },
+                            onToggleDay = { day, enabled -> onEvent(RegisterTradeEvent.WeekDayToggled(day, enabled)) },
+                            onRangeFromChanged = { day, index, value ->
+                                onEvent(RegisterTradeEvent.WeekRangeFrom(day, index, value))
+                            },
+                            onRangeToChanged = { day, index, value ->
+                                onEvent(RegisterTradeEvent.WeekRangeTo(day, index, value))
+                            },
+                            onAddRange = { onEvent(RegisterTradeEvent.AddWeekRange(it)) },
+                            onRemoveRange = { day, index -> onEvent(RegisterTradeEvent.RemoveWeekRange(day, index)) },
+                            onInsertRange = { day, index, range ->
+                                onEvent(RegisterTradeEvent.InsertWeekRange(day, index, range.from, range.to))
+                            },
+                            onCopyMondayToWeekdays = { onEvent(RegisterTradeEvent.CopyMondayToWeekdays) },
+                        )
                     }
 
                     RegisterTradeLabeledSection(
@@ -174,37 +188,6 @@ fun RegisterTradeScreen(
                         )
                     }
 
-                    RegisterTradeLabeledSection(
-                        title = stringResource(R.string.auth_register_trade_schedule_label),
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-                            uiState.timeSlots.forEachIndexed { index, slot ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
-                                ) {
-                                    OficiosDropdownField(
-                                        value = slot.from,
-                                        options = uiState.timeOptions,
-                                        onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotFromChanged(index, it)) },
-                                        label = stringResource(R.string.auth_register_trade_from_label),
-                                        modifier = Modifier.weight(1f),
-                                    )
-                                    OficiosDropdownField(
-                                        value = slot.to,
-                                        options = uiState.timeOptions.filter { slot.from.isBlank() || it > slot.from },
-                                        onOptionSelected = { onEvent(RegisterTradeEvent.TimeSlotToChanged(index, it)) },
-                                        label = stringResource(R.string.auth_register_trade_to_label),
-                                        modifier = Modifier.weight(1f),
-                                    )
-                                }
-                            }
-                            RegisterTradeCenteredAction(
-                                text = stringResource(R.string.auth_register_trade_add_schedule),
-                                onClick = { onEvent(RegisterTradeEvent.AddTimeSlot) },
-                            )
-                        }
-                    }
 
                     RegisterTradeLabeledSection(
                         title = stringResource(R.string.auth_register_trade_turns_label),
@@ -380,6 +363,19 @@ private fun RegisterTradeSpecializationsSection(
             label = stringResource(R.string.auth_register_trade_description_label),
             placeholder = stringResource(R.string.auth_register_trade_description_hint),
             singleLine = false,
+        )
+    }
+}
+
+private fun WeeklyAvailability.toEditorDays(labels: Map<String, String>): List<WeeklyScheduleDayUi> {
+    val keys = if (includeSunday) WeeklyAvailability.ALL_DAYS else WeeklyAvailability.WEEKDAYS
+    return keys.map { key ->
+        val ranges = rangesOn(key)
+        WeeklyScheduleDayUi(
+            key = key,
+            label = labels[key] ?: key,
+            enabled = ranges.isNotEmpty(),
+            ranges = ranges.map { WeeklyScheduleRangeUi(it.start, it.end) },
         )
     }
 }

@@ -90,5 +90,59 @@ class ProviderProfileMapperTest {
         assertTrue(draft.servesAtClientHome)
         assertTrue(draft.requiresTurns)
         assertEquals(listOf("EFECTIVO"), draft.paymentMethods)
+        assertEquals(listOf("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"), draft.weeklySchedule?.activeDays)
+        assertEquals("09:00", draft.weeklySchedule?.rangesOn("LUNES")?.single()?.start)
+    }
+
+    @Test
+    fun `maps distinct hours per weekday into weeklySchedule`() {
+        val profile = TrabajadorOficioPerfilMeDto(
+            id = 1,
+            estado = "PENDIENTE",
+            rubros = listOf(
+                TrabajadorOficioRubroFullDto(
+                    id = 10,
+                    rubro = RubroDto(
+                        id = 1,
+                        nombre = "Plomería",
+                        categoria = CategoriaDto(id = 2, nombre = "Hogar"),
+                    ),
+                    principal = true,
+                    subRubros = listOf(
+                        TrabajadorOficioSubRubroFullDto(
+                            id = 100,
+                            subRubro = SubRubroDto(id = 50, nombre = "Destapaciones"),
+                            lugarDomicilio = true,
+                            lugarLocal = false,
+                            requiereTurnos = false,
+                        ),
+                    ),
+                    diasLaborales = listOf(
+                        DiaLaboralSimpleDto(
+                            diaInicio = "LUNES",
+                            diaFin = "LUNES",
+                            horariosLaborales = listOf(
+                                HorarioLaboralSimpleDto(horaInicio = "08:00", horaFin = "12:00"),
+                            ),
+                        ),
+                        DiaLaboralSimpleDto(
+                            diaInicio = "MARTES",
+                            diaFin = "MARTES",
+                            horariosLaborales = listOf(
+                                HorarioLaboralSimpleDto(horaInicio = "14:00", horaFin = "18:00"),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val draft = profile.toRegisterTradeDraft()
+        requireNotNull(draft)
+        assertEquals("08:00", draft.weeklySchedule?.rangesOn("LUNES")?.single()?.start)
+        assertEquals("12:00", draft.weeklySchedule?.rangesOn("LUNES")?.single()?.end)
+        assertEquals("14:00", draft.weeklySchedule?.rangesOn("MARTES")?.single()?.start)
+        assertEquals("18:00", draft.weeklySchedule?.rangesOn("MARTES")?.single()?.end)
+        assertEquals(listOf("LUNES", "MARTES"), draft.workDays)
     }
 }

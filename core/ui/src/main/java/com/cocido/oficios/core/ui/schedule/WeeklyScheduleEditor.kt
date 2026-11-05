@@ -9,8 +9,14 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,6 +28,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.core.ui.R
+import kotlinx.coroutines.launch
 
 data class WeeklyScheduleDayUi(
     val key: String,
@@ -66,7 +73,14 @@ fun WeeklyScheduleEditor(
     onAddRange: (String) -> Unit,
     onRemoveRange: (String, Int) -> Unit,
     modifier: Modifier = Modifier,
+    onInsertRange: (String, Int, WeeklyScheduleRangeUi) -> Unit = { _, _, _ -> },
+    onCopyMondayToWeekdays: () -> Unit = {},
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val mondayEnabled = days.any { it.key == "LUNES" && it.enabled && it.ranges.isNotEmpty() }
+    val removedMessage = stringResource(R.string.weekly_schedule_range_removed)
+    val undoLabel = stringResource(R.string.weekly_schedule_undo)
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
@@ -76,6 +90,14 @@ fun WeeklyScheduleEditor(
             onCheckedChange = onIncludeSundayChange,
             label = stringResource(R.string.weekly_schedule_include_sunday),
             compactRow = true,
+        )
+        OficiosButton(
+            text = stringResource(R.string.weekly_schedule_copy_monday),
+            onClick = onCopyMondayToWeekdays,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = mondayEnabled,
+            variant = OficiosButtonVariant.Tonal,
+            size = OficiosButtonSize.Form,
         )
         days.forEach { day ->
             OficiosCard(modifier = Modifier.fillMaxWidth()) {
@@ -107,13 +129,25 @@ fun WeeklyScheduleEditor(
                                     label = stringResource(R.string.weekly_schedule_to),
                                     modifier = Modifier.weight(1f),
                                 )
-                                if (day.ranges.size > 1) {
-                                    IconButton(onClick = { onRemoveRange(day.key, index) }) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.DeleteOutline,
-                                            contentDescription = stringResource(R.string.weekly_schedule_remove_range),
-                                        )
-                                    }
+                                IconButton(
+                                    onClick = {
+                                        onRemoveRange(day.key, index)
+                                        scope.launch {
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = removedMessage,
+                                                actionLabel = undoLabel,
+                                                duration = SnackbarDuration.Short,
+                                            )
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                onInsertRange(day.key, index, range)
+                                            }
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.DeleteOutline,
+                                        contentDescription = stringResource(R.string.weekly_schedule_remove_range),
+                                    )
                                 }
                             }
                         }
@@ -133,5 +167,6 @@ fun WeeklyScheduleEditor(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        SnackbarHost(hostState = snackbarHostState)
     }
 }
