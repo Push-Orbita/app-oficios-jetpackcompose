@@ -346,7 +346,9 @@
     <string name="orders_dialog_cancel">Cancelar</string>
     <string name="orders_code_label">Código de 6 dígitos</string>
     <string name="orders_reason_message">Ingrese el motivo para que la otra persona lo vea.</string>
+    <string name="orders_reason_optional_message">Puede indicar un motivo para que el trabajador lo vea. Es opcional.</string>
     <string name="orders_reason_label">Motivo</string>
+    <string name="orders_reason_label_optional">Motivo (opcional)</string>
     <string name="agenda_title">Agenda</string>
     <string name="agenda_configure">Configurar agenda</string>
     <string name="agenda_loading">Cargando agenda…</string>

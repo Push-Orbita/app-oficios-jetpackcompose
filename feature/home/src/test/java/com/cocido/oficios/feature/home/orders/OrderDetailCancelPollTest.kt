@@ -64,6 +64,30 @@ class OrderDetailCancelPollTest {
     }
 
     @Test
+    fun `client can cancel confirmed without typing a reason`() = runTest(testDispatcher) {
+        val orders = CodeOrderRepository(detailCode = null, currentCode = null).apply {
+            detailStatus = com.cocido.oficios.domain.model.BookingStatus.CONFIRMED
+        }
+        val viewModel = OrderDetailViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("orderId" to 7L)),
+            orderUseCases = OrderUseCases(orders),
+            authRepository = RoleAuthRepository(UserRole.CLIENT),
+            getCurrentLocationUseCase = GetCurrentLocationUseCase(NoLocationRepository),
+            getWorkerReviewsUseCase = GetWorkerReviewsUseCase(NoWorkerProfileRepository),
+        )
+        advanceUntilIdle()
+
+        viewModel.onEvent(OrderDetailEvent.CancelConfirmed("  "))
+        advanceUntilIdle()
+
+        assertEquals(1, orders.cancelConfirmedCalls)
+        assertEquals(
+            com.cocido.oficios.domain.model.CancellationPolicy.DEFAULT_CLIENT_REASON,
+            orders.lastCancelReason,
+        )
+    }
+
+    @Test
     fun `cancel confirmed sends the motivo`() = runTest(testDispatcher) {
         val orders = CodeOrderRepository(detailCode = null, currentCode = null).apply {
             detailStatus = com.cocido.oficios.domain.model.BookingStatus.CONFIRMED
