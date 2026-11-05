@@ -23,11 +23,14 @@ import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopB
 import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.ui.lifecycle.RefreshOnResume
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleEditor
-import com.cocido.oficios.domain.model.TimeRangeValidation
+import com.cocido.oficios.domain.model.TimeRange
 import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.domain.model.addRange
 import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.copyMondayToWeekdays
+import com.cocido.oficios.domain.model.insertRange
 import com.cocido.oficios.domain.model.removeRange
+import com.cocido.oficios.domain.validation.ScheduleValidator
 import com.cocido.oficios.domain.usecase.AvailabilityUseCases
 import com.cocido.oficios.feature.home.R
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,6 +59,8 @@ sealed interface WeeklyAvailabilityEvent {
     data class RangeTo(val day: String, val index: Int, val value: String) : WeeklyAvailabilityEvent
     data class AddRange(val day: String) : WeeklyAvailabilityEvent
     data class RemoveRange(val day: String, val index: Int) : WeeklyAvailabilityEvent
+    data class InsertRange(val day: String, val index: Int, val from: String, val to: String) : WeeklyAvailabilityEvent
+    data object CopyMondayToWeekdays : WeeklyAvailabilityEvent
 }
 
 sealed interface WeeklyAvailabilityEffect {
@@ -119,12 +124,21 @@ class WeeklyAvailabilityViewModel @Inject constructor(
             is WeeklyAvailabilityEvent.RemoveRange -> _uiState.update {
                 it.copy(week = it.week.removeRange(event.day, event.index), errorMessage = null)
             }
+            is WeeklyAvailabilityEvent.InsertRange -> _uiState.update {
+                it.copy(
+                    week = it.week.insertRange(event.day, event.index, TimeRange(event.from, event.to)),
+                    errorMessage = null,
+                )
+            }
+            WeeklyAvailabilityEvent.CopyMondayToWeekdays -> _uiState.update {
+                it.copy(week = it.week.copyMondayToWeekdays(), errorMessage = null)
+            }
         }
     }
 
     private fun save() {
         val week = _uiState.value.week
-        val validation = TimeRangeValidation.validateWeek(week)
+        val validation = ScheduleValidator.validate(week)
         if (validation != null) {
             _uiState.update { it.copy(errorMessage = validation) }
             return
@@ -218,6 +232,10 @@ fun WeeklyAvailabilityScreen(
                         },
                         onAddRange = { onEvent(WeeklyAvailabilityEvent.AddRange(it)) },
                         onRemoveRange = { day, index -> onEvent(WeeklyAvailabilityEvent.RemoveRange(day, index)) },
+                        onInsertRange = { day, index, range ->
+                            onEvent(WeeklyAvailabilityEvent.InsertRange(day, index, range.from, range.to))
+                        },
+                        onCopyMondayToWeekdays = { onEvent(WeeklyAvailabilityEvent.CopyMondayToWeekdays) },
                     )
                 }
             }

@@ -7,6 +7,16 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
+import com.cocido.oficios.domain.model.TimeRange
+import com.cocido.oficios.domain.model.WeeklyAvailability
+import com.cocido.oficios.domain.model.addRange
+import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.copyMondayToWeekdays
+import com.cocido.oficios.domain.model.insertRange
+import com.cocido.oficios.domain.model.removeRange
+import com.cocido.oficios.domain.model.toFlatTimeSlots
+import com.cocido.oficios.domain.model.withToggledDay
+import com.cocido.oficios.domain.validation.ScheduleValidator
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
@@ -46,11 +56,10 @@ class RegisterTradeViewModel @Inject constructor(
 
     init {
         _uiState.update {
-            it.copy(
+            it.withWeek(WeeklyAvailability.default()).copy(
                 experienceRanges = RegisterTradeUiState.defaultExperienceRanges,
                 timeOptions = RegisterTradeUiState.defaultTimeOptions(),
                 workDayOptions = RegisterTradeUiState.defaultWorkDays.map { day -> day.first },
-                selectedWorkDays = RegisterTradeUiState.defaultSelectedWorkDays,
             ).validated()
         }
         loadCategories()
@@ -91,21 +100,43 @@ class RegisterTradeViewModel @Inject constructor(
                 update { it.copy(neighborhoodOptions = emptyList(), isSearchingBarrios = false) }
             }
             is RegisterTradeEvent.TimeSlotFromChanged -> update {
-                it.copy(timeSlots = it.timeSlots.updateAt(event.index) { slot ->
-                    val newTo = if (slot.to.isNotBlank() && slot.to > event.value) slot.to else ""
-                    slot.copy(from = event.value, to = newTo)
-                })
+                val day = it.weeklySchedule.activeDays.firstOrNull() ?: return@update it
+                it.withWeek(it.weeklySchedule.changeRange(day, event.index, from = event.value))
             }
             is RegisterTradeEvent.TimeSlotToChanged -> update {
-                it.copy(timeSlots = it.timeSlots.updateAt(event.index) { slot -> slot.copy(to = event.value) })
+                val day = it.weeklySchedule.activeDays.firstOrNull() ?: return@update it
+                it.withWeek(it.weeklySchedule.changeRange(day, event.index, to = event.value))
             }
             RegisterTradeEvent.AddTimeSlot -> update {
-                it.copy(timeSlots = it.timeSlots + RegisterTradeTimeSlot())
+                val day = it.weeklySchedule.activeDays.firstOrNull() ?: return@update it
+                it.withWeek(it.weeklySchedule.addRange(day))
             }
             is RegisterTradeEvent.WorkDayToggled -> update {
-                val updated = it.selectedWorkDays.toMutableSet()
-                if (event.checked) updated.add(event.day) else updated.remove(event.day)
-                it.copy(selectedWorkDays = updated)
+                it.withWeek(it.weeklySchedule.withToggledDay(event.day, event.checked))
+            }
+            is RegisterTradeEvent.IncludeSunday -> update {
+                it.withWeek(it.weeklySchedule.copy(includeSunday = event.included))
+            }
+            is RegisterTradeEvent.WeekDayToggled -> update {
+                it.withWeek(it.weeklySchedule.withToggledDay(event.day, event.enabled))
+            }
+            is RegisterTradeEvent.WeekRangeFrom -> update {
+                it.withWeek(it.weeklySchedule.changeRange(event.day, event.index, from = event.value))
+            }
+            is RegisterTradeEvent.WeekRangeTo -> update {
+                it.withWeek(it.weeklySchedule.changeRange(event.day, event.index, to = event.value))
+            }
+            is RegisterTradeEvent.AddWeekRange -> update { it.withWeek(it.weeklySchedule.addRange(event.day)) }
+            is RegisterTradeEvent.RemoveWeekRange -> update {
+                it.withWeek(it.weeklySchedule.removeRange(event.day, event.index))
+            }
+            is RegisterTradeEvent.InsertWeekRange -> update {
+                it.withWeek(
+                    it.weeklySchedule.insertRange(event.day, event.index, TimeRange(event.from, event.to)),
+                )
+            }
+            RegisterTradeEvent.CopyMondayToWeekdays -> update {
+                it.withWeek(it.weeklySchedule.copyMondayToWeekdays())
             }
             is RegisterTradeEvent.ServesAtClientHomeChanged -> update {
                 it.copy(servesAtClientHome = event.value)
@@ -267,16 +298,15 @@ class RegisterTradeViewModel @Inject constructor(
                     experienceRange = state.selectedExperienceRange,
                     neighborhoodQuery = state.neighborhoodQuery,
                     barrioId = state.selectedBarrioId,
-                    workDays = state.selectedWorkDays.toList(),
+                    workDays = state.weeklySchedule.activeDays,
                     servesAtClientHome = state.servesAtClientHome,
                     servesAtLocal = state.servesAtLocal,
                     requiresTurns = state.requiresTurns,
                     turnDurationMinutes = durationMinutes,
                     turnIntervalMinutes = intervalMinutes,
                     paymentMethods = state.selectedPaymentMethods.toList(),
-                    timeSlots = state.timeSlots
-                        .filter { it.from.isNotBlank() && it.to.isNotBlank() }
-                        .map { RegisterTradeTimeSlotDraft(from = it.from, to = it.to) },
+                    timeSlots = state.weeklySchedule.toFlatTimeSlots(),
+                    weeklySchedule = state.weeklySchedule,
                 ),
             )
             // Intento inmediato: casi siempre falla porque el DNI todavía no está aprobado
@@ -321,15 +351,16 @@ class RegisterTradeViewModel @Inject constructor(
             selectedBarrioId != null &&
             neighborhoodQuery.isNotBlank() &&
             selectedPaymentMethods.isNotEmpty() &&
-            selectedWorkDays.isNotEmpty() &&
             (servesAtClientHome || servesAtLocal) &&
-            timeSlots.any { it.from.isNotBlank() && it.to.isNotBlank() } &&
+            ScheduleValidator.validate(weeklySchedule) == null &&
             turnFieldsValid
         return copy(canContinue = canContinue)
     }
 
-    private fun <T> List<T>.updateAt(index: Int, transform: (T) -> T): List<T> =
-        mapIndexed { currentIndex, item ->
-            if (currentIndex == index) transform(item) else item
-        }
 }
+
+private fun RegisterTradeUiState.withWeek(week: WeeklyAvailability) = copy(
+    weeklySchedule = week,
+    selectedWorkDays = week.activeDays.toSet(),
+    timeSlots = week.toFlatTimeSlots().map { RegisterTradeTimeSlot(it.from, it.to) },
+)

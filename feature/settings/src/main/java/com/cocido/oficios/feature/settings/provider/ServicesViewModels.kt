@@ -18,11 +18,13 @@ import com.cocido.oficios.domain.model.ProviderCommercialLocal
 import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.ProviderRubroFullRequest
 import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
-import com.cocido.oficios.domain.model.TimeRangeValidation
+import com.cocido.oficios.domain.model.TimeRange
 import com.cocido.oficios.domain.model.WeeklyAvailability
 import com.cocido.oficios.domain.model.addRange
 import com.cocido.oficios.domain.model.availabilityPutsForEdit
 import com.cocido.oficios.domain.model.changeRange
+import com.cocido.oficios.domain.model.copyMondayToWeekdays
+import com.cocido.oficios.domain.model.insertRange
 import com.cocido.oficios.domain.model.removeRange
 import com.cocido.oficios.domain.model.toManagedSchedules
 import com.cocido.oficios.domain.model.toWeeklyAvailability
@@ -37,6 +39,7 @@ import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
+import com.cocido.oficios.domain.validation.ScheduleValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -301,6 +304,14 @@ class AddServiceViewModel @Inject constructor(
             is AddServiceEvent.RemoveWeekRange -> update {
                 it.withWeek(it.weeklyAvailability.removeRange(event.day, event.index))
             }
+            is AddServiceEvent.InsertWeekRange -> update {
+                it.withWeek(
+                    it.weeklyAvailability.insertRange(event.day, event.index, TimeRange(event.from, event.to)),
+                )
+            }
+            AddServiceEvent.CopyMondayToWeekdays -> update {
+                it.withWeek(it.weeklyAvailability.copyMondayToWeekdays())
+            }
             is AddServiceEvent.PaymentToggled -> update {
                 it.copy(paymentMethods = it.paymentMethods.toggled(event.method, event.checked), errorMessage = null)
             }
@@ -381,9 +392,7 @@ class AddServiceViewModel @Inject constructor(
             }
             state.localLocation.message ?: "Confirme la ubicación de su local."
         }
-        state.weeklyAvailability.activeDays.isEmpty() ->
-            "Elija al menos un día de trabajo."
-        else -> TimeRangeValidation.validateWeek(state.weeklyAvailability)
+        else -> ScheduleValidator.validate(state.weeklyAvailability)
     }
 
     private fun previous() {

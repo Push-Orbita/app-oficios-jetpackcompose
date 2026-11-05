@@ -170,10 +170,14 @@ fun ProviderAvailabilityRoute(onSaved: () -> Unit, modifier: Modifier = Modifier
     }
     ProviderAvailabilityStepScreen(
         uiState = uiState,
-        onWorkDayToggled = viewModel::onWorkDayToggled,
-        onTimeSlotFromChanged = viewModel::onTimeSlotFromChanged,
-        onTimeSlotToChanged = viewModel::onTimeSlotToChanged,
-        onAddTimeSlot = viewModel::onAddTimeSlot,
+        onIncludeSunday = viewModel::onIncludeSunday,
+        onWeekDayToggled = viewModel::onWeekDayToggled,
+        onWeekRangeFrom = viewModel::onWeekRangeFrom,
+        onWeekRangeTo = viewModel::onWeekRangeTo,
+        onAddWeekRange = viewModel::onAddWeekRange,
+        onRemoveWeekRange = viewModel::onRemoveWeekRange,
+        onInsertWeekRange = viewModel::onInsertWeekRange,
+        onCopyMondayToWeekdays = viewModel::onCopyMondayToWeekdays,
         onServesAtClientHomeChanged = viewModel::onServesAtClientHomeChanged,
         onServesAtLocalChanged = viewModel::onServesAtLocalChanged,
         onRequiresTurnsChanged = viewModel::onRequiresTurnsChanged,
