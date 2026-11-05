@@ -7,6 +7,7 @@ import com.cocido.oficios.core.network.api.orders.dto.SolicitudServicioSimpleDto
 import com.cocido.oficios.core.network.api.orders.dto.TrackingBookingDto
 import com.cocido.oficios.domain.model.BookingTracking
 import com.cocido.oficios.domain.model.BookingStatus
+import com.cocido.oficios.domain.model.CancellationPolicy
 import com.cocido.oficios.domain.model.CounterOffer
 import com.cocido.oficios.domain.model.CounterOfferStatus
 import com.cocido.oficios.domain.model.ServiceOrder
@@ -120,7 +121,7 @@ internal fun resolveRequestStatus(estado: String, bookingStatus: BookingStatus?)
 }
 
 private fun BookingStatus?.isCancellable(): Boolean =
-    this != BookingStatus.FINISHED && this != BookingStatus.CANCELLED && this != BookingStatus.EXPIRED
+    CancellationPolicy.isBookingCancellable(this)
 
 fun String.toCounterOfferStatus(): CounterOfferStatus = when (uppercase()) {
     "PENDIENTE" -> CounterOfferStatus.PENDING
