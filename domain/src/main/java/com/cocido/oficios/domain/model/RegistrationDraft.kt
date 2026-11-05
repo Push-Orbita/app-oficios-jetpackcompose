@@ -45,6 +45,7 @@ data class RegistrationDraft(
     val role: RegistrationRole = RegistrationRole.CLIENT,
     val personal: RegistrationPersonalDraft = RegistrationPersonalDraft(),
     val client: RegistrationClientDraft = RegistrationClientDraft(),
+    val provider: RegisterTradeDraft? = null,
     val commitPhase: RegistrationCommitPhase = RegistrationCommitPhase.NOT_STARTED,
     val createdUserEmail: String? = null,
 )

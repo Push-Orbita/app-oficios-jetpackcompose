@@ -98,4 +98,9 @@
     <string name="auth_wizard_apartment">Departamento</string>
     <string name="auth_wizard_review_title">Revise sus datos</string>
     <string name="auth_wizard_review_subtitle">La cuenta se crea solo al confirmar. Si vuelve atrás, no pierde lo cargado.</string>
+    <string name="auth_wizard_zona_title">Zona de trabajo</string>
+    <string name="auth_wizard_agenda_title">Agenda semanal</string>
+    <string name="auth_wizard_cobro_title">Medios de cobro</string>
+    <string name="auth_wizard_identidad_title">Local</string>
+    <string name="auth_wizard_local_address">Dirección del local</string>
 </resources>

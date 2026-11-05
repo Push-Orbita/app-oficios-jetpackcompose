@@ -9,6 +9,7 @@ import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.RegistrationClientDraft
 import com.cocido.oficios.domain.model.RegistrationCommitPhase
 import com.cocido.oficios.domain.model.RegistrationDraft
+import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegistrationPersonalDraft
 import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.domain.repository.RegistrationDraftRepository
@@ -60,6 +61,11 @@ data class RegistrationWizardUiState(
 
 sealed interface RegistrationWizardEffect {
     data object GoToProfile : RegistrationWizardEffect
+    data object GoToOficio : RegistrationWizardEffect
+    data object GoToZona : RegistrationWizardEffect
+    data object GoToAgenda : RegistrationWizardEffect
+    data object GoToCobro : RegistrationWizardEffect
+    data object GoToIdentidad : RegistrationWizardEffect
     data object GoToReview : RegistrationWizardEffect
     data object GoToPersonal : RegistrationWizardEffect
     data object AccountCreated : RegistrationWizardEffect
@@ -88,6 +94,7 @@ class RegistrationWizardViewModel @Inject constructor(
     /** Contraseña solo en memoria. Nunca se escribe en el draft. */
     private var passwordInMemory: String = ""
     private var confirmPasswordInMemory: String = ""
+    private var providerDraftInMemory: RegisterTradeDraft? = null
     private var barrioSearchJob: Job? = null
 
     init {
@@ -151,7 +158,34 @@ class RegistrationWizardViewModel @Inject constructor(
         emit(RegistrationWizardEffect.GoToReview)
     }
 
-    fun createAccount() {
+    fun continueFromOficio(trade: RegisterTradeDraft?) {
+        persistProvider(trade)
+        emit(RegistrationWizardEffect.GoToZona)
+    }
+
+    fun continueFromZona(trade: RegisterTradeDraft?) {
+        persistProvider(trade)
+        emit(RegistrationWizardEffect.GoToAgenda)
+    }
+
+    fun continueFromAgenda(trade: RegisterTradeDraft?) {
+        persistProvider(trade)
+        emit(RegistrationWizardEffect.GoToCobro)
+    }
+
+    fun continueFromCobro(trade: RegisterTradeDraft?, servesAtLocal: Boolean) {
+        persistProvider(trade)
+        emit(if (servesAtLocal) RegistrationWizardEffect.GoToIdentidad else RegistrationWizardEffect.GoToReview)
+    }
+
+    fun providerDraft(): RegisterTradeDraft? = providerDraftInMemory
+
+    fun continueFromIdentidad(trade: RegisterTradeDraft?) {
+        persistProvider(trade)
+        emit(RegistrationWizardEffect.GoToReview)
+    }
+
+    fun createAccount(providerDraft: RegisterTradeDraft? = null) {
         val state = _uiState.value
         if (passwordInMemory.isBlank()) {
             _uiState.update { it.copy(commitError = "Vuelva al primer paso e ingrese su contraseña") }
@@ -160,8 +194,9 @@ class RegistrationWizardViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isCommitting = true, commitError = null) }
-            draftRepository.save(currentDraft())
-            when (val result = committer.commit(currentDraft(), passwordInMemory)) {
+            val snapshot = currentDraft(providerDraft)
+            draftRepository.save(snapshot)
+            when (val result = committer.commit(snapshot, passwordInMemory)) {
                 RegistrationCommitResult.Completed -> {
                     passwordInMemory = ""
                     confirmPasswordInMemory = ""
@@ -196,7 +231,13 @@ class RegistrationWizardViewModel @Inject constructor(
             val fullName = listOf(personal.firstName, personal.lastName).joinToString(" ").trim()
             _uiState.update { it.copy(contactName = fullName) }
         }
-        emit(RegistrationWizardEffect.GoToProfile)
+        emit(
+            if (role == RegistrationRole.PROVIDER) {
+                RegistrationWizardEffect.GoToOficio
+            } else {
+                RegistrationWizardEffect.GoToProfile
+            },
+        )
     }
 
     private suspend fun restoreDraft() {
@@ -225,6 +266,7 @@ class RegistrationWizardViewModel @Inject constructor(
                 createdUserEmail = draft.createdUserEmail,
             )
         }
+        providerDraftInMemory = draft.provider
     }
 
     private fun persistDraft() {
@@ -232,7 +274,12 @@ class RegistrationWizardViewModel @Inject constructor(
         viewModelScope.launch { draftRepository.save(snapshot) }
     }
 
-    private fun currentDraft(): RegistrationDraft {
+    private fun persistProvider(trade: RegisterTradeDraft?) {
+        viewModelScope.launch { draftRepository.save(currentDraft(trade)) }
+    }
+
+    private fun currentDraft(providerDraft: RegisterTradeDraft? = null): RegistrationDraft {
+        if (providerDraft != null) providerDraftInMemory = providerDraft
         val state = _uiState.value
         return RegistrationDraft(
             role = role,
@@ -253,6 +300,7 @@ class RegistrationWizardViewModel @Inject constructor(
                 piso = state.piso,
                 departamento = state.departamento,
             ),
+            provider = providerDraftInMemory,
             commitPhase = state.commitPhase,
             createdUserEmail = state.createdUserEmail ?: state.personal.email.trim().ifBlank { null },
         )
