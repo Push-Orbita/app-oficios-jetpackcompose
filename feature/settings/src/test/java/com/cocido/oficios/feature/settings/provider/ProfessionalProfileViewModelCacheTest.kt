@@ -24,13 +24,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -67,6 +70,28 @@ class ProfessionalProfileViewModelCacheTest {
 
         assertEquals(listOf(99L), profileScreen.uiState.value.gallery.map { it.id })
         assertEquals(listOf(99L), portfolioScreen.uiState.value.gallery.map { it.id })
+    }
+
+    @Test
+    fun `resume and pull to refresh never cover an empty-gallery profile with a full spinner`() = runTest(testDispatcher) {
+        val viewModel = ProfessionalProfileViewModel(AccountUseCases(SharedProfileAccountRepository()))
+        advanceUntilIdle()
+        assertEquals(false, viewModel.uiState.value.isLoading)
+
+        val seen = mutableListOf<ProfessionalProfileUiState>()
+        val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { seen += it }
+        }
+        viewModel.onResume() // primer resume: coincide con el init
+        viewModel.onResume()
+        advanceUntilIdle()
+        viewModel.onEvent(ProfessionalProfileEvent.Refresh)
+        advanceUntilIdle()
+        collector.cancel()
+
+        assertTrue(seen.none { it.isLoading })
+        assertEquals(false, viewModel.uiState.value.isRefreshing)
+        assertEquals(false, viewModel.uiState.value.loadFailed)
     }
 }
 

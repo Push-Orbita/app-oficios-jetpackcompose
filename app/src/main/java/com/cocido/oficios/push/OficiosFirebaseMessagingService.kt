@@ -16,6 +16,8 @@ import com.cocido.oficios.MainActivity
 import com.cocido.oficios.R
 import com.cocido.oficios.core.common.navigation.PushDeepLinkMapper
 import com.cocido.oficios.core.common.navigation.PushNavigationCoordinator
+import com.cocido.oficios.core.common.sync.DataChangeSignals
+import com.cocido.oficios.core.common.sync.PushDataTopics
 import com.cocido.oficios.domain.usecase.notifications.MarkNotificationReadUseCase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -44,6 +46,8 @@ class OficiosFirebaseMessagingService : FirebaseMessagingService() {
         if (!BuildConfig.FIREBASE_ENABLED) return
         val data = message.data
         val type = data["type"] ?: "GENERIC"
+        // Si hay una pantalla abierta que muestra estos datos, se refresca sola (sin salir y volver).
+        DataChangeSignals.notify(PushDataTopics.forPush(type, data["entityType"]))
         val deepLink = data["deep_link"] ?: data["deepLink"]
         val notificationId = (data["notificacionId"] ?: data["notificationId"])?.toLongOrNull()
         val title = data["title"] ?: message.notification?.title ?: getString(R.string.app_name)

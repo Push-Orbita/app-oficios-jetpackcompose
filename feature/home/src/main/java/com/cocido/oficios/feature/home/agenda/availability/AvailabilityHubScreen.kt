@@ -9,7 +9,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EventBusy
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +29,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosErrorState
+import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosLoadingState
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosStateContent
 import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
@@ -38,13 +41,20 @@ import com.cocido.oficios.domain.usecase.GetMySubRubrosUseCase
 import com.cocido.oficios.feature.home.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class AvailabilityHubUiState(
     val isLoading: Boolean = true,
+    /** Pull-to-refresh en curso; la lista sigue visible. */
+    val isRefreshing: Boolean = false,
+    /** Error de carga inicial (pantalla de error con reintento). */
     val errorMessage: String? = null,
+    /** Error al refrescar con contenido ya visible: aviso inline, no tapa la lista. */
+    val refreshErrorMessage: String? = null,
     val specialties: List<ProviderSubRubroOption> = emptyList(),
 )
 
@@ -55,20 +65,50 @@ class AvailabilityHubViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AvailabilityHubUiState())
     val uiState = _uiState.asStateFlow()
 
+    private var loadJob: Job? = null
+    private var skipNextResume = true
+
     init { load() }
 
-    fun load() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+    /** ON_RESUME: el primero coincide con el init, así que se saltea. */
+    fun onResume() {
+        if (skipNextResume) {
+            skipNextResume = false
+            return
+        }
+        load()
+    }
+
+    fun refresh() = load(userInitiated = true)
+
+    /**
+     * Stale-while-revalidate: si ya hay especialidades en pantalla, recarga sin spinner de
+     * pantalla completa (antes cada vuelta a la pantalla la tapaba con "Cargando").
+     */
+    fun load(userInitiated: Boolean = false) {
+        if (loadJob?.isActive == true && !userInitiated) return
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            val hasContent = !_uiState.value.isLoading && _uiState.value.errorMessage == null
+            _uiState.update {
+                if (hasContent) {
+                    it.copy(isRefreshing = userInitiated, refreshErrorMessage = null)
+                } else {
+                    it.copy(isLoading = true, errorMessage = null)
+                }
+            }
             when (val result = getMySubRubrosUseCase()) {
                 is AppResult.Success -> _uiState.value = AvailabilityHubUiState(
                     isLoading = false,
                     specialties = result.data,
                 )
-                is AppResult.Error -> _uiState.value = AvailabilityHubUiState(
-                    isLoading = false,
-                    errorMessage = result.error.userMessage(),
-                )
+                is AppResult.Error -> _uiState.update {
+                    if (hasContent) {
+                        it.copy(isRefreshing = false, refreshErrorMessage = result.error.userMessage())
+                    } else {
+                        AvailabilityHubUiState(isLoading = false, errorMessage = result.error.userMessage())
+                    }
+                }
             }
         }
     }
@@ -82,16 +122,18 @@ fun AvailabilityHubRoute(
     viewModel: AvailabilityHubViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    RefreshOnResume(viewModel::load)
+    RefreshOnResume(viewModel::onResume)
     AvailabilityHubScreen(
         uiState = uiState,
         onNavigateBack = onNavigateBack,
-        onRetry = viewModel::load,
+        onRetry = { viewModel.load() },
+        onRefresh = viewModel::refresh,
         onOpenWeek = onOpenWeek,
         onOpenBlocks = onOpenBlocks,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AvailabilityHubScreen(
     uiState: AvailabilityHubUiState,
@@ -99,6 +141,7 @@ fun AvailabilityHubScreen(
     onRetry: () -> Unit,
     onOpenWeek: (Long) -> Unit,
     onOpenBlocks: (Long) -> Unit,
+    onRefresh: () -> Unit = {},
 ) {
     OficiosScaffold(
         topBar = {
@@ -130,11 +173,16 @@ fun AvailabilityHubScreen(
                     icon = Icons.Outlined.EventBusy,
                     modifier = Modifier.fillMaxSize(),
                 )
-                else -> LazyColumn(
+                else -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = onRefresh,
+                    modifier = Modifier.fillMaxSize(),
+                ) { LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = OficiosSpacing.OficiosScreenPaddingAfterTopBar,
                     verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                 ) {
+                    state.refreshErrorMessage?.let { message -> item { OficiosInlineAlert(message) } }
                     item {
                         Text(
                             text = stringResource(R.string.agenda_availability_hub_intro),
@@ -174,7 +222,7 @@ fun AvailabilityHubScreen(
                             }
                         }
                     }
-                }
+                } }
             }
         }
     }

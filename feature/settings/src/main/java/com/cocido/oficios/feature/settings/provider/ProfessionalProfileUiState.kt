@@ -12,6 +12,8 @@ data class ProfileCertificateUi(
 
 data class ProfessionalProfileUiState(
     val isLoading: Boolean = true,
+    /** Pull-to-refresh en curso (el contenido sigue visible). */
+    val isRefreshing: Boolean = false,
     val oficiosLabel: String = "",
     val specializedLabel: String = "",
     val gallery: List<WorkGalleryItem> = emptyList(),
@@ -22,6 +24,7 @@ data class ProfessionalProfileUiState(
 
 sealed interface ProfessionalProfileEvent {
     data object Retry : ProfessionalProfileEvent
+    data object Refresh : ProfessionalProfileEvent
     data object Back : ProfessionalProfileEvent
     data object EditRubro : ProfessionalProfileEvent
     data object EditAvailability : ProfessionalProfileEvent
@@ -36,6 +39,7 @@ sealed interface ProfessionalProfileEffect {
     data object NavigateToAvailability : ProfessionalProfileEffect
     data object NavigateToPortfolio : ProfessionalProfileEffect
     data object NavigateToDeleteAccount : ProfessionalProfileEffect
+    data class ShowError(val message: String) : ProfessionalProfileEffect
 }
 
 internal fun WorkCertificateItem.toUi(validated: Boolean = false) = ProfileCertificateUi(
