@@ -13,7 +13,7 @@ import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.usecase.auth.GetCurrentUserUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
@@ -66,7 +66,17 @@ class ClientDomicilioViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<ClientDomicilioEffect>()
     val effects: SharedFlow<ClientDomicilioEffect> = _effects.asSharedFlow()
 
-    private var searchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { _uiState.update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options ->
+                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
+            },
+        ).also { barrioSearcher = it }
     private var geocodeJob: Job? = null
 
     fun onBarrioQueryChanged(query: String) = searchBarrio(query, preserveSelection = false)
@@ -78,22 +88,13 @@ class ClientDomicilioViewModel @Inject constructor(
             it.copy(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
-                isSearchingBarrios = true,
             )
         }
-        if (!preserveSelection) scheduleLiveGeocode()
-        searchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = searchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     fun onBarrioSelected(option: CatalogOption) {
-        searchJob?.cancel()
+        barrioSearcher?.clearPending()
         _uiState.update {
             it.copy(
                 barrioQuery = option.label,
@@ -106,7 +107,7 @@ class ClientDomicilioViewModel @Inject constructor(
     }
 
     fun dismissBarrioSuggestions() {
-        searchJob?.cancel()
+        
         _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 

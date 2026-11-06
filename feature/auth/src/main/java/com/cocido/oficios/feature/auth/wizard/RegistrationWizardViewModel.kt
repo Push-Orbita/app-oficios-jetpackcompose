@@ -16,7 +16,7 @@ import com.cocido.oficios.domain.repository.RegistrationDraftRepository
 import com.cocido.oficios.domain.usecase.auth.RegistrationCommitResult
 import com.cocido.oficios.domain.usecase.auth.RegistrationCommitter
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.feature.auth.register.RegisterFormEvent
 import com.cocido.oficios.feature.auth.register.RegisterFormUiState
@@ -95,7 +95,18 @@ class RegistrationWizardViewModel @Inject constructor(
     private var passwordInMemory: String = ""
     private var confirmPasswordInMemory: String = ""
     private var providerDraftInMemory: RegisterTradeDraft? = null
-    private var barrioSearchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
+
+    private fun barrioSearcher(): DebouncedBarrioSearcher {
+        return barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { _uiState.update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options ->
+                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
+            },
+        ).also { barrioSearcher = it }
+    }
 
     init {
         viewModelScope.launch { restoreDraft() }
@@ -132,7 +143,8 @@ class RegistrationWizardViewModel @Inject constructor(
     fun onBarrioQueryChanged(query: String) = searchBarrio(query, preserveSelection = false)
     fun onBarrioFocused() = searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
     fun onBarrioSelected(option: CatalogOption) {
-        barrioSearchJob?.cancel()
+        barrioSearcher?.clearPending()
+        // Do not submit the selected label as a new query — that used to re-open the loop.
         updateProfile {
             it.copy(
                 barrioQuery = option.label,
@@ -144,7 +156,6 @@ class RegistrationWizardViewModel @Inject constructor(
         }
     }
     fun dismissBarrioSuggestions() {
-        barrioSearchJob?.cancel()
         _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 
@@ -311,17 +322,12 @@ class RegistrationWizardViewModel @Inject constructor(
             it.copy(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
-                isSearchingBarrios = true,
             )
         }
-        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = barrioSearchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
-            },
-        )
+        // DebouncedBarrioSearcher.distinctUntilChanged drops duplicate submits
+        // (e.g. repeated onFocused from autocomplete expand). Loading flag is
+        // set only when a real search starts.
+        barrioSearcher().submit(query)
     }
 
     private fun updatePersonal(block: (RegisterFormUiState) -> RegisterFormUiState) {

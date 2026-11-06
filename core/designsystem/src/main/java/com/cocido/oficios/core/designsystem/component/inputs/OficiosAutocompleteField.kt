@@ -66,6 +66,7 @@ fun <T> OficiosAutocompleteField(
     var userExpanded by remember { mutableStateOf(false) }
     var searchSession by remember { mutableStateOf(false) }
     var userDismissed by remember { mutableStateOf(false) }
+    var isFieldFocused by remember { mutableStateOf(false) }
     val resolvedNoResults = noResultsText ?: stringResource(R.string.ds_autocomplete_no_results)
     val keyboardController = LocalSoftwareKeyboardController.current
     val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
@@ -115,8 +116,16 @@ fun <T> OficiosAutocompleteField(
             if (requested) {
                 userDismissed = false
                 userExpanded = true
-                onFocused()
+                // Only notify once per focus session. Material3 may re-emit
+                // onExpandedChange(true) when isLoading/suggestions flip and
+                // LaunchedEffect sets userExpanded — that re-entry used to
+                // retrigger barrio search in a tight loop (ANR).
+                if (!isFieldFocused) {
+                    isFieldFocused = true
+                    onFocused()
+                }
             } else {
+                isFieldFocused = false
                 dismissKeyboardAndSuggestions()
             }
         },
@@ -142,7 +151,12 @@ fun <T> OficiosAutocompleteField(
                 if (focused) {
                     userDismissed = false
                     userExpanded = true
-                    onFocused()
+                    if (!isFieldFocused) {
+                        isFieldFocused = true
+                        onFocused()
+                    }
+                } else {
+                    isFieldFocused = false
                 }
             },
             trailingContent = {
