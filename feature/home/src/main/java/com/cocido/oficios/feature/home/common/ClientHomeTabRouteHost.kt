@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.common
 
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
+import com.cocido.oficios.core.common.sync.DataTopic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.Lifecycle
@@ -31,6 +33,8 @@ fun ClientHomeTabRouteHost(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+    // Push de pedidos/notificaciones/estado de cuenta: refresca el inicio abierto.
+    RefreshOnDataChange(DataTopic.ORDERS, DataTopic.NOTIFICATIONS, DataTopic.PROFILE_STATUS) { onVisible() }
 
     content(selectedTab) { tab ->
         ClientHomeTabNavigator.handleTabSelected(

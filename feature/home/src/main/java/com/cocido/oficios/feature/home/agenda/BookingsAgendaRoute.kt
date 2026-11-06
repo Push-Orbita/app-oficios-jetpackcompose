@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.agenda
 
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
+import com.cocido.oficios.core.common.sync.DataTopic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +21,7 @@ fun BookingsAgendaRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     RefreshOnResume(viewModel::onResume)
+    RefreshOnDataChange(DataTopic.ORDERS, DataTopic.AGENDA) { viewModel.onResume() }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->

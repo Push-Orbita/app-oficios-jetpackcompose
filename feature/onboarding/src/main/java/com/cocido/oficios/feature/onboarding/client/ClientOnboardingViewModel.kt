@@ -45,7 +45,8 @@ class ClientOnboardingViewModel @Inject constructor(
         if (_completionPhase.value != OnboardingCompletionPhase.Idle) return
 
         viewModelScope.launch {
-            _uiState.update { OnboardingChecklistUiState.Loading }
+            // Con checklist ya visible, el refresh (resume/push) es silencioso: sin flash de Loading.
+            _uiState.update { if (it is OnboardingChecklistUiState.Success) it else OnboardingChecklistUiState.Loading }
             when (val result = getOnboardingStatusUseCase.getClientStatus()) {
                 is AppResult.Success -> {
                     val steps = getOnboardingStatusUseCase.getClientSteps(result.data)
@@ -56,7 +57,10 @@ class ClientOnboardingViewModel @Inject constructor(
                     }
                 }
                 is AppResult.Error -> {
-                    _uiState.update { OnboardingChecklistUiState.Error("No se pudo cargar el estado del perfil") }
+                    _uiState.update {
+                        if (it is OnboardingChecklistUiState.Success) it
+                        else OnboardingChecklistUiState.Error("No se pudo cargar el estado del perfil")
+                    }
                 }
             }
         }

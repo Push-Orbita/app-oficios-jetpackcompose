@@ -280,7 +280,14 @@ class ProviderPendingViewModel @Inject constructor(
                     _uiState.update { ProviderStatusUiState.Pending(steps) }
                 }
                 is AppResult.Error -> {
-                    _uiState.update { ProviderStatusUiState.Error("No se pudo cargar el estado") }
+                    // Un refresh fallido no tapa el estado que ya se estaba mostrando.
+                    _uiState.update {
+                        if (it is ProviderStatusUiState.Loading || it is ProviderStatusUiState.Error) {
+                            ProviderStatusUiState.Error("No se pudo cargar el estado")
+                        } else {
+                            it
+                        }
+                    }
                 }
             }
         }
@@ -312,7 +319,14 @@ class ProviderRejectedViewModel @Inject constructor(
                     }
                 }
                 is AppResult.Error -> {
-                    _uiState.update { ProviderStatusUiState.Error("No se pudo cargar el estado") }
+                    // Un refresh fallido no tapa el estado que ya se estaba mostrando.
+                    _uiState.update {
+                        if (it is ProviderStatusUiState.Loading || it is ProviderStatusUiState.Error) {
+                            ProviderStatusUiState.Error("No se pudo cargar el estado")
+                        } else {
+                            it
+                        }
+                    }
                 }
             }
         }

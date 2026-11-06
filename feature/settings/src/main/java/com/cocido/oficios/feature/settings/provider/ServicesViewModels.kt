@@ -95,6 +95,7 @@ class ServicesViewModel @Inject constructor(
     fun onEvent(event: ServicesEvent) {
         when (event) {
             ServicesEvent.Retry -> load()
+            ServicesEvent.Refresh -> load(userInitiated = true)
             ServicesEvent.Back -> emit(ServicesEffect.NavigateBack)
             ServicesEvent.AddService -> emit(ServicesEffect.NavigateToAdd)
             is ServicesEvent.EditService -> emit(ServicesEffect.NavigateToEdit(event.service.id))
@@ -105,16 +106,20 @@ class ServicesViewModel @Inject constructor(
         }
     }
 
-    fun load() {
+    /** Stale-while-revalidate: con lista visible, recarga sin spinner de pantalla completa. */
+    fun load(userInitiated: Boolean = false) {
         viewModelScope.launch {
             val keepContent = _uiState.value.services.isNotEmpty()
-            _uiState.update { it.copy(isLoading = !keepContent, errorMessage = null) }
+            _uiState.update {
+                it.copy(isLoading = !keepContent, isRefreshing = userInitiated, errorMessage = null)
+            }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> {
                     val services = enrichSchedules(result.data.providerDetails?.services.orEmpty())
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            isRefreshing = false,
                             isDeleting = false,
                             services = services,
                             errorMessage = null,
@@ -122,7 +127,12 @@ class ServicesViewModel @Inject constructor(
                     }
                 }
                 is AppResult.Error -> _uiState.update {
-                    it.copy(isLoading = false, isDeleting = false, errorMessage = result.error.userMessage())
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        isDeleting = false,
+                        errorMessage = result.error.userMessage(),
+                    )
                 }
             }
         }

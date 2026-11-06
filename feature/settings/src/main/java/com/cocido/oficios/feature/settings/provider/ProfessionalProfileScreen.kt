@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +45,7 @@ import com.cocido.oficios.domain.model.WorkCertificateItem
 import com.cocido.oficios.domain.model.WorkGalleryItem
 
 /** Datos profesionales del trabajador (Ajustes). */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfessionalProfileScreen(
     uiState: ProfessionalProfileUiState,
@@ -71,7 +74,13 @@ fun ProfessionalProfileScreen(
                 )
                 OficiosContentPhase.Empty,
                 OficiosContentPhase.Content,
-                -> ProfessionalProfileForm(state = state, onEvent = onEvent)
+                -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(ProfessionalProfileEvent.Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    ProfessionalProfileForm(state = state, onEvent = onEvent)
+                }
             }
         }
     }
