@@ -118,10 +118,9 @@ fun WorkerProfileHeader(
                 }
             }
             profile.about?.takeIf { it.isNotBlank() }?.let { about ->
-                Text(
-                    text = about,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                LabeledValue(
+                    label = stringResource(R.string.home_worker_about_title),
+                    value = about,
                 )
             }
             if (oficios.isNotEmpty()) {
