@@ -130,7 +130,7 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
                 "Puede corregir y volver a enviar su foto hasta que el equipo la acepte."
             ),
         "selfie_rechazada" to ("Selfie rechazada" to "Vuelva a cargar su foto de rostro."),
-        "descripcion" to ("Descripción profesional" to "Cuente qué servicios ofrece."),
+        "descripcion" to ("Sobre mí" to "Contá tu experiencia y cómo trabajás."),
         "experiencia" to ("Experiencia" to "Indique su experiencia en el rubro."),
         "rubro_principal" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
         "subrubros" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
