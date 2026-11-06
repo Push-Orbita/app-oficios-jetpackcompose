@@ -460,12 +460,26 @@ class ProviderRubrosViewModel @Inject constructor(
     }
 
     fun onCategorySelected(id: Long) {
-        _uiState.update { it.copy(selectedCategoryId = id, selectedTradeId = null, tradeOptions = emptyList()) }
+        // Re-tocar la categoría actual no debe borrar rubro ni especialidades.
+        if (id == _uiState.value.selectedCategoryId) return
+        _uiState.update {
+            it.copy(
+                selectedCategoryId = id,
+                selectedTradeId = null,
+                tradeOptions = emptyList(),
+                specializationOptions = emptyList(),
+                selectedSubRubroIds = emptySet(),
+            )
+        }
         loadRubros(id)
     }
 
     fun onTradeSelected(id: Long) {
-        _uiState.update { it.copy(selectedTradeId = id, specializationOptions = emptyList()) }
+        // Re-tocar el rubro actual es un no-op; cambiar de rubro descarta especialidades de otro rubro.
+        if (id == _uiState.value.selectedTradeId) return
+        _uiState.update {
+            it.copy(selectedTradeId = id, specializationOptions = emptyList(), selectedSubRubroIds = emptySet())
+        }
         loadSubRubros(id)
     }
 

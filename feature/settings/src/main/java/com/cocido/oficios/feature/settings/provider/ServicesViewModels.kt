@@ -7,6 +7,8 @@ import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.AddressLocationPhase
 import com.cocido.oficios.domain.model.AddressLocationSnapshot
+import com.cocido.oficios.domain.model.AddServiceDraft
+import com.cocido.oficios.domain.model.AddServiceDraftCodec
 import com.cocido.oficios.domain.model.AvailabilityPut
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.FormosaAddressGeocoding
@@ -46,6 +48,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -174,7 +178,7 @@ class ServicesViewModel @Inject constructor(
 
 @HiltViewModel
 class AddServiceViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val accountUseCases: AccountUseCases,
     private val getCategories: GetCategoriesUseCase,
     private val getRubros: GetRubrosByCategoryUseCase,
@@ -191,6 +195,11 @@ class AddServiceViewModel @Inject constructor(
     private var barrioSearchJob: Job? = null
     private var geocodeJob: Job? = null
     private var originalAvailabilityBySubId: Map<Long, WeeklyAvailability> = emptyMap()
+
+    /** Borrador previo a una muerte de proceso; se aplica una sola vez, tras cargar catálogo/servicio. */
+    private var pendingRestore: AddServiceDraft? =
+        AddServiceDraftCodec.decode(savedStateHandle.get<String>(DRAFT_KEY))
+    private var draftPersistJob: Job? = null
 
     init {
         if (editingServiceId != null) loadForEdit() else loadCategories()
@@ -322,8 +331,10 @@ class AddServiceViewModel @Inject constructor(
     private fun loadCategories() = viewModelScope.launch {
         update { it.copy(isLoading = true, loadFailed = false, errorMessage = null) }
         when (val result = getCategories()) {
-            is AppResult.Success -> update {
-                it.copy(isLoading = false, loadFailed = false, categories = result.data)
+            is AppResult.Success -> {
+                update { it.copy(isLoading = false, loadFailed = false, categories = result.data) }
+                pendingRestore?.let { restoreAddDraft(it) }
+                startPersistingDraft()
             }
             is AppResult.Error -> update {
                 it.copy(
@@ -335,19 +346,117 @@ class AddServiceViewModel @Inject constructor(
         }
     }
 
-    private fun selectCategory(id: Long) = viewModelScope.launch {
-        update { it.copy(selectedCategoryId = id, selectedRubroId = null, selectedSubRubroIds = emptySet(), rubros = emptyList(), subRubros = emptyList(), isLoading = true) }
-        when (val result = getRubros(id)) {
-            is AppResult.Success -> update { it.copy(isLoading = false, rubros = result.data) }
-            is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+    /**
+     * Alta tras muerte de proceso: recarga rubros/especialidades del rubro guardado y vuelve a
+     * poner lo que el usuario había cargado. Si el catálogo no responde, conserva el resto del
+     * formulario y lo devuelve al paso de oficio para que elija de nuevo.
+     */
+    private suspend fun restoreAddDraft(draft: AddServiceDraft) {
+        val rubros = draft.categoryId?.let { (getRubros(it) as? AppResult.Success)?.data }
+        val subRubros = if (rubros != null) draft.rubroId?.let { (getSubRubros(it) as? AppResult.Success)?.data } else null
+        update { state ->
+            val restored = state.applyDraft(draft, restoreTrade = true)
+            when {
+                rubros == null -> restored.copy(
+                    step = AddServiceStep.TRADE,
+                    selectedCategoryId = null,
+                    selectedRubroId = null,
+                    selectedSubRubroIds = emptySet(),
+                )
+                subRubros == null -> restored.copy(
+                    step = AddServiceStep.TRADE,
+                    rubros = rubros,
+                    selectedRubroId = null,
+                    selectedSubRubroIds = emptySet(),
+                )
+                else -> restored.copy(rubros = rubros, subRubros = subRubros)
+            }
+        }
+        pendingRestore = null
+    }
+
+    private fun startPersistingDraft() {
+        if (draftPersistJob != null) return
+        draftPersistJob = viewModelScope.launch {
+            _uiState
+                .map { it.toDraft() }
+                .distinctUntilChanged()
+                .collect { draft -> savedStateHandle[DRAFT_KEY] = AddServiceDraftCodec.encode(draft) }
         }
     }
 
-    private fun selectRubro(id: Long) = viewModelScope.launch {
-        update { it.copy(selectedRubroId = id, selectedSubRubroIds = emptySet(), subRubros = emptyList(), isLoading = true) }
-        when (val result = getSubRubros(id)) {
-            is AppResult.Success -> update { it.copy(isLoading = false, subRubros = result.data) }
-            is AppResult.Error -> update { it.copy(isLoading = false, errorMessage = result.error.userMessage()) }
+    private fun clearPersistedDraft() {
+        draftPersistJob?.cancel()
+        draftPersistJob = null
+        savedStateHandle.remove<String>(DRAFT_KEY)
+    }
+
+    /** Re-tocar la misma categoría no borra rubro ni especialidades. */
+    private fun selectCategory(id: Long) {
+        val state = _uiState.value
+        if (id == state.selectedCategoryId) {
+            if (state.rubros.isEmpty() && !state.isLoading) loadRubros(id)
+            return
+        }
+        update {
+            it.rememberSubRubroSelection().copy(
+                selectedCategoryId = id,
+                selectedRubroId = null,
+                selectedSubRubroIds = emptySet(),
+                rubros = emptyList(),
+                subRubros = emptyList(),
+                isLoading = true,
+            )
+        }
+        loadRubros(id)
+    }
+
+    /**
+     * Re-tocar el rubro ya elegido es un no-op (antes vaciaba las especialidades).
+     * Cambiar a otro rubro arranca con su propia selección y guarda la del anterior, que se
+     * restaura si el usuario vuelve a elegirlo.
+     */
+    private fun selectRubro(id: Long) {
+        val state = _uiState.value
+        if (id == state.selectedRubroId) {
+            if (state.subRubros.isEmpty() && !state.isLoading) loadSubRubros(id)
+            return
+        }
+        update {
+            val remembered = it.rememberSubRubroSelection()
+            remembered.copy(
+                selectedRubroId = id,
+                selectedSubRubroIds = remembered.subRubroSelectionsByRubro[id].orEmpty(),
+                subRubros = emptyList(),
+                isLoading = true,
+                errorMessage = null,
+            )
+        }
+        loadSubRubros(id)
+    }
+
+    private fun loadRubros(categoryId: Long) = viewModelScope.launch {
+        update { it.copy(isLoading = true) }
+        val result = getRubros(categoryId)
+        update {
+            if (it.selectedCategoryId != categoryId) return@update it
+            when (result) {
+                is AppResult.Success -> it.copy(isLoading = false, rubros = result.data)
+                is AppResult.Error -> it.copy(isLoading = false, errorMessage = result.error.userMessage())
+            }
+        }
+    }
+
+    private fun loadSubRubros(rubroId: Long) = viewModelScope.launch {
+        update { it.copy(isLoading = true) }
+        val result = getSubRubros(rubroId)
+        update {
+            // Respuesta tardía de un rubro que ya no está elegido: se descarta.
+            if (it.selectedRubroId != rubroId) return@update it
+            when (result) {
+                is AppResult.Success -> it.copy(isLoading = false, subRubros = result.data)
+                is AppResult.Error -> it.copy(isLoading = false, errorMessage = result.error.userMessage())
+            }
         }
     }
 
@@ -454,6 +563,7 @@ class AddServiceViewModel @Inject constructor(
             when (result) {
                 is AppResult.Success -> {
                     syncWeeklyAvailability(rubroId, state.weeklyAvailability, forceSync = state.isEditing)
+                    clearPersistedDraft()
                     emit(
                         AddServiceEffect.Saved(
                             if (state.isEditing) "Servicio actualizado." else "Servicio agregado a su perfil.",
@@ -590,6 +700,14 @@ class AddServiceViewModel @Inject constructor(
                         return@launch
                     }
                     applyService(service, details.paymentMethods.toSet(), details.commercialLocal)
+                    if (_uiState.value.loadFailed) return@launch
+                    // Tras muerte de proceso: los datos del servidor son la base (editBaseline)
+                    // y encima se reponen los cambios sin guardar del usuario.
+                    pendingRestore?.let { draft ->
+                        update { it.applyDraft(draft, restoreTrade = false) }
+                        pendingRestore = null
+                    }
+                    startPersistingDraft()
                 }
             }
         }
@@ -723,6 +841,82 @@ class AddServiceViewModel @Inject constructor(
 
     private fun update(block: (AddServiceUiState) -> AddServiceUiState) = _uiState.update(block)
     private fun emit(effect: AddServiceEffect) = viewModelScope.launch { _effects.send(effect) }
+}
+
+internal const val DRAFT_KEY = "add_service_draft"
+
+private fun AddServiceUiState.rememberSubRubroSelection(): AddServiceUiState {
+    val rubroId = selectedRubroId ?: return this
+    if (selectedSubRubroIds.isEmpty()) return this
+    return copy(subRubroSelectionsByRubro = subRubroSelectionsByRubro + (rubroId to selectedSubRubroIds))
+}
+
+internal fun AddServiceUiState.toDraft() = AddServiceDraft(
+    step = step.name,
+    categoryId = selectedCategoryId,
+    rubroId = selectedRubroId,
+    subRubroIds = selectedSubRubroIds.toList(),
+    subRubroIdsByRubro = subRubroSelectionsByRubro.mapValues { (_, ids) -> ids.toList() },
+    servesAtClientHome = servesAtClientHome,
+    servesAtLocal = servesAtLocal,
+    requiresTurns = requiresTurns,
+    plazoCancelacionHorasInput = plazoCancelacionHorasInput,
+    localName = localName,
+    localBarrioQuery = localBarrioQuery,
+    localBarrioId = localBarrioId,
+    localStreet = localStreet,
+    localNumber = localNumber,
+    localLatitude = localLocation.latitude,
+    localLongitude = localLocation.longitude,
+    localPinConfirmed = localLocation.canPersist,
+    weeklyAvailability = weeklyAvailability,
+    paymentMethods = paymentMethods.toList(),
+    editorSourceSubId = editorSourceSubId,
+    availabilityDrafts = availabilityDrafts,
+)
+
+/**
+ * Repone un borrador. En edición el rubro y las especialidades son de solo lectura, así que
+ * [restoreTrade] = false y se toman del servidor.
+ */
+private fun AddServiceUiState.applyDraft(draft: AddServiceDraft, restoreTrade: Boolean): AddServiceUiState {
+    val draftStep = AddServiceStep.entries.firstOrNull { it.name == draft.step } ?: step
+    val restoredStep = if (isEditing && draftStep == AddServiceStep.TRADE) AddServiceStep.ATTENTION else draftStep
+    val lat = draft.localLatitude
+    val lng = draft.localLongitude
+    val location = if (draft.localPinConfirmed && lat != null && lng != null) {
+        AddressLocationSnapshot(latitude = lat, longitude = lng, phase = AddressLocationPhase.Confirmed, confirmed = true)
+    } else {
+        // Sin pin confirmado se vuelve a geocodificar al validar el paso.
+        AddressLocationSnapshot()
+    }
+    val withTrade = if (restoreTrade) {
+        copy(
+            selectedCategoryId = draft.categoryId,
+            selectedRubroId = draft.rubroId,
+            selectedSubRubroIds = draft.subRubroIds.toSet(),
+            subRubroSelectionsByRubro = draft.subRubroIdsByRubro.mapValues { (_, ids) -> ids.toSet() },
+        )
+    } else {
+        this
+    }
+    val editorSubId = draft.editorSourceSubId?.takeIf { id -> editorSpecialties.any { it.id == id } }
+    return withTrade.withWeek(draft.weeklyAvailability).copy(
+        step = restoredStep,
+        servesAtClientHome = draft.servesAtClientHome,
+        servesAtLocal = draft.servesAtLocal,
+        requiresTurns = if (!draft.requiresTurns && !canDisableTurns) true else draft.requiresTurns,
+        plazoCancelacionHorasInput = draft.plazoCancelacionHorasInput,
+        localName = draft.localName,
+        localBarrioQuery = draft.localBarrioQuery,
+        localBarrioId = draft.localBarrioId,
+        localStreet = draft.localStreet,
+        localNumber = draft.localNumber,
+        localLocation = location,
+        paymentMethods = draft.paymentMethods.toSet(),
+        editorSourceSubId = if (isEditing) editorSubId ?: editorSourceSubId else editorSourceSubId,
+        availabilityDrafts = if (isEditing) draft.availabilityDrafts else availabilityDrafts,
+    )
 }
 
 private fun <T> Set<T>.toggled(value: T, checked: Boolean) = if (checked) this + value else this - value

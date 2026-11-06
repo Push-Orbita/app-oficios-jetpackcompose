@@ -339,13 +339,131 @@ class AddServiceViewModelTest {
         assertEquals(listOf(1L, 2L), availability.replacedSubIds.sorted())
     }
 
+    @Test
+    fun `re-tapping the same rubro keeps selected specialties`() = runTest(testDispatcher) {
+        val viewModel = addViewModelWithPlumbing()
+
+        viewModel.onEvent(AddServiceEvent.RubroSelected(2L))
+        advanceUntilIdle()
+
+        assertEquals(2L, viewModel.uiState.value.selectedRubroId)
+        assertEquals(setOf(21L, 23L), viewModel.uiState.value.selectedSubRubroIds)
+        assertEquals(3, viewModel.uiState.value.subRubros.size)
+    }
+
+    @Test
+    fun `re-tapping the same category keeps rubro and specialties`() = runTest(testDispatcher) {
+        val viewModel = addViewModelWithPlumbing()
+
+        viewModel.onEvent(AddServiceEvent.CategorySelected(1L))
+        advanceUntilIdle()
+
+        assertEquals(2L, viewModel.uiState.value.selectedRubroId)
+        assertEquals(setOf(21L, 23L), viewModel.uiState.value.selectedSubRubroIds)
+    }
+
+    @Test
+    fun `changing rubro resets specialties and returning restores them`() = runTest(testDispatcher) {
+        val viewModel = addViewModelWithPlumbing()
+
+        viewModel.onEvent(AddServiceEvent.RubroSelected(3L))
+        advanceUntilIdle()
+        assertEquals(3L, viewModel.uiState.value.selectedRubroId)
+        assertTrue(viewModel.uiState.value.selectedSubRubroIds.isEmpty())
+        assertEquals(listOf(31L, 32L), viewModel.uiState.value.subRubros.map { it.id })
+
+        viewModel.onEvent(AddServiceEvent.RubroSelected(2L))
+        advanceUntilIdle()
+        assertEquals(setOf(21L, 23L), viewModel.uiState.value.selectedSubRubroIds)
+    }
+
+    @Test
+    fun `going back from attention keeps rubro specialties and attention data`() = runTest(testDispatcher) {
+        val viewModel = addViewModelWithPlumbing()
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.PlazoCancelacionHorasChanged("6"))
+        assertEquals(AddServiceStep.ATTENTION, viewModel.uiState.value.step)
+
+        viewModel.onEvent(AddServiceEvent.Previous)
+        viewModel.onEvent(AddServiceEvent.Next)
+
+        val state = viewModel.uiState.value
+        assertEquals(AddServiceStep.ATTENTION, state.step)
+        assertEquals(setOf(21L, 23L), state.selectedSubRubroIds)
+        assertEquals("6", state.plazoCancelacionHorasInput)
+    }
+
+    @Test
+    fun `add form is restored after process death`() = runTest(testDispatcher) {
+        val handle = SavedStateHandle()
+        val viewModel = addViewModelWithPlumbing(handle)
+        viewModel.onEvent(AddServiceEvent.Next)
+        viewModel.onEvent(AddServiceEvent.PlazoCancelacionHorasChanged("8"))
+        viewModel.onEvent(AddServiceEvent.WeekRangeFrom("LUNES", 0, "07:00"))
+        viewModel.onEvent(AddServiceEvent.PaymentToggled("EFECTIVO", true))
+        advanceUntilIdle()
+
+        val restoredHandle = SavedStateHandle(mapOf(DRAFT_KEY to handle.get<String>(DRAFT_KEY)))
+        val restored = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = null, handle = restoredHandle)
+        advanceUntilIdle()
+
+        val state = restored.uiState.value
+        assertEquals(AddServiceStep.ATTENTION, state.step)
+        assertEquals(1L, state.selectedCategoryId)
+        assertEquals(2L, state.selectedRubroId)
+        assertEquals(setOf(21L, 23L), state.selectedSubRubroIds)
+        assertEquals(3, state.subRubros.size)
+        assertEquals("8", state.plazoCancelacionHorasInput)
+        assertEquals("07:00", state.weeklyAvailability.rangesOn("LUNES").first().start)
+        assertEquals(setOf("EFECTIVO"), state.paymentMethods)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun `edit form restores unsaved changes after process death and stays dirty`() = runTest(testDispatcher) {
+        val handle = SavedStateHandle(mapOf("serviceId" to 11L))
+        val viewModel = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = 11L, handle = handle)
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.RequiresTurnsChanged(true))
+        viewModel.onEvent(AddServiceEvent.PlazoCancelacionHorasChanged("4"))
+        advanceUntilIdle()
+
+        val restoredHandle = SavedStateHandle(
+            mapOf("serviceId" to 11L, DRAFT_KEY to handle.get<String>(DRAFT_KEY)),
+        )
+        val restored = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = 11L, handle = restoredHandle)
+        advanceUntilIdle()
+
+        val state = restored.uiState.value
+        assertTrue(state.isEditing)
+        assertTrue(state.requiresTurns)
+        assertEquals("4", state.plazoCancelacionHorasInput)
+        assertEquals(setOf(21L, 22L), state.selectedSubRubroIds)
+        assertTrue(state.hasUnsavedChanges)
+    }
+
+    private fun kotlinx.coroutines.test.TestScope.addViewModelWithPlumbing(
+        handle: SavedStateHandle = SavedStateHandle(),
+    ): AddServiceViewModel {
+        val viewModel = addViewModel(FakeAccountRepository(), FakeCatalogRepository(), serviceId = null, handle = handle)
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.CategorySelected(1L))
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.RubroSelected(2L))
+        advanceUntilIdle()
+        viewModel.onEvent(AddServiceEvent.SubRubroToggled(21L, true))
+        viewModel.onEvent(AddServiceEvent.SubRubroToggled(23L, true))
+        return viewModel
+    }
+
     private fun addViewModel(
         accounts: FakeAccountRepository,
         catalog: FakeCatalogRepository,
         serviceId: Long?,
         availability: FakeAvailabilityRepository = FakeAvailabilityRepository(),
+        handle: SavedStateHandle = SavedStateHandle(buildMap { if (serviceId != null) put("serviceId", serviceId) }),
     ) = AddServiceViewModel(
-        savedStateHandle = SavedStateHandle(buildMap { if (serviceId != null) put("serviceId", serviceId) }),
+        savedStateHandle = handle,
         accountUseCases = AccountUseCases(accounts),
         getCategories = GetCategoriesUseCase(catalog),
         getRubros = GetRubrosByCategoryUseCase(catalog),
@@ -475,13 +593,18 @@ private class FakeAccountRepository(
 
 private class FakeCatalogRepository : CatalogRepository {
     override suspend fun getCategories() = AppResult.Success(listOf(CatalogOption(1, "Construcción")))
-    override suspend fun getRubrosByCategory(categoryId: Long) = AppResult.Success(listOf(CatalogOption(2, "Plomería")))
+    override suspend fun getRubrosByCategory(categoryId: Long) =
+        AppResult.Success(listOf(CatalogOption(2, "Plomería"), CatalogOption(3, "Gas")))
     override suspend fun getSubRubrosByRubro(rubroId: Long) = AppResult.Success(
-        listOf(
-            CatalogOption(21, "Reparación de cañerías"),
-            CatalogOption(22, "Instalación de sanitarios"),
-            CatalogOption(23, "Destape"),
-        ),
+        if (rubroId == 3L) {
+            listOf(CatalogOption(31, "Instalación de gas"), CatalogOption(32, "Pérdidas"))
+        } else {
+            listOf(
+                CatalogOption(21, "Reparación de cañerías"),
+                CatalogOption(22, "Instalación de sanitarios"),
+                CatalogOption(23, "Destape"),
+            )
+        },
     )
     override suspend fun searchBarrios(query: String) = AppResult.Success(
         listOf(CatalogOption(7, "Centro")).filter { it.label.contains(query, ignoreCase = true) || query.isBlank() },

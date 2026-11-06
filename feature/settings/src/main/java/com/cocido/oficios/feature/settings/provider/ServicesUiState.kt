@@ -47,6 +47,8 @@ data class AddServiceUiState(
     val selectedCategoryId: Long? = null,
     val selectedRubroId: Long? = null,
     val selectedSubRubroIds: Set<Long> = emptySet(),
+    /** Especialidades elegidas en rubros visitados antes; se restauran si el usuario vuelve a ese rubro. */
+    val subRubroSelectionsByRubro: Map<Long, Set<Long>> = emptyMap(),
     val servesAtClientHome: Boolean = true,
     val servesAtLocal: Boolean = false,
     val requiresTurns: Boolean = false,
