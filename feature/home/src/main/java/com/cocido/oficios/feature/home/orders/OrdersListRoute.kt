@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
+import com.cocido.oficios.core.common.sync.DataTopic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +34,7 @@ fun OrdersListRoute(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+    RefreshOnDataChange(DataTopic.ORDERS) { viewModel.onResume() }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->

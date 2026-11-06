@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.notifications
 
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
+import com.cocido.oficios.core.common.sync.DataTopic
 import androidx.compose.runtime.Composable
 import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +21,7 @@ fun NotificationsRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     RefreshOnResume(viewModel::onResume)
+    RefreshOnDataChange(DataTopic.NOTIFICATIONS) { viewModel.onResume() }
     val toastController = LocalOficiosToastController.current
 
     LaunchedEffect(viewModel) {

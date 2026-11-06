@@ -1,6 +1,8 @@
 package com.cocido.oficios.feature.onboarding
 
 import androidx.compose.runtime.Composable
+import com.cocido.oficios.core.common.sync.DataTopic
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +41,7 @@ fun ClientOnboardingRoute(
     val completionPhase by viewModel.completionPhase.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
+    RefreshOnDataChange(DataTopic.PROFILE_STATUS) { viewModel.load() }
 
     OnboardingChecklistRouteHost(
         completionPhase = completionPhase,
@@ -77,6 +80,8 @@ fun ProviderOnboardingRoute(
 
     // Al volver a primer plano: refresh silencioso (sin flash de Loading).
     ReloadOnResume { viewModel.load(silent = true) }
+    // Push de documentación aprobada/rechazada: el checklist avanza sin salir y volver.
+    RefreshOnDataChange(DataTopic.PROFILE_STATUS) { viewModel.load(silent = true) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(viewModel, lifecycleOwner) {
@@ -120,6 +125,7 @@ fun ProviderPendingRoute(
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
+    RefreshOnDataChange(DataTopic.PROFILE_STATUS) { viewModel.load() }
 
     ProviderPendingApprovalScreen(
         uiState = uiState,
@@ -146,6 +152,7 @@ fun ProviderRejectedRoute(
     val isLoggingOut by logoutViewModel.isLoading.collectAsStateWithLifecycle()
 
     ReloadOnResume { viewModel.load() }
+    RefreshOnDataChange(DataTopic.PROFILE_STATUS) { viewModel.load() }
 
     ProviderRejectedScreen(
         uiState = uiState,

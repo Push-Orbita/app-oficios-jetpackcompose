@@ -43,6 +43,7 @@ class ProfessionalProfileViewModel @Inject constructor(
     fun onEvent(event: ProfessionalProfileEvent) {
         when (event) {
             ProfessionalProfileEvent.Retry -> load()
+            ProfessionalProfileEvent.Refresh -> load(userInitiated = true)
             ProfessionalProfileEvent.Back -> emit(ProfessionalProfileEffect.NavigateBack)
             ProfessionalProfileEvent.EditRubro -> emit(ProfessionalProfileEffect.NavigateToServices)
             ProfessionalProfileEvent.EditAvailability -> emit(ProfessionalProfileEffect.NavigateToAvailability)
@@ -68,13 +69,15 @@ class ProfessionalProfileViewModel @Inject constructor(
         )
     }
 
-    private fun load() {
+    private fun load(userInitiated: Boolean = false) {
         viewModelScope.launch {
-            val hasCached = _uiState.value.gallery.isNotEmpty() || _uiState.value.certificates.isNotEmpty()
+            // Hay contenido si ya se mostró el perfil (aunque no tenga fotos ni certificados):
+            // en ese caso se recarga sin spinner de pantalla completa.
+            val hasCached = !_uiState.value.isLoading && !_uiState.value.loadFailed
             if (!hasCached) {
                 _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null, loadFailed = false)
             } else {
-                _uiState.value = _uiState.value.copy(errorMessage = null, loadFailed = false)
+                _uiState.value = _uiState.value.copy(errorMessage = null, loadFailed = false, isRefreshing = userInitiated)
             }
             when (val result = accountUseCases.getProfile()) {
                 is AppResult.Success -> {
@@ -95,6 +98,9 @@ class ProfessionalProfileViewModel @Inject constructor(
                         loadFailed = true,
                         errorMessage = result.error.userMessage(),
                     )
+                } else {
+                    _uiState.value = _uiState.value.copy(isRefreshing = false)
+                    if (userInitiated) emit(ProfessionalProfileEffect.ShowError(result.error.userMessage()))
                 }
             }
         }

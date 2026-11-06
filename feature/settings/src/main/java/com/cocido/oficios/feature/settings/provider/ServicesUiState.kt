@@ -9,6 +9,8 @@ import com.cocido.oficios.domain.model.WeeklyAvailability
 data class ServicesUiState(
     val isLoading: Boolean = true,
     val isDeleting: Boolean = false,
+    /** Pull-to-refresh en curso (la lista sigue visible). */
+    val isRefreshing: Boolean = false,
     val services: List<ManagedProviderService> = emptyList(),
     val errorMessage: String? = null,
     val pendingDelete: ManagedProviderService? = null,
@@ -16,6 +18,7 @@ data class ServicesUiState(
 
 sealed interface ServicesEvent {
     data object Retry : ServicesEvent
+    data object Refresh : ServicesEvent
     data object Back : ServicesEvent
     data object AddService : ServicesEvent
     data class EditService(val service: ManagedProviderService) : ServicesEvent

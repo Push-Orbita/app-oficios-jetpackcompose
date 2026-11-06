@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.home.orders
 
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
+import com.cocido.oficios.core.common.sync.DataTopic
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,6 +70,7 @@ fun OrderDetailRoute(
     // Reagendar/Puntuar navegan a otra pantalla y vuelven con popBackStack — el ViewModel de
     // esta ruta no se recrea, así que hay que refrescar manualmente al resumir.
     ReloadOnResume { viewModel.onEvent(OrderDetailEvent.Refresh) }
+    RefreshOnDataChange(DataTopic.ORDERS) { viewModel.onEvent(OrderDetailEvent.Refresh) }
 
     // Cliente EN_CURSO: el código de finalización se renueva solo mientras la pantalla está visible.
     val lifecycleOwner = LocalLifecycleOwner.current

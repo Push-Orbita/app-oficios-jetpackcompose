@@ -1,5 +1,7 @@
 package com.cocido.oficios.feature.settings
 
+import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
+import com.cocido.oficios.core.common.sync.DataTopic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +31,7 @@ fun SettingsRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val loggedOut by viewModel.loggedOut.collectAsStateWithLifecycle()
     RefreshOnResume(viewModel::onResume)
+    RefreshOnDataChange(DataTopic.PROFILE_STATUS) { viewModel.onResume() }
 
     LaunchedEffect(loggedOut) {
         if (loggedOut) onLoggedOut()
