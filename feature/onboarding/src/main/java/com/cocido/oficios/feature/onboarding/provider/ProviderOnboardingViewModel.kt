@@ -24,11 +24,11 @@ import com.cocido.oficios.feature.onboarding.common.withLocalDraftProgress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -63,8 +63,8 @@ class ProviderOnboardingViewModel @Inject constructor(
     private val _completionError = MutableStateFlow<String?>(null)
     val completionError: StateFlow<String?> = _completionError.asStateFlow()
 
-    private val _effects = MutableSharedFlow<OnboardingChecklistEffect>(replay = 1)
-    val effects: SharedFlow<OnboardingChecklistEffect> = _effects.asSharedFlow()
+    private val _effects = Channel<OnboardingChecklistEffect>(Channel.BUFFERED)
+    val effects: Flow<OnboardingChecklistEffect> = _effects.receiveAsFlow()
 
     private val _kycBannerMessage = MutableStateFlow<String?>(null)
     val kycBannerMessage: StateFlow<String?> = _kycBannerMessage.asStateFlow()
@@ -190,7 +190,7 @@ class ProviderOnboardingViewModel @Inject constructor(
                             OnboardingCompletionNavigator.navigateAfterCompletion(
                                 destination = destination.data,
                                 phase = _completionPhase,
-                                effects = _effects,
+                                effects = _effects::send,
                             )
                         }
                         is AppResult.Error -> {
@@ -225,7 +225,7 @@ class ProviderOnboardingViewModel @Inject constructor(
             stuckDestination = InitialDestination.ProviderOnboarding,
             fallbackDestination = null,
             phase = _completionPhase,
-            effects = _effects,
+            effects = _effects::send,
             onStuck = {
                 _uiState.update {
                     OnboardingChecklistUiState.Error(

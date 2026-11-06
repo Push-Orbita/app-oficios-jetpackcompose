@@ -22,6 +22,7 @@ import com.cocido.oficios.BuildConfig
 import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 import com.cocido.oficios.feature.auth.navigation.authGraph
+import com.cocido.oficios.feature.auth.wizard.RegistrationWizardNavigationEffects
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.navigation.HomeDestination
@@ -78,6 +79,16 @@ fun AppNavHost(
     val showMessage: (String) -> Unit = { message -> toastController.showError(message) }
     val transitions = rememberOficiosNavTransitions()
 
+    RegistrationWizardNavigationEffects(
+        navController = navController,
+        onNavigateToOnboarding = { navController.navigateToOnboardingGate() },
+        onNavigateToLogin = {
+            navController.navigate(AuthDestination.LOGIN) { launchSingleTop = true }
+        },
+        onNavigateToTerms = {
+            openTermsAndConditions(context) { navController.navigate(AppRoutes.TERMS) }
+        },
+    )
     NavHost(
         navController = navController,
         startDestination = startDestination,
