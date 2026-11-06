@@ -22,7 +22,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -52,7 +52,18 @@ class RegisterTradeViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<RegisterTradeEffect>()
     val effects: SharedFlow<RegisterTradeEffect> = _effects.asSharedFlow()
 
-    private var neighborhoodSearchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options ->
+                update { it.copy(isSearchingBarrios = false, neighborhoodOptions = options) }
+            },
+        ).also { barrioSearcher = it }
+
     private var rubrosJob: Job? = null
     private var subRubrosJob: Job? = null
 
@@ -87,7 +98,7 @@ class RegisterTradeViewModel @Inject constructor(
             RegisterTradeEvent.NeighborhoodFocused ->
                 onNeighborhoodQueryChanged(_uiState.value.neighborhoodQuery, preserveSelection = true)
             is RegisterTradeEvent.NeighborhoodSelected -> {
-                neighborhoodSearchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update {
                     it.copy(
                         neighborhoodQuery = event.option.label,
@@ -98,7 +109,7 @@ class RegisterTradeViewModel @Inject constructor(
                 }
             }
             RegisterTradeEvent.NeighborhoodSuggestionsDismissed -> {
-                neighborhoodSearchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update { it.copy(neighborhoodOptions = emptyList(), isSearchingBarrios = false) }
             }
             is RegisterTradeEvent.TimeSlotFromChanged -> update {
@@ -382,17 +393,9 @@ class RegisterTradeViewModel @Inject constructor(
             it.copy(
                 neighborhoodQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
-                isSearchingBarrios = true,
             )
         }
-        neighborhoodSearchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = neighborhoodSearchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                update { it.copy(isSearchingBarrios = false, neighborhoodOptions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     private fun update(block: (RegisterTradeUiState) -> RegisterTradeUiState) {

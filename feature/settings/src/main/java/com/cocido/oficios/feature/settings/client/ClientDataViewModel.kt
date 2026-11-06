@@ -14,7 +14,7 @@ import com.cocido.oficios.domain.model.UpdateClientContactoRequest
 import com.cocido.oficios.domain.model.UpdateClientDomicilioRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.GetCurrentLocationUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
@@ -43,7 +43,15 @@ class ClientDataViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<ClientDataEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
-    private var barrioSearchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options -> update { it.copy(isSearchingBarrios = false, barrioSuggestions = options) } },
+        ).also { barrioSearcher = it }
     private var geocodeJob: Job? = null
     private var skipNextResume = true
 
@@ -94,7 +102,7 @@ class ClientDataViewModel @Inject constructor(
             ClientDataEvent.BarrioFocused ->
                 searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
             is ClientDataEvent.BarrioSelected -> {
-                barrioSearchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update {
                     it.copy(
                         barrioId = event.option.id,
@@ -107,7 +115,7 @@ class ClientDataViewModel @Inject constructor(
                 scheduleLiveGeocode()
             }
             ClientDataEvent.BarrioSuggestionsDismissed -> {
-                barrioSearchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update { it.copy(barrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
             is ClientDataEvent.StreetChanged -> {
@@ -222,7 +230,7 @@ class ClientDataViewModel @Inject constructor(
     }
 
     private fun closeEditor() {
-        barrioSearchJob?.cancel()
+        
         cancelLiveGeocode()
         _uiState.update {
             it.copy(mode = ClientDataMode.LIST, editingId = null, errorMessage = null, barrioSuggestions = emptyList())
@@ -346,19 +354,11 @@ class ClientDataViewModel @Inject constructor(
             it.copy(
                 barrioQuery = query,
                 barrioId = if (preserveSelection) it.barrioId else null,
-                isSearchingBarrios = true,
                 errorMessage = null,
             ).withAddressFieldErrors()
         }
         if (!preserveSelection) scheduleLiveGeocode()
-        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = barrioSearchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                update { it.copy(isSearchingBarrios = false, barrioSuggestions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     private fun useCurrentLocation() {

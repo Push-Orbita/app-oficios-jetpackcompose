@@ -38,7 +38,19 @@ class CatalogRemoteDataSource @Inject constructor(
         query: String?,
         nombre: String? = query,
         pageSize: Int = 20,
+        allPages: Boolean = false,
     ): AppResult<List<BarrioDto>> = safeApiCall {
-        catalogApi.searchBarrios(query = query, nombre = nombre, pageSize = pageSize).data
+        val first = catalogApi.searchBarrios(query = query, nombre = nombre, pageSize = pageSize)
+        if (!allPages) {
+            first.data
+        } else {
+            buildList {
+                addAll(first.data)
+                val lastPage = first.metadata?.totalPages ?: 1
+                for (page in 2..lastPage) {
+                    addAll(catalogApi.searchBarrios(query, nombre, pageSize, page).data)
+                }
+            }.distinctBy { it.id }
+        }
     }
 }

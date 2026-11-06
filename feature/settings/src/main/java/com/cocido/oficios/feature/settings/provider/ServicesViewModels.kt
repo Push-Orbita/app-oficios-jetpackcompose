@@ -37,7 +37,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
@@ -202,7 +202,15 @@ class AddServiceViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val _effects = Channel<AddServiceEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
-    private var barrioSearchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarrios,
+            onLoading = { update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options -> update { it.copy(isSearchingBarrios = false, localBarrioSuggestions = options) } },
+        ).also { barrioSearcher = it }
     private var geocodeJob: Job? = null
     private var originalAvailabilityBySubId: Map<Long, WeeklyAvailability> = emptyMap()
 
@@ -248,7 +256,7 @@ class AddServiceViewModel @Inject constructor(
             AddServiceEvent.LocalBarrioFocused ->
                 searchBarrio(_uiState.value.localBarrioQuery, preserveSelection = true)
             is AddServiceEvent.LocalBarrioSelected -> {
-                barrioSearchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update {
                     it.copy(
                         localBarrioId = event.option.id,
@@ -260,7 +268,7 @@ class AddServiceViewModel @Inject constructor(
                 scheduleLiveGeocode()
             }
             AddServiceEvent.LocalBarrioSuggestionsDismissed -> {
-                barrioSearchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update { it.copy(localBarrioSuggestions = emptyList(), isSearchingBarrios = false) }
             }
             is AddServiceEvent.LocalStreetChanged -> {
@@ -590,19 +598,11 @@ class AddServiceViewModel @Inject constructor(
             it.copy(
                 localBarrioQuery = query,
                 localBarrioId = if (preserveSelection) it.localBarrioId else null,
-                isSearchingBarrios = true,
                 errorMessage = null,
             )
         }
         if (!preserveSelection) scheduleLiveGeocode()
-        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = barrioSearchJob,
-            query = query,
-            searchBarrios = searchBarrios,
-            onResult = { options ->
-                update { it.copy(isSearchingBarrios = false, localBarrioSuggestions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     private fun scheduleLiveGeocode() {

@@ -18,7 +18,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.model.RecentSearchEntry
 import com.cocido.oficios.domain.model.RecentSearchType
 import com.cocido.oficios.domain.usecase.search.GetRecentClientWorkersUseCase
@@ -81,8 +81,18 @@ class SearchResultsViewModel @Inject constructor(
     private var currentPage = 0
     private var endReached = false
     private var loadJob: Job? = null
-    private var barrioSearchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
     private var queryDebounceJob: Job? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { _filterSheetState.update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options ->
+                _filterSheetState.update { it.copy(isSearchingBarrios = false, barrioSuggestions = options) }
+            },
+        ).also { barrioSearcher = it }
     private var pendingTrackOnSuccess = true
     private var trackedKey: String? = null
     private var idleRecents: List<RecentSearchEntry> = emptyList()
@@ -447,23 +457,13 @@ class SearchResultsViewModel @Inject constructor(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
                 selectedBarrioLabel = if (preserveSelection) it.selectedBarrioLabel else null,
-                isSearchingBarrios = true,
             )
         }
-        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = barrioSearchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                _filterSheetState.update {
-                    it.copy(isSearchingBarrios = false, barrioSuggestions = options)
-                }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     private fun onBarrioSelected(barrio: CatalogOption) {
-        barrioSearchJob?.cancel()
+        barrioSearcher?.clearPending()
         _filterSheetState.update {
             it.copy(
                 barrioQuery = barrio.label,

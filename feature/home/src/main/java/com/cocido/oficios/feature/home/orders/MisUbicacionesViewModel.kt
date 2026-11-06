@@ -13,7 +13,7 @@ import com.cocido.oficios.domain.model.GeoCoordinates
 import com.cocido.oficios.domain.model.LocalAddressQuery
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
@@ -44,8 +44,16 @@ class MisUbicacionesViewModel @Inject constructor(
     private val _effects = Channel<MisUbicacionesEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    private var barrioSearchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
     private var geocodeJob: Job? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { updateSuccess { copy(isSearchingBarrios = true) } },
+            onResult = { options -> updateSuccess { copy(isSearchingBarrios = false, barrioSuggestions = options) } },
+        ).also { barrioSearcher = it }
     private var personaId: Long? = null
     private var skipNextResume = true
 
@@ -96,11 +104,13 @@ class MisUbicacionesViewModel @Inject constructor(
                 copy(barrioSuggestions = emptyList())
             }
             is MisUbicacionesEvent.BarrioSelected -> {
+                barrioSearcher?.clearPending()
                 updateSuccess {
                     copy(
                         barrioQuery = event.option.label,
                         barrioId = event.option.id,
                         barrioSuggestions = emptyList(),
+                        isSearchingBarrios = false,
                         errorMessage = null,
                     ).withAddressFieldErrors()
                 }
@@ -280,19 +290,11 @@ class MisUbicacionesViewModel @Inject constructor(
             copy(
                 barrioQuery = query,
                 barrioId = if (preserveSelection) barrioId else null,
-                isSearchingBarrios = true,
                 errorMessage = null,
             ).withAddressFieldErrors()
         }
         if (!preserveSelection) scheduleLiveGeocode()
-        barrioSearchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = barrioSearchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                updateSuccess { copy(isSearchingBarrios = false, barrioSuggestions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     private fun addressQuery(state: MisUbicacionesUiState.Success) = LocalAddressQuery(
