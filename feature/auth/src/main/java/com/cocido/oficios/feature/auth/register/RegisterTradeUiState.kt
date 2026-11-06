@@ -8,6 +8,12 @@ data class RegisterTradeTimeSlot(
     val to: String = "",
 )
 
+/** Especialidades elegidas para un rubro, recordadas al cambiar a otro rubro. */
+data class TradeSpecializationSelection(
+    val selected: Set<String> = emptySet(),
+    val other: String = "",
+)
+
 sealed interface RegisterTradeEvent {
     data class CategoryChanged(val value: String) : RegisterTradeEvent
     data class CategoryGridSelected(val option: CatalogOption) : RegisterTradeEvent
@@ -60,6 +66,7 @@ data class RegisterTradeUiState(
     val selectedTradeId: Long? = null,
     val selectedSpecializations: Set<String> = emptySet(),
     val otherSpecialization: String = "",
+    val specializationsByTrade: Map<Long, TradeSpecializationSelection> = emptyMap(),
     val selectedExperienceRange: String = "",
     val neighborhoodQuery: String = "",
     val neighborhoodOptions: List<CatalogOption> = emptyList(),
