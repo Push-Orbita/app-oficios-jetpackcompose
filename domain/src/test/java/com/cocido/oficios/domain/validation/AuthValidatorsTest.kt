@@ -96,7 +96,8 @@ class AuthValidatorsTest {
         assertEquals(PasswordPolicy.ERROR_LENGTH, AuthValidators.validatePassword("xd123"))
         assertEquals(PasswordPolicy.ERROR_LETTER, AuthValidators.validatePassword("12345678"))
         assertEquals(PasswordPolicy.ERROR_DIGIT, AuthValidators.validatePassword("abcdefgh"))
-        assertEquals(null, AuthValidators.validatePassword("secret123"))
+        assertEquals(PasswordPolicy.ERROR_SPECIAL, AuthValidators.validatePassword("secret123"))
+        assertEquals(null, AuthValidators.validatePassword("secret12!"))
     }
 
     @Test

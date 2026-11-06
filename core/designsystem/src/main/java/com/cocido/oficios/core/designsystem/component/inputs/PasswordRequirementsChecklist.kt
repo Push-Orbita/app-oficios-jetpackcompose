@@ -30,11 +30,20 @@ data class PasswordRequirementItem(
     val satisfied: Boolean,
 )
 
+/**
+ * Checklist de requisitos de contraseña. Se muestra siempre (también con el campo vacío) para
+ * que el usuario sepa las reglas antes de escribir; cada ítem se marca en vivo.
+ *
+ * Accesibilidad: todo el bloque es un único nodo para TalkBack con un estado resumido
+ * ("Faltan requisitos: …" / "La contraseña cumple los requisitos") anunciado como live region
+ * cortés, así no se lee cada fila por separado en cada tecla.
+ */
 @Composable
 fun PasswordRequirementsChecklist(
     requirements: List<PasswordRequirementItem>,
     modifier: Modifier = Modifier,
-    caption: String? = stringResource(R.string.ds_password_symbols_optional),
+    title: String? = stringResource(R.string.ds_password_requirements_title),
+    caption: String? = stringResource(R.string.ds_password_symbol_hint),
 ) {
     val missing = remember(requirements) {
         requirements.filterNot { it.satisfied }.map { it.label }
@@ -54,6 +63,13 @@ fun PasswordRequirementsChecklist(
         },
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xxs),
     ) {
+        if (!title.isNullOrBlank()) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodySmall,
+                color = OficiosTheme.colors.onSurfaceVariant,
+            )
+        }
         requirements.forEach { item ->
             PasswordRequirementRow(item = item)
         }
@@ -76,7 +92,6 @@ private fun PasswordRequirementRow(item: PasswordRequirementItem) {
     }
     Row(
         modifier = Modifier.semantics(mergeDescendants = true) {
-            liveRegion = LiveRegionMode.Polite
             stateDescription = state
         },
         verticalAlignment = Alignment.CenterVertically,
@@ -112,9 +127,10 @@ private fun PasswordRequirementsChecklistPreview() {
     OficiosTheme {
         PasswordRequirementsChecklist(
             requirements = listOf(
-                PasswordRequirementItem("Entre 8 y 64 caracteres", satisfied = true),
+                PasswordRequirementItem("Entre 6 y 64 caracteres", satisfied = true),
                 PasswordRequirementItem("Al menos una letra", satisfied = true),
-                PasswordRequirementItem("Al menos un número", satisfied = false),
+                PasswordRequirementItem("Al menos un número", satisfied = true),
+                PasswordRequirementItem("Al menos un símbolo (por ej. ! @ # $ - _)", satisfied = false),
             ),
         )
     }

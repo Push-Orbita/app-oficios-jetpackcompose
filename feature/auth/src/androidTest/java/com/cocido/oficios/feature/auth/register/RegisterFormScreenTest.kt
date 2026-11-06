@@ -101,13 +101,13 @@ class RegisterFormScreenTest {
                     mode = RegisterMode.PROVIDER,
                     uiState = RegisterFormUiState(
                         password = "xd123",
-                        passwordError = "Use entre 8 y 64 caracteres",
+                        passwordError = "Usá entre 6 y 64 caracteres",
                     ),
                     onEvent = {},
                 )
             }
         }
-        composeTestRule.onNodeWithText("Entre 8 y 64 caracteres")
+        composeTestRule.onNodeWithText("Entre 6 y 64 caracteres")
             .performScrollTo()
             .assertIsDisplayed()
     }
