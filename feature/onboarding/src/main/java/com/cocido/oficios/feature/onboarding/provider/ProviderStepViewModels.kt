@@ -388,7 +388,7 @@ class ProviderProfessionalInfoViewModel @Inject constructor(
     fun submit() {
         val state = _uiState.value
         if (state.descripcion.isBlank() || state.experiencia.isBlank()) {
-            _uiState.update { it.copy(error = "Complete Sobre mí y la experiencia") }
+            _uiState.update { it.copy(error = "Completá Sobre mí y tu experiencia") }
             return
         }
         viewModelScope.launch {
