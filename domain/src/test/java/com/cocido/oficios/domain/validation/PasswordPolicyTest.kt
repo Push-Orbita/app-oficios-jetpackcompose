@@ -14,78 +14,92 @@ class PasswordPolicyTest {
         assertEquals(PasswordPolicy.ERROR_BLANK, result.error)
         assertFalse(result.isValid)
         assertEquals(
-            listOf(false, false, false),
+            listOf(false, false, false, false),
             result.requirements.map { it.satisfied },
         )
     }
 
     @Test
-    fun `short password fails length and keeps letter and digit`() {
-        val result = PasswordPolicy.evaluate("abc12")
+    fun `requirements are listed in a stable order`() {
+        assertEquals(
+            listOf(
+                PasswordRequirementId.LENGTH,
+                PasswordRequirementId.LETTER,
+                PasswordRequirementId.DIGIT,
+                PasswordRequirementId.SPECIAL,
+            ),
+            PasswordPolicy.evaluate("").requirements.map { it.id },
+        )
+    }
+
+    @Test
+    fun `five characters fail length and keep the rest live`() {
+        val result = PasswordPolicy.evaluate("ab1!c")
         assertEquals(PasswordPolicy.ERROR_LENGTH, result.error)
         assertFalse(result.requirement(PasswordRequirementId.LENGTH).satisfied)
         assertTrue(result.requirement(PasswordRequirementId.LETTER).satisfied)
         assertTrue(result.requirement(PasswordRequirementId.DIGIT).satisfied)
+        assertTrue(result.requirement(PasswordRequirementId.SPECIAL).satisfied)
+    }
+
+    @Test
+    fun `six characters with letter digit and symbol are accepted`() {
+        assertNull(PasswordPolicy.validate("abc1!x"))
+        assertTrue(PasswordPolicy.evaluate("abc1!x").requirements.all { it.satisfied })
     }
 
     @Test
     fun `password longer than 64 fails length`() {
-        val result = PasswordPolicy.evaluate("a".repeat(63) + "1".repeat(2))
-        assertEquals(65, ("a".repeat(63) + "1".repeat(2)).length)
-        assertEquals(PasswordPolicy.ERROR_LENGTH, result.error)
-        assertFalse(result.requirement(PasswordRequirementId.LENGTH).satisfied)
+        val password = "a".repeat(62) + "1!" + "b"
+        assertEquals(65, password.length)
+        assertEquals(PasswordPolicy.ERROR_LENGTH, PasswordPolicy.validate(password))
     }
 
     @Test
-    fun `letters only fails digit`() {
-        val result = PasswordPolicy.evaluate("abcdefgh")
-        assertEquals(PasswordPolicy.ERROR_DIGIT, result.error)
-        assertTrue(result.requirement(PasswordRequirementId.LENGTH).satisfied)
-        assertTrue(result.requirement(PasswordRequirementId.LETTER).satisfied)
-        assertFalse(result.requirement(PasswordRequirementId.DIGIT).satisfied)
-    }
-
-    @Test
-    fun `digits only fails letter`() {
-        val result = PasswordPolicy.evaluate("12345678")
-        assertEquals(PasswordPolicy.ERROR_LETTER, result.error)
-        assertTrue(result.requirement(PasswordRequirementId.LENGTH).satisfied)
-        assertFalse(result.requirement(PasswordRequirementId.LETTER).satisfied)
-        assertTrue(result.requirement(PasswordRequirementId.DIGIT).satisfied)
-    }
-
-    @Test
-    fun `leading or trailing spaces are rejected`() {
-        assertEquals(PasswordPolicy.ERROR_EDGES, PasswordPolicy.validate(" secret12"))
-        assertEquals(PasswordPolicy.ERROR_EDGES, PasswordPolicy.validate("secret12 "))
-        assertEquals(PasswordPolicy.ERROR_EDGES, PasswordPolicy.validate(" secret12 "))
-    }
-
-    @Test
-    fun `internal spaces are allowed when other rules pass`() {
-        assertNull(PasswordPolicy.validate("sec ret1"))
-    }
-
-    @Test
-    fun `symbols are optional and a mixed password is valid`() {
-        assertNull(PasswordPolicy.validate("secret12"))
-        assertNull(PasswordPolicy.validate("Secret1!"))
-        assertNull(PasswordPolicy.validate("ñandú-9x"))
-        val result = PasswordPolicy.evaluate("Secret1!")
-        assertTrue(result.isValid)
-        assertTrue(result.requirements.all { it.satisfied })
-    }
-
-    @Test
-    fun `64 alphanumeric characters are accepted`() {
-        val password = "a".repeat(63) + "1"
+    fun `64 characters are accepted`() {
+        val password = "a".repeat(62) + "1!"
         assertEquals(PasswordPolicy.MAX_LENGTH, password.length)
         assertNull(PasswordPolicy.validate(password))
     }
 
     @Test
-    fun `8 alphanumeric characters are accepted`() {
-        assertNull(PasswordPolicy.validate("abcd1234"))
+    fun `missing letter digit or symbol report the right error`() {
+        assertEquals(PasswordPolicy.ERROR_LETTER, PasswordPolicy.validate("123456!"))
+        assertEquals(PasswordPolicy.ERROR_DIGIT, PasswordPolicy.validate("abcdef!"))
+        assertEquals(PasswordPolicy.ERROR_SPECIAL, PasswordPolicy.validate("abc123"))
+        assertFalse(PasswordPolicy.evaluate("abc123").requirement(PasswordRequirementId.SPECIAL).satisfied)
+    }
+
+    @Test
+    fun `any visible non alphanumeric character counts as symbol`() {
+        listOf('!', '@', '#', '$', '%', '&', '*', '-', '_', '.', '?', '/', '+', '=', '¿', '¡', '€', '°').forEach {
+            assertTrue("$it debería contar como símbolo", PasswordPolicy.isSpecialChar(it))
+        }
+    }
+
+    @Test
+    fun `letters with accents and digits are not symbols`() {
+        listOf('a', 'Z', 'ñ', 'á', 'Ü', '0', '9').forEach {
+            assertFalse("$it no es símbolo", PasswordPolicy.isSpecialChar(it))
+        }
+        assertNull(PasswordPolicy.validate("ñandú-9x"))
+    }
+
+    @Test
+    fun `spaces do not count as symbol`() {
+        assertFalse(PasswordPolicy.isSpecialChar(' '))
+        assertEquals(PasswordPolicy.ERROR_SPECIAL, PasswordPolicy.validate("sec ret1"))
+    }
+
+    @Test
+    fun `internal spaces are allowed when other rules pass`() {
+        assertNull(PasswordPolicy.validate("sec ret1!"))
+    }
+
+    @Test
+    fun `leading or trailing spaces are rejected`() {
+        assertEquals(PasswordPolicy.ERROR_EDGES, PasswordPolicy.validate(" secret1!"))
+        assertEquals(PasswordPolicy.ERROR_EDGES, PasswordPolicy.validate("secret1! "))
     }
 
     @Test

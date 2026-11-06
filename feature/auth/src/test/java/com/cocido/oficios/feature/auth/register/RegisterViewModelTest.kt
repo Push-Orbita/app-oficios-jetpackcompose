@@ -57,8 +57,8 @@ class RegisterViewModelTest {
         val (viewModel, _) = createViewModel()
         viewModel.setMode(RegisterMode.CLIENT)
         viewModel.onEvent(RegisterFormEvent.EmailChanged("invalid"))
-        viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
-        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("secret123"))
+        viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret12!"))
+        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("secret12!"))
         viewModel.onEvent(RegisterFormEvent.TermsChanged(true))
         assertFalse(viewModel.uiState.value.canSubmit)
     }
@@ -139,8 +139,8 @@ class RegisterViewModelTest {
         viewModel.onEvent(RegisterFormEvent.LastNameChanged(""))
         viewModel.onEvent(RegisterFormEvent.DocumentChanged("12312"))
         viewModel.onEvent(RegisterFormEvent.EmailChanged("user@test.com"))
-        viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret123"))
-        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("secret123"))
+        viewModel.onEvent(RegisterFormEvent.PasswordChanged("secret12!"))
+        viewModel.onEvent(RegisterFormEvent.ConfirmPasswordChanged("secret12!"))
         viewModel.onEvent(RegisterFormEvent.TermsChanged(true))
 
         assertFalse(viewModel.uiState.value.canSubmit)
@@ -278,7 +278,7 @@ class RegisterViewModelTest {
             lastName = lastName,
             document = "12345678",
             email = "user@test.com",
-            password = "secret123",
+            password = "secret12!",
         )
     }
 

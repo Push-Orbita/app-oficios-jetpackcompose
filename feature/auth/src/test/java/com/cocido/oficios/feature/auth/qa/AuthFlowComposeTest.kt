@@ -119,7 +119,7 @@ class AuthFlowComposeTest {
                         password = "xd123",
                         confirmPassword = "xd123",
                         acceptedTerms = true,
-                        passwordError = "Use entre 8 y 64 caracteres",
+                        passwordError = "Usá entre 6 y 64 caracteres",
                         canSubmit = false,
                     ),
                     onEvent = {},
@@ -127,7 +127,7 @@ class AuthFlowComposeTest {
             }
         }
         composeRule.onNodeWithText("Siguiente").performScrollTo().assertIsEnabled()
-        composeRule.onNodeWithText("Entre 8 y 64 caracteres")
+        composeRule.onNodeWithText("Entre 6 y 64 caracteres")
             .performScrollTo()
             .assertIsDisplayed()
     }

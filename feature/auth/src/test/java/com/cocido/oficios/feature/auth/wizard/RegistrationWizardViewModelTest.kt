@@ -173,8 +173,8 @@ class RegistrationWizardViewModelTest {
         viewModel.onPersonalEvent(RegisterFormEvent.LastNameChanged("López"))
         viewModel.onPersonalEvent(RegisterFormEvent.DocumentChanged("12345678"))
         viewModel.onPersonalEvent(RegisterFormEvent.EmailChanged("ana@test.com"))
-        viewModel.onPersonalEvent(RegisterFormEvent.PasswordChanged("secret123"))
-        viewModel.onPersonalEvent(RegisterFormEvent.ConfirmPasswordChanged("secret123"))
+        viewModel.onPersonalEvent(RegisterFormEvent.PasswordChanged("secret12!"))
+        viewModel.onPersonalEvent(RegisterFormEvent.ConfirmPasswordChanged("secret12!"))
         viewModel.onPersonalEvent(RegisterFormEvent.TermsChanged(true))
     }
 

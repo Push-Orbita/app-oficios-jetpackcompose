@@ -15,5 +15,6 @@
     <string name="ds_password_requirement_pending">Pendiente: %1$s</string>
     <string name="ds_password_requirements_all_met">La contraseña cumple los requisitos</string>
     <string name="ds_password_requirements_missing">Faltan requisitos: %1$s</string>
-    <string name="ds_password_symbols_optional">Los símbolos son opcionales.</string>
+    <string name="ds_password_requirements_title">Tu contraseña necesita:</string>
+    <string name="ds_password_symbol_hint">Símbolo: cualquier carácter que no sea letra, número ni espacio.</string>
 </resources>
