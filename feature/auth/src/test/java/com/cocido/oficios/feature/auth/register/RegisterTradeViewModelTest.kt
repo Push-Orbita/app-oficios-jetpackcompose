@@ -181,6 +181,63 @@ class RegisterTradeViewModelTest {
         assertTrue(viewModel.uiState.value.categoryOptions.isEmpty())
     }
 
+    @Test
+    fun `re-selecting the same trade keeps selected specializations`() = runTest {
+        val viewModel = viewModelWithPlumbingSelected()
+
+        viewModel.onEvent(RegisterTradeEvent.TradeChanged("Plomería"))
+        advanceUntilIdle()
+
+        assertEquals(setOf("100"), viewModel.uiState.value.selectedSpecializations)
+        assertEquals("Detalle", viewModel.uiState.value.otherSpecialization)
+        assertEquals(10L, viewModel.uiState.value.selectedTradeId)
+    }
+
+    @Test
+    fun `re-selecting the same category keeps trade and specializations`() = runTest {
+        val viewModel = viewModelWithPlumbingSelected()
+
+        viewModel.onEvent(RegisterTradeEvent.CategoryChanged("Hogar y Construcción"))
+        advanceUntilIdle()
+
+        assertEquals(10L, viewModel.uiState.value.selectedTradeId)
+        assertEquals(setOf("100"), viewModel.uiState.value.selectedSpecializations)
+    }
+
+    @Test
+    fun `changing trade resets specializations and going back restores them`() = runTest {
+        val viewModel = viewModelWithPlumbingSelected()
+
+        viewModel.onEvent(RegisterTradeEvent.TradeChanged("Gas"))
+        advanceUntilIdle()
+        assertEquals(20L, viewModel.uiState.value.selectedTradeId)
+        assertTrue(viewModel.uiState.value.selectedSpecializations.isEmpty())
+        assertEquals("", viewModel.uiState.value.otherSpecialization)
+
+        viewModel.onEvent(RegisterTradeEvent.TradeChanged("Plomería"))
+        advanceUntilIdle()
+        assertEquals(setOf("100"), viewModel.uiState.value.selectedSpecializations)
+        assertEquals("Detalle", viewModel.uiState.value.otherSpecialization)
+    }
+
+    private fun kotlinx.coroutines.test.TestScope.viewModelWithPlumbingSelected(): RegisterTradeViewModel {
+        fakeCatalogRepository.categories = listOf(CatalogOption(id = 1, label = "Hogar y Construcción"))
+        fakeCatalogRepository.rubros = listOf(
+            CatalogOption(id = 10, label = "Plomería"),
+            CatalogOption(id = 20, label = "Gas"),
+        )
+        fakeCatalogRepository.subRubros = listOf(CatalogOption(id = 100, label = "Desatasco"))
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.CategoryChanged("Hogar y Construcción"))
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.TradeChanged("Plomería"))
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.SpecializationToggled("100", checked = true))
+        viewModel.onEvent(RegisterTradeEvent.OtherSpecializationChanged("Detalle"))
+        return viewModel
+    }
+
     private fun createViewModel(): RegisterTradeViewModel = RegisterTradeViewModel(
         getCategoriesUseCase = GetCategoriesUseCase(fakeCatalogRepository),
         getRubrosByCategoryUseCase = GetRubrosByCategoryUseCase(fakeCatalogRepository),

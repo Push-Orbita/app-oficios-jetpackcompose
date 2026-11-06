@@ -53,6 +53,8 @@ class RegisterTradeViewModel @Inject constructor(
     val effects: SharedFlow<RegisterTradeEffect> = _effects.asSharedFlow()
 
     private var neighborhoodSearchJob: Job? = null
+    private var rubrosJob: Job? = null
+    private var subRubrosJob: Job? = null
 
     init {
         _uiState.update {
@@ -170,10 +172,20 @@ class RegisterTradeViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Re-elegir la categoría ya seleccionada es un no-op: no debe borrar rubro ni especialidades.
+     * Cambiar de categoría sí limpia el rubro, pero las especialidades elegidas quedan
+     * recordadas por rubro ([RegisterTradeUiState.specializationsByTrade]).
+     */
     private fun onCategoryChanged(label: String) {
-        val category = _uiState.value.categoryOptions.find { it.label == label } ?: return
+        val state = _uiState.value
+        val category = state.categoryOptions.find { it.label == label } ?: return
+        if (category.id == state.selectedCategoryId) {
+            if (state.tradeOptions.isEmpty() && !state.isLoadingTrades) loadRubros(category.id)
+            return
+        }
         update {
-            it.copy(
+            it.rememberCurrentSpecializations().copy(
                 selectedCategoryId = category.id,
                 selectedTradeId = null,
                 tradeOptions = emptyList(),
@@ -186,14 +198,26 @@ class RegisterTradeViewModel @Inject constructor(
         loadRubros(category.id)
     }
 
+    /**
+     * Re-tocar el mismo rubro (grilla o dropdown) es un no-op: conserva las especialidades.
+     * Cambiar a otro rubro arranca su propia selección, pero guarda la del rubro anterior
+     * para restaurarla si el usuario vuelve a elegirlo (no se pierde en silencio).
+     */
     private fun onTradeChanged(label: String) {
-        val rubro = _uiState.value.tradeOptions.find { it.label == label } ?: return
+        val state = _uiState.value
+        val rubro = state.tradeOptions.find { it.label == label } ?: return
+        if (rubro.id == state.selectedTradeId) {
+            if (state.specializationOptions.isEmpty() && !state.isLoadingSpecializations) loadSubRubros(rubro.id)
+            return
+        }
         update {
-            it.copy(
+            val remembered = it.rememberCurrentSpecializations()
+            val restored = remembered.specializationsByTrade[rubro.id]
+            remembered.copy(
                 selectedTradeId = rubro.id,
                 specializationOptions = emptyList(),
-                selectedSpecializations = emptySet(),
-                otherSpecialization = "",
+                selectedSpecializations = restored?.selected.orEmpty(),
+                otherSpecialization = restored?.other.orEmpty(),
                 catalogError = null,
             )
         }
@@ -226,11 +250,13 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     private fun loadRubros(categoryId: Long) {
-        viewModelScope.launch {
+        rubrosJob?.cancel()
+        rubrosJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingTrades = true, catalogError = null) }
             when (val result = getRubrosByCategoryUseCase(categoryId)) {
                 is AppResult.Success -> {
                     _uiState.update {
+                        if (it.selectedCategoryId != categoryId) return@update it
                         it.copy(
                             isLoadingTrades = false,
                             tradeOptions = result.data,
@@ -251,11 +277,14 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     private fun loadSubRubros(rubroId: Long) {
-        viewModelScope.launch {
+        subRubrosJob?.cancel()
+        subRubrosJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoadingSpecializations = true, catalogError = null) }
             when (val result = getSubRubrosByRubroUseCase(rubroId)) {
                 is AppResult.Success -> {
                     _uiState.update {
+                        // Respuesta tardía de un rubro que ya no está seleccionado: se descarta.
+                        if (it.selectedTradeId != rubroId) return@update it
                         it.copy(
                             isLoadingSpecializations = false,
                             specializationOptions = result.data,
@@ -386,6 +415,15 @@ class RegisterTradeViewModel @Inject constructor(
         return copy(canContinue = canContinue)
     }
 
+}
+
+private fun RegisterTradeUiState.rememberCurrentSpecializations(): RegisterTradeUiState {
+    val tradeId = selectedTradeId ?: return this
+    if (selectedSpecializations.isEmpty() && otherSpecialization.isBlank()) return this
+    return copy(
+        specializationsByTrade = specializationsByTrade +
+            (tradeId to TradeSpecializationSelection(selectedSpecializations, otherSpecialization)),
+    )
 }
 
 private fun RegisterTradeUiState.withWeek(week: WeeklyAvailability) = copy(
