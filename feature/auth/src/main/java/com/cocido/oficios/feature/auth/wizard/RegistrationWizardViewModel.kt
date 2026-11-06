@@ -23,11 +23,11 @@ import com.cocido.oficios.feature.auth.register.RegisterFormUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -88,8 +88,8 @@ class RegistrationWizardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegistrationWizardUiState(role = role))
     val uiState: StateFlow<RegistrationWizardUiState> = _uiState.asStateFlow()
 
-    private val _effects = MutableSharedFlow<RegistrationWizardEffect>(replay = 1)
-    val effects: SharedFlow<RegistrationWizardEffect> = _effects.asSharedFlow()
+    private val _effects = Channel<RegistrationWizardEffect>(Channel.BUFFERED)
+    val effects: Flow<RegistrationWizardEffect> = _effects.receiveAsFlow()
 
     /** Contraseña solo en memoria. Nunca se escribe en el draft. */
     private var passwordInMemory: String = ""
@@ -201,7 +201,7 @@ class RegistrationWizardViewModel @Inject constructor(
                     passwordInMemory = ""
                     confirmPasswordInMemory = ""
                     _uiState.update { it.copy(isCommitting = false, personal = it.personal.copy(password = "", confirmPassword = "")) }
-                    _effects.emit(RegistrationWizardEffect.AccountCreated)
+                    _effects.send(RegistrationWizardEffect.AccountCreated)
                 }
                 is RegistrationCommitResult.EmailConflict -> {
                     _uiState.update {
@@ -213,7 +213,7 @@ class RegistrationWizardViewModel @Inject constructor(
                             ),
                         )
                     }
-                    _effects.emit(RegistrationWizardEffect.GoToPersonal)
+                    _effects.send(RegistrationWizardEffect.GoToPersonal)
                 }
                 is RegistrationCommitResult.Failed -> {
                     _uiState.update { it.copy(isCommitting = false, commitError = result.message) }
@@ -337,7 +337,7 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     private fun emit(effect: RegistrationWizardEffect) {
-        viewModelScope.launch { _effects.emit(effect) }
+        viewModelScope.launch { _effects.send(effect) }
     }
 
     private fun RegisterFormUiState.validatedPersonal(): RegisterFormUiState {

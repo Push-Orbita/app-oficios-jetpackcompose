@@ -168,6 +168,56 @@ class RegistrationWizardViewModelTest {
         assertEquals("", personal.confirmPassword)
     }
 
+    @Test
+    fun `back and rotation do not replay a consumed navigation event`() = runTest(dispatcher) {
+        val env = createEnv()
+        fillPersonal(env.viewModel)
+        env.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+        assertEquals(listOf(RegistrationWizardEffect.GoToProfile), env.effects)
+        env.collectJob?.cancel()
+        advanceUntilIdle()
+        val afterRecreation = mutableListOf<RegistrationWizardEffect>()
+        backgroundScope.launch(dispatcher) { env.viewModel.effects.collect { afterRecreation += it } }
+        env.viewModel.onContactNameChanged("Edited after navigation")
+        advanceUntilIdle()
+        assertTrue(afterRecreation.isEmpty())
+    }
+
+    @Test
+    fun `event buffered while stopped is delivered once on resume`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.collectJob?.cancel()
+        advanceUntilIdle()
+        fillPersonal(env.viewModel)
+        env.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+        val resumed = mutableListOf<RegistrationWizardEffect>()
+        val collector = launch(dispatcher) { env.viewModel.effects.collect { resumed += it } }
+        advanceUntilIdle()
+        assertEquals(listOf(RegistrationWizardEffect.GoToProfile), resumed)
+        collector.cancel()
+        advanceUntilIdle()
+        val restarted = mutableListOf<RegistrationWizardEffect>()
+        backgroundScope.launch(dispatcher) { env.viewModel.effects.collect { restarted += it } }
+        advanceUntilIdle()
+        assertTrue(restarted.isEmpty())
+    }
+
+    @Test
+    fun `process recreation restores draft without issuing old navigation`() = runTest(dispatcher) {
+        val old = createEnv()
+        fillPersonal(old.viewModel)
+        old.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+        old.collectJob?.cancel()
+        val recreated = createEnv(drafts = old.drafts)
+        advanceUntilIdle()
+        assertEquals("ana@test.com", recreated.viewModel.uiState.value.personal.email)
+        assertEquals("", recreated.viewModel.uiState.value.personal.password)
+        assertTrue(recreated.effects.isEmpty())
+        recreated.collectJob?.cancel()
+    }
     private fun fillPersonal(viewModel: RegistrationWizardViewModel) {
         viewModel.onPersonalEvent(RegisterFormEvent.FirstNameChanged("Ana"))
         viewModel.onPersonalEvent(RegisterFormEvent.LastNameChanged("López"))

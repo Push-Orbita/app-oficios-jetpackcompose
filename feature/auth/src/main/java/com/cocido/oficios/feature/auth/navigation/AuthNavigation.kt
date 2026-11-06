@@ -69,12 +69,7 @@ fun NavGraphBuilder.authGraph(
             onContactSupport = onContactSupport,
         )
     }
-    registrationWizardGraph(
-        navController = navController,
-        onNavigateToOnboarding = onNavigateToOnboarding,
-        onNavigateToLogin = onNavigateToLogin,
-        onNavigateToTerms = onNavigateToTerms,
-    )
+    registrationWizardGraph(navController = navController)
     composable(AuthDestination.FORGOT_PASSWORD) {
         ForgotPasswordRoute(
             onNavigateToReset = onNavigateToResetPassword,
