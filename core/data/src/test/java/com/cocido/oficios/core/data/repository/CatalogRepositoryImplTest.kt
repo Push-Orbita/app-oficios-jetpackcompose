@@ -80,45 +80,57 @@ class CatalogRepositoryImplTest {
         assertEquals(listOf("Miguel Ortiz", "San Miguel"), result.data.map { it.label })
 
         val request = server.takeRequest()
-        assertEquals("/barrios/search?q=miguel&nombre=miguel&pageSize=20&pageNumber=1", request.path)
+        assertEquals("/barrios/search?q=miguel&nombre=miguel&pageSize=100&pageNumber=1", request.path)
     }
 
     @Test
-    fun `searchBarrios Centro matches case and accents then falls back to full list`() = runTest {
-        server.enqueue(
-            MockResponse()
-                .setResponseCode(200)
-                .setBody(
-                    """
-                    { "data": [], "metadata": { "count": 0, "pageSize": 20, "pageNumber": 1, "totalPages": 0 } }
-                    """.trimIndent(),
-                ),
-        )
-        server.enqueue(
-            MockResponse()
-                .setResponseCode(200)
-                .setBody(
-                    """
-                    {
-                      "data": [
-                        { "id": 1, "nombre": "Centro" },
-                        { "id": 2, "nombre": "San Francisco" }
-                      ],
-                      "metadata": { "count": 2, "pageSize": 100, "pageNumber": 1, "totalPages": 1 }
-                    }
-                    """.trimIndent(),
-                ),
-        )
-
-        val result = repository.searchBarrios("centro")
-
-        assertTrue(result is AppResult.Success)
-        result as AppResult.Success
-        assertEquals(listOf("Centro"), result.data.map { it.label })
-        assertEquals("/barrios/search?q=centro&nombre=centro&pageSize=20&pageNumber=1", server.takeRequest().path)
-        assertEquals("/barrios/search?pageSize=100&pageNumber=1", server.takeRequest().path)
+    fun `empty server search does not fall back to a truncated catalog`() = runTest {
+        server.enqueue(MockResponse().setBody("""{"data":[],"metadata":{"count":0,"totalPages":0}}"""))
+        val result = repository.searchBarrios("missing") as AppResult.Success
+        assertTrue(result.data.isEmpty())
+        assertEquals(1, server.requestCount)
+        assertEquals("missing", server.takeRequest().requestUrl?.queryParameter("q"))
     }
 
+    @Test
+    fun `focus preview never hides a barrio on catalog page two`() = runTest {
+        server.enqueue(MockResponse().setBody("""
+            {"data":[{"id":100,"nombre":"Centro"}],
+             "metadata":{"count":113,"pageSize":100,"pageNumber":1,"totalPages":2}}
+        """.trimIndent()))
+        server.enqueue(MockResponse().setBody("""
+            {"data":[{"id":1,"nombre":"1 de Mayo"}],
+             "metadata":{"count":1,"pageSize":100,"pageNumber":1,"totalPages":1}}
+        """.trimIndent()))
+        repository.searchBarrios("")
+        repository.searchBarrios("  ")
+        assertEquals(1, server.requestCount)
+        val result = repository.searchBarrios("1 de Mayo") as AppResult.Success
+        assertEquals(listOf("1 de Mayo"), result.data.map { it.label })
+        assertEquals("/barrios/search?pageSize=100&pageNumber=1", server.takeRequest().path)
+        val search = server.takeRequest().requestUrl!!
+        assertEquals("1 de Mayo", search.queryParameter("q"))
+        assertEquals("1 de Mayo", search.queryParameter("nombre"))
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `server search includes matches from both fake result pages`() = runTest {
+        val firstPageData = (1..100).joinToString { """{"id":$it,"nombre":"Barrio $it"}""" }
+        server.enqueue(MockResponse().setBody("""
+            {"data":[$firstPageData],
+             "metadata":{"count":101,"pageSize":100,"pageNumber":1,"totalPages":2}}
+        """.trimIndent()))
+        server.enqueue(MockResponse().setBody("""
+            {"data":[{"id":101,"nombre":"Barrio Pagina Dos"}],
+             "metadata":{"count":101,"pageSize":100,"pageNumber":2,"totalPages":2}}
+        """.trimIndent()))
+        val result = repository.searchBarrios("Barrio") as AppResult.Success
+        assertEquals(101, result.data.size)
+        assertEquals("Barrio Pagina Dos", result.data.last().label)
+        assertEquals("1", server.takeRequest().requestUrl?.queryParameter("pageNumber"))
+        assertEquals("2", server.takeRequest().requestUrl?.queryParameter("pageNumber"))
+    }
     @Test
     fun `searchBarrios with blank query lists barrios without q`() = runTest {
         server.enqueue(

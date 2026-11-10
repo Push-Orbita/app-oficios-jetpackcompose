@@ -15,7 +15,7 @@ import com.cocido.oficios.domain.model.ProviderLocalDomicilioRequest
 import com.cocido.oficios.domain.model.toRubroFullRequest
 import com.cocido.oficios.domain.usecase.account.AccountUseCases
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.location.GeocodeLocalAddressUseCase
 import com.cocido.oficios.domain.usecase.location.launchDebouncedForwardGeocode
 import com.cocido.oficios.domain.validation.DomicilioFieldValidation
@@ -40,7 +40,15 @@ class CommercialLocalViewModel @Inject constructor(
     private val _effects = Channel<CommercialLocalEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    private var searchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarrios,
+            onLoading = { update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options -> update { it.copy(isSearchingBarrios = false, barrioOptions = options) } },
+        ).also { barrioSearcher = it }
     private var geocodeJob: Job? = null
     private var targetService: ManagedProviderService? = null
     private var paymentMethods: List<String> = emptyList()
@@ -70,7 +78,7 @@ class CommercialLocalViewModel @Inject constructor(
                 searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
             is CommercialLocalEvent.BarrioSelected -> onBarrioSelected(event.option)
             CommercialLocalEvent.BarrioSuggestionsDismissed -> {
-                searchJob?.cancel()
+                barrioSearcher?.clearPending()
                 update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
             }
             is CommercialLocalEvent.CalleChanged -> {
@@ -173,23 +181,15 @@ class CommercialLocalViewModel @Inject constructor(
             it.copy(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
-                isSearchingBarrios = true,
                 errorMessage = null,
             )
         }
         if (!preserveSelection) scheduleLiveGeocode()
-        searchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = searchJob,
-            query = query,
-            searchBarrios = searchBarrios,
-            onResult = { options ->
-                update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     private fun onBarrioSelected(option: CatalogOption) {
-        searchJob?.cancel()
+        barrioSearcher?.clearPending()
         update {
             it.copy(
                 barrioQuery = option.label,
