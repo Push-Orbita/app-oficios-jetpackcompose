@@ -5,7 +5,6 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.InitialDestination
 import com.cocido.oficios.domain.usecase.auth.ResolveInitialDestinationUseCase
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -18,15 +17,15 @@ object OnboardingCompletionNavigator {
     suspend fun navigateAfterCompletion(
         destination: InitialDestination,
         phase: MutableStateFlow<OnboardingCompletionPhase>,
-        effects: MutableSharedFlow<OnboardingChecklistEffect>,
+        effects: suspend (OnboardingChecklistEffect) -> Unit,
     ) {
         if (shouldShowSuccessAnimation(destination)) {
             phase.update { OnboardingCompletionPhase.Confirmed(destination) }
             delay(SUCCESS_ANIMATION_DURATION_MS)
-            effects.emit(OnboardingChecklistEffect.NavigateAfterCompletion(destination))
+            effects(OnboardingChecklistEffect.NavigateAfterCompletion(destination))
             phase.update { OnboardingCompletionPhase.Idle }
         } else {
-            effects.emit(OnboardingChecklistEffect.NavigateAfterCompletion(destination))
+            effects(OnboardingChecklistEffect.NavigateAfterCompletion(destination))
         }
     }
 
@@ -35,7 +34,7 @@ object OnboardingCompletionNavigator {
         stuckDestination: InitialDestination,
         fallbackDestination: InitialDestination?,
         phase: MutableStateFlow<OnboardingCompletionPhase>,
-        effects: MutableSharedFlow<OnboardingChecklistEffect>,
+        effects: suspend (OnboardingChecklistEffect) -> Unit,
         onStuck: suspend () -> Unit,
         onResolveError: suspend (String) -> Unit,
     ) {
