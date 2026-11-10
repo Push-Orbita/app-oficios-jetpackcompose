@@ -4,19 +4,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.Flow
 import androidx.navigation.navigation
 import com.cocido.oficios.feature.auth.navigation.AuthDestination
 
 fun NavGraphBuilder.registrationWizardGraph(
     navController: NavHostController,
-    onNavigateToOnboarding: () -> Unit,
-    onNavigateToLogin: () -> Unit,
-    onNavigateToTerms: () -> Unit,
 ) {
     navigation(
         route = AuthDestination.WIZARD_GRAPH,
@@ -24,13 +28,6 @@ fun NavGraphBuilder.registrationWizardGraph(
     ) {
         composable(AuthDestination.WIZARD_PERSONAL) { entry ->
             val viewModel = rememberWizardViewModel(navController, entry)
-            RegistrationWizardEffectHandler(
-                viewModel = viewModel,
-                navController = navController,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
-            )
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             RegistrationWizardPersonalScreen(
                 state = state,
@@ -39,13 +36,6 @@ fun NavGraphBuilder.registrationWizardGraph(
         }
         composable(AuthDestination.WIZARD_PROFILE) { entry ->
             val viewModel = rememberWizardViewModel(navController, entry)
-            RegistrationWizardEffectHandler(
-                viewModel = viewModel,
-                navController = navController,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
-            )
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             RegistrationWizardProfileScreen(
                 state = state,
@@ -67,9 +57,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.OFICIO,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
                 canContinue = { it.canContinueOficio },
                 onContinue = { wizard, trade -> wizard.continueFromOficio(trade.snapshotDraft()) },
             )
@@ -79,9 +66,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.ZONA,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
                 canContinue = { it.canContinueZona },
                 onContinue = { wizard, trade -> wizard.continueFromZona(trade.snapshotDraft()) },
             )
@@ -91,9 +75,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.AGENDA,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
                 canContinue = { it.canContinueAgenda },
                 onContinue = { wizard, trade -> wizard.continueFromAgenda(trade.snapshotDraft()) },
             )
@@ -103,9 +84,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.COBRO,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
                 canContinue = { it.canContinueCobro },
                 onContinue = { wizard, trade ->
                     wizard.continueFromCobro(trade.snapshotDraft(), trade.uiState.value.servesAtLocal)
@@ -117,22 +95,12 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.IDENTIDAD,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
                 canContinue = { it.canContinueIdentidad },
                 onContinue = { wizard, trade -> wizard.continueFromIdentidad(trade.snapshotDraft()) },
             )
         }
         composable(AuthDestination.WIZARD_REVIEW) { entry ->
             val viewModel = rememberWizardViewModel(navController, entry)
-            RegistrationWizardEffectHandler(
-                viewModel = viewModel,
-                navController = navController,
-                onNavigateToOnboarding = onNavigateToOnboarding,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToTerms = onNavigateToTerms,
-            )
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             RegistrationWizardReviewScreen(
                 state = state,
@@ -147,21 +115,11 @@ private fun ProviderTradeStep(
     navController: NavHostController,
     entry: androidx.navigation.NavBackStackEntry,
     section: com.cocido.oficios.feature.auth.register.RegisterTradeFormSection,
-    onNavigateToOnboarding: () -> Unit,
-    onNavigateToLogin: () -> Unit,
-    onNavigateToTerms: () -> Unit,
     canContinue: (com.cocido.oficios.feature.auth.register.RegisterTradeUiState) -> Boolean,
     onContinue: (RegistrationWizardViewModel, com.cocido.oficios.feature.auth.register.RegisterTradeViewModel) -> Unit,
 ) {
     val wizard = rememberWizardViewModel(navController, entry)
     val trade = rememberTradeViewModel(navController, entry)
-    RegistrationWizardEffectHandler(
-        viewModel = wizard,
-        navController = navController,
-        onNavigateToOnboarding = onNavigateToOnboarding,
-        onNavigateToLogin = onNavigateToLogin,
-        onNavigateToTerms = onNavigateToTerms,
-    )
     val tradeState by trade.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(trade) {
         if (trade.uiState.value.selectedCategoryId == null) {
@@ -201,37 +159,67 @@ private fun rememberWizardViewModel(
     return hiltViewModel(parentEntry)
 }
 
+/** One owner above NavHost destinations: transitions never create competing collectors. */
 @Composable
-private fun RegistrationWizardEffectHandler(
-    viewModel: RegistrationWizardViewModel,
+fun RegistrationWizardNavigationEffects(
     navController: NavHostController,
     onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToTerms: () -> Unit,
 ) {
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                RegistrationWizardEffect.GoToProfile ->
-                    navController.navigate(AuthDestination.WIZARD_PROFILE)
-                RegistrationWizardEffect.GoToOficio ->
-                    navController.navigate(AuthDestination.WIZARD_OFICIO)
-                RegistrationWizardEffect.GoToZona ->
-                    navController.navigate(AuthDestination.WIZARD_ZONA)
-                RegistrationWizardEffect.GoToAgenda ->
-                    navController.navigate(AuthDestination.WIZARD_AGENDA)
-                RegistrationWizardEffect.GoToCobro ->
-                    navController.navigate(AuthDestination.WIZARD_COBRO)
-                RegistrationWizardEffect.GoToIdentidad ->
-                    navController.navigate(AuthDestination.WIZARD_IDENTIDAD)
-                RegistrationWizardEffect.GoToReview ->
-                    navController.navigate(AuthDestination.WIZARD_REVIEW)
-                RegistrationWizardEffect.GoToPersonal ->
-                    navController.popBackStack(AuthDestination.WIZARD_PERSONAL, inclusive = false)
-                RegistrationWizardEffect.AccountCreated -> onNavigateToOnboarding()
-                RegistrationWizardEffect.NavigateToLogin -> onNavigateToLogin()
-                RegistrationWizardEffect.NavigateToTerms -> onNavigateToTerms()
+    val current by navController.currentBackStackEntryAsState()
+    val entry = current ?: return
+    if (entry.destination.hierarchy.none { it.route == AuthDestination.WIZARD_GRAPH }) return
+    val parent = remember(entry) { navController.getBackStackEntry(AuthDestination.WIZARD_GRAPH) }
+    val viewModel: RegistrationWizardViewModel = hiltViewModel(parent)
+    RegistrationWizardEffectHandler(
+        effects = viewModel.effects,
+        lifecycleOwner = parent,
+        navController = navController,
+        onNavigateToOnboarding = onNavigateToOnboarding,
+        onNavigateToLogin = onNavigateToLogin,
+        onNavigateToTerms = onNavigateToTerms,
+    )
+}
+
+@Composable
+internal fun RegistrationWizardEffectHandler(
+    effects: Flow<RegistrationWizardEffect>,
+    lifecycleOwner: LifecycleOwner,
+    navController: NavHostController,
+    onNavigateToOnboarding: () -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToTerms: () -> Unit,
+) {
+    val onboarding by rememberUpdatedState(onNavigateToOnboarding)
+    val login by rememberUpdatedState(onNavigateToLogin)
+    val terms by rememberUpdatedState(onNavigateToTerms)
+    LaunchedEffect(effects, lifecycleOwner, navController) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            effects.collect { effect ->
+                when (effect) {
+                    RegistrationWizardEffect.GoToProfile -> navController.navigateWizardOnce(AuthDestination.WIZARD_PROFILE)
+                    RegistrationWizardEffect.GoToOficio -> navController.navigateWizardOnce(AuthDestination.WIZARD_OFICIO)
+                    RegistrationWizardEffect.GoToZona -> navController.navigateWizardOnce(AuthDestination.WIZARD_ZONA)
+                    RegistrationWizardEffect.GoToAgenda -> navController.navigateWizardOnce(AuthDestination.WIZARD_AGENDA)
+                    RegistrationWizardEffect.GoToCobro -> navController.navigateWizardOnce(AuthDestination.WIZARD_COBRO)
+                    RegistrationWizardEffect.GoToIdentidad -> navController.navigateWizardOnce(AuthDestination.WIZARD_IDENTIDAD)
+                    RegistrationWizardEffect.GoToReview -> navController.navigateWizardOnce(AuthDestination.WIZARD_REVIEW)
+                    RegistrationWizardEffect.GoToPersonal -> {
+                        if (navController.currentDestination?.route != AuthDestination.WIZARD_PERSONAL) {
+                            navController.popBackStack(AuthDestination.WIZARD_PERSONAL, inclusive = false)
+                        }
+                    }
+                    RegistrationWizardEffect.AccountCreated -> onboarding()
+                    RegistrationWizardEffect.NavigateToLogin -> login()
+                    RegistrationWizardEffect.NavigateToTerms -> terms()
+                }
             }
         }
     }
+}
+
+internal fun NavHostController.navigateWizardOnce(route: String) {
+    if (currentDestination?.route == route) return
+    navigate(route) { launchSingleTop = true }
 }

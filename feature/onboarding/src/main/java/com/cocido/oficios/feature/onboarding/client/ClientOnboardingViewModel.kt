@@ -13,11 +13,11 @@ import com.cocido.oficios.feature.onboarding.common.OnboardingCompletionPhase
 import com.cocido.oficios.feature.onboarding.common.hasActionableRequiredSteps
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,8 +34,8 @@ class ClientOnboardingViewModel @Inject constructor(
     private val _completionPhase = MutableStateFlow<OnboardingCompletionPhase>(OnboardingCompletionPhase.Idle)
     val completionPhase: StateFlow<OnboardingCompletionPhase> = _completionPhase.asStateFlow()
 
-    private val _effects = MutableSharedFlow<OnboardingChecklistEffect>(replay = 1)
-    val effects: SharedFlow<OnboardingChecklistEffect> = _effects.asSharedFlow()
+    private val _effects = Channel<OnboardingChecklistEffect>(Channel.BUFFERED)
+    val effects: Flow<OnboardingChecklistEffect> = _effects.receiveAsFlow()
 
     init {
         load()
@@ -72,7 +72,7 @@ class ClientOnboardingViewModel @Inject constructor(
             stuckDestination = InitialDestination.ClientOnboarding,
             fallbackDestination = InitialDestination.ClientHome,
             phase = _completionPhase,
-            effects = _effects,
+            effects = _effects::send,
             onStuck = {
                 _uiState.update {
                     OnboardingChecklistUiState.Error(
