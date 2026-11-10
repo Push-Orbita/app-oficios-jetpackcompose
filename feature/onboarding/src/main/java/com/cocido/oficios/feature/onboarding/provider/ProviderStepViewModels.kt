@@ -35,7 +35,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetRubrosByCategoryUseCase
 import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
-import com.cocido.oficios.domain.usecase.catalog.launchDebouncedBarrioSearch
+import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.profile.FinalizeProviderProfileUseCase
 import com.cocido.oficios.domain.usecase.profile.GetProviderDocumentoUseCase
 import com.cocido.oficios.domain.usecase.profile.GetProviderDniDocumentsUseCase
@@ -833,8 +833,18 @@ class ProviderLocalViewModel @Inject constructor(
     val uiState: StateFlow<ProviderLocalUiState> = _uiState.asStateFlow()
     private val _effects = MutableSharedFlow<ProviderStepEffect>()
     val effects: SharedFlow<ProviderStepEffect> = _effects.asSharedFlow()
-    private var searchJob: Job? = null
+    private var barrioSearcher: DebouncedBarrioSearcher? = null
     private var geocodeJob: Job? = null
+
+    private fun ensureBarrioSearcher(): DebouncedBarrioSearcher =
+        barrioSearcher ?: DebouncedBarrioSearcher(
+            scope = viewModelScope,
+            searchBarrios = searchBarriosUseCase,
+            onLoading = { _uiState.update { it.copy(isSearchingBarrios = true) } },
+            onResult = { options ->
+                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
+            },
+        ).also { barrioSearcher = it }
 
     init {
         viewModelScope.launch {
@@ -860,22 +870,14 @@ class ProviderLocalViewModel @Inject constructor(
             it.copy(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
-                isSearchingBarrios = true,
             )
         }
         if (!preserveSelection) scheduleLiveGeocode()
-        searchJob = viewModelScope.launchDebouncedBarrioSearch(
-            previous = searchJob,
-            query = query,
-            searchBarrios = searchBarriosUseCase,
-            onResult = { options ->
-                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
-            },
-        )
+        ensureBarrioSearcher().submit(query)
     }
 
     fun onBarrioSelected(option: CatalogOption) {
-        searchJob?.cancel()
+        barrioSearcher?.clearPending()
         _uiState.update {
             it.copy(
                 barrioQuery = option.label,
@@ -888,7 +890,7 @@ class ProviderLocalViewModel @Inject constructor(
     }
 
     fun dismissBarrioSuggestions() {
-        searchJob?.cancel()
+        barrioSearcher?.clearPending()
         _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
     }
 

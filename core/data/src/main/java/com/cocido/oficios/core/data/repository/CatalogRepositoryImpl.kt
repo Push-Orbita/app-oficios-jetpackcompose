@@ -6,6 +6,8 @@ import com.cocido.oficios.core.data.mapper.toCatalogOption
 import com.cocido.oficios.core.data.remote.CatalogRemoteDataSource
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.repository.CatalogRepository
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +21,10 @@ class CatalogRepositoryImpl @Inject constructor(
 
     @Volatile
     private var cachedSubRubros: List<CatalogOption>? = null
+
+    @Volatile
+    private var cachedBarrioPreview: List<CatalogOption>? = null
+    private val barrioPreviewMutex = Mutex()
 
     override suspend fun getCategories(): AppResult<List<CatalogOption>> =
         catalogRemoteDataSource.fetchCategories().map { categories ->
@@ -51,44 +57,21 @@ class CatalogRepositoryImpl @Inject constructor(
 
     override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> {
         val trimmed = query.trim()
-        val pageSize = if (trimmed.isEmpty()) 100 else 20
-        return when (
-            val first = catalogRemoteDataSource.fetchBarrios(
-                query = trimmed.ifEmpty { null },
-                nombre = trimmed.ifEmpty { null },
-                pageSize = pageSize,
-            )
-        ) {
-            is AppResult.Error -> first
-            is AppResult.Success -> {
-                val options = first.data.map { it.toCatalogOption() }
-                if (trimmed.isEmpty()) {
-                    AppResult.Success(options)
-                } else {
-                    val filtered = filterBarrios(options, trimmed)
-                    if (filtered.isNotEmpty()) {
-                        AppResult.Success(filtered)
-                    } else {
-                        catalogRemoteDataSource.fetchBarrios(
-                            query = null,
-                            nombre = null,
-                            pageSize = 100,
-                        ).map { barrios ->
-                            filterBarrios(barrios.map { it.toCatalogOption() }, trimmed)
-                        }
+        if (trimmed.isEmpty()) {
+            return barrioPreviewMutex.withLock {
+                cachedBarrioPreview?.let { return@withLock AppResult.Success(it) }
+                catalogRemoteDataSource.fetchBarrios(query = null, nombre = null, pageSize = 100)
+                    .map { barrios ->
+                        barrios.map { it.toCatalogOption() }.also { cachedBarrioPreview = it }
                     }
-                }
             }
         }
+        // OpenAPI supports q/nombre. The focus preview is NOT an exhaustive catalog.
+        return catalogRemoteDataSource.fetchBarrios(
+            query = trimmed,
+            nombre = trimmed,
+            pageSize = 100,
+            allPages = true,
+        ).map { barrios -> barrios.map { it.toCatalogOption() } }
     }
 }
-
-internal fun filterBarrios(options: List<CatalogOption>, query: String): List<CatalogOption> {
-    val needle = query.foldForSearch()
-    if (needle.isBlank()) return options
-    return options.filter { option -> option.label.foldForSearch().contains(needle) }
-}
-
-internal fun String.foldForSearch(): String =
-    java.text.Normalizer.normalize(lowercase(), java.text.Normalizer.Form.NFD)
-        .replace("\\p{M}+".toRegex(), "")
