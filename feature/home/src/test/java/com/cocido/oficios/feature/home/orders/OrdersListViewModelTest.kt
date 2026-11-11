@@ -72,7 +72,7 @@ class OrdersListViewModelTest {
         assertEquals(
             listOf(
                 OrdersListEffect.ShowRefreshError(
-                    "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+                    "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
                 ),
             ),
             effects,
@@ -180,14 +180,14 @@ class OrdersListViewModelTest {
 
         val state = viewModel.uiState.value as OrdersListUiState.Error
         assertEquals(
-            "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+            "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
             state.message,
         )
         assertFalse(state.isRefreshing)
         assertEquals(
             listOf(
                 OrdersListEffect.ShowRefreshError(
-                    "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+                    "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
                 ),
             ),
             effects,

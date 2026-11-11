@@ -13,9 +13,20 @@ fun Throwable.toAppError(): AppError {
     if (hasSslOrCertificateCause()) {
         return AppError.Network(message = "Secure connection could not be established")
     }
+    if (this is ClientValidationException) {
+        return AppError.Validation(message = message)
+    }
 
-    return when (this) {
-        is ClientValidationException -> AppError.Validation(message = message)
+    // UnknownHost/timeout a veces viajan envueltos (Retrofit, coroutines).
+    // Si no se desarma la cadena, el usuario ve "Algo salió mal".
+    val chain = generateSequence(this) { it.cause }
+    val connectivity = chain.firstOrNull {
+        it is SocketTimeoutException ||
+            it is TimeoutException ||
+            it is UnknownHostException
+    } ?: chain.firstOrNull { it is IOException }
+
+    return when (connectivity ?: this) {
         is SocketTimeoutException,
         is TimeoutException,
         -> AppError.Network(message = "Request timed out")
@@ -46,7 +57,7 @@ fun AppError.userMessage(): String = when (this) {
             }
         }
         else -> message.toProfessionalMessage(
-            fallback = "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+            fallback = "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
         )
     }
     is AppError.Validation -> {
@@ -71,7 +82,7 @@ fun AppError.userMessage(): String = when (this) {
     is AppError.Conflict -> message.toProfessionalMessage(
         fallback = "Ese dato ya está registrado. Revíselo e intente nuevamente.",
     )
-    is AppError.Unknown -> "Algo salió mal. Intente de nuevo."
+    is AppError.Unknown -> "Algo salió mal. Intentá de nuevo."
 }
 
 fun AppError.validationField(vararg keys: String): String? {
@@ -115,8 +126,8 @@ private fun String.toProfessionalMessage(fallback: String): String {
     if (normalized.containsTechnicalDetail()) return fallback
     return when (normalized.lowercase()) {
         "network error", "no internet connection", "error de red" ->
-            "No pudimos conectarnos. Revise su conexión e intente nuevamente."
-        "request timed out" -> "La conexión tardó demasiado. Intente nuevamente."
+            "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo."
+        "request timed out" -> "La conexión tardó demasiado. Intentá de nuevo."
         "secure connection could not be established" ->
             "No pudimos establecer una conexión segura. Intente nuevamente más tarde."
         else -> normalized

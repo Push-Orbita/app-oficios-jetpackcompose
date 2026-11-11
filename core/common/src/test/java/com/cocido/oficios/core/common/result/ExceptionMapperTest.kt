@@ -69,7 +69,7 @@ class ExceptionMapperTest {
 
         assertTrue(error is AppError.Unknown)
         assertEquals(
-            "Algo salió mal. Intente de nuevo.",
+            "Algo salió mal. Intentá de nuevo.",
             error.userMessage(),
         )
     }
@@ -89,19 +89,19 @@ class ExceptionMapperTest {
     @Test
     fun `offline and timeouts map to a connection error`() {
         assertEquals(
-            "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+            "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
             UnknownHostException("offline").toAppError().userMessage(),
         )
         assertEquals(
-            "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+            "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
             IOException("reset").toAppError().userMessage(),
         )
         assertEquals(
-            "La conexión tardó demasiado. Intente nuevamente.",
+            "La conexión tardó demasiado. Intentá de nuevo.",
             SocketTimeoutException("read").toAppError().userMessage(),
         )
         assertEquals(
-            "La conexión tardó demasiado. Intente nuevamente.",
+            "La conexión tardó demasiado. Intentá de nuevo.",
             TimeoutException("call").toAppError().userMessage(),
         )
     }
@@ -131,5 +131,23 @@ class ExceptionMapperTest {
         val error = AppError.Network(message = "Error de red", code = 502)
         assertEquals("No pudimos completar la solicitud. Intente de nuevo.", error.userMessage())
         assertTrue("Error de red" !in error.userMessage())
+    }
+
+    @Test
+    fun `wrapped connectivity failures never surface as algo salio mal`() {
+        val offline = RuntimeException("call failed", UnknownHostException("offline")).toAppError()
+        assertTrue(offline is AppError.Network)
+        assertEquals(
+            "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
+            offline.userMessage(),
+        )
+        assertTrue("Algo salió mal" !in offline.userMessage())
+
+        val timeout = RuntimeException("call failed", SocketTimeoutException("read")).toAppError()
+        assertEquals(
+            "La conexión tardó demasiado. Intentá de nuevo.",
+            timeout.userMessage(),
+        )
+        assertTrue("Algo salió mal" !in timeout.userMessage())
     }
 }
