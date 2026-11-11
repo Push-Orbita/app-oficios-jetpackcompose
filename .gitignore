@@ -76,3 +76,26 @@ tokens.md
 backlog-screens.md
 figma-*.tar.gz
 IMPLEMENTACION_PR*.md
+
+# Environment and media artifacts
+.env
+.env.*
+*.mp4
+*.webm
+*.mov
+
+# Root informes / commercial docs (do not re-add)
+/*.pdf
+/*.docx
+/Informe_*
+/Estimacion_*
+/Log_Diario_*
+/REPORTE_*.md
+/gen_m01.js
+/gen_m02.js
+/gen_cierre_modulo.js
+
+# QA outputs, captures and status reports
+docs/qa/
+docs/qa-1a1/
+docs/reports/
