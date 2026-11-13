@@ -92,7 +92,7 @@ class FavoritesViewModelTest {
         advanceUntilIdle()
 
         assertEquals(
-            "No pudimos conectarnos. Revise su conexión e intente nuevamente.",
+            "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
             viewModel.uiState.value.errorMessage,
         )
     }
