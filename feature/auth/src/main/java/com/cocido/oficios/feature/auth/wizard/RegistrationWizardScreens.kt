@@ -27,6 +27,17 @@ import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthRegisterLayout
 import com.cocido.oficios.feature.auth.register.RegisterFormScreen
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.cocido.oficios.core.designsystem.component.OficiosIcons
+import com.cocido.oficios.core.designsystem.component.cards.OficiosSectionCard
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
+import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.feature.auth.register.RegisterMode
 
 @Composable
@@ -131,51 +142,198 @@ fun RegistrationWizardProfileScreen(
     }
 }
 
+
 @Composable
 fun RegistrationWizardReviewScreen(
     state: RegistrationWizardUiState,
     onCreateAccount: () -> Unit,
+    onBack: () -> Unit = {},
+    onEditPersonal: () -> Unit = {},
+    onEditContact: () -> Unit = {},
+    onEditAddress: () -> Unit = {},
+    onEditOficio: () -> Unit = {},
+    onEditZona: () -> Unit = {},
+    onEditAgenda: () -> Unit = {},
+    onEditCobro: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    AuthRegisterLayout(modifier = modifier, isLoading = state.isCommitting, sectionSpacing = OficiosSpacing.md) {
-        Text(
-            text = stringResource(R.string.auth_wizard_review_title),
-            style = OficiosAuthGlyphTitleStyle,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = stringResource(R.string.auth_wizard_review_subtitle),
-            style = OficiosAuthGlyphSubtitleStyle,
-        )
-        state.commitError?.let { OficiosInlineAlert(it, modifier = Modifier.fillMaxWidth()) }
-        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            ReviewLine(stringResource(R.string.auth_first_name_label), state.personal.firstName)
-            ReviewLine(stringResource(R.string.auth_last_name_label), state.personal.lastName)
-            ReviewLine(stringResource(R.string.auth_email_electronic_label), state.personal.email)
-            ReviewLine(stringResource(R.string.auth_wizard_whatsapp), state.phone)
-            ReviewLine(stringResource(R.string.auth_wizard_barrio), state.barrioQuery)
-            ReviewLine(
-                stringResource(R.string.auth_wizard_street),
-                listOf(state.calle, state.numero).filter { it.isNotBlank() }.joinToString(" "),
+    val review = state.review
+    val isProvider = state.role == RegistrationRole.PROVIDER
+    val canEdit = !state.isCommitting
+
+    OficiosScaffold(
+        modifier = modifier.fillMaxSize(),
+        isLoading = state.isCommitting,
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.auth_wizard_review_title),
+                onBack = onBack,
             )
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = OficiosSpacing.xl)
+                    .padding(top = OficiosSpacing.md, bottom = OficiosSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                state.commitError?.let { OficiosInlineAlert(it, modifier = Modifier.fillMaxWidth()) }
+                OficiosButton(
+                    text = stringResource(R.string.auth_create_account),
+                    onClick = onCreateAccount,
+                    enabled = canEdit,
+                    loading = state.isCommitting,
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Form,
+                )
+            }
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = OficiosSpacing.xl)
+                .padding(top = OficiosSpacing.md, bottom = OficiosSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
+        ) {
+            Text(
+                text = stringResource(R.string.auth_wizard_review_subtitle),
+                style = OficiosAuthGlyphSubtitleStyle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            ReviewSectionCard(
+                title = stringResource(R.string.auth_wizard_review_section_personal),
+                leadingIcon = OficiosIcons.User,
+                onEdit = onEditPersonal,
+                editEnabled = canEdit,
+                editContentDescription = stringResource(R.string.auth_wizard_review_edit_personal),
+            ) {
+                ReviewField(stringResource(R.string.auth_first_name_label), review.firstName)
+                ReviewField(stringResource(R.string.auth_last_name_label), review.lastName)
+                ReviewField(stringResource(R.string.auth_email_electronic_label), review.email)
+                ReviewField(stringResource(R.string.auth_document_label), review.document)
+            }
+            ReviewSectionCard(
+                title = stringResource(R.string.auth_wizard_review_section_contact),
+                leadingIcon = OficiosIcons.BookUser,
+                onEdit = onEditContact.takeUnless { isProvider },
+                editEnabled = canEdit,
+                editContentDescription = stringResource(R.string.auth_wizard_review_edit_contact),
+            ) {
+                if (isProvider) {
+                    Text(
+                        text = stringResource(R.string.auth_wizard_review_phone_not_asked),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    ReviewField(stringResource(R.string.auth_wizard_contact_name), review.contactName)
+                    ReviewField(stringResource(R.string.auth_wizard_whatsapp), review.phone)
+                }
+            }
+            if (isProvider) {
+                ReviewSectionCard(
+                    title = stringResource(R.string.auth_wizard_review_section_trade),
+                    leadingIcon = OficiosIcons.Hammer,
+                    onEdit = onEditOficio,
+                    editEnabled = canEdit,
+                    editContentDescription = stringResource(R.string.auth_wizard_review_edit_trade),
+                ) {
+                    ReviewField(stringResource(R.string.auth_register_trade_category_label), review.oficioCategory)
+                    ReviewField(stringResource(R.string.auth_register_trade_trade_label), review.oficioRubro)
+                    ReviewField(stringResource(R.string.auth_register_trade_experience_field_label), review.experienceRange)
+                }
+                ReviewSectionCard(
+                    title = stringResource(R.string.auth_wizard_review_section_zone),
+                    leadingIcon = OficiosIcons.MapPinHouse,
+                    onEdit = onEditZona,
+                    editEnabled = canEdit,
+                    editContentDescription = stringResource(R.string.auth_wizard_review_edit_zone),
+                ) {
+                    ReviewField(stringResource(R.string.auth_wizard_barrio), review.barrio)
+                    ReviewField(stringResource(R.string.auth_wizard_review_service_area), review.serviceArea)
+                    ReviewField(stringResource(R.string.auth_wizard_street), review.street)
+                }
+                ReviewSectionCard(
+                    title = stringResource(R.string.auth_wizard_review_section_agenda),
+                    leadingIcon = OficiosIcons.Clock,
+                    onEdit = onEditAgenda,
+                    editEnabled = canEdit,
+                    editContentDescription = stringResource(R.string.auth_wizard_review_edit_agenda),
+                ) {
+                    ReviewField(stringResource(R.string.auth_wizard_review_work_days), review.workDays)
+                    ReviewField(stringResource(R.string.auth_wizard_review_schedule), review.schedule)
+                }
+                ReviewSectionCard(
+                    title = stringResource(R.string.auth_wizard_review_section_payment),
+                    leadingIcon = OficiosIcons.Banknote,
+                    onEdit = onEditCobro,
+                    editEnabled = canEdit,
+                    editContentDescription = stringResource(R.string.auth_wizard_review_edit_payment),
+                ) {
+                    ReviewField(stringResource(R.string.auth_register_trade_payment_label).trimEnd(':'), review.paymentMethods)
+                }
+            } else {
+                ReviewSectionCard(
+                    title = stringResource(R.string.auth_wizard_review_section_address),
+                    leadingIcon = OficiosIcons.House,
+                    onEdit = onEditAddress,
+                    editEnabled = canEdit,
+                    editContentDescription = stringResource(R.string.auth_wizard_review_edit_address),
+                ) {
+                    ReviewField(stringResource(R.string.auth_wizard_barrio), review.barrio)
+                    ReviewField(stringResource(R.string.auth_wizard_street), review.street)
+                    ReviewField(stringResource(R.string.auth_wizard_floor), review.piso)
+                    ReviewField(stringResource(R.string.auth_wizard_apartment), review.departamento)
+                }
+            }
         }
-        Spacer(Modifier.height(OficiosSpacing.md))
-        OficiosButton(
-            text = stringResource(R.string.auth_create_account),
-            onClick = onCreateAccount,
-            enabled = !state.isCommitting,
-            loading = state.isCommitting,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Primary,
-            size = OficiosButtonSize.Form,
-        )
     }
 }
 
 @Composable
-private fun ReviewLine(label: String, value: String) {
-    Column {
-        Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text = value.ifBlank { "—" }, style = MaterialTheme.typography.bodyLarge)
+private fun ReviewSectionCard(
+    title: String,
+    @DrawableRes leadingIcon: Int,
+    onEdit: (() -> Unit)?,
+    editEnabled: Boolean,
+    editContentDescription: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    OficiosSectionCard(
+        title = title,
+        leadingIcon = leadingIcon,
+        actionLabel = if (onEdit != null) stringResource(R.string.auth_wizard_review_edit) else null,
+        onAction = onEdit.takeIf { editEnabled },
+        actionContentDescription = editContentDescription,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm), content = content)
+    }
+}
+
+@Composable
+private fun ReviewField(label: String, value: String) {
+    val empty = value.isBlank()
+    val display = if (empty) stringResource(R.string.auth_wizard_review_empty) else value
+    Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.xs / 2)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = display,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (empty) {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+        )
     }
 }

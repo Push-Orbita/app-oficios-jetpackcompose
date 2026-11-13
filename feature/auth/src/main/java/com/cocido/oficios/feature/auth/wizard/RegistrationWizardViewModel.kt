@@ -11,6 +11,7 @@ import com.cocido.oficios.domain.model.RegistrationCommitPhase
 import com.cocido.oficios.domain.model.RegistrationDraft
 import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegistrationPersonalDraft
+import com.cocido.oficios.domain.model.RegistrationReviewSummary
 import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.domain.repository.RegistrationDraftRepository
 import com.cocido.oficios.domain.usecase.auth.RegistrationCommitResult
@@ -46,12 +47,36 @@ data class RegistrationWizardUiState(
     val numero: String = "",
     val piso: String = "",
     val departamento: String = "",
+    val providerNeighborhoodQuery: String = "",
+    val providerLocalCalle: String = "",
+    val providerLocalNumero: String = "",
+    val providerDraft: RegisterTradeDraft? = null,
     val profileError: String? = null,
     val commitError: String? = null,
     val isCommitting: Boolean = false,
     val commitPhase: RegistrationCommitPhase = RegistrationCommitPhase.NOT_STARTED,
     val createdUserEmail: String? = null,
 ) {
+    val review: RegistrationReviewSummary
+        get() = RegistrationReviewSummary.fromParts(
+            role = role,
+            firstName = personal.firstName,
+            lastName = personal.lastName,
+            email = personal.email,
+            phone = phone,
+            clientBarrio = barrioQuery,
+            clientCalle = calle,
+            clientNumero = numero,
+            providerBarrio = providerNeighborhoodQuery,
+            providerCalle = providerLocalCalle,
+            providerNumero = providerLocalNumero,
+            document = personal.document,
+            contactName = contactName,
+            piso = piso,
+            departamento = departamento,
+            provider = providerDraft,
+        )
+
     val canContinueProfile: Boolean
         get() = contactName.isNotBlank() &&
             AuthValidators.validateArgentineMobile(phone) == null &&
@@ -68,6 +93,12 @@ sealed interface RegistrationWizardEffect {
     data object GoToIdentidad : RegistrationWizardEffect
     data object GoToReview : RegistrationWizardEffect
     data object GoToPersonal : RegistrationWizardEffect
+    data object GoBack : RegistrationWizardEffect
+    data object PopToProfile : RegistrationWizardEffect
+    data object PopToOficio : RegistrationWizardEffect
+    data object PopToZona : RegistrationWizardEffect
+    data object PopToAgenda : RegistrationWizardEffect
+    data object PopToCobro : RegistrationWizardEffect
     data object AccountCreated : RegistrationWizardEffect
     data object NavigateToLogin : RegistrationWizardEffect
     data object NavigateToTerms : RegistrationWizardEffect
@@ -91,7 +122,7 @@ class RegistrationWizardViewModel @Inject constructor(
     private val _effects = Channel<RegistrationWizardEffect>(Channel.BUFFERED)
     val effects: Flow<RegistrationWizardEffect> = _effects.receiveAsFlow()
 
-    /** Contraseña solo en memoria. Nunca se escribe en el draft. */
+    /** ContraseÃ±a solo en memoria. Nunca se escribe en el draft. */
     private var passwordInMemory: String = ""
     private var confirmPasswordInMemory: String = ""
     private var providerDraftInMemory: RegisterTradeDraft? = null
@@ -144,7 +175,7 @@ class RegistrationWizardViewModel @Inject constructor(
     fun onBarrioFocused() = searchBarrio(_uiState.value.barrioQuery, preserveSelection = true)
     fun onBarrioSelected(option: CatalogOption) {
         barrioSearcher?.clearPending()
-        // Do not submit the selected label as a new query — that used to re-open the loop.
+        // Do not submit the selected label as a new query â€” that used to re-open the loop.
         updateProfile {
             it.copy(
                 barrioQuery = option.label,
@@ -196,10 +227,19 @@ class RegistrationWizardViewModel @Inject constructor(
         emit(RegistrationWizardEffect.GoToReview)
     }
 
+    fun onReviewBack() = emit(RegistrationWizardEffect.GoBack)
+    fun editPersonal() = emit(RegistrationWizardEffect.GoToPersonal)
+    fun editProfile() = emit(RegistrationWizardEffect.PopToProfile)
+    fun editOficio() = emit(RegistrationWizardEffect.PopToOficio)
+    fun editZona() = emit(RegistrationWizardEffect.PopToZona)
+    fun editAgenda() = emit(RegistrationWizardEffect.PopToAgenda)
+    fun editCobro() = emit(RegistrationWizardEffect.PopToCobro)
+
     fun createAccount(providerDraft: RegisterTradeDraft? = null) {
         val state = _uiState.value
+        if (state.isCommitting) return
         if (passwordInMemory.isBlank()) {
-            _uiState.update { it.copy(commitError = "Vuelva al primer paso e ingrese su contraseña") }
+            _uiState.update { it.copy(commitError = "Volvé al primer paso e ingresá tu contraseña") }
             emit(RegistrationWizardEffect.GoToPersonal)
             return
         }
@@ -273,6 +313,10 @@ class RegistrationWizardViewModel @Inject constructor(
                 numero = draft.client.numero,
                 piso = draft.client.piso,
                 departamento = draft.client.departamento,
+                providerNeighborhoodQuery = draft.provider?.neighborhoodQuery.orEmpty(),
+                providerLocalCalle = draft.provider?.localCalle.orEmpty(),
+                providerLocalNumero = draft.provider?.localNumero.orEmpty(),
+                providerDraft = draft.provider,
                 commitPhase = draft.commitPhase,
                 createdUserEmail = draft.createdUserEmail,
             )
@@ -286,8 +330,19 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     private fun persistProvider(trade: RegisterTradeDraft?) {
+        if (trade != null) {
+            providerDraftInMemory = trade
+            _uiState.update { it.withProvider(trade) }
+        }
         viewModelScope.launch { draftRepository.save(currentDraft(trade)) }
     }
+
+    private fun RegistrationWizardUiState.withProvider(trade: RegisterTradeDraft) = copy(
+        providerNeighborhoodQuery = trade.neighborhoodQuery,
+        providerLocalCalle = trade.localCalle.orEmpty(),
+        providerLocalNumero = trade.localNumero.orEmpty(),
+        providerDraft = trade,
+    )
 
     private fun currentDraft(providerDraft: RegisterTradeDraft? = null): RegistrationDraft {
         if (providerDraft != null) providerDraftInMemory = providerDraft
@@ -353,7 +408,7 @@ class RegistrationWizardViewModel @Inject constructor(
         val passwordError = AuthValidators.validatePassword(password)
         val confirmPasswordError = AuthValidators.validatePasswordConfirmation(password, confirmPassword)
         val documentError = AuthValidators.validateDocument(document)
-        val termsError = if (!acceptedTerms) "Debe aceptar los términos" else null
+        val termsError = if (!acceptedTerms) "Debe aceptar los tÃ©rminos" else null
         val canSubmit = listOf(
             firstNameError, lastNameError, emailError, passwordError,
             confirmPasswordError, documentError, termsError,

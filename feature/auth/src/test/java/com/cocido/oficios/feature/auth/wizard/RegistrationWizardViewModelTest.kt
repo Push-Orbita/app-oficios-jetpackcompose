@@ -13,7 +13,9 @@ import com.cocido.oficios.domain.model.ClientDomicilioRequest
 import com.cocido.oficios.domain.model.PhoneVerificationSendResult
 import com.cocido.oficios.domain.model.RegisterClientRequest
 import com.cocido.oficios.domain.model.RegisterProviderRequest
+import com.cocido.oficios.domain.model.RegisterTradeDraft
 import com.cocido.oficios.domain.model.RegistrationDraft
+import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.domain.model.RegistrationPersonalDraft
 import com.cocido.oficios.domain.model.User
 import com.cocido.oficios.domain.model.UserRole
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -218,6 +221,122 @@ class RegistrationWizardViewModelTest {
         assertTrue(recreated.effects.isEmpty())
         recreated.collectJob?.cancel()
     }
+    @Test
+    fun `client review shows phone barrio and street from profile`() = runTest(dispatcher) {
+        val env = createEnv()
+        fillPersonal(env.viewModel)
+        fillProfile(env.viewModel)
+        advanceUntilIdle()
+        val review = env.viewModel.uiState.value.review
+        assertEquals("93705219109", review.phone)
+        assertEquals("Centro", review.barrio)
+        assertEquals("Belgrano 100", review.street)
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `provider review shows zona barrio after continueFromZona`() = runTest(dispatcher) {
+        val env = createEnv()
+        val viewModel = RegistrationWizardViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("role" to "PROVIDER")),
+            draftRepository = env.drafts,
+            committer = env.viewModel.let { _ ->
+                RegistrationCommitter(
+                    registerClientUseCase = RegisterClientUseCase(env.auth),
+                    registerProviderUseCase = RegisterProviderUseCase(env.auth),
+                    saveClientContactoUseCase = SaveClientContactoUseCase(FakeClientProfiles()),
+                    saveClientDomicilioUseCase = SaveClientDomicilioUseCase(FakeClientProfiles()),
+                    draftRepository = env.drafts,
+                    registerTradeDraftRepository = object :
+                        com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+                        override suspend fun save(draft: RegisterTradeDraft) = Unit
+                        override suspend fun get() = null
+                        override suspend fun clear() = Unit
+                    },
+                    submitRegisterTradeDraftUseCase = noopTradeSubmit(),
+                    sessionRepository = FakeSession(),
+                )
+            },
+            searchBarriosUseCase = SearchBarriosUseCase(FakeCatalog()),
+        )
+        fillPersonal(viewModel)
+        viewModel.continueFromZona(
+            RegisterTradeDraft(
+                categoryId = 1,
+                categoryName = "Hogar",
+                rubroId = 2,
+                rubroName = "Electricidad",
+                subRubroIds = listOf(3),
+                otherSpecialization = null,
+                experienceRange = "3 a 5 años",
+                neighborhoodQuery = "San Miguel",
+                barrioId = 11,
+                servesAtClientHome = true,
+                timeSlots = emptyList(),
+                localCalle = "Rivadavia",
+                localNumero = "200",
+            ),
+        )
+        advanceUntilIdle()
+        val review = viewModel.uiState.value.review
+        assertEquals(RegistrationRole.PROVIDER, viewModel.uiState.value.role)
+        assertEquals("", review.phone)
+        assertEquals("San Miguel", review.barrio)
+        assertEquals("Rivadavia 200", review.street)
+        assertEquals("Hogar", review.oficioCategory)
+        assertEquals("Electricidad", review.oficioRubro)
+        assertEquals("En el domicilio del cliente", review.serviceArea)
+        val saved = env.drafts.draft
+        assertEquals("San Miguel", saved?.provider?.neighborhoodQuery)
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `edit section effects pop to the matching wizard step`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.viewModel.editPersonal()
+        env.viewModel.editProfile()
+        env.viewModel.editOficio()
+        env.viewModel.editZona()
+        env.viewModel.editAgenda()
+        env.viewModel.editCobro()
+        env.viewModel.onReviewBack()
+        advanceUntilIdle()
+        assertEquals(
+            listOf(
+                RegistrationWizardEffect.GoToPersonal,
+                RegistrationWizardEffect.PopToProfile,
+                RegistrationWizardEffect.PopToOficio,
+                RegistrationWizardEffect.PopToZona,
+                RegistrationWizardEffect.PopToAgenda,
+                RegistrationWizardEffect.PopToCobro,
+                RegistrationWizardEffect.GoBack,
+            ),
+            env.effects,
+        )
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `create account ignores a second tap while committing`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.auth.registrationGate = kotlinx.coroutines.CompletableDeferred()
+        fillPersonal(env.viewModel)
+        env.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        fillProfile(env.viewModel)
+        env.viewModel.continueFromProfile()
+        env.viewModel.createAccount()
+        runCurrent()
+        assertEquals(true, env.viewModel.uiState.value.isCommitting)
+        env.viewModel.createAccount()
+        runCurrent()
+        assertEquals(1, env.auth.clientAttempts)
+        env.auth.registrationGate!!.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(1, env.auth.clientAttempts)
+        env.collectJob?.cancel()
+    }
+
     private fun fillPersonal(viewModel: RegistrationWizardViewModel) {
         viewModel.onPersonalEvent(RegisterFormEvent.FirstNameChanged("Ana"))
         viewModel.onPersonalEvent(RegisterFormEvent.LastNameChanged("López"))
@@ -302,9 +421,11 @@ class RegistrationWizardViewModelTest {
         var registerClientResult: AppResult<UserSession>,
     ) : AuthRepository {
         var clientAttempts = 0
+        var registrationGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
         override suspend fun login(email: String, password: String) = AppResult.Error(AppError.Unknown())
         override suspend fun registerClient(request: RegisterClientRequest): AppResult<UserSession> {
             clientAttempts++
+            registrationGate?.await()
             return registerClientResult
         }
         override suspend fun registerProvider(request: RegisterProviderRequest) = AppResult.Error(AppError.Unknown())
