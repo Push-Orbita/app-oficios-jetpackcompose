@@ -1,24 +1,26 @@
 package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +34,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.R
@@ -42,7 +46,11 @@ import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 internal const val OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG = "oficios_autocomplete_menu"
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Autocomplete con lista de sugerencias **inline** (en el árbol de composición),
+ * para que uiautomator / TalkBack vean sugerencias, vacío y loading.
+ * Evita confiar solo en [ExposedDropdownMenu], cuyo popup casi nunca entra al árbol semántico.
+ */
 @Composable
 fun <T> OficiosAutocompleteField(
     value: String,
@@ -70,6 +78,9 @@ fun <T> OficiosAutocompleteField(
     var userDismissed by remember { mutableStateOf(false) }
     var isFieldFocused by remember { mutableStateOf(false) }
     val resolvedNoResults = noResultsText ?: stringResource(R.string.ds_autocomplete_no_results)
+    val loadingLabel = stringResource(R.string.ds_autocomplete_loading)
+    val retryLabel = stringResource(R.string.ds_autocomplete_retry)
+    val suggestionsListDescription = stringResource(R.string.ds_autocomplete_suggestions_list)
     val keyboardController = LocalSoftwareKeyboardController.current
     val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var wasImeVisible by remember { mutableStateOf(false) }
@@ -114,27 +125,7 @@ fun <T> OficiosAutocompleteField(
         dismissKeyboardAndSuggestions()
     }
 
-    ExposedDropdownMenuBox(
-        expanded = menuExpanded,
-        onExpandedChange = { requested ->
-            if (requested) {
-                userDismissed = false
-                userExpanded = true
-                // Only notify once per focus session. Material3 may re-emit
-                // onExpandedChange(true) when isLoading/suggestions flip and
-                // LaunchedEffect sets userExpanded — that re-entry used to
-                // retrigger barrio search in a tight loop (ANR).
-                if (!isFieldFocused) {
-                    isFieldFocused = true
-                    onFocused()
-                }
-            } else {
-                isFieldFocused = false
-                dismissKeyboardAndSuggestions()
-            }
-        },
-        modifier = modifier.fillMaxWidth(),
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         OficiosTextField(
             value = value,
             onValueChange = {
@@ -146,9 +137,7 @@ fun <T> OficiosAutocompleteField(
             enabled = enabled,
             isError = isError,
             supportingText = supportingText,
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryEditable, enabled),
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             onFocusChange = { focused ->
@@ -171,54 +160,63 @@ fun <T> OficiosAutocompleteField(
                 )
             },
         )
-        ExposedDropdownMenu(
-            expanded = menuExpanded,
-            onDismissRequest = { dismissKeyboardAndSuggestions() },
-            modifier = Modifier
-                .testTag(OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG)
-                .heightIn(max = 240.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = OficiosElevation.sm,
-            shadowElevation = OficiosElevation.md,
-        ) {
-            when {
-                showError -> {
-                    DropdownMenuItem(
-                        text = {
+
+        if (menuExpanded) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG)
+                    .semantics { contentDescription = suggestionsListDescription },
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = OficiosElevation.sm,
+                shadowElevation = OficiosElevation.md,
+                shape = MaterialTheme.shapes.medium,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    when {
+                        showError -> {
                             Text(
                                 text = errorText.orEmpty(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = OficiosSpacing.md,
+                                        vertical = OficiosSpacing.sm,
+                                    )
+                                    .semantics { contentDescription = errorText.orEmpty() },
                             )
-                        },
-                        onClick = {},
-                        enabled = false,
-                        contentPadding = PaddingValues(
-                            horizontal = OficiosSpacing.md,
-                            vertical = OficiosSpacing.xs,
-                        ),
-                    )
-                    if (onRetry != null) {
-                        DropdownMenuItem(
-                            text = {
+                            if (onRetry != null) {
                                 Text(
-                                    text = stringResource(R.string.ds_autocomplete_retry),
+                                    text = retryLabel,
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onRetry.invoke() }
+                                        .padding(
+                                            horizontal = OficiosSpacing.md,
+                                            vertical = OficiosSpacing.sm,
+                                        )
+                                        .semantics { contentDescription = retryLabel },
                                 )
-                            },
-                            onClick = { onRetry.invoke() },
-                            contentPadding = PaddingValues(
-                                horizontal = OficiosSpacing.md,
-                                vertical = OficiosSpacing.xs,
-                            ),
-                        )
-                    }
-                }
-                isLoading -> {
-                    DropdownMenuItem(
-                        text = {
+                            }
+                        }
+                        isLoading -> {
                             Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = OficiosSpacing.md,
+                                        vertical = OficiosSpacing.sm,
+                                    )
+                                    .semantics { contentDescription = loadingLabel },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
                             ) {
@@ -227,56 +225,50 @@ fun <T> OficiosAutocompleteField(
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
-                                    text = stringResource(R.string.ds_autocomplete_loading),
+                                    text = loadingLabel,
                                     style = MaterialTheme.typography.bodyLarge,
                                 )
                             }
-                        },
-                        onClick = {},
-                        enabled = false,
-                        contentPadding = PaddingValues(
-                            horizontal = OficiosSpacing.md,
-                            vertical = OficiosSpacing.xs,
-                        ),
-                    )
-                }
-                suggestions.isEmpty() -> {
-                    DropdownMenuItem(
-                        text = {
+                        }
+                        suggestions.isEmpty() -> {
                             Text(
                                 text = resolvedNoResults,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = OficiosSpacing.md,
+                                        vertical = OficiosSpacing.sm,
+                                    )
+                                    .semantics { contentDescription = resolvedNoResults },
                             )
-                        },
-                        onClick = {},
-                        enabled = false,
-                        contentPadding = PaddingValues(
-                            horizontal = OficiosSpacing.md,
-                            vertical = OficiosSpacing.xs,
-                        ),
-                    )
-                }
-                else -> {
-                    suggestions.forEach { option ->
-                        DropdownMenuItem(
-                            text = {
+                        }
+                        else -> {
+                            suggestions.forEachIndexed { index, option ->
+                                val optionLabel = suggestionLabel(option)
                                 Text(
-                                    text = suggestionLabel(option),
+                                    text = optionLabel,
                                     style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            onSuggestionSelected(option)
+                                            userExpanded = false
+                                            userDismissed = true
+                                            searchSession = false
+                                        }
+                                        .padding(
+                                            horizontal = OficiosSpacing.md,
+                                            vertical = OficiosSpacing.sm,
+                                        )
+                                        .semantics { contentDescription = optionLabel },
                                 )
-                            },
-                            onClick = {
-                                onSuggestionSelected(option)
-                                userExpanded = false
-                                userDismissed = true
-                                searchSession = false
-                            },
-                            contentPadding = PaddingValues(
-                                horizontal = OficiosSpacing.md,
-                                vertical = OficiosSpacing.xs,
-                            ),
-                        )
+                                if (index < suggestions.lastIndex) {
+                                    HorizontalDivider()
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -45,7 +45,7 @@ class ForgotPasswordScreenTest {
             }
         }
         composeTestRule.onNodeWithText(
-            "Si el correo existe, le enviamos instrucciones para recuperar su contraseña.",
+            "Si el correo existe, te enviamos instrucciones para recuperar tu contraseña.",
         ).assertIsDisplayed()
     }
 

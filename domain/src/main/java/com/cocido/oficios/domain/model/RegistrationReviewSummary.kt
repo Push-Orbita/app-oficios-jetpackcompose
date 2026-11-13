@@ -27,6 +27,8 @@ data class RegistrationReviewSummary(
     val schedule: String = "",
     val serviceArea: String = "",
     val paymentMethods: String = "",
+    /** En trabajador, la calle del local solo aplica si atiende en local propio. */
+    val showStreet: Boolean = true,
 ) {
     companion object {
         fun from(draft: RegistrationDraft): RegistrationReviewSummary = fromParts(
@@ -82,13 +84,17 @@ data class RegistrationReviewSummary(
                 RegistrationRole.CLIENT -> clientStreet
             }
             val trade = provider.takeIf { role == RegistrationRole.PROVIDER }
+            val showStreet = when (role) {
+                RegistrationRole.CLIENT -> true
+                RegistrationRole.PROVIDER -> trade?.servesAtLocal == true
+            }
             return RegistrationReviewSummary(
                 firstName = firstName.trim(),
                 lastName = lastName.trim(),
                 email = email.trim(),
                 phone = phone.trim(),
                 barrio = barrio,
-                street = street,
+                street = if (showStreet) street else "",
                 document = document.trim(),
                 contactName = contactName.trim(),
                 piso = piso.trim(),
@@ -100,6 +106,7 @@ data class RegistrationReviewSummary(
                 schedule = formatReviewSchedule(trade),
                 serviceArea = formatReviewServiceArea(trade),
                 paymentMethods = formatReviewPaymentMethods(trade),
+                showStreet = showStreet,
             )
         }
 

@@ -25,6 +25,7 @@ import com.cocido.oficios.feature.auth.register.RegisterFormUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class RegistrationWizardUiState(
     val role: RegistrationRole = RegistrationRole.CLIENT,
@@ -112,6 +114,7 @@ class RegistrationWizardViewModel @Inject constructor(
     private val draftRepository: RegistrationDraftRepository,
     private val committer: RegistrationCommitter,
     private val searchBarriosUseCase: SearchBarriosUseCase,
+    private val passwordHolder: RegistrationPasswordHolder,
 ) : ViewModel() {
 
     private val role: RegistrationRole = savedStateHandle.get<String>("role")
@@ -124,9 +127,7 @@ class RegistrationWizardViewModel @Inject constructor(
     private val _effects = Channel<RegistrationWizardEffect>(Channel.BUFFERED)
     val effects: Flow<RegistrationWizardEffect> = _effects.receiveAsFlow()
 
-    /** ContraseÃ±a solo en memoria. Nunca se escribe en el draft. */
-    private var passwordInMemory: String = ""
-    private var confirmPasswordInMemory: String = ""
+    /** Contraseña solo en memoria de proceso ([passwordHolder]). Nunca se escribe en el draft. */
     private var providerDraftInMemory: RegisterTradeDraft? = null
     private var barrioSearcher: DebouncedBarrioSearcher? = null
 
@@ -160,11 +161,11 @@ class RegistrationWizardViewModel @Inject constructor(
             is RegisterFormEvent.LastNameChanged -> updatePersonal { it.copy(lastName = event.value) }
             is RegisterFormEvent.EmailChanged -> updatePersonal { it.copy(email = event.value) }
             is RegisterFormEvent.PasswordChanged -> {
-                passwordInMemory = event.value
+                passwordHolder.setPassword(event.value)
                 updatePersonal { it.copy(password = event.value) }
             }
             is RegisterFormEvent.ConfirmPasswordChanged -> {
-                confirmPasswordInMemory = event.value
+                passwordHolder.setConfirmPassword(event.value)
                 updatePersonal { it.copy(confirmPassword = event.value) }
             }
             is RegisterFormEvent.DocumentChanged -> updatePersonal { it.copy(document = event.value) }
@@ -209,7 +210,7 @@ class RegistrationWizardViewModel @Inject constructor(
     fun continueFromProfile() {
         val state = _uiState.value
         if (!state.canContinueProfile) {
-            _uiState.update { it.copy(profileError = "Complete nombre, WhatsApp, barrio y calle") }
+            _uiState.update { it.copy(profileError = PROFILE_INCOMPLETE_ERROR) }
             return
         }
         persistDraft()
@@ -251,10 +252,26 @@ class RegistrationWizardViewModel @Inject constructor(
     fun editAgenda() = emit(RegistrationWizardEffect.PopToAgenda)
     fun editCobro() = emit(RegistrationWizardEffect.PopToCobro)
 
+    /**
+     * Sale del wizard descartando de verdad: limpia draft en disco y contraseña en memoria.
+     * Llamar solo cuando el usuario confirma «Descartar» (o sale sin cambios).
+     */
+    fun discardWizard() {
+        passwordHolder.clear()
+        providerDraftInMemory = null
+        _uiState.value = RegistrationWizardUiState(role = role)
+        viewModelScope.launch {
+            withContext(NonCancellable) {
+                draftRepository.clear()
+            }
+        }
+    }
+
     fun createAccount(providerDraft: RegisterTradeDraft? = null) {
         val state = _uiState.value
         if (state.isCommitting) return
-        if (passwordInMemory.isBlank()) {
+        val password = passwordHolder.password
+        if (password.isBlank()) {
             _uiState.update { it.copy(commitError = "Volvé al primer paso e ingresá tu contraseña") }
             emit(RegistrationWizardEffect.GoToPersonal)
             return
@@ -263,10 +280,9 @@ class RegistrationWizardViewModel @Inject constructor(
             _uiState.update { it.copy(isCommitting = true, commitError = null) }
             val snapshot = currentDraft(providerDraft)
             draftRepository.save(snapshot)
-            when (val result = committer.commit(snapshot, passwordInMemory)) {
+            when (val result = committer.commit(snapshot, password)) {
                 RegistrationCommitResult.Completed -> {
-                    passwordInMemory = ""
-                    confirmPasswordInMemory = ""
+                    passwordHolder.clear()
                     _uiState.update { it.copy(isCommitting = false, personal = it.personal.copy(password = "", confirmPassword = "")) }
                     _effects.send(RegistrationWizardEffect.AccountCreated)
                 }
@@ -308,8 +324,23 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     private suspend fun restoreDraft() {
-        val draft = draftRepository.get() ?: return
-        if (draft.role != role) return
+        val draft = draftRepository.get()
+        val processPassword = passwordHolder.password
+        val processConfirm = passwordHolder.confirmPassword
+        if (draft == null) {
+            if (processPassword.isNotEmpty() || processConfirm.isNotEmpty()) {
+                _uiState.update {
+                    it.copy(
+                        personal = it.personal.copy(
+                            password = processPassword,
+                            confirmPassword = processConfirm,
+                        ).validatedPersonal(),
+                    )
+                }
+            }
+            return
+        }
+        val sameRole = draft.role == role
         _uiState.update {
             it.copy(
                 personal = RegisterFormUiState(
@@ -318,26 +349,40 @@ class RegistrationWizardViewModel @Inject constructor(
                     email = draft.personal.email,
                     document = draft.personal.document,
                     acceptedTerms = draft.personal.acceptedTerms,
-                    password = passwordInMemory,
-                    confirmPassword = confirmPasswordInMemory,
+                    password = processPassword,
+                    confirmPassword = processConfirm,
                 ).validatedPersonal(),
-                contactName = draft.client.contactName,
-                phone = draft.client.phone,
-                barrioQuery = draft.client.barrioQuery,
-                selectedBarrioId = draft.client.barrioId,
-                calle = draft.client.calle,
-                numero = draft.client.numero,
-                piso = draft.client.piso,
-                departamento = draft.client.departamento,
-                providerNeighborhoodQuery = draft.provider?.neighborhoodQuery.orEmpty(),
-                providerLocalCalle = draft.provider?.localCalle.orEmpty(),
-                providerLocalNumero = draft.provider?.localNumero.orEmpty(),
-                providerDraft = draft.provider,
-                commitPhase = draft.commitPhase,
-                createdUserEmail = draft.createdUserEmail,
+                contactName = if (sameRole) draft.client.contactName else it.contactName,
+                phone = if (sameRole) draft.client.phone else it.phone,
+                barrioQuery = if (sameRole) draft.client.barrioQuery else it.barrioQuery,
+                selectedBarrioId = if (sameRole) draft.client.barrioId else it.selectedBarrioId,
+                calle = if (sameRole) draft.client.calle else it.calle,
+                numero = if (sameRole) draft.client.numero else it.numero,
+                piso = if (sameRole) draft.client.piso else it.piso,
+                departamento = if (sameRole) draft.client.departamento else it.departamento,
+                providerNeighborhoodQuery = if (sameRole) {
+                    draft.provider?.neighborhoodQuery.orEmpty()
+                } else {
+                    it.providerNeighborhoodQuery
+                },
+                providerLocalCalle = if (sameRole) {
+                    draft.provider?.localCalle.orEmpty()
+                } else {
+                    it.providerLocalCalle
+                },
+                providerLocalNumero = if (sameRole) {
+                    draft.provider?.localNumero.orEmpty()
+                } else {
+                    it.providerLocalNumero
+                },
+                providerDraft = if (sameRole) draft.provider else it.providerDraft,
+                commitPhase = if (sameRole) draft.commitPhase else it.commitPhase,
+                createdUserEmail = if (sameRole) draft.createdUserEmail else it.createdUserEmail,
             )
         }
-        providerDraftInMemory = draft.provider
+        if (sameRole) {
+            providerDraftInMemory = draft.provider
+        }
     }
 
     private fun persistDraft() {
@@ -425,7 +470,7 @@ class RegistrationWizardViewModel @Inject constructor(
         val passwordError = AuthValidators.validatePassword(password)
         val confirmPasswordError = AuthValidators.validatePasswordConfirmation(password, confirmPassword)
         val documentError = AuthValidators.validateDocument(document)
-        val termsError = if (!acceptedTerms) "Debe aceptar los tÃ©rminos" else null
+        val termsError = if (!acceptedTerms) RegisterFormUiState.TERMS_REQUIRED_MARKER else null
         val canSubmit = listOf(
             firstNameError, lastNameError, emailError, passwordError,
             confirmPasswordError, documentError, termsError,
@@ -440,5 +485,9 @@ class RegistrationWizardViewModel @Inject constructor(
             termsError = termsError,
             canSubmit = canSubmit,
         )
+    }
+
+    companion object {
+        const val PROFILE_INCOMPLETE_ERROR = "Completá nombre, WhatsApp, barrio y calle"
     }
 }

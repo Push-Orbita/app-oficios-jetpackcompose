@@ -103,6 +103,7 @@ class RegistrationWizardViewModelTest {
                 sessionRepository = FakeSession(),
             ),
             searchBarriosUseCase = SearchBarriosUseCase(FakeCatalog()),
+            passwordHolder = RegistrationPasswordHolder(),
         )
         val effects = mutableListOf<RegistrationWizardEffect>()
         val job = kotlinx.coroutines.CoroutineScope(dispatcher).launch {
@@ -149,7 +150,7 @@ class RegistrationWizardViewModelTest {
     }
 
     @Test
-    fun `restores draft fields but never a password`() = runTest(dispatcher) {
+    fun `restores draft fields but never a password from disk`() = runTest(dispatcher) {
         val drafts = InMemoryDrafts(
             RegistrationDraft(
                 personal = RegistrationPersonalDraft(
@@ -169,6 +170,94 @@ class RegistrationWizardViewModelTest {
         assertEquals("ana@test.com", personal.email)
         assertEquals("", personal.password)
         assertEquals("", personal.confirmPassword)
+    }
+
+    @Test
+    fun `same role in same process restores password from process memory`() = runTest(dispatcher) {
+        val holder = RegistrationPasswordHolder()
+        val first = createEnv(passwordHolder = holder)
+        fillPersonal(first.viewModel)
+        first.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+        first.collectJob?.cancel()
+
+        val recreated = createEnv(drafts = first.drafts, passwordHolder = holder)
+        advanceUntilIdle()
+        assertEquals("secret12!", recreated.viewModel.uiState.value.personal.password)
+        assertEquals("secret12!", recreated.viewModel.uiState.value.personal.confirmPassword)
+        assertFalse(recreated.drafts.encodedHasPassword)
+        recreated.collectJob?.cancel()
+    }
+
+    @Test
+    fun `changing role keeps shared personal fields from draft`() = runTest(dispatcher) {
+        val drafts = InMemoryDrafts(
+            RegistrationDraft(
+                role = RegistrationRole.CLIENT,
+                personal = RegistrationPersonalDraft(
+                    firstName = "Ana",
+                    lastName = "López",
+                    email = "ana@test.com",
+                    document = "12345678",
+                    acceptedTerms = true,
+                ),
+                client = com.cocido.oficios.domain.model.RegistrationClientDraft(
+                    contactName = "Ana López",
+                    phone = "93705219109",
+                    barrioQuery = "Centro",
+                    barrioId = 4,
+                    calle = "Belgrano",
+                ),
+            ),
+        )
+        val providerVm = RegistrationWizardViewModel(
+            savedStateHandle = SavedStateHandle(mapOf("role" to "PROVIDER")),
+            draftRepository = drafts,
+            committer = RegistrationCommitter(
+                registerClientUseCase = RegisterClientUseCase(FakeAuth(AppResult.Error(AppError.Unknown()))),
+                registerProviderUseCase = RegisterProviderUseCase(FakeAuth(AppResult.Error(AppError.Unknown()))),
+                saveClientContactoUseCase = SaveClientContactoUseCase(FakeClientProfiles()),
+                saveClientDomicilioUseCase = SaveClientDomicilioUseCase(FakeClientProfiles()),
+                draftRepository = drafts,
+                registerTradeDraftRepository = object :
+                    com.cocido.oficios.domain.repository.RegisterTradeDraftRepository {
+                    override suspend fun save(draft: RegisterTradeDraft) = Unit
+                    override suspend fun get() = null
+                    override suspend fun clear() = Unit
+                },
+                submitRegisterTradeDraftUseCase = noopTradeSubmit(),
+                sessionRepository = FakeSession(),
+            ),
+            searchBarriosUseCase = SearchBarriosUseCase(FakeCatalog()),
+            passwordHolder = RegistrationPasswordHolder(),
+        )
+        advanceUntilIdle()
+        val personal = providerVm.uiState.value.personal
+        assertEquals("Ana", personal.firstName)
+        assertEquals("López", personal.lastName)
+        assertEquals("ana@test.com", personal.email)
+        assertEquals("12345678", personal.document)
+        assertTrue(personal.acceptedTerms)
+        assertEquals("", providerVm.uiState.value.contactName)
+        assertEquals("", providerVm.uiState.value.phone)
+    }
+
+    @Test
+    fun `terms validation uses marker not hardcoded copy`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.viewModel.onPersonalEvent(RegisterFormEvent.FirstNameChanged("Ana"))
+        env.viewModel.onPersonalEvent(RegisterFormEvent.LastNameChanged("López"))
+        env.viewModel.onPersonalEvent(RegisterFormEvent.DocumentChanged("12345678"))
+        env.viewModel.onPersonalEvent(RegisterFormEvent.EmailChanged("ana@test.com"))
+        env.viewModel.onPersonalEvent(RegisterFormEvent.PasswordChanged("secret12!"))
+        env.viewModel.onPersonalEvent(RegisterFormEvent.ConfirmPasswordChanged("secret12!"))
+        env.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        advanceUntilIdle()
+        assertEquals(
+            com.cocido.oficios.feature.auth.register.RegisterFormUiState.TERMS_REQUIRED_MARKER,
+            env.viewModel.uiState.value.personal.termsError,
+        )
+        env.collectJob?.cancel()
     }
 
     @Test
@@ -258,6 +347,7 @@ class RegistrationWizardViewModelTest {
                 )
             },
             searchBarriosUseCase = SearchBarriosUseCase(FakeCatalog()),
+            passwordHolder = RegistrationPasswordHolder(),
         )
         fillPersonal(viewModel)
         viewModel.continueFromZona(
@@ -271,7 +361,8 @@ class RegistrationWizardViewModelTest {
                 experienceRange = "3 a 5 años",
                 neighborhoodQuery = "San Miguel",
                 barrioId = 11,
-                servesAtClientHome = true,
+                servesAtClientHome = false,
+                servesAtLocal = true,
                 timeSlots = emptyList(),
                 localCalle = "Rivadavia",
                 localNumero = "200",
@@ -282,10 +373,11 @@ class RegistrationWizardViewModelTest {
         assertEquals(RegistrationRole.PROVIDER, viewModel.uiState.value.role)
         assertEquals("", review.phone)
         assertEquals("San Miguel", review.barrio)
+        assertEquals(true, review.showStreet)
         assertEquals("Rivadavia 200", review.street)
         assertEquals("Hogar", review.oficioCategory)
         assertEquals("Electricidad", review.oficioRubro)
-        assertEquals("En el domicilio del cliente", review.serviceArea)
+        assertEquals("En local propio", review.serviceArea)
         val saved = env.drafts.draft
         assertEquals("San Miguel", saved?.provider?.neighborhoodQuery)
         env.collectJob?.cancel()
@@ -337,6 +429,40 @@ class RegistrationWizardViewModelTest {
         env.collectJob?.cancel()
     }
 
+    @Test
+    fun `discardWizard clears draft and process password`() = runTest(dispatcher) {
+        val holder = RegistrationPasswordHolder()
+        val env = createEnv(passwordHolder = holder)
+        fillPersonal(env.viewModel)
+        advanceUntilIdle()
+        assertTrue(env.drafts.draft != null)
+        assertEquals("secret12!", holder.password)
+        assertEquals("secret12!", holder.confirmPassword)
+
+        env.viewModel.discardWizard()
+        advanceUntilIdle()
+
+        assertNull(env.drafts.draft)
+        assertEquals("", holder.password)
+        assertEquals("", holder.confirmPassword)
+        assertEquals("", env.viewModel.uiState.value.personal.firstName)
+        assertEquals("", env.viewModel.uiState.value.personal.password)
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `without discardWizard draft and password stay after personal filled`() = runTest(dispatcher) {
+        val holder = RegistrationPasswordHolder()
+        val env = createEnv(passwordHolder = holder)
+        fillPersonal(env.viewModel)
+        advanceUntilIdle()
+
+        assertTrue(env.drafts.draft != null)
+        assertEquals("secret12!", holder.password)
+        assertEquals("Ana", env.viewModel.uiState.value.personal.firstName)
+        env.collectJob?.cancel()
+    }
+
     private fun fillPersonal(viewModel: RegistrationWizardViewModel) {
         viewModel.onPersonalEvent(RegisterFormEvent.FirstNameChanged("Ana"))
         viewModel.onPersonalEvent(RegisterFormEvent.LastNameChanged("López"))
@@ -363,6 +489,7 @@ class RegistrationWizardViewModelTest {
             ),
         ),
         drafts: InMemoryDrafts = InMemoryDrafts(),
+        passwordHolder: RegistrationPasswordHolder = RegistrationPasswordHolder(),
     ): Env {
         val auth = FakeAuth(registerResult)
         val profiles = FakeClientProfiles()
@@ -385,6 +512,7 @@ class RegistrationWizardViewModelTest {
             draftRepository = drafts,
             committer = committer,
             searchBarriosUseCase = SearchBarriosUseCase(FakeCatalog()),
+            passwordHolder = passwordHolder,
         )
         val effects = mutableListOf<RegistrationWizardEffect>()
         // Collect is started by tests via runTest + launch below through Env helper.

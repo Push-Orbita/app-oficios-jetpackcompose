@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.auth.register
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cocido.oficios.core.common.result.AppResult
@@ -24,6 +25,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
+import com.cocido.oficios.feature.auth.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -191,7 +193,41 @@ class RegisterTradeViewModel @Inject constructor(
             is RegisterTradeEvent.LocalNumeroChanged -> update { it.copy(localNumero = event.value) }
             RegisterTradeEvent.Continue -> continueToOnboarding()
             RegisterTradeEvent.RetryLoadCatalog -> loadCategories()
+            RegisterTradeEvent.ClearStepValidationError -> update { it.copy(stepValidationError = null) }
         }
+    }
+
+    /**
+     * Valida el paso del wizard. Si falta algo, deja un mensaje visible y no avanza.
+     * @return true si el paso está completo.
+     */
+    fun attemptContinueSection(section: RegisterTradeFormSection): Boolean {
+        val state = _uiState.value
+        val can = when (section) {
+            RegisterTradeFormSection.OFICIO, RegisterTradeFormSection.FULL -> state.canContinueOficio
+            RegisterTradeFormSection.ZONA -> state.canContinueZona
+            RegisterTradeFormSection.AGENDA -> state.canContinueAgenda
+            RegisterTradeFormSection.COBRO -> state.canContinueCobro
+            RegisterTradeFormSection.IDENTIDAD -> state.canContinueIdentidad
+        }
+        if (can) {
+            _uiState.update { it.copy(stepValidationError = null) }
+            return true
+        }
+        _uiState.update {
+            it.copy(stepValidationError = stepIncompleteMessage(section))
+        }
+        return false
+    }
+
+    @StringRes
+    private fun stepIncompleteMessage(section: RegisterTradeFormSection): Int = when (section) {
+        RegisterTradeFormSection.OFICIO, RegisterTradeFormSection.FULL ->
+            R.string.auth_wizard_step_oficio_incomplete
+        RegisterTradeFormSection.ZONA -> R.string.auth_wizard_step_zona_incomplete
+        RegisterTradeFormSection.AGENDA -> R.string.auth_wizard_step_agenda_incomplete
+        RegisterTradeFormSection.COBRO -> R.string.auth_wizard_step_cobro_incomplete
+        RegisterTradeFormSection.IDENTIDAD -> R.string.auth_wizard_step_identidad_incomplete
     }
 
     /**
@@ -329,7 +365,9 @@ class RegisterTradeViewModel @Inject constructor(
     private fun continueToOnboarding() {
         val state = _uiState.value
         if (!state.canContinue) {
-            _uiState.update { it.copy(catalogError = "Complete los datos del oficio antes de continuar") }
+            _uiState.update {
+                it.copy(stepValidationError = R.string.auth_wizard_step_oficio_incomplete)
+            }
             return
         }
         val draft = snapshotDraft() ?: return
@@ -411,7 +449,7 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     private fun update(block: (RegisterTradeUiState) -> RegisterTradeUiState) {
-        _uiState.update { block(it).validated() }
+        _uiState.update { block(it).validated().copy(stepValidationError = null) }
     }
 
     private fun RegisterTradeUiState.validated(): RegisterTradeUiState {

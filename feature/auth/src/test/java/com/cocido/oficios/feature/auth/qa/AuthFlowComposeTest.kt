@@ -126,7 +126,7 @@ class AuthFlowComposeTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Siguiente").performScrollTo().assertIsEnabled()
+        composeRule.onNodeWithText("Siguiente").assertIsEnabled()
         composeRule.onNodeWithText("Entre 6 y 64 caracteres")
             .performScrollTo()
             .assertIsDisplayed()

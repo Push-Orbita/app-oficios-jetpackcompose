@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import com.cocido.oficios.core.designsystem.component.OficiosDialog
 
 internal const val DISCARD_CHANGES_TITLE = "¿Descartar cambios?"
-internal const val DISCARD_CHANGES_MESSAGE = "Los datos que ingresó se van a perder."
+internal const val DISCARD_CHANGES_MESSAGE = "Los datos que ingresaste se van a perder."
 internal const val DISCARD_CHANGES_CONFIRM = "Descartar"
 internal const val DISCARD_CHANGES_DISMISS = "Seguir editando"
 

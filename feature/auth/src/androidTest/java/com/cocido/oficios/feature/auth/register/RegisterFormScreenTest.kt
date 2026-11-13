@@ -29,7 +29,7 @@ class RegisterFormScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Registro de usuario").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Registro de cliente").assertIsDisplayed()
         composeTestRule.onNodeWithText("Nombres").performScrollTo().assertIsDisplayed()
         composeTestRule.onNodeWithText("Apellido").performScrollTo().assertIsDisplayed()
         composeTestRule.onNodeWithText("Nombre y apellido").assertDoesNotExist()
@@ -90,7 +90,7 @@ class RegisterFormScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Siguiente").performScrollTo().assertIsEnabled()
+        composeTestRule.onNodeWithText("Siguiente").assertIsEnabled()
     }
 
     @Test
