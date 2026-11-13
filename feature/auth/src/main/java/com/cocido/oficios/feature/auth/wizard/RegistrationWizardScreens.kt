@@ -26,6 +26,7 @@ import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthRegisterLayout
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.feature.auth.register.RegisterFormScreen
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
@@ -45,7 +46,12 @@ fun RegistrationWizardPersonalScreen(
     state: RegistrationWizardUiState,
     onEvent: (com.cocido.oficios.feature.auth.register.RegisterFormEvent) -> Unit,
     modifier: Modifier = Modifier,
+    onLeaveWizard: () -> Unit = {},
 ) {
+    rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = hasPersonalDraftForLeaveConfirmation(state.personal),
+        onConfirmExit = onLeaveWizard,
+    )
     RegisterFormScreen(
         mode = if (state.role == RegistrationRole.CLIENT) RegisterMode.CLIENT else RegisterMode.PROVIDER,
         uiState = state.personal,
@@ -336,4 +342,15 @@ private fun ReviewField(label: String, value: String) {
             },
         )
     }
+}
+
+internal fun hasPersonalDraftForLeaveConfirmation(
+    personal: com.cocido.oficios.feature.auth.register.RegisterFormUiState,
+): Boolean {
+    return personal.firstName.isNotBlank() ||
+        personal.lastName.isNotBlank() ||
+        personal.email.isNotBlank() ||
+        personal.document.isNotBlank() ||
+        personal.password.isNotBlank() ||
+        personal.acceptedTerms
 }

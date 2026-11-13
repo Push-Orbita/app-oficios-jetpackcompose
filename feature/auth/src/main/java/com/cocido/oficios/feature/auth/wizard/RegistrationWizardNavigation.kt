@@ -32,6 +32,7 @@ fun NavGraphBuilder.registrationWizardGraph(
             RegistrationWizardPersonalScreen(
                 state = state,
                 onEvent = viewModel::onPersonalEvent,
+                onLeaveWizard = { navController.popBackStack() },
             )
         }
         composable(AuthDestination.WIZARD_PROFILE) { entry ->
@@ -142,6 +143,9 @@ private fun ProviderTradeStep(
         onContinue = {
             if (canContinue(trade.uiState.value)) onContinue(wizard, trade)
         },
+        // En el wizard el back debe ir al paso anterior. El dialogo de
+        // descartar solo corresponde al salir del grafo entero (personal).
+        confirmDiscardOnSystemBack = false,
     )
 }
 
