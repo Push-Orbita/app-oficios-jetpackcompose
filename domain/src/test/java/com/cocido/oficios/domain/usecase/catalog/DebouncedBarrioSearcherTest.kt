@@ -1,5 +1,6 @@
 package com.cocido.oficios.domain.usecase.catalog
 
+import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.repository.CatalogRepository
@@ -24,6 +25,7 @@ class DebouncedBarrioSearcherTest {
             CatalogOption(1, "Centro"),
             CatalogOption(2, "San Francisco"),
         )
+        var error: AppError? = null
 
         override suspend fun getCategories() = AppResult.Success(emptyList<CatalogOption>())
         override suspend fun getRubrosByCategory(categoryId: Long) = AppResult.Success(emptyList<CatalogOption>())
@@ -31,6 +33,7 @@ class DebouncedBarrioSearcherTest {
         override suspend fun searchBarrios(query: String): AppResult<List<CatalogOption>> {
             queries += query
             gate?.await()
+            error?.let { return AppResult.Error(it) }
             val filtered = if (query.isBlank()) {
                 results
             } else {
@@ -146,6 +149,60 @@ class DebouncedBarrioSearcherTest {
             "in-flight result after clearPending must be dropped, got $results",
             results.isEmpty(),
         )
+        searcher.cancel()
+    }
+
+    @Test
+    fun `network error is reported instead of an empty list`() = runTest(UnconfinedTestDispatcher()) {
+        val repo = FakeCatalogRepository()
+        repo.error = AppError.Network(message = "No internet connection")
+        val results = mutableListOf<List<CatalogOption>>()
+        val errors = mutableListOf<AppError>()
+        val searcher = DebouncedBarrioSearcher(
+            scope = this,
+            searchBarrios = SearchBarriosUseCase(repo),
+            onResult = { results += it },
+            onError = { errors += it },
+            debounceMs = 300L,
+        )
+
+        searcher.submit("Centro")
+        advanceTimeBy(300)
+        advanceUntilIdle()
+
+        assertEquals(listOf("Centro"), repo.queries)
+        assertTrue("success callback must not run on error, got $results", results.isEmpty())
+        assertEquals(1, errors.size)
+        searcher.cancel()
+    }
+
+    @Test
+    fun `retry repeats the same query after an error`() = runTest(UnconfinedTestDispatcher()) {
+        val repo = FakeCatalogRepository()
+        repo.error = AppError.Network(message = "No internet connection")
+        val results = mutableListOf<List<CatalogOption>>()
+        val errors = mutableListOf<AppError>()
+        val searcher = DebouncedBarrioSearcher(
+            scope = this,
+            searchBarrios = SearchBarriosUseCase(repo),
+            onResult = { results += it },
+            onError = { errors += it },
+            debounceMs = 300L,
+        )
+
+        searcher.submit("Centro")
+        advanceTimeBy(300)
+        advanceUntilIdle()
+        assertEquals(1, repo.queries.size)
+        assertEquals(1, errors.size)
+
+        repo.error = null
+        searcher.retry()
+        advanceUntilIdle()
+
+        assertEquals(listOf("Centro", "Centro"), repo.queries)
+        assertEquals(1, results.size)
+        assertEquals("Centro", results.single().single().label)
         searcher.cancel()
     }
 }

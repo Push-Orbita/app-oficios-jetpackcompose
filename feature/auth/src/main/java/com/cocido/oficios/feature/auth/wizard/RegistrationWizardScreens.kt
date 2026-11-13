@@ -64,6 +64,7 @@ fun RegistrationWizardProfileScreen(
     onBarrioFocused: () -> Unit,
     onBarrioSelected: (CatalogOption) -> Unit,
     onBarrioDismissed: () -> Unit,
+    onBarrioRetry: () -> Unit = {},
     onCalleChanged: (String) -> Unit,
     onNumeroChanged: (String) -> Unit,
     onPisoChanged: (String) -> Unit,
@@ -103,6 +104,8 @@ fun RegistrationWizardProfileScreen(
             suggestionLabel = { it.label },
             label = stringResource(R.string.auth_wizard_barrio),
             isLoading = state.isSearchingBarrios,
+            errorText = state.barrioSearchError,
+            onRetry = onBarrioRetry,
             onFocused = onBarrioFocused,
             onSuggestionsDismissed = onBarrioDismissed,
         )
