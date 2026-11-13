@@ -24,4 +24,19 @@ class SplashGateTest {
         SplashGate.release()
         assertFalse(SplashGate.keepOnScreen)
     }
+
+    @Test
+    fun coldStartKeepsSplashUntilReleased() {
+        SplashGate.onActivityCreated(hasSavedInstanceState = false)
+        assertTrue(SplashGate.keepOnScreen)
+        SplashGate.release()
+        assertFalse(SplashGate.keepOnScreen)
+    }
+
+    @Test
+    fun processDeathOrRecreationReleasesSplashImmediately() {
+        assertTrue(SplashGate.keepOnScreen)
+        SplashGate.onActivityCreated(hasSavedInstanceState = true)
+        assertFalse(SplashGate.keepOnScreen)
+    }
 }

@@ -60,9 +60,18 @@ class RegisterTradeViewModel @Inject constructor(
         barrioSearcher ?: DebouncedBarrioSearcher(
             scope = viewModelScope,
             searchBarrios = searchBarriosUseCase,
-            onLoading = { update { it.copy(isSearchingBarrios = true) } },
+            onLoading = { update { it.copy(isSearchingBarrios = true, barrioSearchError = null) } },
             onResult = { options ->
-                update { it.copy(isSearchingBarrios = false, neighborhoodOptions = options) }
+                update { it.copy(isSearchingBarrios = false, neighborhoodOptions = options, barrioSearchError = null) }
+            },
+            onError = { error ->
+                update {
+                    it.copy(
+                        isSearchingBarrios = false,
+                        neighborhoodOptions = emptyList(),
+                        barrioSearchError = error.userMessage(),
+                    )
+                }
             },
         ).also { barrioSearcher = it }
 
@@ -107,12 +116,14 @@ class RegisterTradeViewModel @Inject constructor(
                         selectedBarrioId = event.option.id,
                         neighborhoodOptions = emptyList(),
                         isSearchingBarrios = false,
+                        barrioSearchError = null,
                     )
                 }
             }
+            RegisterTradeEvent.RetryNeighborhoodSearch -> ensureBarrioSearcher().retry()
             RegisterTradeEvent.NeighborhoodSuggestionsDismissed -> {
                 barrioSearcher?.clearPending()
-                update { it.copy(neighborhoodOptions = emptyList(), isSearchingBarrios = false) }
+                update { it.copy(neighborhoodOptions = emptyList(), isSearchingBarrios = false, barrioSearchError = null) }
             }
             is RegisterTradeEvent.TimeSlotFromChanged -> update {
                 val day = it.weeklySchedule.activeDays.firstOrNull() ?: return@update it
@@ -431,6 +442,7 @@ class RegisterTradeViewModel @Inject constructor(
             it.copy(
                 neighborhoodQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
+                barrioSearchError = null,
             )
         }
         ensureBarrioSearcher().submit(query)

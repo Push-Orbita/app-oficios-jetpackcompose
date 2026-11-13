@@ -9,9 +9,11 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -91,5 +93,34 @@ class OficiosAutocompleteFieldTest {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("San Francisco", useUnmergedTree = true).assertIsDisplayed()
         composeTestRule.onNodeWithText("San Martín", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+
+    @Test
+    fun error_showsNetworkCopyAndRetryInsteadOfEmptyResults() {
+        var retried = false
+        composeTestRule.setContent {
+            OficiosTheme {
+                OficiosAutocompleteField(
+                    value = "Centro",
+                    onValueChange = {},
+                    suggestions = emptyList<String>(),
+                    onSuggestionSelected = {},
+                    suggestionLabel = { it },
+                    label = "Barrio",
+                    errorText = "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.",
+                    onRetry = { retried = true },
+                    modifier = Modifier.width(360.dp).fillMaxWidth(),
+                )
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(OFICIOS_AUTOCOMPLETE_MENU_TEST_TAG, useUnmergedTree = true)
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("No se encontraron barrios").assertDoesNotExist()
+        composeTestRule.onNodeWithText("No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.", substring = true)
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Reintentar").performClick()
+        composeTestRule.runOnIdle { assertTrue(retried) }
     }
 }

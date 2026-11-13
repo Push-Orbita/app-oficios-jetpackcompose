@@ -26,6 +26,7 @@ sealed interface RegisterTradeEvent {
     data object NeighborhoodFocused : RegisterTradeEvent
     data class NeighborhoodSelected(val option: CatalogOption) : RegisterTradeEvent
     data object NeighborhoodSuggestionsDismissed : RegisterTradeEvent
+    data object RetryNeighborhoodSearch : RegisterTradeEvent
     data class TimeSlotFromChanged(val index: Int, val value: String) : RegisterTradeEvent
     data class TimeSlotToChanged(val index: Int, val value: String) : RegisterTradeEvent
     data object AddTimeSlot : RegisterTradeEvent
@@ -73,6 +74,7 @@ data class RegisterTradeUiState(
     val neighborhoodQuery: String = "",
     val neighborhoodOptions: List<CatalogOption> = emptyList(),
     val isSearchingBarrios: Boolean = false,
+    val barrioSearchError: String? = null,
     val selectedBarrioId: Long? = null,
     val selectedPaymentMethods: Set<String> = emptySet(),
     val localCalle: String = "",

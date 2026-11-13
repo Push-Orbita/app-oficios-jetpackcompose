@@ -25,6 +25,7 @@ import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.feature.auth.R
 import com.cocido.oficios.feature.auth.components.AuthRegisterLayout
+import com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler
 import com.cocido.oficios.feature.auth.register.RegisterFormScreen
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
@@ -46,12 +47,8 @@ fun RegistrationWizardPersonalScreen(
     onBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val hasDraft = state.personal.firstName.isNotBlank() ||
-        state.personal.lastName.isNotBlank() ||
-        state.personal.email.isNotBlank() ||
-        state.personal.document.isNotBlank()
-    val handleBack = com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler(
-        hasUnsavedChanges = hasDraft,
+    val handleBack = rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = hasPersonalDraftForLeaveConfirmation(state.personal),
         onConfirmExit = onBack,
     )
     RegisterFormScreen(
@@ -73,6 +70,7 @@ fun RegistrationWizardProfileScreen(
     onBarrioFocused: () -> Unit,
     onBarrioSelected: (CatalogOption) -> Unit,
     onBarrioDismissed: () -> Unit,
+    onBarrioRetry: () -> Unit = {},
     onCalleChanged: (String) -> Unit,
     onNumeroChanged: (String) -> Unit,
     onPisoChanged: (String) -> Unit,
@@ -134,6 +132,8 @@ fun RegistrationWizardProfileScreen(
             suggestionLabel = { it.label },
             label = stringResource(R.string.auth_wizard_barrio),
             isLoading = state.isSearchingBarrios,
+            errorText = state.barrioSearchError,
+            onRetry = onBarrioRetry,
             onFocused = onBarrioFocused,
             onSuggestionsDismissed = onBarrioDismissed,
         )
@@ -361,4 +361,15 @@ private fun ReviewField(label: String, value: String) {
             },
         )
     }
+}
+
+internal fun hasPersonalDraftForLeaveConfirmation(
+    personal: com.cocido.oficios.feature.auth.register.RegisterFormUiState,
+): Boolean {
+    return personal.firstName.isNotBlank() ||
+        personal.lastName.isNotBlank() ||
+        personal.email.isNotBlank() ||
+        personal.document.isNotBlank() ||
+        personal.password.isNotBlank() ||
+        personal.acceptedTerms
 }

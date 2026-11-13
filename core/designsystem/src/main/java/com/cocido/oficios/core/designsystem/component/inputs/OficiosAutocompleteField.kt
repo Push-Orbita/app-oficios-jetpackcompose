@@ -66,6 +66,8 @@ fun <T> OficiosAutocompleteField(
     supportingText: String? = null,
     isLoading: Boolean = false,
     noResultsText: String? = null,
+    errorText: String? = null,
+    onRetry: (() -> Unit)? = null,
     onFocused: () -> Unit = {},
     onSuggestionsDismissed: () -> Unit = {},
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -77,23 +79,26 @@ fun <T> OficiosAutocompleteField(
     var isFieldFocused by remember { mutableStateOf(false) }
     val resolvedNoResults = noResultsText ?: stringResource(R.string.ds_autocomplete_no_results)
     val loadingLabel = stringResource(R.string.ds_autocomplete_loading)
+    val retryLabel = stringResource(R.string.ds_autocomplete_retry)
     val suggestionsListDescription = stringResource(R.string.ds_autocomplete_suggestions_list)
     val keyboardController = LocalSoftwareKeyboardController.current
     val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var wasImeVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isLoading, suggestions) {
+    LaunchedEffect(isLoading, suggestions, errorText) {
         if (isLoading) searchSession = true
-        if (!userDismissed && (isLoading || suggestions.isNotEmpty())) {
+        if (!userDismissed && (isLoading || suggestions.isNotEmpty() || errorText != null)) {
             userExpanded = true
         }
     }
 
+    val showError = !isLoading && errorText != null && userExpanded
     val showNoResults = searchSession &&
         !isLoading &&
         suggestions.isEmpty() &&
+        errorText == null &&
         userExpanded
-    val hasMenuContent = isLoading || suggestions.isNotEmpty() || showNoResults
+    val hasMenuContent = isLoading || suggestions.isNotEmpty() || showNoResults || showError
     val menuExpanded = userExpanded && hasMenuContent && enabled
 
     fun dismissMenu() {
@@ -174,6 +179,35 @@ fun <T> OficiosAutocompleteField(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     when {
+                        showError -> {
+                            Text(
+                                text = errorText.orEmpty(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = OficiosSpacing.md,
+                                        vertical = OficiosSpacing.sm,
+                                    )
+                                    .semantics { contentDescription = errorText.orEmpty() },
+                            )
+                            if (onRetry != null) {
+                                Text(
+                                    text = retryLabel,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onRetry.invoke() }
+                                        .padding(
+                                            horizontal = OficiosSpacing.md,
+                                            vertical = OficiosSpacing.sm,
+                                        )
+                                        .semantics { contentDescription = retryLabel },
+                                )
+                            }
+                        }
                         isLoading -> {
                             Row(
                                 modifier = Modifier

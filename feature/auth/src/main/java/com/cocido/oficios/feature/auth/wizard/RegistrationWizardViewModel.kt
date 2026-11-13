@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.repository.RegistrationDraftRepository
 import com.cocido.oficios.domain.usecase.auth.RegistrationCommitResult
 import com.cocido.oficios.domain.usecase.auth.RegistrationCommitter
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
+import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.usecase.catalog.DebouncedBarrioSearcher
 import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.feature.auth.register.RegisterFormEvent
@@ -44,6 +45,7 @@ data class RegistrationWizardUiState(
     val barrioQuery: String = "",
     val barrioOptions: List<CatalogOption> = emptyList(),
     val isSearchingBarrios: Boolean = false,
+    val barrioSearchError: String? = null,
     val selectedBarrioId: Long? = null,
     val calle: String = "",
     val numero: String = "",
@@ -133,9 +135,18 @@ class RegistrationWizardViewModel @Inject constructor(
         return barrioSearcher ?: DebouncedBarrioSearcher(
             scope = viewModelScope,
             searchBarrios = searchBarriosUseCase,
-            onLoading = { _uiState.update { it.copy(isSearchingBarrios = true) } },
+            onLoading = { _uiState.update { it.copy(isSearchingBarrios = true, barrioSearchError = null) } },
             onResult = { options ->
-                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options) }
+                _uiState.update { it.copy(isSearchingBarrios = false, barrioOptions = options, barrioSearchError = null) }
+            },
+            onError = { error ->
+                _uiState.update {
+                    it.copy(
+                        isSearchingBarrios = false,
+                        barrioOptions = emptyList(),
+                        barrioSearchError = error.userMessage(),
+                    )
+                }
             },
         ).also { barrioSearcher = it }
     }
@@ -183,12 +194,17 @@ class RegistrationWizardViewModel @Inject constructor(
                 selectedBarrioId = option.id,
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
+                barrioSearchError = null,
                 profileError = null,
             )
         }
     }
+    fun retryBarrioSearch() {
+        barrioSearcher()?.retry()
+    }
+
     fun dismissBarrioSuggestions() {
-        _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false) }
+        _uiState.update { it.copy(barrioOptions = emptyList(), isSearchingBarrios = false, barrioSearchError = null) }
     }
 
     fun continueFromProfile() {
@@ -422,6 +438,7 @@ class RegistrationWizardViewModel @Inject constructor(
             it.copy(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
+                barrioSearchError = null,
             )
         }
         // DebouncedBarrioSearcher.distinctUntilChanged drops duplicate submits

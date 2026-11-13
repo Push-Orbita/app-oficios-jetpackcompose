@@ -49,6 +49,7 @@ fun NavGraphBuilder.registrationWizardGraph(
                 onBarrioFocused = viewModel::onBarrioFocused,
                 onBarrioSelected = viewModel::onBarrioSelected,
                 onBarrioDismissed = viewModel::dismissBarrioSuggestions,
+                onBarrioRetry = viewModel::retryBarrioSearch,
                 onCalleChanged = viewModel::onCalleChanged,
                 onNumeroChanged = viewModel::onNumeroChanged,
                 onPisoChanged = viewModel::onPisoChanged,
@@ -143,6 +144,9 @@ private fun ProviderTradeStep(
                 onContinue(wizard, trade)
             }
         },
+        // En el wizard el back debe ir al paso anterior. El dialogo de
+        // descartar solo corresponde al salir del grafo entero (personal).
+        confirmDiscardOnSystemBack = false,
     )
 }
 

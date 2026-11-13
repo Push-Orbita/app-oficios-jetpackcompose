@@ -5,15 +5,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.cocido.oficios.core.common.splash.SplashGate
 import com.cocido.oficios.core.designsystem.component.feedback.LocalOficiosToastController
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosToastController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.cocido.oficios.core.ui.intent.openSupportPhone
 import com.cocido.oficios.core.ui.intent.openTermsAndConditions
@@ -74,6 +77,13 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = AuthDestination.SPLASH,
 ) {
+    val currentEntry by navController.currentBackStackEntryAsState()
+    LaunchedEffect(currentEntry?.destination?.route) {
+        val route = currentEntry?.destination?.route
+        if (route != null && route != AuthDestination.SPLASH) {
+            SplashGate.release()
+        }
+    }
     val context = LocalContext.current
     val toastController = LocalOficiosToastController.current
     val showMessage: (String) -> Unit = { message -> toastController.showError(message) }
