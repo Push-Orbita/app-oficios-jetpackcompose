@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -282,8 +283,57 @@ class RegistrationWizardViewModelTest {
         assertEquals("", review.phone)
         assertEquals("San Miguel", review.barrio)
         assertEquals("Rivadavia 200", review.street)
+        assertEquals("Hogar", review.oficioCategory)
+        assertEquals("Electricidad", review.oficioRubro)
+        assertEquals("En el domicilio del cliente", review.serviceArea)
         val saved = env.drafts.draft
         assertEquals("San Miguel", saved?.provider?.neighborhoodQuery)
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `edit section effects pop to the matching wizard step`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.viewModel.editPersonal()
+        env.viewModel.editProfile()
+        env.viewModel.editOficio()
+        env.viewModel.editZona()
+        env.viewModel.editAgenda()
+        env.viewModel.editCobro()
+        env.viewModel.onReviewBack()
+        advanceUntilIdle()
+        assertEquals(
+            listOf(
+                RegistrationWizardEffect.GoToPersonal,
+                RegistrationWizardEffect.PopToProfile,
+                RegistrationWizardEffect.PopToOficio,
+                RegistrationWizardEffect.PopToZona,
+                RegistrationWizardEffect.PopToAgenda,
+                RegistrationWizardEffect.PopToCobro,
+                RegistrationWizardEffect.GoBack,
+            ),
+            env.effects,
+        )
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `create account ignores a second tap while committing`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.auth.registrationGate = kotlinx.coroutines.CompletableDeferred()
+        fillPersonal(env.viewModel)
+        env.viewModel.onPersonalEvent(RegisterFormEvent.Submit)
+        fillProfile(env.viewModel)
+        env.viewModel.continueFromProfile()
+        env.viewModel.createAccount()
+        runCurrent()
+        assertEquals(true, env.viewModel.uiState.value.isCommitting)
+        env.viewModel.createAccount()
+        runCurrent()
+        assertEquals(1, env.auth.clientAttempts)
+        env.auth.registrationGate!!.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(1, env.auth.clientAttempts)
         env.collectJob?.cancel()
     }
 
@@ -371,9 +421,11 @@ class RegistrationWizardViewModelTest {
         var registerClientResult: AppResult<UserSession>,
     ) : AuthRepository {
         var clientAttempts = 0
+        var registrationGate: kotlinx.coroutines.CompletableDeferred<Unit>? = null
         override suspend fun login(email: String, password: String) = AppResult.Error(AppError.Unknown())
         override suspend fun registerClient(request: RegisterClientRequest): AppResult<UserSession> {
             clientAttempts++
+            registrationGate?.await()
             return registerClientResult
         }
         override suspend fun registerProvider(request: RegisterProviderRequest) = AppResult.Error(AppError.Unknown())

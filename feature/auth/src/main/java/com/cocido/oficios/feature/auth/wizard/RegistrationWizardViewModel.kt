@@ -50,6 +50,7 @@ data class RegistrationWizardUiState(
     val providerNeighborhoodQuery: String = "",
     val providerLocalCalle: String = "",
     val providerLocalNumero: String = "",
+    val providerDraft: RegisterTradeDraft? = null,
     val profileError: String? = null,
     val commitError: String? = null,
     val isCommitting: Boolean = false,
@@ -69,6 +70,11 @@ data class RegistrationWizardUiState(
             providerBarrio = providerNeighborhoodQuery,
             providerCalle = providerLocalCalle,
             providerNumero = providerLocalNumero,
+            document = personal.document,
+            contactName = contactName,
+            piso = piso,
+            departamento = departamento,
+            provider = providerDraft,
         )
 
     val canContinueProfile: Boolean
@@ -87,6 +93,12 @@ sealed interface RegistrationWizardEffect {
     data object GoToIdentidad : RegistrationWizardEffect
     data object GoToReview : RegistrationWizardEffect
     data object GoToPersonal : RegistrationWizardEffect
+    data object GoBack : RegistrationWizardEffect
+    data object PopToProfile : RegistrationWizardEffect
+    data object PopToOficio : RegistrationWizardEffect
+    data object PopToZona : RegistrationWizardEffect
+    data object PopToAgenda : RegistrationWizardEffect
+    data object PopToCobro : RegistrationWizardEffect
     data object AccountCreated : RegistrationWizardEffect
     data object NavigateToLogin : RegistrationWizardEffect
     data object NavigateToTerms : RegistrationWizardEffect
@@ -215,10 +227,19 @@ class RegistrationWizardViewModel @Inject constructor(
         emit(RegistrationWizardEffect.GoToReview)
     }
 
+    fun onReviewBack() = emit(RegistrationWizardEffect.GoBack)
+    fun editPersonal() = emit(RegistrationWizardEffect.GoToPersonal)
+    fun editProfile() = emit(RegistrationWizardEffect.PopToProfile)
+    fun editOficio() = emit(RegistrationWizardEffect.PopToOficio)
+    fun editZona() = emit(RegistrationWizardEffect.PopToZona)
+    fun editAgenda() = emit(RegistrationWizardEffect.PopToAgenda)
+    fun editCobro() = emit(RegistrationWizardEffect.PopToCobro)
+
     fun createAccount(providerDraft: RegisterTradeDraft? = null) {
         val state = _uiState.value
+        if (state.isCommitting) return
         if (passwordInMemory.isBlank()) {
-            _uiState.update { it.copy(commitError = "Vuelva al primer paso e ingrese su contraseÃ±a") }
+            _uiState.update { it.copy(commitError = "Volvé al primer paso e ingresá tu contraseña") }
             emit(RegistrationWizardEffect.GoToPersonal)
             return
         }
@@ -295,6 +316,7 @@ class RegistrationWizardViewModel @Inject constructor(
                 providerNeighborhoodQuery = draft.provider?.neighborhoodQuery.orEmpty(),
                 providerLocalCalle = draft.provider?.localCalle.orEmpty(),
                 providerLocalNumero = draft.provider?.localNumero.orEmpty(),
+                providerDraft = draft.provider,
                 commitPhase = draft.commitPhase,
                 createdUserEmail = draft.createdUserEmail,
             )
@@ -319,6 +341,7 @@ class RegistrationWizardViewModel @Inject constructor(
         providerNeighborhoodQuery = trade.neighborhoodQuery,
         providerLocalCalle = trade.localCalle.orEmpty(),
         providerLocalNumero = trade.localNumero.orEmpty(),
+        providerDraft = trade,
     )
 
     private fun currentDraft(providerDraft: RegisterTradeDraft? = null): RegistrationDraft {
