@@ -72,6 +72,13 @@ fun RegisterTradeScreen(
         val showCobro = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.COBRO)
         val showIdentidad = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.IDENTIDAD)
 
+        uiState.stepValidationError?.let { resId ->
+            OficiosInlineAlert(
+                message = stringResource(resId),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
         uiState.catalogError?.let { message ->
             OficiosInlineAlert(message = message)
             OficiosButton(

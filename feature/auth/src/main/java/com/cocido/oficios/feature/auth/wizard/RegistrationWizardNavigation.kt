@@ -32,6 +32,7 @@ fun NavGraphBuilder.registrationWizardGraph(
             RegistrationWizardPersonalScreen(
                 state = state,
                 onEvent = viewModel::onPersonalEvent,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(AuthDestination.WIZARD_PROFILE) { entry ->
@@ -50,6 +51,7 @@ fun NavGraphBuilder.registrationWizardGraph(
                 onPisoChanged = viewModel::onPisoChanged,
                 onDepartamentoChanged = viewModel::onDepartamentoChanged,
                 onContinue = viewModel::continueFromProfile,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(AuthDestination.WIZARD_OFICIO) { entry ->
@@ -57,7 +59,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.OFICIO,
-                canContinue = { it.canContinueOficio },
                 onContinue = { wizard, trade -> wizard.continueFromOficio(trade.snapshotDraft()) },
             )
         }
@@ -66,7 +67,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.ZONA,
-                canContinue = { it.canContinueZona },
                 onContinue = { wizard, trade -> wizard.continueFromZona(trade.snapshotDraft()) },
             )
         }
@@ -75,7 +75,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.AGENDA,
-                canContinue = { it.canContinueAgenda },
                 onContinue = { wizard, trade -> wizard.continueFromAgenda(trade.snapshotDraft()) },
             )
         }
@@ -84,7 +83,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.COBRO,
-                canContinue = { it.canContinueCobro },
                 onContinue = { wizard, trade ->
                     wizard.continueFromCobro(trade.snapshotDraft(), trade.uiState.value.servesAtLocal)
                 },
@@ -95,7 +93,6 @@ fun NavGraphBuilder.registrationWizardGraph(
                 navController = navController,
                 entry = entry,
                 section = com.cocido.oficios.feature.auth.register.RegisterTradeFormSection.IDENTIDAD,
-                canContinue = { it.canContinueIdentidad },
                 onContinue = { wizard, trade -> wizard.continueFromIdentidad(trade.snapshotDraft()) },
             )
         }
@@ -123,7 +120,6 @@ private fun ProviderTradeStep(
     navController: NavHostController,
     entry: androidx.navigation.NavBackStackEntry,
     section: com.cocido.oficios.feature.auth.register.RegisterTradeFormSection,
-    canContinue: (com.cocido.oficios.feature.auth.register.RegisterTradeUiState) -> Boolean,
     onContinue: (RegistrationWizardViewModel, com.cocido.oficios.feature.auth.register.RegisterTradeViewModel) -> Unit,
 ) {
     val wizard = rememberWizardViewModel(navController, entry)
@@ -140,7 +136,9 @@ private fun ProviderTradeStep(
         section = section,
         continueLabel = androidx.compose.ui.res.stringResource(com.cocido.oficios.feature.auth.R.string.auth_next_button),
         onContinue = {
-            if (canContinue(trade.uiState.value)) onContinue(wizard, trade)
+            if (trade.attemptContinueSection(section)) {
+                onContinue(wizard, trade)
+            }
         },
     )
 }

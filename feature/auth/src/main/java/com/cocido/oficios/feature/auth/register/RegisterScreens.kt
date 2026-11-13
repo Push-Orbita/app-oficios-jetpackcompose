@@ -128,9 +128,10 @@ fun RegisterFormScreen(
     onEvent: (RegisterFormEvent) -> Unit,
     modifier: Modifier = Modifier,
     submitLabel: String? = null,
+    onBack: (() -> Unit)? = null,
 ) {
     val screenTitle = when (mode) {
-        RegisterMode.CLIENT -> stringResource(R.string.auth_register_user_title)
+        RegisterMode.CLIENT -> stringResource(R.string.auth_register_client_screen_title)
         RegisterMode.PROVIDER -> stringResource(R.string.auth_register_provider_screen_title)
     }
 
@@ -138,13 +139,23 @@ fun RegisterFormScreen(
         modifier = modifier,
         isLoading = uiState.isLoading,
         sectionSpacing = OficiosSpacing.none,
+        topBar = onBack?.let { back ->
+            {
+                com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar(
+                    title = screenTitle,
+                    onBack = back,
+                )
+            }
+        },
     ) {
-        Text(
-            text = screenTitle,
-            style = OficiosAuthGlyphTitleStyle,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(Modifier.height(OficiosComponentSize.authRegisterTitleToSubtitle))
+        if (onBack == null) {
+            Text(
+                text = screenTitle,
+                style = OficiosAuthGlyphTitleStyle,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Spacer(Modifier.height(OficiosComponentSize.authRegisterTitleToSubtitle))
+        }
         Text(
             text = stringResource(R.string.auth_register_subtitle),
             style = OficiosAuthGlyphSubtitleStyle,
@@ -260,41 +271,41 @@ fun RegisterFormScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onEvent(RegisterFormEvent.Submit) }),
             )
-        }
-        Spacer(Modifier.height(OficiosComponentSize.authRegisterPasswordToTerms))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
-        ) {
-            OficiosTermsCheckbox(
-                checked = uiState.acceptedTerms,
-                onCheckedChange = { onEvent(RegisterFormEvent.TermsChanged(it)) },
-                onTermsClick = { onEvent(RegisterFormEvent.TermsClicked) },
-                enabled = !uiState.isLoading,
-                prefix = stringResource(R.string.auth_terms_prefix),
-                termsLabel = stringResource(R.string.auth_terms_link),
-                compactRow = false,
-                labelGap = OficiosComponentSize.authRegisterTermsCheckboxToText,
-                singleLine = false,
-                modifier = Modifier.weight(1f, fill = true),
-            )
-            OficiosButton(
-                text = submitLabel ?: stringResource(R.string.auth_next_button),
-                onClick = { onEvent(RegisterFormEvent.Submit) },
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                variant = OficiosButtonVariant.Primary,
-                size = OficiosButtonSize.Small,
-                figmaAuthStroke = true,
-            )
-        }
-        if (uiState.hasAttemptedSubmit && uiState.termsError != null) {
-            Text(
-                text = uiState.termsError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Spacer(Modifier.height(OficiosComponentSize.authRegisterPasswordToTerms))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                OficiosTermsCheckbox(
+                    checked = uiState.acceptedTerms,
+                    onCheckedChange = { onEvent(RegisterFormEvent.TermsChanged(it)) },
+                    onTermsClick = { onEvent(RegisterFormEvent.TermsClicked) },
+                    enabled = !uiState.isLoading,
+                    prefix = stringResource(R.string.auth_terms_prefix),
+                    termsLabel = stringResource(R.string.auth_terms_link),
+                    compactRow = false,
+                    labelGap = OficiosComponentSize.authRegisterTermsCheckboxToText,
+                    singleLine = false,
+                    modifier = Modifier.weight(1f, fill = true),
+                )
+                OficiosButton(
+                    text = submitLabel ?: stringResource(R.string.auth_next_button),
+                    onClick = { onEvent(RegisterFormEvent.Submit) },
+                    enabled = !uiState.isLoading,
+                    loading = uiState.isLoading,
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Small,
+                    figmaAuthStroke = true,
+                )
+            }
+            if (uiState.hasAttemptedSubmit && uiState.termsError != null) {
+                Text(
+                    text = stringResource(R.string.auth_terms_required),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
 
         Spacer(Modifier.height(OficiosComponentSize.authRegisterTermsToDivider))

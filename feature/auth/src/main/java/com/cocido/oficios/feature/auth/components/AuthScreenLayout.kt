@@ -43,6 +43,8 @@ fun AuthScreenLayout(
     brandToContentSpacing: Dp = sectionSpacing,
     supportTopSpacing: Dp = sectionSpacing,
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    topBar: @Composable (() -> Unit)? = null,
+    stickyFooter: @Composable (() -> Unit)? = null,
     support: @Composable (ColumnScope.() -> Unit)? = null,
     footer: @Composable (ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
@@ -53,6 +55,13 @@ fun AuthScreenLayout(
     OficiosScaffold(
         modifier = modifier.fillMaxSize(),
         isLoading = isLoading,
+        topBar = topBar,
+        bottomBar = stickyFooter?.let { bar ->
+            {
+                // El scaffold excluye IME del content; el CTA sticky sí necesita subir con el teclado.
+                Column(modifier = Modifier.fillMaxWidth().imePadding(), content = { bar() })
+            }
+        },
         contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime),
     ) { padding ->
         CompositionLocalProvider(LocalScrollViewportHeightPx provides viewportHeight) {

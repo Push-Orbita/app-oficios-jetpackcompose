@@ -50,8 +50,14 @@ class AuthValidatorsTest {
     @Test
     fun `email validation uses Correo copy`() {
         assertEquals("El correo es obligatorio", AuthValidators.validateEmail(""))
-        assertEquals("Ingrese un correo válido", AuthValidators.validateEmail("no-es-correo"))
+        assertEquals("Ingresá un correo válido", AuthValidators.validateEmail("no-es-correo"))
         assertEquals(null, AuthValidators.validateEmail("ana@oficios.test"))
+    }
+
+    @Test
+    fun `password confirmation and dni use voseo`() {
+        assertEquals("Confirmá tu contraseña", AuthValidators.validatePasswordConfirmation("a", ""))
+        assertEquals("Ingresá un DNI válido", AuthValidators.validateDocument("abc"))
     }
 
     @Test
@@ -63,9 +69,9 @@ class AuthValidatorsTest {
 
     @Test
     fun `validateArgentineMobile rejects blank and short numbers`() {
-        assertEquals("Ingrese su celular de WhatsApp.", AuthValidators.validateArgentineMobile(""))
+        assertEquals("Ingresá tu celular de WhatsApp.", AuthValidators.validateArgentineMobile(""))
         assertEquals(
-            "Ingrese el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109.",
+            "Ingresá el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109.",
             AuthValidators.validateArgentineMobile("123"),
         )
     }
@@ -73,7 +79,7 @@ class AuthValidatorsTest {
     @Test
     fun `validateContactName rejects blank and too long`() {
         assertEquals(
-            "Ingrese un nombre para identificar este contacto.",
+            "Ingresá un nombre para identificar este contacto.",
             AuthValidators.validateContactName("  "),
         )
         assertEquals(null, AuthValidators.validateContactName("Daniel"))
@@ -87,7 +93,7 @@ class AuthValidatorsTest {
     fun `validateOptionalEmail allows blank`() {
         assertEquals(null, AuthValidators.validateOptionalEmail(""))
         assertEquals(null, AuthValidators.validateOptionalEmail("ana@oficios.test"))
-        assertEquals("Ingrese un correo válido", AuthValidators.validateOptionalEmail("mal"))
+        assertEquals("Ingresá un correo válido", AuthValidators.validateOptionalEmail("mal"))
     }
 
     @Test

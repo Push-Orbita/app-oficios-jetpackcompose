@@ -248,7 +248,7 @@ class VerifyEmailViewModelTest {
         viewModel.submit()
         advanceUntilIdle()
 
-        assertEquals("Ingrese el código", viewModel.uiState.value.codeError)
+        assertEquals("Ingresá el código", viewModel.uiState.value.codeError)
         assertTrue(viewModel.uiState.value.hasAttemptedSubmit)
     }
 

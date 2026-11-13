@@ -16,7 +16,7 @@
     <string name="auth_support_message_compact">Para cualquier consulta o duda de asistencia, contáctenos a nuestra línea de atención</string>
     <string name="auth_support_contact">Contactar</string>
     <string name="auth_support_unavailable">La línea de soporte no está configurada.</string>
-    <string name="auth_register_role_subtitle">Elija cómo registrarse</string>
+    <string name="auth_register_role_subtitle">Elegí cómo registrarte</string>
     <string name="auth_register_provider_card_title">Trabajador de oficio</string>
     <string name="auth_register_client_card_title">Cliente</string>
     <string name="auth_start_session_button">Iniciar sesión</string>
@@ -27,7 +27,7 @@
     <string name="auth_register_user_title">Registro de usuario</string>
     <string name="auth_register_client_screen_title">Registro de cliente</string>
     <string name="auth_register_provider_screen_title">Registro de trabajador</string>
-    <string name="auth_register_subtitle">Ingrese sus datos para crear su cuenta</string>
+    <string name="auth_register_subtitle">Ingresá tus datos para crear tu cuenta</string>
     <string name="auth_first_name_label">Nombres</string>
     <string name="auth_last_name_label">Apellido</string>
     <string name="auth_email_electronic_label">Correo electrónico</string>
@@ -38,6 +38,7 @@
     <string name="auth_terms_prefix">Acepto los </string>
     <string name="auth_terms_link">términos y condiciones</string>
     <string name="auth_terms_label">Acepto los términos y condiciones</string>
+    <string name="auth_terms_required">Tenés que aceptar los términos y condiciones</string>
     <string name="auth_next_button">Siguiente</string>
     <string name="auth_already_have_account">¿Ya tiene cuenta?</string>
     <string name="auth_register_submit_button">Registrarme</string>
@@ -88,7 +89,12 @@
     <string name="auth_register_trade_retry_catalog">Reintentar carga</string>
     <string name="auth_register_trade_loading_specializations">Cargando especializaciones…</string>
     <string name="auth_wizard_profile_title">Datos de contacto</string>
-    <string name="auth_wizard_profile_subtitle">Los usamos para coordinar el servicio. Puede editarlos después.</string>
+    <string name="auth_wizard_profile_subtitle">Los usamos para coordinar el servicio. Podés editarlos después.</string>
+    <string name="auth_wizard_step_oficio_incomplete">Completá categoría, rubro, especialidad y experiencia para seguir.</string>
+    <string name="auth_wizard_step_zona_incomplete">Completá barrio y lugar de atención para seguir.</string>
+    <string name="auth_wizard_step_agenda_incomplete">Completá la agenda semanal para seguir.</string>
+    <string name="auth_wizard_step_cobro_incomplete">Elegí al menos un medio de cobro para seguir.</string>
+    <string name="auth_wizard_step_identidad_incomplete">Completá la dirección del local para seguir.</string>
     <string name="auth_wizard_contact_name">Nombre de contacto</string>
     <string name="auth_wizard_whatsapp">Celular (WhatsApp)</string>
     <string name="auth_wizard_barrio">Barrio</string>

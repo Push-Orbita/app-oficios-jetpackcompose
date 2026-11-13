@@ -20,7 +20,6 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocomplete
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
-import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphTitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.RegistrationRole
@@ -44,14 +43,24 @@ import com.cocido.oficios.feature.auth.register.RegisterMode
 fun RegistrationWizardPersonalScreen(
     state: RegistrationWizardUiState,
     onEvent: (com.cocido.oficios.feature.auth.register.RegisterFormEvent) -> Unit,
+    onBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val hasDraft = state.personal.firstName.isNotBlank() ||
+        state.personal.lastName.isNotBlank() ||
+        state.personal.email.isNotBlank() ||
+        state.personal.document.isNotBlank()
+    val handleBack = com.cocido.oficios.core.ui.navigation.rememberConfirmDiscardBackHandler(
+        hasUnsavedChanges = hasDraft,
+        onConfirmExit = onBack,
+    )
     RegisterFormScreen(
         mode = if (state.role == RegistrationRole.CLIENT) RegisterMode.CLIENT else RegisterMode.PROVIDER,
         uiState = state.personal,
         onEvent = onEvent,
         modifier = modifier,
         submitLabel = stringResource(R.string.auth_next_button),
+        onBack = handleBack,
     )
 }
 
@@ -69,14 +78,36 @@ fun RegistrationWizardProfileScreen(
     onPisoChanged: (String) -> Unit,
     onDepartamentoChanged: (String) -> Unit,
     onContinue: () -> Unit,
+    onBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    AuthRegisterLayout(modifier = modifier, sectionSpacing = OficiosSpacing.md) {
-        Text(
-            text = stringResource(R.string.auth_wizard_profile_title),
-            style = OficiosAuthGlyphTitleStyle,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+    AuthRegisterLayout(
+        modifier = modifier,
+        sectionSpacing = OficiosSpacing.md,
+        topBar = {
+            OficiosBackTopBar(
+                title = stringResource(R.string.auth_wizard_profile_title),
+                onBack = onBack,
+            )
+        },
+        stickyFooter = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = OficiosSpacing.xl)
+                    .padding(top = OficiosSpacing.sm, bottom = OficiosSpacing.md),
+            ) {
+                OficiosButton(
+                    text = stringResource(R.string.auth_next_button),
+                    onClick = onContinue,
+                    enabled = !state.isCommitting,
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = OficiosButtonVariant.Primary,
+                    size = OficiosButtonSize.Form,
+                )
+            }
+        },
+    ) {
         Text(
             text = stringResource(R.string.auth_wizard_profile_subtitle),
             style = OficiosAuthGlyphSubtitleStyle,
@@ -130,14 +161,6 @@ fun RegistrationWizardProfileScreen(
             onValueChange = onDepartamentoChanged,
             label = stringResource(R.string.auth_wizard_apartment),
             modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosButton(
-            text = stringResource(R.string.auth_next_button),
-            onClick = onContinue,
-            enabled = !state.isCommitting,
-            modifier = Modifier.fillMaxWidth(),
-            variant = OficiosButtonVariant.Primary,
-            size = OficiosButtonSize.Form,
         )
     }
 }
@@ -257,7 +280,9 @@ fun RegistrationWizardReviewScreen(
                 ) {
                     ReviewField(stringResource(R.string.auth_wizard_barrio), review.barrio)
                     ReviewField(stringResource(R.string.auth_wizard_review_service_area), review.serviceArea)
-                    ReviewField(stringResource(R.string.auth_wizard_street), review.street)
+                    if (review.showStreet) {
+                        ReviewField(stringResource(R.string.auth_wizard_street), review.street)
+                    }
                 }
                 ReviewSectionCard(
                     title = stringResource(R.string.auth_wizard_review_section_agenda),

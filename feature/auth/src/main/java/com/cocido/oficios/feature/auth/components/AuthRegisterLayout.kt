@@ -14,6 +14,8 @@ fun AuthRegisterLayout(
     isLoading: Boolean = false,
     contentTopPadding: Dp = OficiosComponentSize.authRegisterTitleTop,
     sectionSpacing: Dp = OficiosSpacing.md,
+    topBar: @Composable (() -> Unit)? = null,
+    stickyFooter: @Composable (() -> Unit)? = null,
     footer: @Composable (ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -24,6 +26,8 @@ fun AuthRegisterLayout(
         contentTopPadding = contentTopPadding,
         sectionSpacing = sectionSpacing,
         horizontalAlignment = Alignment.Start,
+        topBar = topBar,
+        stickyFooter = stickyFooter,
         footer = footer,
         content = content,
     )

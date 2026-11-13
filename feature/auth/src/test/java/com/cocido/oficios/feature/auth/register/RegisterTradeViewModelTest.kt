@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.usecase.catalog.GetSubRubrosByRubroUseCase
 import com.cocido.oficios.domain.usecase.catalog.SearchBarriosUseCase
 import com.cocido.oficios.domain.usecase.profile.SubmitRegisterTradeDraftUseCase
 import com.cocido.oficios.domain.usecase.profile.SyncRegisterTradeDraftFromProfileUseCase
+import com.cocido.oficios.feature.auth.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -179,6 +180,30 @@ class RegisterTradeViewModelTest {
 
         assertEquals("Sin conexión", viewModel.uiState.value.catalogError)
         assertTrue(viewModel.uiState.value.categoryOptions.isEmpty())
+    }
+
+    @Test
+    fun `attemptContinueSection oficio shows visible error when incomplete`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertEquals(false, viewModel.attemptContinueSection(RegisterTradeFormSection.OFICIO))
+        assertEquals(R.string.auth_wizard_step_oficio_incomplete, viewModel.uiState.value.stepValidationError)
+    }
+
+    @Test
+    fun `attemptContinueSection cobro shows visible error when no payment method`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertEquals(false, viewModel.attemptContinueSection(RegisterTradeFormSection.COBRO))
+        assertEquals(R.string.auth_wizard_step_cobro_incomplete, viewModel.uiState.value.stepValidationError)
+    }
+
+    @Test
+    fun `attemptContinueSection clears error when step is complete`() = runTest {
+        val viewModel = viewModelWithPlumbingSelected()
+        viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))
+        assertEquals(true, viewModel.attemptContinueSection(RegisterTradeFormSection.OFICIO))
+        assertEquals(null, viewModel.uiState.value.stepValidationError)
     }
 
     @Test

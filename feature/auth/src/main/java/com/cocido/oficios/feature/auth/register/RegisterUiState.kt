@@ -32,6 +32,7 @@ data class RegisterFormUiState(
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
     val documentError: String? = null,
+    /** Marcador no localizado; la UI muestra auth_terms_required vía stringResource. */
     val termsError: String? = null,
     val generalError: String? = null,
     val isLoading: Boolean = false,
@@ -41,6 +42,11 @@ data class RegisterFormUiState(
     /** Error visible tras el primer envío, o en vivo si el campo no está vacío. */
     fun visibleFieldError(error: String?, value: String): String? =
         error.takeIf { hasAttemptedSubmit || value.isNotEmpty() }
+
+    companion object {
+        /** Señal interna: no mostrar este texto; usar stringResource en la pantalla. */
+        const val TERMS_REQUIRED_MARKER = "TERMS_REQUIRED"
+    }
 }
 
 sealed interface RegisterEffect {

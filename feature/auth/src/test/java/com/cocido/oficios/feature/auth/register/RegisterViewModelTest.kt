@@ -155,7 +155,7 @@ class RegisterViewModelTest {
         assertNotNull(state.documentError)
         assertEquals("Los nombres son obligatorios", state.firstNameError)
         assertEquals("El apellido es obligatorio", state.lastNameError)
-        assertEquals("Ingrese un DNI válido", state.documentError)
+        assertEquals("Ingresá un DNI válido", state.documentError)
         assertFalse(state.isLoading)
     }
 
