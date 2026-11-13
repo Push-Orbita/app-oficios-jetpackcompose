@@ -45,6 +45,7 @@ fun NavGraphBuilder.registrationWizardGraph(
                 onBarrioFocused = viewModel::onBarrioFocused,
                 onBarrioSelected = viewModel::onBarrioSelected,
                 onBarrioDismissed = viewModel::dismissBarrioSuggestions,
+                onBarrioRetry = viewModel::retryBarrioSearch,
                 onCalleChanged = viewModel::onCalleChanged,
                 onNumeroChanged = viewModel::onNumeroChanged,
                 onPisoChanged = viewModel::onPisoChanged,

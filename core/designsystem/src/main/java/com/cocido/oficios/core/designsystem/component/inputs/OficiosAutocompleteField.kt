@@ -58,6 +58,8 @@ fun <T> OficiosAutocompleteField(
     supportingText: String? = null,
     isLoading: Boolean = false,
     noResultsText: String? = null,
+    errorText: String? = null,
+    onRetry: (() -> Unit)? = null,
     onFocused: () -> Unit = {},
     onSuggestionsDismissed: () -> Unit = {},
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -72,18 +74,20 @@ fun <T> OficiosAutocompleteField(
     val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var wasImeVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isLoading, suggestions) {
+    LaunchedEffect(isLoading, suggestions, errorText) {
         if (isLoading) searchSession = true
-        if (!userDismissed && (isLoading || suggestions.isNotEmpty())) {
+        if (!userDismissed && (isLoading || suggestions.isNotEmpty() || errorText != null)) {
             userExpanded = true
         }
     }
 
+    val showError = !isLoading && errorText != null && userExpanded
     val showNoResults = searchSession &&
         !isLoading &&
         suggestions.isEmpty() &&
+        errorText == null &&
         userExpanded
-    val hasMenuContent = isLoading || suggestions.isNotEmpty() || showNoResults
+    val hasMenuContent = isLoading || suggestions.isNotEmpty() || showNoResults || showError
     val menuExpanded = userExpanded && hasMenuContent && enabled
 
     fun dismissMenu() {
@@ -178,6 +182,39 @@ fun <T> OficiosAutocompleteField(
             shadowElevation = OficiosElevation.md,
         ) {
             when {
+                showError -> {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = errorText.orEmpty(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        },
+                        onClick = {},
+                        enabled = false,
+                        contentPadding = PaddingValues(
+                            horizontal = OficiosSpacing.md,
+                            vertical = OficiosSpacing.xs,
+                        ),
+                    )
+                    if (onRetry != null) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.ds_autocomplete_retry),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            },
+                            onClick = { onRetry.invoke() },
+                            contentPadding = PaddingValues(
+                                horizontal = OficiosSpacing.md,
+                                vertical = OficiosSpacing.xs,
+                            ),
+                        )
+                    }
+                }
                 isLoading -> {
                     DropdownMenuItem(
                         text = {
