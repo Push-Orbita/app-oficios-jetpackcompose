@@ -45,6 +45,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.cards.WorkerCard
 import com.cocido.oficios.core.designsystem.component.categories.CategoryGlyph
 import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoryCard
+import com.cocido.oficios.core.designsystem.component.categories.categoryGlyphTint
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosEmptyState
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -399,7 +400,7 @@ fun HomeCategoryCard(
                 contentDescription = title,
                 modifier = compactGlyph,
                 illustrationModifier = compactGlyph,
-                tint = MaterialTheme.colorScheme.onBackground,
+                tint = categoryGlyphTint(),
             )
         }
     }
