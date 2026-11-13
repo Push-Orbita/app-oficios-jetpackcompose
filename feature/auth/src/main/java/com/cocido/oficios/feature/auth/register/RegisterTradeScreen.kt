@@ -44,8 +44,11 @@ fun RegisterTradeScreen(
     showContinue: Boolean = true,
     continueLabel: String? = null,
     onContinue: (() -> Unit)? = null,
+    confirmDiscardOnSystemBack: Boolean = true,
 ) {
-    ConfirmDiscardOnSystemBack(hasUnsavedChanges = uiState.selectedCategoryId != null)
+    if (confirmDiscardOnSystemBack) {
+        ConfirmDiscardOnSystemBack(hasUnsavedChanges = uiState.selectedCategoryId != null)
+    }
 
     AuthRegisterLayout(
         modifier = modifier,
