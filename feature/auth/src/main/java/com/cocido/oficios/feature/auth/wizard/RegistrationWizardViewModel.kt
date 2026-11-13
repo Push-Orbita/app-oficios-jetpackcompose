@@ -24,6 +24,7 @@ import com.cocido.oficios.feature.auth.register.RegisterFormUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class RegistrationWizardUiState(
     val role: RegistrationRole = RegistrationRole.CLIENT,
@@ -233,6 +235,21 @@ class RegistrationWizardViewModel @Inject constructor(
     fun editZona() = emit(RegistrationWizardEffect.PopToZona)
     fun editAgenda() = emit(RegistrationWizardEffect.PopToAgenda)
     fun editCobro() = emit(RegistrationWizardEffect.PopToCobro)
+
+    /**
+     * Sale del wizard descartando de verdad: limpia draft en disco y contraseña en memoria.
+     * Llamar solo cuando el usuario confirma «Descartar» (o sale sin cambios).
+     */
+    fun discardWizard() {
+        passwordHolder.clear()
+        providerDraftInMemory = null
+        _uiState.value = RegistrationWizardUiState(role = role)
+        viewModelScope.launch {
+            withContext(NonCancellable) {
+                draftRepository.clear()
+            }
+        }
+    }
 
     fun createAccount(providerDraft: RegisterTradeDraft? = null) {
         val state = _uiState.value

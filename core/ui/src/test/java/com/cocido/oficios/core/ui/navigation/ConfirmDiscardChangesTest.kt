@@ -36,7 +36,7 @@ class ConfirmDiscardChangesTest {
         }
         composeRule.onNodeWithText("Volver").performClick()
         composeRule.onNodeWithText("¿Descartar cambios?").assertIsDisplayed()
-        composeRule.onNodeWithText("Los datos que ingresó se van a perder.").assertIsDisplayed()
+        composeRule.onNodeWithText("Los datos que ingresaste se van a perder.").assertIsDisplayed()
         composeRule.onNodeWithText("Seguir editando").assertIsDisplayed()
         composeRule.onNodeWithText("Descartar").assertIsDisplayed()
         composeRule.onNodeWithText("Seguir editando").performClick()

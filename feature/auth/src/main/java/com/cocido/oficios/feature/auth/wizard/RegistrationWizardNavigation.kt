@@ -32,7 +32,10 @@ fun NavGraphBuilder.registrationWizardGraph(
             RegistrationWizardPersonalScreen(
                 state = state,
                 onEvent = viewModel::onPersonalEvent,
-                onBack = { navController.popBackStack() },
+                onBack = {
+                    viewModel.discardWizard()
+                    navController.popBackStack()
+                },
             )
         }
         composable(AuthDestination.WIZARD_PROFILE) { entry ->

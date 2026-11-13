@@ -13,6 +13,8 @@ import com.cocido.oficios.domain.model.RegisterTradeTimeSlotDraft
 import com.cocido.oficios.domain.model.RegistrationRole
 import com.cocido.oficios.feature.auth.register.RegisterFormUiState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -145,6 +147,47 @@ class RegistrationWizardScreensTest {
         }
         composeRule.onNodeWithContentDescription("Editar datos personales").performClick()
         assertEquals(1, edits)
+    }
+
+    @Test
+    fun personalConfirmDiscardInvokesOnBack() {
+        var left = false
+        composeRule.setContent {
+            OficiosTheme {
+                RegistrationWizardPersonalScreen(
+                    state = RegistrationWizardUiState(
+                        personal = RegisterFormUiState(firstName = "Ana"),
+                    ),
+                    onEvent = {},
+                    onBack = { left = true },
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Volver").performClick()
+        composeRule.onNodeWithText("¿Descartar cambios?").assertIsDisplayed()
+        composeRule.onNodeWithText("Los datos que ingresaste se van a perder.").assertIsDisplayed()
+        composeRule.onNodeWithText("Descartar").performClick()
+        composeRule.runOnIdle { assertTrue(left) }
+    }
+
+    @Test
+    fun personalKeepEditingDoesNotInvokeOnBack() {
+        var left = false
+        composeRule.setContent {
+            OficiosTheme {
+                RegistrationWizardPersonalScreen(
+                    state = RegistrationWizardUiState(
+                        personal = RegisterFormUiState(firstName = "Ana", email = "ana@test.com"),
+                    ),
+                    onEvent = {},
+                    onBack = { left = true },
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Volver").performClick()
+        composeRule.onNodeWithText("Seguir editando").performClick()
+        composeRule.runOnIdle { assertFalse(left) }
+        composeRule.onNodeWithText("Siguiente").assertIsDisplayed()
     }
 
     private fun providerDraft(

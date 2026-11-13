@@ -35,7 +35,7 @@ class LoginScreenTest {
         composeTestRule.onNodeWithText("Correo").assertIsDisplayed()
         composeTestRule.onNodeWithText("Contraseña").assertIsDisplayed()
         composeTestRule.onNodeWithText("Recordarme").assertIsDisplayed()
-        composeTestRule.onNodeWithText("¿Olvidó su contraseña?").assertIsDisplayed()
+        composeTestRule.onNodeWithText("¿Olvidaste tu contraseña?").assertIsDisplayed()
     }
 
     @Test
@@ -55,7 +55,7 @@ class LoginScreenTest {
         }
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithText("¿Olvidó su contraseña?").performScrollTo().performClick()
+        composeTestRule.onNodeWithText("¿Olvidaste tu contraseña?").performScrollTo().performClick()
         composeTestRule.waitUntil(timeoutMillis = 3_000) { forgotPasswordClicked }
         assertTrue(forgotPasswordClicked)
     }
@@ -72,7 +72,7 @@ class LoginScreenTest {
         }
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithText("¿Olvidó su contraseña?").assertIsNotEnabled()
+        composeTestRule.onNodeWithText("¿Olvidaste tu contraseña?").assertIsNotEnabled()
     }
 
     @Test

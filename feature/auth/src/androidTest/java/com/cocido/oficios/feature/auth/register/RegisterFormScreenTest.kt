@@ -90,7 +90,7 @@ class RegisterFormScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Siguiente").performScrollTo().assertIsEnabled()
+        composeTestRule.onNodeWithText("Siguiente").assertIsEnabled()
     }
 
     @Test

@@ -429,6 +429,40 @@ class RegistrationWizardViewModelTest {
         env.collectJob?.cancel()
     }
 
+    @Test
+    fun `discardWizard clears draft and process password`() = runTest(dispatcher) {
+        val holder = RegistrationPasswordHolder()
+        val env = createEnv(passwordHolder = holder)
+        fillPersonal(env.viewModel)
+        advanceUntilIdle()
+        assertTrue(env.drafts.draft != null)
+        assertEquals("secret12!", holder.password)
+        assertEquals("secret12!", holder.confirmPassword)
+
+        env.viewModel.discardWizard()
+        advanceUntilIdle()
+
+        assertNull(env.drafts.draft)
+        assertEquals("", holder.password)
+        assertEquals("", holder.confirmPassword)
+        assertEquals("", env.viewModel.uiState.value.personal.firstName)
+        assertEquals("", env.viewModel.uiState.value.personal.password)
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `without discardWizard draft and password stay after personal filled`() = runTest(dispatcher) {
+        val holder = RegistrationPasswordHolder()
+        val env = createEnv(passwordHolder = holder)
+        fillPersonal(env.viewModel)
+        advanceUntilIdle()
+
+        assertTrue(env.drafts.draft != null)
+        assertEquals("secret12!", holder.password)
+        assertEquals("Ana", env.viewModel.uiState.value.personal.firstName)
+        env.collectJob?.cancel()
+    }
+
     private fun fillPersonal(viewModel: RegistrationWizardViewModel) {
         viewModel.onPersonalEvent(RegisterFormEvent.FirstNameChanged("Ana"))
         viewModel.onPersonalEvent(RegisterFormEvent.LastNameChanged("López"))
