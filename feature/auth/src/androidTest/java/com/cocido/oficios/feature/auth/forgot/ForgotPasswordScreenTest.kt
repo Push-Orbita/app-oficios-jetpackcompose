@@ -28,7 +28,7 @@ class ForgotPasswordScreenTest {
             }
         }
         composeTestRule.onNodeWithText("Recuperar contraseña").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Le enviaremos un código a su correo").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Te vamos a enviar un código a tu correo").assertIsDisplayed()
         composeTestRule.onNodeWithText("Correo").assertIsDisplayed()
         composeTestRule.onNodeWithText("Enviar instrucciones").assertIsDisplayed()
     }
