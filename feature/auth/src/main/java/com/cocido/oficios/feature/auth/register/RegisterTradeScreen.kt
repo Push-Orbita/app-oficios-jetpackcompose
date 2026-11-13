@@ -44,8 +44,11 @@ fun RegisterTradeScreen(
     showContinue: Boolean = true,
     continueLabel: String? = null,
     onContinue: (() -> Unit)? = null,
+    confirmDiscardOnSystemBack: Boolean = true,
 ) {
-    ConfirmDiscardOnSystemBack(hasUnsavedChanges = uiState.selectedCategoryId != null)
+    if (confirmDiscardOnSystemBack) {
+        ConfirmDiscardOnSystemBack(hasUnsavedChanges = uiState.selectedCategoryId != null)
+    }
 
     AuthRegisterLayout(
         modifier = modifier,
@@ -71,6 +74,13 @@ fun RegisterTradeScreen(
         val showAgenda = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.AGENDA)
         val showCobro = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.COBRO)
         val showIdentidad = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.IDENTIDAD)
+
+        uiState.stepValidationError?.let { resId ->
+            OficiosInlineAlert(
+                message = stringResource(resId),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         uiState.catalogError?.let { message ->
             OficiosInlineAlert(message = message)
@@ -164,6 +174,8 @@ fun RegisterTradeScreen(
                     label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
                     placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
                     isLoading = uiState.isSearchingBarrios,
+                    errorText = uiState.barrioSearchError,
+                    onRetry = { onEvent(RegisterTradeEvent.RetryNeighborhoodSearch) },
                     onFocused = { onEvent(RegisterTradeEvent.NeighborhoodFocused) },
                     onSuggestionsDismissed = { onEvent(RegisterTradeEvent.NeighborhoodSuggestionsDismissed) },
                 )

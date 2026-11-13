@@ -71,6 +71,7 @@ class RegistrationReviewSummaryTest {
         assertEquals("Lunes: 09:00 a 18:00\nMartes: 09:00 a 18:00\nMiércoles: 09:00 a 18:00\nJueves: 09:00 a 18:00\nViernes: 09:00 a 18:00", summary.schedule)
         assertEquals("En local propio", summary.serviceArea)
         assertEquals("Efectivo, Transferencia", summary.paymentMethods)
+        assertEquals(true, summary.showStreet)
     }
 
     @Test
@@ -87,6 +88,61 @@ class RegistrationReviewSummaryTest {
         assertEquals("", summary.street)
         assertEquals("", summary.phone)
         assertEquals("En el domicilio del cliente", summary.serviceArea)
+        assertEquals(false, summary.showStreet)
+    }
+
+    @Test
+    fun `provider review hides street when only serves at client home`() {
+        val summary = RegistrationReviewSummary.from(
+            RegistrationDraft(
+                role = RegistrationRole.PROVIDER,
+                personal = RegistrationPersonalDraft(firstName = "Matias", lastName = "QA"),
+                client = RegistrationClientDraft(),
+                provider = providerDraft(
+                    neighborhoodQuery = "San Miguel",
+                    barrioId = 11,
+                    localCalle = "Rivadavia",
+                    localNumero = "200",
+                    servesAtLocal = false,
+                ),
+            ),
+        )
+        assertEquals(false, summary.showStreet)
+        assertEquals("", summary.street)
+        assertEquals("En el domicilio del cliente", summary.serviceArea)
+    }
+
+    @Test
+    fun `provider review shows street when serves at local`() {
+        val summary = RegistrationReviewSummary.from(
+            RegistrationDraft(
+                role = RegistrationRole.PROVIDER,
+                personal = RegistrationPersonalDraft(firstName = "Matias", lastName = "QA"),
+                client = RegistrationClientDraft(),
+                provider = providerDraft(
+                    neighborhoodQuery = "San Miguel",
+                    barrioId = 11,
+                    localCalle = "Rivadavia",
+                    localNumero = "200",
+                    servesAtLocal = true,
+                ),
+            ),
+        )
+        assertEquals(true, summary.showStreet)
+        assertEquals("Rivadavia 200", summary.street)
+    }
+
+    @Test
+    fun `client review always shows street`() {
+        val summary = RegistrationReviewSummary.from(
+            RegistrationDraft(
+                role = RegistrationRole.CLIENT,
+                personal = RegistrationPersonalDraft(firstName = "Ana", lastName = "Lopez"),
+                client = RegistrationClientDraft(calle = "Belgrano", numero = "100", barrioQuery = "Centro"),
+            ),
+        )
+        assertEquals(true, summary.showStreet)
+        assertEquals("Belgrano 100", summary.street)
     }
 
     private fun providerDraft(

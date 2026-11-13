@@ -28,6 +28,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
+        // Process death restores the last destination (e.g. the wizard) and never
+        // composes SplashRoute, so SplashViewModel would not release the gate.
+        SplashGate.onActivityCreated(savedInstanceState != null)
         splashScreen.setKeepOnScreenCondition { SplashGate.keepOnScreen }
         splashScreen.setOnExitAnimationListener { splashView ->
             OficiosSystemBars.applyFromPreferences(this)

@@ -75,7 +75,7 @@ class ClientDataViewModelTest {
         viewModel.onEvent(ClientDataEvent.ContactPhoneChanged("123"))
 
         assertEquals(
-            "Ingrese el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109.",
+            "Ingresá el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109.",
             viewModel.uiState.value.contactPhoneError,
         )
         assertNull(viewModel.uiState.value.contactEmailError)
@@ -95,7 +95,7 @@ class ClientDataViewModelTest {
         viewModel.onEvent(ClientDataEvent.ContactNameChanged("Daniel"))
         viewModel.onEvent(ClientDataEvent.SaveContact)
 
-        assertEquals("Ingrese su celular de WhatsApp.", viewModel.uiState.value.contactPhoneError)
+        assertEquals("Ingresá tu celular de WhatsApp.", viewModel.uiState.value.contactPhoneError)
         assertNull(viewModel.uiState.value.contactEmailError)
         assertNull(viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.canSaveContact)

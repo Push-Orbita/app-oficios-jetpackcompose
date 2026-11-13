@@ -1,5 +1,6 @@
 package com.cocido.oficios.feature.auth.register
 
+import androidx.annotation.StringRes
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.WeeklyAvailability
 
@@ -25,6 +26,7 @@ sealed interface RegisterTradeEvent {
     data object NeighborhoodFocused : RegisterTradeEvent
     data class NeighborhoodSelected(val option: CatalogOption) : RegisterTradeEvent
     data object NeighborhoodSuggestionsDismissed : RegisterTradeEvent
+    data object RetryNeighborhoodSearch : RegisterTradeEvent
     data class TimeSlotFromChanged(val index: Int, val value: String) : RegisterTradeEvent
     data class TimeSlotToChanged(val index: Int, val value: String) : RegisterTradeEvent
     data object AddTimeSlot : RegisterTradeEvent
@@ -47,6 +49,7 @@ sealed interface RegisterTradeEvent {
     data class LocalNumeroChanged(val value: String) : RegisterTradeEvent
     data object Continue : RegisterTradeEvent
     data object RetryLoadCatalog : RegisterTradeEvent
+    data object ClearStepValidationError : RegisterTradeEvent
 }
 
 data class RegisterTradeUiState(
@@ -71,6 +74,7 @@ data class RegisterTradeUiState(
     val neighborhoodQuery: String = "",
     val neighborhoodOptions: List<CatalogOption> = emptyList(),
     val isSearchingBarrios: Boolean = false,
+    val barrioSearchError: String? = null,
     val selectedBarrioId: Long? = null,
     val selectedPaymentMethods: Set<String> = emptySet(),
     val localCalle: String = "",
@@ -82,6 +86,8 @@ data class RegisterTradeUiState(
     val isLoadingSpecializations: Boolean = false,
     val isLoading: Boolean = false,
     val catalogError: String? = null,
+    /** Error de validación del paso actual (Siguiente sin datos); distinto de [catalogError]. */
+    @StringRes val stepValidationError: Int? = null,
     val canContinue: Boolean = false,
 ) {
     val categories: List<String> get() = categoryOptions.map { it.label }

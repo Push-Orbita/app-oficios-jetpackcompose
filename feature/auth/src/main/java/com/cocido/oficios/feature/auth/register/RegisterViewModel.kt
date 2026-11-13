@@ -136,7 +136,7 @@ class RegisterViewModel @Inject constructor(
             confirmPassword,
         )
         val documentError = AuthValidators.validateDocument(document)
-        val termsError = if (!acceptedTerms) "Debe aceptar los términos" else null
+        val termsError = if (!acceptedTerms) RegisterFormUiState.TERMS_REQUIRED_MARKER else null
         val canSubmit = listOf(
             firstNameError,
             lastNameError,

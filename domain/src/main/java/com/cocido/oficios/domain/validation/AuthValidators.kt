@@ -6,7 +6,7 @@ object AuthValidators {
 
     fun validateEmail(email: String): String? = when {
         email.isBlank() -> "El correo es obligatorio"
-        !EMAIL_REGEX.matches(email) -> "Ingrese un correo válido"
+        !EMAIL_REGEX.matches(email) -> "Ingresá un correo válido"
         else -> null
     }
 
@@ -17,7 +17,7 @@ object AuthValidators {
         if (password.isBlank()) PasswordPolicy.ERROR_BLANK else null
 
     fun validatePasswordConfirmation(password: String, confirmation: String): String? = when {
-        confirmation.isBlank() -> "Confirme su contraseña"
+        confirmation.isBlank() -> "Confirmá tu contraseña"
         password != confirmation -> "Las contraseñas no coinciden"
         else -> null
     }
@@ -33,12 +33,12 @@ object AuthValidators {
 
     fun validateDocument(document: String): String? = when {
         document.isBlank() -> "El DNI es obligatorio"
-        !DNI_REGEX.matches(document) -> "Ingrese un DNI válido"
+        !DNI_REGEX.matches(document) -> "Ingresá un DNI válido"
         else -> null
     }
 
     fun validateVerificationCode(code: String): String? = when {
-        code.isBlank() -> "Ingrese el código"
+        code.isBlank() -> "Ingresá el código"
         code.length != 6 || code.any { !it.isDigit() } -> "El código tiene que tener 6 dígitos"
         else -> null
     }
@@ -58,7 +58,7 @@ object AuthValidators {
     }
 
     fun validateContactName(name: String): String? = when {
-        name.isBlank() -> "Ingrese un nombre para identificar este contacto."
+        name.isBlank() -> "Ingresá un nombre para identificar este contacto."
         name.trim().length > 100 -> "El nombre no puede superar 100 caracteres."
         else -> null
     }
@@ -70,9 +70,9 @@ object AuthValidators {
     fun validateArgentineMobile(raw: String): String? {
         val phone = normalizeArgentinePhone(raw)
         return when {
-            raw.isBlank() -> "Ingrese su celular de WhatsApp."
+            raw.isBlank() -> "Ingresá tu celular de WhatsApp."
             phone.length != 11 || !phone.startsWith("9") ->
-                "Ingrese el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109."
+                "Ingresá el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109."
             else -> null
         }
     }
