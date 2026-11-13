@@ -148,16 +148,14 @@ fun RegistrationWizardReviewScreen(
             style = OficiosAuthGlyphSubtitleStyle,
         )
         state.commitError?.let { OficiosInlineAlert(it, modifier = Modifier.fillMaxWidth()) }
+        val review = state.review
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm)) {
-            ReviewLine(stringResource(R.string.auth_first_name_label), state.personal.firstName)
-            ReviewLine(stringResource(R.string.auth_last_name_label), state.personal.lastName)
-            ReviewLine(stringResource(R.string.auth_email_electronic_label), state.personal.email)
-            ReviewLine(stringResource(R.string.auth_wizard_whatsapp), state.phone)
-            ReviewLine(stringResource(R.string.auth_wizard_barrio), state.barrioQuery)
-            ReviewLine(
-                stringResource(R.string.auth_wizard_street),
-                listOf(state.calle, state.numero).filter { it.isNotBlank() }.joinToString(" "),
-            )
+            ReviewLine(stringResource(R.string.auth_first_name_label), review.firstName)
+            ReviewLine(stringResource(R.string.auth_last_name_label), review.lastName)
+            ReviewLine(stringResource(R.string.auth_email_electronic_label), review.email)
+            ReviewLine(stringResource(R.string.auth_wizard_whatsapp), review.phone)
+            ReviewLine(stringResource(R.string.auth_wizard_barrio), review.barrio)
+            ReviewLine(stringResource(R.string.auth_wizard_street), review.street)
         }
         Spacer(Modifier.height(OficiosSpacing.md))
         OficiosButton(
