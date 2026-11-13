@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,10 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.cocido.oficios.core.designsystem.component.cards.OficiosCard
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 
 data class CategoryGridItem(
     val id: Long,
@@ -111,9 +115,51 @@ fun OficiosCategoryCard(
                     iconUrl = iconUrl,
                     modifier = Modifier.categoryVectorSize(),
                     illustrationModifier = Modifier.categoryIllustrationSize(),
-                    tint = MaterialTheme.colorScheme.onBackground,
+                    tint = categoryGlyphTint(),
                 )
             }
+        }
+    }
+}
+
+@Preview(name = "Category Card claro", showBackground = true, backgroundColor = 0xFFF4F5F7)
+@Composable
+private fun OficiosCategoryCardLightPreview() {
+    OficiosTheme {
+        Row(modifier = Modifier.padding(OficiosSpacing.md)) {
+            OficiosCategoryCard(
+                title = "Mascotas",
+                onClick = {},
+                modifier = Modifier.width(OficiosComponentSize.authRoleCardMinHeight),
+            )
+            Spacer(modifier = Modifier.width(OficiosSpacing.md))
+            OficiosCategoryCard(
+                title = "Mascotas",
+                onClick = {},
+                selected = true,
+                modifier = Modifier.width(OficiosComponentSize.authRoleCardMinHeight),
+            )
+        }
+    }
+}
+
+@Preview(name = "Category Card oscuro", showBackground = true, backgroundColor = 0xFF00358B)
+@Composable
+private fun OficiosCategoryCardDarkPreview() {
+    OficiosTheme(darkTheme = true) {
+        Row(modifier = Modifier.padding(OficiosSpacing.md)) {
+            OficiosCategoryCard(
+                title = "Mascotas",
+                onClick = {},
+                modifier = Modifier.width(OficiosComponentSize.authRoleCardMinHeight),
+            )
+            Spacer(modifier = Modifier.width(OficiosSpacing.md))
+            OficiosCategoryCard(
+                title = "Mascotas",
+                onClick = {},
+                selected = true,
+                modifier = Modifier.width(OficiosComponentSize.authRoleCardMinHeight),
+            )
         }
     }
 }

@@ -90,7 +90,7 @@ Avatar 64dp, nombre + ícono verificado, rating con estrella ámbar, specialty m
 StatusBadge + monto + descripción + metadatos (dirección, cliente, horario, pago) + acciones.
 
 ### `CategoryCard`
-Ícono 32dp + label, estado selected cambia border/color a `primary`.
+Ícono 32dp + label; selected: borde `primary`, fondo `surface`. Tint del glifo: `primary` en claro, `onSurface`/`onBackground` en oscuro (`categoryGlyphTint`).
 
 ### `ProfileCompletionCard`
 Barra de progreso `LinearProgressIndicator`, porcentaje, items faltantes, CTA.
