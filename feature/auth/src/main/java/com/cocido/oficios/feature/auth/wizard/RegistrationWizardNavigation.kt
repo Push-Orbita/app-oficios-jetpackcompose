@@ -105,6 +105,14 @@ fun NavGraphBuilder.registrationWizardGraph(
             RegistrationWizardReviewScreen(
                 state = state,
                 onCreateAccount = viewModel::createAccount,
+                onBack = viewModel::onReviewBack,
+                onEditPersonal = viewModel::editPersonal,
+                onEditContact = viewModel::editProfile,
+                onEditAddress = viewModel::editProfile,
+                onEditOficio = viewModel::editOficio,
+                onEditZona = viewModel::editZona,
+                onEditAgenda = viewModel::editAgenda,
+                onEditCobro = viewModel::editCobro,
             )
         }
     }
@@ -206,9 +214,25 @@ internal fun RegistrationWizardEffectHandler(
                     RegistrationWizardEffect.GoToIdentidad -> navController.navigateWizardOnce(AuthDestination.WIZARD_IDENTIDAD)
                     RegistrationWizardEffect.GoToReview -> navController.navigateWizardOnce(AuthDestination.WIZARD_REVIEW)
                     RegistrationWizardEffect.GoToPersonal -> {
-                        if (navController.currentDestination?.route != AuthDestination.WIZARD_PERSONAL) {
-                            navController.popBackStack(AuthDestination.WIZARD_PERSONAL, inclusive = false)
-                        }
+                        navController.popWizardTo(AuthDestination.WIZARD_PERSONAL)
+                    }
+                    RegistrationWizardEffect.GoBack -> {
+                        navController.popBackStack()
+                    }
+                    RegistrationWizardEffect.PopToProfile -> {
+                        navController.popWizardTo(AuthDestination.WIZARD_PROFILE)
+                    }
+                    RegistrationWizardEffect.PopToOficio -> {
+                        navController.popWizardTo(AuthDestination.WIZARD_OFICIO)
+                    }
+                    RegistrationWizardEffect.PopToZona -> {
+                        navController.popWizardTo(AuthDestination.WIZARD_ZONA)
+                    }
+                    RegistrationWizardEffect.PopToAgenda -> {
+                        navController.popWizardTo(AuthDestination.WIZARD_AGENDA)
+                    }
+                    RegistrationWizardEffect.PopToCobro -> {
+                        navController.popWizardTo(AuthDestination.WIZARD_COBRO)
                     }
                     RegistrationWizardEffect.AccountCreated -> onboarding()
                     RegistrationWizardEffect.NavigateToLogin -> login()
@@ -222,4 +246,12 @@ internal fun RegistrationWizardEffectHandler(
 internal fun NavHostController.navigateWizardOnce(route: String) {
     if (currentDestination?.route == route) return
     navigate(route) { launchSingleTop = true }
+}
+
+internal fun NavHostController.popWizardTo(route: String) {
+    if (currentDestination?.route == route) return
+    if (!popBackStack(route, inclusive = false)) {
+        // If that step is not on the back stack, do not push a duplicate on top of Review.
+        return
+    }
 }
