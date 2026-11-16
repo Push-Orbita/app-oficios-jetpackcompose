@@ -1,4 +1,4 @@
-package com.cocido.oficios.domain.usecase.auth
+﻿package com.cocido.oficios.domain.usecase.auth
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
@@ -129,7 +129,7 @@ class RegistrationCommitter @Inject constructor(
     private suspend fun saveClientProfile(draft: RegistrationDraft, personaId: Long): Step {
         val client = draft.client
         val barrioId = client.barrioId
-            ?: return Step.Fail("Complete barrio y calle antes de crear la cuenta")
+            ?: return Step.Fail("Completá barrio y calle antes de crear la cuenta")
         when (
             val contacto = saveClientContactoUseCase(
                 ClientContactoRequest(
@@ -169,7 +169,7 @@ class RegistrationCommitter @Inject constructor(
 
     private suspend fun saveProviderTrade(draft: RegistrationDraft): Step {
         val trade = draft.provider
-            ?: return Step.Fail("Complete oficio, zona, agenda y cobro antes de crear la cuenta")
+            ?: return Step.Fail("Completá oficio, zona, agenda y cobro antes de crear la cuenta")
         registerTradeDraftRepository.save(trade)
         // El POST de rubro suele fallar hasta que el DNI esté aprobado; el checklist reintenta.
         submitRegisterTradeDraftUseCase(requireDraft = true)

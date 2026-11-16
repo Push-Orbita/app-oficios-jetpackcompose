@@ -1,4 +1,4 @@
-package com.cocido.oficios.domain.model
+﻿package com.cocido.oficios.domain.model
 
 data class CancellationPolicy(
     val canCancel: Boolean,
@@ -19,7 +19,7 @@ data class CancellationPolicy(
     }
 
     companion object {
-        const val REASON_REQUIRED = "Ingrese el motivo de cancelación."
+        const val REASON_REQUIRED = "Ingresá el motivo de cancelación."
         const val DEFAULT_CLIENT_REASON = "Cancelado por el cliente"
         const val WINDOW_EXPIRED_CODE = "CANCELATION_WINDOW_EXPIRED"
 

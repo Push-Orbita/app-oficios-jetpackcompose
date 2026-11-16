@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -290,7 +290,7 @@ private fun AutocompleteFieldPreview() {
             onSuggestionSelected = {},
             suggestionLabel = { it },
             label = "Barrio",
-            placeholder = "Busque y seleccione el barrio",
+            placeholder = "Buscá y seleccione el barrio",
         )
     }
 }

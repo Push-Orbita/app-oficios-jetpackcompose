@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.provider
+﻿package com.cocido.oficios.feature.onboarding.provider
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -248,7 +248,7 @@ class ProviderOnboardingViewModel @Inject constructor(
 
         private const val DRAFT_SYNC_ERROR_PREFIX = "No pudimos enviar su rubro y disponibilidad."
         private const val DRAFT_SYNC_FALLBACK_ERROR =
-            "Revise Rubro y especialidades e intente nuevamente."
+            "Revisá Rubro y especialidades e intente nuevamente."
 
         // POST /trabajador-oficio-rubro/full sólo corresponde cuando todavía no existe
         // el servicio principal. Usarlo para disponibilidad, pagos o descripción sobre

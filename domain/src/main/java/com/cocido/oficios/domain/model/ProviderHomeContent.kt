@@ -1,4 +1,4 @@
-package com.cocido.oficios.domain.model
+﻿package com.cocido.oficios.domain.model
 
 data class ProviderHomeContent(
     val userDisplayName: String,
@@ -14,7 +14,7 @@ data class ProviderHomeContent(
     val hasGalleryPhotos: Boolean = false,
     val hasCommercialLocal: Boolean = false,
     val hasCertificate: Boolean = false,
-    /** Onboarding obligatorio completo (API). Oculta "Complete su perfil" aunque falten opcionales. */
+    /** Onboarding obligatorio completo (API). Oculta "Completá su perfil" aunque falten opcionales. */
     val isRequiredProfileComplete: Boolean = false,
 ) {
     val headerSubtitle: String?

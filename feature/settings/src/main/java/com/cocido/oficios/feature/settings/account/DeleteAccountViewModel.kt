@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.account
+﻿package com.cocido.oficios.feature.settings.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -80,9 +80,9 @@ class DeleteAccountViewModel @Inject constructor(
     private fun submit() {
         val state = _uiState.value
         if (state.hasPendingGrace || state.isSubmitting) return
-        val passwordError = if (state.password.isBlank()) "Ingrese su contraseña actual." else null
+        val passwordError = if (state.password.isBlank()) "Ingresá tu contraseña actual." else null
         val confirmationError = if (state.confirmation.trim() != CONFIRMATION_WORD) {
-            "Escriba ELIMINAR para confirmar la baja."
+            "Escribí ELIMINAR para confirmar la baja."
         } else {
             null
         }
@@ -110,7 +110,7 @@ class DeleteAccountViewModel @Inject constructor(
                             if (whenLabel != null) {
                                 "Solicitamos la baja. Tiene tiempo hasta el $whenLabel para cancelarla si vuelve a iniciar sesión."
                             } else {
-                                "Solicitamos la baja de su cuenta. Tiene 3 días para cancelarla si vuelve a iniciar sesión."
+                                "Solicitamos la baja de tu cuenta. Tiene 3 días para cancelarla si vuelve a iniciar sesión."
                             },
                         ),
                     )

@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
@@ -40,7 +40,7 @@ class OficiosAutocompleteFieldTest {
                     onSuggestionSelected = {},
                     suggestionLabel = { it },
                     label = "Barrio",
-                    placeholder = "Busque y seleccione el barrio",
+                    placeholder = "Buscá y seleccione el barrio",
                     modifier = Modifier.width(360.dp).fillMaxWidth(),
                 )
             }

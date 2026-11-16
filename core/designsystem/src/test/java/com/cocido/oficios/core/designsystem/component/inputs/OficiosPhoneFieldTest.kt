@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -30,7 +30,7 @@ class OficiosPhoneFieldTest {
                     onValueChange = {},
                     selectedCountry = PhoneCountryOptions.ARGENTINA,
                     label = "Celular (WhatsApp)",
-                    supportingText = "Ingrese el número local, con el 9 de móvil.",
+                    supportingText = "Ingresá el número local, con el 9 de móvil.",
                 )
             }
         }

@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +65,7 @@ class OficiosTextFieldLabelTest {
             onValueChange = {},
             label = "D.N.I.",
             isError = true,
-            supportingText = "Ingrese un D.N.I. válido",
+            supportingText = "Ingresá un D.N.I. válido",
             modifier = Modifier.fillMaxWidth(),
         )
     }

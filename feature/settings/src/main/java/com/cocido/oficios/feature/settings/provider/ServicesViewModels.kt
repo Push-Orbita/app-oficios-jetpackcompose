@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.provider
+﻿package com.cocido.oficios.feature.settings.provider
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -142,7 +142,7 @@ class ServicesViewModel @Inject constructor(
         val service = _uiState.value.pendingDelete ?: return
         if (service.isPrimary) {
             _uiState.update {
-                it.copy(pendingDelete = null, errorMessage = "El servicio principal no se puede eliminar. Puede sumar otros servicios sin perderlo.")
+                it.copy(pendingDelete = null, errorMessage = "El servicio principal no se puede eliminar. Podés sumar otros servicios sin perderlo.")
             }
             return
         }
@@ -486,7 +486,7 @@ class AddServiceViewModel @Inject constructor(
         }
         val error = when (state.step) {
             AddServiceStep.TRADE -> if (state.selectedRubroId == null || state.selectedSubRubroIds.isEmpty()) {
-                "Seleccione al menos una especialidad."
+                "Seleccioná al menos una especialidad."
             } else {
                 null
             }
@@ -512,12 +512,12 @@ class AddServiceViewModel @Inject constructor(
         !state.servesAtClientHome && !state.servesAtLocal ->
             "Elija al menos una modalidad de atención."
         state.servesAtLocal && (state.localBarrioId == null || state.localStreet.isBlank()) ->
-            "Complete el barrio y la calle de su local."
+            "Completá el barrio y la calle de tu local."
         state.servesAtLocal && !state.localLocation.canPersist -> {
             if (state.localLocation.phase == AddressLocationPhase.Idle) {
                 resolveLocalFromAddress()
             }
-            state.localLocation.message ?: "Confirme la ubicación de su local."
+            state.localLocation.message ?: "Confirme la ubicación de tu local."
         }
         else -> ScheduleValidator.validate(state.weeklyAvailability)
     }
@@ -549,7 +549,7 @@ class AddServiceViewModel @Inject constructor(
         viewModelScope.launch {
             update { it.copy(isSaving = true, errorMessage = null) }
             val local = if (state.servesAtLocal) ProviderLocalDomicilioRequest(
-                barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccione el barrio de su local.") },
+                barrioId = state.localBarrioId ?: return@launch update { it.copy(isSaving = false, errorMessage = "Seleccioná el barrio de tu local.") },
                 calle = state.localStreet.trim().ifBlank { null },
                 numero = state.localNumber.trim().ifBlank { null },
                 nombre = state.localName.trim().ifBlank { null },

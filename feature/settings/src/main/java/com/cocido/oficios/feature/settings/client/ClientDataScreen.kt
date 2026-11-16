@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.client
+﻿package com.cocido.oficios.feature.settings.client
 
 import com.cocido.oficios.feature.settings.R
 import androidx.compose.ui.res.stringResource
@@ -341,7 +341,7 @@ private fun ContactEditor(
             label = stringResource(R.string.client_data_whatsapp),
             isError = uiState.contactPhoneError != null,
             supportingText = uiState.contactPhoneError
-                ?: "Ingrese el número local, con el 9 de móvil.",
+                ?: "Ingresá el número local, con el 9 de móvil.",
             numberModifier = Modifier.focusRequester(phoneFocus),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),

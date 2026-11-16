@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.cards
+﻿package com.cocido.oficios.core.designsystem.component.cards
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,7 +43,7 @@ fun ProfileCompletionCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Complete su perfil",
+                    text = "Completá su perfil",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

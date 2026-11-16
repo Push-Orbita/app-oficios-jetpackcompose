@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -373,7 +373,7 @@ fun OficiosTextField(
 private fun TextFieldsPreview() {
     OficiosTheme {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.md)) {
-            OficiosTextField(value = "", onValueChange = {}, label = "Barrio", placeholder = "Busque y seleccione el barrio")
+            OficiosTextField(value = "", onValueChange = {}, label = "Barrio", placeholder = "Buscá y seleccione el barrio")
             OficiosTextField(value = "", onValueChange = {}, label = "Calle")
             OficiosTextField(value = "usuario@mail.com", onValueChange = {}, label = "Email")
             OficiosTextField(value = "mal@", onValueChange = {}, label = "Email", isError = true, supportingText = "Email inválido")

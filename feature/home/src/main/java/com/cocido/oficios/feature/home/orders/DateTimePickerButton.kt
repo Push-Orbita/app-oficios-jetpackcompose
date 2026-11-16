@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.orders
+﻿package com.cocido.oficios.feature.home.orders
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
@@ -78,7 +78,7 @@ fun DateTimePickerButton(
         val timePickerState = rememberTimePickerState()
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("Seleccione un horario") },
+            title = { Text("Seleccioná un horario") },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
                 OficiosDialogActions(

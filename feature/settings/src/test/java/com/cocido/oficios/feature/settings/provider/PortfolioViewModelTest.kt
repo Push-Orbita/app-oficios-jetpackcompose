@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.provider
+﻿package com.cocido.oficios.feature.settings.provider
 
 import androidx.lifecycle.SavedStateHandle
 import com.cocido.oficios.core.common.result.AppError
@@ -91,7 +91,7 @@ class PortfolioViewModelTest {
         viewModel.onEvent(PortfolioEvent.SaveCertificate)
         advanceUntilIdle()
         assertTrue(viewModel.uiState.value.certificateEditorVisible)
-        assertEquals("Seleccione el archivo del certificado.", viewModel.uiState.value.errorMessage)
+        assertEquals("Seleccioná el archivo del certificado.", viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.canSaveCertificate)
     }
 

@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.network
+﻿package com.cocido.oficios.core.network
 
 import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.common.result.AppError
@@ -59,7 +59,7 @@ private fun HttpException.toHttpAppError(): AppError {
 
     return when (httpCode) {
         400, 422 -> AppError.Validation(
-            message = message.ifBlank { "Revise los datos ingresados" },
+            message = message.ifBlank { "Revisá los datos ingresados" },
             fieldErrors = fieldErrors,
             backendCode = backendCode,
         )
@@ -176,16 +176,16 @@ private val uselessErrorMessages = setOf(
 )
 
 private val knownBackendMessages = mapOf(
-    "COMPLETION_CODE_REQUIRED" to "Ingrese el código de 6 dígitos que ve el cliente en el pedido.",
+    "COMPLETION_CODE_REQUIRED" to "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
     "COMPLETION_CODE_INVALID" to "Ese código no es correcto o ya cambió. Pídale al cliente el que ve ahora en su app.",
     "COMPLETION_CODE_EXPIRED" to "Ese código venció. La app del cliente ya muestra uno nuevo: pedile el actual.",
     "COMPLETION_CODE_LOCKED" to "Hay demasiados intentos. Espere un momento e intente de nuevo.",
     "BOOKING_INVALID_STATE" to "Todavía no se puede terminar este pedido.",
     "REPORT_ALREADY_OPEN" to "Ya denunció este perfil. Vamos a revisarlo.",
-    "REPORT_REASON_INVALID" to "Seleccione un motivo de la lista.",
+    "REPORT_REASON_INVALID" to "Seleccioná un motivo de la lista.",
     "REPORT_DESCRIPTION_INVALID" to "Cuéntenos qué pasó (entre 20 y 2000 caracteres).",
     "REPORT_RATE_LIMITED" to "Envió varias denuncias seguidas. Espere un momento.",
-    "ACCOUNT_DELETION_CONFIRMATION_INVALID" to "Escriba ELIMINAR para confirmar la baja.",
+    "ACCOUNT_DELETION_CONFIRMATION_INVALID" to "Escribí ELIMINAR para confirmar la baja.",
     "AUTH_RECENT_LOGIN_REQUIRED" to "La contraseña no es correcta.",
     "ACCOUNT_HAS_ACTIVE_BOOKINGS" to "Termine o cancele sus trabajos activos antes de eliminar la cuenta.",
     "ACCOUNT_DELETION_ALREADY_REQUESTED" to "Ya hay una solicitud de baja en curso.",
@@ -196,7 +196,7 @@ private val knownBackendMessages = mapOf(
     "CANCELATION_WINDOW_EXPIRED" to "Ya no se puede cancelar este servicio. El plazo de cancelación venció.",
     "DB02" to "El servicio no está disponible en este momento. Intente más tarde.",
     "SE01" to "El servicio no está disponible en este momento. Intente más tarde.",
-    "VA01" to "Revise los datos ingresados",
+    "VA01" to "Revisá los datos ingresados",
     PHONE_CODE_DELIVERY_FAILED to PHONE_CODE_DELIVERY_FAILED_MESSAGE,
 )
 
@@ -283,7 +283,7 @@ private fun classValidatorFallback(field: String, messages: List<String>): Strin
         return "El código tiene que tener 6 dígitos"
     }
     if (lowerField == "email" && (joined.contains("email") || joined.contains("string"))) {
-        return "Ingrese un correo válido"
+        return "Ingresá un correo válido"
     }
     return null
 }

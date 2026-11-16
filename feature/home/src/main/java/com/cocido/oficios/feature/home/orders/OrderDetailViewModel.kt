@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.orders
+﻿package com.cocido.oficios.feature.home.orders
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -361,7 +361,7 @@ class OrderDetailViewModel @Inject constructor(
         val code = rawCode.trim()
         if (code.length != 6) {
             _uiState.update {
-                current.copy(completionCodeError = "Ingrese el código de 6 dígitos que ve el cliente en el pedido.")
+                current.copy(completionCodeError = "Ingresá el código de 6 dígitos que ve el cliente en el pedido.")
             }
             return
         }

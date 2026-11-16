@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.common
+﻿package com.cocido.oficios.feature.onboarding.common
 
 import com.cocido.oficios.domain.model.OnboardingStep
 import com.cocido.oficios.domain.model.OnboardingStepStatus
@@ -12,7 +12,7 @@ import org.junit.Test
 class OnboardingChecklistModelsTest {
 
     private fun step(id: String, status: OnboardingStepStatus = OnboardingStepStatus.PENDING) =
-        OnboardingStep(id = id, title = id, description = "Complete este paso.", status = status)
+        OnboardingStep(id = id, title = id, description = "Completá este paso.", status = status)
 
     private val apiSteps = listOf(
         step("dni_pendiente_revision", OnboardingStepStatus.IN_REVIEW),

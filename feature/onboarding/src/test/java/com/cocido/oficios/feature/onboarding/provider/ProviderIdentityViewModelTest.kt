@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.provider
+﻿package com.cocido.oficios.feature.onboarding.provider
 
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.model.ProviderDniDocuments
@@ -123,7 +123,7 @@ class ProviderIdentityViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("Complete el número de DNI y todas las fotos obligatorias", state.uploadError)
+        assertEquals("Completá el número de DNI y todas las fotos obligatorias", state.uploadError)
         assertFalse(state.canSubmit)
     }
 

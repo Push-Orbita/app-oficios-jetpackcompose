@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding
+﻿package com.cocido.oficios.feature.onboarding
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
@@ -31,7 +31,7 @@ class ProviderOnboardingChecklistScreenTest {
             OnboardingStep(
                 id = "rubro_principal",
                 title = "Rubro principal",
-                description = "Seleccione su rubro",
+                description = "Seleccioná su rubro",
                 status = OnboardingStepStatus.PENDING,
             ),
             OnboardingStep(

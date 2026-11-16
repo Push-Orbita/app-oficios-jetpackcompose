@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.provider
+﻿package com.cocido.oficios.feature.settings.provider
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -157,8 +157,8 @@ class PortfolioViewModel @Inject constructor(
         val state = _uiState.value
         val name = state.certificateName.trim()
         val error = when {
-            name.length < 3 -> "Ingrese un nombre claro para el certificado."
-            state.editingCertificateId == null && state.certificateFilePath == null -> "Seleccione el archivo del certificado."
+            name.length < 3 -> "Ingresá un nombre claro para el certificado."
+            state.editingCertificateId == null && state.certificateFilePath == null -> "Seleccioná el archivo del certificado."
             else -> null
         }
         if (error != null) return update { it.copy(errorMessage = error) }

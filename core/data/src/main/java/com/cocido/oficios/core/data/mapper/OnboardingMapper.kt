@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.data.mapper
+﻿package com.cocido.oficios.core.data.mapper
 
 import com.cocido.oficios.core.network.api.auth.dto.ClientePerfilEstadoDto
 import com.cocido.oficios.core.network.api.auth.dto.TrabajadorOficioPerfilMeDto
@@ -96,7 +96,7 @@ fun ClientProfileStatus.toOnboardingSteps(): List<OnboardingStep> {
             OnboardingStep(
                 id = "email_verificado",
                 title = "Verificar email",
-                description = "Confirme su correo electrónico.",
+                description = "Confirmá tu correo electrónico.",
                 status = OnboardingStepStatus.PENDING,
                 isRequired = false,
             ),
@@ -121,31 +121,31 @@ fun ProviderProfileStatus.toOnboardingSteps(): List<OnboardingStep> = buildList 
         "dni_imagenes" to ("Fotos del DNI" to "Suba las imágenes de su documento."),
         "dni_pendiente_revision" to (
             "DNI en revisión" to
-                "Puede corregir y volver a enviar su documento hasta que el equipo lo acepte."
+                "Podés corregir y volver a enviar su documento hasta que el equipo lo acepte."
             ),
         "dni_rechazado" to ("DNI rechazado" to "Vuelva a cargar su documentación."),
         "selfie_imagen" to ("Foto de rostro" to "Suba una selfie para validar su identidad."),
         "selfie_pendiente_revision" to (
             "Selfie en revisión" to
-                "Puede corregir y volver a enviar su foto hasta que el equipo la acepte."
+                "Podés corregir y volver a enviar su foto hasta que el equipo la acepte."
             ),
         "selfie_rechazada" to ("Selfie rechazada" to "Vuelva a cargar su foto de rostro."),
         "descripcion" to ("Sobre mí" to "Contá tu experiencia y cómo trabajás."),
         "experiencia" to ("Experiencia" to "Indique su experiencia en el rubro."),
-        "rubro_principal" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
-        "subrubros" to ("Rubro y especialidades" to "Seleccione su rubro y las especialidades que ofrece."),
+        "rubro_principal" to ("Rubro y especialidades" to "Seleccioná su rubro y las especialidades que ofrece."),
+        "subrubros" to ("Rubro y especialidades" to "Seleccioná su rubro y las especialidades que ofrece."),
         "disponibilidad" to ("Disponibilidad" to "Configure modalidad, días y horarios de atención."),
         "agenda_turnos" to ("Agenda de turnos" to "Configure turnos si aplica."),
         "local_comercial" to ("Local comercial" to "Agregue su local si atiende en sitio."),
-        "metodos_pago" to ("Métodos de pago" to "Seleccione cómo quiere cobrar."),
-        "informacion_personal" to ("Información personal" to "Complete su información básica."),
+        "metodos_pago" to ("Métodos de pago" to "Seleccioná cómo quiere cobrar."),
+        "informacion_personal" to ("Información personal" to "Completá su información básica."),
         "finalizar_perfil" to ("Finalizar perfil" to "Confirme su perfil para publicarlo."),
-        "email_verificado" to ("Verificar email" to "Confirme su correo electrónico."),
+        "email_verificado" to ("Verificar email" to "Confirmá tu correo electrónico."),
     )
 
     missingSteps.forEach { missing ->
         if (missing == "subrubros" && missingSteps.contains("rubro_principal")) return@forEach
-        val (title, description) = stepMap[missing] ?: (missing to "Complete este paso.")
+        val (title, description) = stepMap[missing] ?: (missing to "Completá este paso.")
         val status = when (missing) {
             "dni_pendiente_revision", "selfie_pendiente_revision" -> OnboardingStepStatus.IN_REVIEW
             else -> OnboardingStepStatus.PENDING

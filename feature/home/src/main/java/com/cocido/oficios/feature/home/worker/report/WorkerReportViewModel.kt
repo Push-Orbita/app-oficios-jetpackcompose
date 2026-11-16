@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.worker.report
+﻿package com.cocido.oficios.feature.home.worker.report
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -93,7 +93,7 @@ class WorkerReportViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     errorMessage = if (state.selectedReasonCode == null) {
-                        "Seleccione un motivo"
+                        "Seleccioná un motivo"
                     } else {
                         state.descriptionHint
                     },

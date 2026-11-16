@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.network
+﻿package com.cocido.oficios.core.network
 
 import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.common.result.AppError
@@ -164,17 +164,17 @@ class NetworkErrorMapperTest {
         val body = """{"code":"VA01","message":"Datos de entrada no válidos."}"""
         val error = httpError(400, body).toNetworkAppError()
         assertTrue(error is AppError.Validation)
-        assertEquals("Revise los datos ingresados", error.message)
+        assertEquals("Revisá los datos ingresados", error.message)
         assertTrue("JPG" !in error.message)
         assertTrue("Datos de entrada no válidos" !in error.message)
-        assertEquals("Revise los datos ingresados", error.userMessage())
+        assertEquals("Revisá los datos ingresados", error.userMessage())
     }
 
     @Test
     fun `va01 without message uses form copy`() {
         val body = """{"code":"VA01"}"""
         val error = httpError(400, body).toNetworkAppError()
-        assertEquals("Revise los datos ingresados", error.message)
+        assertEquals("Revisá los datos ingresados", error.message)
         assertTrue("JPG" !in error.message)
     }
 

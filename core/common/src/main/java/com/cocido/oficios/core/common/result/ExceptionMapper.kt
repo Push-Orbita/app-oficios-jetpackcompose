@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.common.result
+﻿package com.cocido.oficios.core.common.result
 
 import com.cocido.oficios.core.common.contract.ImageUploadContract
 import java.io.IOException
@@ -77,7 +77,7 @@ fun AppError.userMessage(): String = when (this) {
         fallback = "No tiene permiso para realizar esta acción.",
     )
     is AppError.NotFound -> message.toProfessionalMessage(
-        fallback = "No encontramos la información solicitada. Actualice la pantalla e intente nuevamente.",
+        fallback = "No encontramos la información solicitada. Actualizá la pantalla e intentá de nuevo.",
     )
     is AppError.Conflict -> message.toProfessionalMessage(
         fallback = "Ese dato ya está registrado. Revíselo e intente nuevamente.",
@@ -129,7 +129,7 @@ private fun String.toProfessionalMessage(fallback: String): String {
             "No pudimos conectarnos. Revisá tu conexión e intentá de nuevo."
         "request timed out" -> "La conexión tardó demasiado. Intentá de nuevo."
         "secure connection could not be established" ->
-            "No pudimos establecer una conexión segura. Intente nuevamente más tarde."
+            "No pudimos establecer una conexión segura. Intentá de nuevo más tarde."
         else -> normalized
     }
 }

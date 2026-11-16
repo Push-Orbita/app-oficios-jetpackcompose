@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -102,7 +102,7 @@ private fun DropdownFieldPreview() {
                 options = listOf("Construcción", "Mantenimiento", "Bienestar"),
                 onOptionSelected = {},
                 label = "Rubro",
-                placeholder = "Seleccione un rubro",
+                placeholder = "Seleccioná un rubro",
             )
         }
     }

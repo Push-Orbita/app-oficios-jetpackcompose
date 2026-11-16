@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.orders
+﻿package com.cocido.oficios.feature.home.orders
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -277,7 +277,7 @@ class MisUbicacionesViewModel @Inject constructor(
     private fun confirm() {
         val selected = (uiState.value as? MisUbicacionesUiState.Success)?.selectedId
         if (selected == null) {
-            updateSuccess { copy(errorMessage = "Seleccione una ubicación para continuar.") }
+            updateSuccess { copy(errorMessage = "Seleccioná una ubicación para continuar.") }
             return
         }
         viewModelScope.launch {

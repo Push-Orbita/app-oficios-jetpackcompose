@@ -1,4 +1,4 @@
-package com.cocido.oficios.domain.usecase.safety
+﻿package com.cocido.oficios.domain.usecase.safety
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
@@ -27,7 +27,7 @@ class SubmitReportUseCase @Inject constructor(
         if (reasonCode.isBlank()) {
             return AppResult.Error(
                 AppError.Validation(
-                    message = "Seleccione un motivo de la lista.",
+                    message = "Seleccioná un motivo de la lista.",
                     backendCode = "REPORT_REASON_INVALID",
                 ),
             )

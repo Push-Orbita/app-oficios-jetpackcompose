@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.feedback
+﻿package com.cocido.oficios.core.designsystem.component.feedback
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -245,7 +245,7 @@ private fun PreviewToastError() {
 private fun PreviewToastInfo() {
     OficiosTheme {
         OficiosToastContent(
-            message = "Complete los datos para ingresar",
+            message = "Completá los datos para ingresar",
             variant = OficiosToastVariant.Info,
             onDismiss = {}
         )
