@@ -34,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -44,7 +46,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
@@ -101,6 +106,7 @@ fun OficiosTextField(
     minLines: Int = 1,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     floatingLabel: Boolean = true,
+    focusRequester: FocusRequester? = null,
     onFocusChange: (Boolean) -> Unit = {},
 ) {
     val placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = OficiosAlpha.medium)
@@ -196,7 +202,9 @@ fun OficiosTextField(
             if (a11yLabel.isNotBlank()) {
                 contentDescription = a11yLabel
             }
-            if (supportingText != null) {
+            if (isError && !supportingText.isNullOrBlank()) {
+                error(supportingText)
+            } else if (supportingText != null) {
                 stateDescription = supportingText
             }
         }
@@ -279,6 +287,13 @@ fun OficiosTextField(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .then(
+                                    if (focusRequester != null) {
+                                        Modifier.focusRequester(focusRequester)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .then(
                                     if (showValueEllipsis && singleLine) {
                                         Modifier.heightIn(max = valueLineHeightDp)
                                     } else {
@@ -338,10 +353,16 @@ fun OficiosTextField(
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
-                modifier = Modifier.padding(
-                    start = horizontalPadding,
-                    top = OficiosSpacing.xxs,
-                ),
+                modifier = Modifier
+                    .padding(
+                        start = horizontalPadding,
+                        top = OficiosSpacing.xxs,
+                    )
+                    .semantics {
+                        if (isError) {
+                            liveRegion = LiveRegionMode.Polite
+                        }
+                    },
             )
         }
     }

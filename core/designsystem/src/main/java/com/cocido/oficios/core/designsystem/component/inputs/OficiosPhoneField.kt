@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,6 +69,7 @@ fun OficiosPhoneField(
     countries: List<PhoneCountryOption> = PhoneCountryOptions.DEFAULT,
     isError: Boolean = false,
     supportingText: String? = null,
+    focusRequester: FocusRequester? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
@@ -85,6 +87,7 @@ fun OficiosPhoneField(
             modifier = modifier.then(numberModifier),
             isError = isError,
             supportingText = supportingText,
+            focusRequester = focusRequester,
             keyboardOptions = phoneKeyboard,
             keyboardActions = keyboardActions,
         )
@@ -147,6 +150,7 @@ fun OficiosPhoneField(
                 modifier = numberModifier,
                 isError = isError,
                 supportingText = supportingText,
+                focusRequester = focusRequester,
                 keyboardOptions = phoneKeyboard,
                 keyboardActions = keyboardActions,
             )

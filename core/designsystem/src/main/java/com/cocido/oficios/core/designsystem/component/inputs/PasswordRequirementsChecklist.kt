@@ -34,14 +34,17 @@ data class PasswordRequirementItem(
  * Checklist de requisitos de contraseña. Se muestra siempre (también con el campo vacío) para
  * que el usuario sepa las reglas antes de escribir; cada ítem se marca en vivo.
  *
+ * Tras un intento de envío ([highlightUnmetAsError] = true), los requisitos no cumplidos
+ * pasan a color de error con ícono de alerta; los cumplidos siguen en verde.
+ *
  * Accesibilidad: todo el bloque es un único nodo para TalkBack con un estado resumido
- * ("Faltan requisitos: …" / "La contraseña cumple los requisitos") anunciado como live region
- * cortés, así no se lee cada fila por separado en cada tecla.
+ * anunciado como live region cortés.
  */
 @Composable
 fun PasswordRequirementsChecklist(
     requirements: List<PasswordRequirementItem>,
     modifier: Modifier = Modifier,
+    highlightUnmetAsError: Boolean = false,
     title: String? = stringResource(R.string.ds_password_requirements_title),
     caption: String? = stringResource(R.string.ds_password_symbol_hint),
 ) {
@@ -71,7 +74,10 @@ fun PasswordRequirementsChecklist(
             )
         }
         requirements.forEach { item ->
-            PasswordRequirementRow(item = item)
+            PasswordRequirementRow(
+                item = item,
+                highlightUnmetAsError = highlightUnmetAsError,
+            )
         }
         if (!caption.isNullOrBlank()) {
             Text(
@@ -84,11 +90,30 @@ fun PasswordRequirementsChecklist(
 }
 
 @Composable
-private fun PasswordRequirementRow(item: PasswordRequirementItem) {
-    val state = if (item.satisfied) {
-        stringResource(R.string.ds_password_requirement_met, item.label)
-    } else {
-        stringResource(R.string.ds_password_requirement_pending, item.label)
+private fun PasswordRequirementRow(
+    item: PasswordRequirementItem,
+    highlightUnmetAsError: Boolean,
+) {
+    val unmetAsError = highlightUnmetAsError && !item.satisfied
+    val state = when {
+        item.satisfied -> stringResource(R.string.ds_password_requirement_met, item.label)
+        unmetAsError -> stringResource(R.string.ds_password_requirement_error, item.label)
+        else -> stringResource(R.string.ds_password_requirement_pending, item.label)
+    }
+    val iconRes = when {
+        item.satisfied -> OficiosIcons.Check
+        unmetAsError -> OficiosIcons.CircleAlert
+        else -> OficiosIcons.Circle
+    }
+    val iconTint = when {
+        item.satisfied -> OficiosTheme.colors.success
+        unmetAsError -> MaterialTheme.colorScheme.error
+        else -> OficiosTheme.colors.disabled
+    }
+    val textColor = when {
+        item.satisfied -> OficiosTheme.colors.onSurface
+        unmetAsError -> MaterialTheme.colorScheme.error
+        else -> OficiosTheme.colors.onSurfaceVariant
     }
     Row(
         modifier = Modifier.semantics(mergeDescendants = true) {
@@ -98,25 +123,15 @@ private fun PasswordRequirementRow(item: PasswordRequirementItem) {
         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.xs),
     ) {
         Icon(
-            imageVector = ImageVector.vectorResource(
-                if (item.satisfied) OficiosIcons.Check else OficiosIcons.Circle,
-            ),
+            imageVector = ImageVector.vectorResource(iconRes),
             contentDescription = null,
-            tint = if (item.satisfied) {
-                OficiosTheme.colors.success
-            } else {
-                OficiosTheme.colors.disabled
-            },
+            tint = iconTint,
             modifier = Modifier.size(OficiosComponentSize.iconSm),
         )
         Text(
             text = item.label,
             style = MaterialTheme.typography.bodySmall,
-            color = if (item.satisfied) {
-                OficiosTheme.colors.onSurface
-            } else {
-                OficiosTheme.colors.onSurfaceVariant
-            },
+            color = textColor,
         )
     }
 }
@@ -132,6 +147,7 @@ private fun PasswordRequirementsChecklistPreview() {
                 PasswordRequirementItem("Al menos un número", satisfied = true),
                 PasswordRequirementItem("Al menos un símbolo (por ej. ! @ # $ - _)", satisfied = false),
             ),
+            highlightUnmetAsError = true,
         )
     }
 }

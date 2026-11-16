@@ -38,4 +38,21 @@ class PasswordRequirementsChecklistTest {
         composeRule.onNodeWithText("Al menos un símbolo (por ej. ! @ # $ - _)").assertIsDisplayed()
         composeRule.onNodeWithText("Símbolo: cualquier carácter que no sea letra, número ni espacio.").assertIsDisplayed()
     }
+
+    @Test
+    fun `highlightUnmetAsError still renders unmet labels`() {
+        composeRule.setContent {
+            OficiosTheme {
+                PasswordRequirementsChecklist(
+                    requirements = listOf(
+                        PasswordRequirementItem("Entre 6 y 64 caracteres", satisfied = true),
+                        PasswordRequirementItem("Al menos un número", satisfied = false),
+                    ),
+                    highlightUnmetAsError = true,
+                )
+            }
+        }
+        composeRule.onNodeWithText("Entre 6 y 64 caracteres").assertIsDisplayed()
+        composeRule.onNodeWithText("Al menos un número").assertIsDisplayed()
+    }
 }
