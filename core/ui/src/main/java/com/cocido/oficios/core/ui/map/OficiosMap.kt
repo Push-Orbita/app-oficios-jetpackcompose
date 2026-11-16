@@ -3,8 +3,6 @@ package com.cocido.oficios.core.ui.map
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -44,6 +42,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +53,10 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
+import com.cocido.oficios.core.ui.R
+import com.cocido.oficios.core.ui.permission.PermissionGrantPredicate
+import com.cocido.oficios.core.ui.permission.RuntimePermissionLabels
+import com.cocido.oficios.core.ui.permission.rememberRuntimePermissionRequest
 import kotlinx.coroutines.delay
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -82,17 +85,29 @@ fun OficiosLocationPicker(
     val context = LocalContext.current
     val mapsApiKey = remember { context.googleMapsApiKey() }
     var showMyLocation by remember { mutableStateOf(false) }
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { grants ->
-        val granted = grants.values.any { it } || context.hasAnyLocationPermission()
-        if (granted) {
+    val locationPermission = rememberRuntimePermissionRequest(
+        permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        ),
+        labels = RuntimePermissionLabels(
+            rationaleTitle = stringResource(R.string.permission_location_rationale_title),
+            rationaleMessage = stringResource(R.string.permission_location_rationale_message),
+            rationaleConfirm = stringResource(R.string.permission_continue),
+            deniedTitle = stringResource(R.string.permission_location_denied_title),
+            deniedMessage = stringResource(R.string.permission_location_denied_message),
+            openSettings = stringResource(R.string.permission_open_settings),
+            dismiss = stringResource(R.string.permission_not_now),
+        ),
+        onGranted = {
             showMyLocation = true
             onUseCurrentLocation()
-        } else {
-            onPermissionDenied()
-        }
-    }
+        },
+        onDenied = onPermissionDenied,
+        isSatisfied = PermissionGrantPredicate { grants ->
+            grants.values.any { it } || context.hasAnyLocationPermission()
+        },
+    )
     val selected = latitude?.let { lat -> longitude?.let { lng -> LatLng(lat, lng) } }
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(selected ?: FormosaCenter, if (selected == null) 12f else 16f)
@@ -176,19 +191,7 @@ fun OficiosLocationPicker(
             }
             OficiosButton(
                 text = "Usar mi ubicación",
-                onClick = {
-                    if (context.hasAnyLocationPermission()) {
-                        showMyLocation = true
-                        onUseCurrentLocation()
-                    } else {
-                        permissionLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                            ),
-                        )
-                    }
-                },
+                onClick = { locationPermission.launch() },
                 enabled = enabled && !isLocating,
                 loading = isLocating,
                 variant = OficiosButtonVariant.Secondary,

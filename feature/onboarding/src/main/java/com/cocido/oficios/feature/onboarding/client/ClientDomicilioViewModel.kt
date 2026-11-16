@@ -143,7 +143,7 @@ class ClientDomicilioViewModel @Inject constructor(
     }
     
     fun onLocationPermissionDenied() = _uiState.update {
-        it.copy(error = "Permita la ubicación o marque manualmente el punto en el mapa.")
+        it.copy(error = "Permití la ubicación o marcá a mano el punto en el mapa.")
     }
     
     fun clearMapPin() = _uiState.update {

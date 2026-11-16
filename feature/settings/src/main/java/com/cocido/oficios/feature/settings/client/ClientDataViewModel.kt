@@ -145,7 +145,9 @@ class ClientDataViewModel @Inject constructor(
             }
             ClientDataEvent.UseCurrentLocation -> useCurrentLocation()
             ClientDataEvent.LocationPermissionDenied -> update {
-                it.copy(errorMessage = "Para usar su ubicación, permita el acceso cuando Android se lo solicite. También puede marcar el punto manualmente.")
+                it.copy(
+                    errorMessage = "Para usar tu ubicación, permití el acceso cuando Android te lo pida. También podés marcar el punto a mano.",
+                )
             }
             is ClientDataEvent.AddressFavoriteChanged -> update { it.copy(addressFavorite = event.value) }
             ClientDataEvent.SaveDomicilio -> saveDomicilio()

@@ -3,9 +3,19 @@ package com.cocido.oficios.core.ui.intent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 import com.cocido.oficios.core.model.AppConstants
 import com.cocido.oficios.core.ui.gallery.GalleryMediaKind
 import com.cocido.oficios.core.ui.gallery.toGalleryMediaKind
+
+/** Abre la ficha de la app en Ajustes del sistema (permisos denegados de forma permanente). */
+fun Context.openApplicationDetailsSettings() {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", packageName, null),
+    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { startActivity(intent) }
+}
 
 fun openTermsAndConditions(context: Context, openInApp: () -> Unit) {
     val url = AppConstants.TERMS_URL.trim()
