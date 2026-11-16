@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.inputs
+﻿package com.cocido.oficios.core.designsystem.component.inputs
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -170,7 +170,7 @@ private fun OficiosPhoneFieldPreview() {
             selectedCountry = PhoneCountryOptions.ARGENTINA,
             onCountrySelected = {},
             label = "Celular (WhatsApp)",
-            supportingText = "Ingrese el número local, con el 9 de móvil.",
+            supportingText = "Ingresá el número local, con el 9 de móvil.",
         )
     }
 }

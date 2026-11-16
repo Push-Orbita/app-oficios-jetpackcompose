@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.ui.map
+﻿package com.cocido.oficios.core.ui.map
 
 import com.cocido.oficios.core.designsystem.theme.OficiosTheme
 import android.Manifest
@@ -135,7 +135,7 @@ fun OficiosLocationPicker(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
-            text = "Mueva el mapa hasta que el pin quede en la entrada, o toque «Usar mi ubicación». Complete barrio y calle arriba para que coincidan con el pin.",
+            text = "Mové el mapa hasta que el pin quede en la entrada, o tocá «Usar mi ubicación». Completá barrio y calle arriba para que coincidan con el pin.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -185,7 +185,7 @@ fun OficiosLocationPicker(
             }
             if (mapLoad.state.showFallback) {
                 MapLoadFallback(
-                    text = "No pudimos cargar el mapa. Use su ubicación actual para guardar el domicilio.",
+                    text = "No pudimos cargar el mapa. Usá tu ubicación actual para guardar el domicilio.",
                     onRetry = mapLoad.onRetry,
                 )
             }

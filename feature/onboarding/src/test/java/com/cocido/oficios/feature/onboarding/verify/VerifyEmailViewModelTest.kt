@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.verify
+﻿package com.cocido.oficios.feature.onboarding.verify
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
@@ -315,7 +315,7 @@ class VerifyEmailViewModelTest {
             AppResult.Error(AppError.Unknown())
         override suspend fun sendVerificationEmail(): AppResult<String> {
             onSendVerificationEmail()
-            return AppResult.Success("Código de verificación reenviado a su correo")
+            return AppResult.Success("Código de verificación reenviado a tu correo")
         }
         override suspend fun verifyEmail(code: String) = verifyEmailResult
         override suspend fun getUserRoles() = AppResult.Success(

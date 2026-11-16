@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.auth.register
+﻿package com.cocido.oficios.feature.auth.register
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
@@ -197,7 +197,7 @@ class RegisterViewModelTest {
             registerClientResult = AppResult.Error(
                 AppError.Validation(
                     message = "Datos de entrada no válidos.",
-                    fieldErrors = mapOf("email" to "Ingrese un correo válido"),
+                    fieldErrors = mapOf("email" to "Ingresá un correo válido"),
                     backendCode = "VA01",
                 ),
             ),
@@ -212,7 +212,7 @@ class RegisterViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals("Ingrese un correo válido", state.emailError)
+        assertEquals("Ingresá un correo válido", state.emailError)
         assertNull(state.generalError)
         assertTrue(state.hasAttemptedSubmit)
     }

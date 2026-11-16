@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.data.repository
+﻿package com.cocido.oficios.core.data.repository
 
 import com.cocido.oficios.core.common.dispatcher.DispatcherProvider
 import com.cocido.oficios.core.common.result.AppResult
@@ -135,7 +135,7 @@ class OrderRepositoryImpl @Inject constructor(
             val motivo = reason?.trim().orEmpty()
             if (motivo.isEmpty()) {
                 return@withContext AppResult.Error(
-                    AppError.Validation("Ingrese el motivo de cancelación."),
+                    AppError.Validation("Ingresá el motivo de cancelación."),
                 )
             }
             remoteDataSource.cancelarSolicitudConfirmada(orderId, motivo).map { }.notifyIfChanged()
@@ -192,7 +192,7 @@ class OrderRepositoryImpl @Inject constructor(
         if (code.isEmpty()) {
             return AppResult.Error(
                 AppError.Validation(
-                    message = "Ingrese el código de 6 dígitos que ve el cliente en el pedido.",
+                    message = "Ingresá el código de 6 dígitos que ve el cliente en el pedido.",
                     backendCode = "COMPLETION_CODE_REQUIRED",
                 ),
             )

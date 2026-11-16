@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.qa
+﻿package com.cocido.oficios.feature.home.qa
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -132,7 +132,7 @@ class HomeFlowComposeTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Busque un oficio o un trabajador por nombre").assertIsDisplayed()
+        composeRule.onNodeWithText("Buscá un oficio o un trabajador por nombre").assertIsDisplayed()
         composeRule.onNodeWithText("Oficios").assertIsDisplayed()
         composeRule.onNodeWithText("Hogar").assertIsDisplayed()
     }
@@ -152,7 +152,7 @@ class HomeFlowComposeTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Busque un oficio o un trabajador por nombre").assertIsDisplayed()
+        composeRule.onNodeWithText("Buscá un oficio o un trabajador por nombre").assertIsDisplayed()
         composeRule.onNodeWithText("Construcción").assertIsDisplayed()
         composeRule.onNodeWithText("Plomería").assertIsDisplayed()
     }

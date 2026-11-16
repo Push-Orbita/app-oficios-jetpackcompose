@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.orders
+﻿package com.cocido.oficios.feature.home.orders
 
 import androidx.lifecycle.SavedStateHandle
 import com.cocido.oficios.core.common.result.AppError
@@ -107,9 +107,9 @@ class MisUbicacionesViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.uiState.value as MisUbicacionesUiState.Success
-        assertEquals("Seleccione un barrio de la lista.", state.addressBarrioError)
-        assertEquals("Ingrese la calle.", state.addressStreetError)
-        assertEquals("Ingrese la altura.", state.addressNumberError)
+        assertEquals("Seleccioná un barrio de la lista.", state.addressBarrioError)
+        assertEquals("Ingresá la calle.", state.addressStreetError)
+        assertEquals("Ingresá la altura.", state.addressNumberError)
         assertFalse(state.canSaveNew)
         assertEquals(null, state.errorMessage)
     }

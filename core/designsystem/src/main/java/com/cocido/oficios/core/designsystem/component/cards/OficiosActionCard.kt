@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.cards
+﻿package com.cocido.oficios.core.designsystem.component.cards
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -60,7 +60,7 @@ private fun ActionCardPreview() {
     OficiosTheme {
         Column(modifier = Modifier.padding(OficiosSpacing.md)) {
             OficiosActionCard(
-                title = "Complete su perfil",
+                title = "Completá su perfil",
                 description = "Para acceder a todas las funciones necesita completar su información.",
                 primaryActionLabel = "Completar perfil",
                 onPrimaryAction = {},

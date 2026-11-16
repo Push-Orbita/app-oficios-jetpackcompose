@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings
+﻿package com.cocido.oficios.feature.settings
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -138,7 +138,7 @@ class ProfileScreensTest {
         }
         composeRule.onNodeWithText("Eliminar cuenta").assertIsDisplayed()
         composeRule.onNodeWithText("Contraseña actual").assertIsDisplayed()
-        composeRule.onNodeWithText("Escriba ELIMINAR").assertIsDisplayed()
+        composeRule.onNodeWithText("Escribí ELIMINAR").assertIsDisplayed()
         composeRule.onNodeWithText("Eliminar mi cuenta").assertIsDisplayed()
     }
 

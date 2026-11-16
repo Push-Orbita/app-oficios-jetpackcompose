@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.provider
+﻿package com.cocido.oficios.feature.onboarding.provider
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -341,7 +341,7 @@ class ProviderDniViewModel @Inject constructor(
         !frontSlot.status.hasImage || !backSlot.status.hasImage -> "Cargue la foto del frente y del dorso del DNI."
         hasRejectedSideWithoutReplacement -> "Reemplace la foto rechazada antes de enviar."
         needsBothSidesToReplace -> DNI_BOTH_SIDES_MESSAGE
-        else -> "Revise los datos antes de enviar."
+        else -> "Revisá los datos antes de enviar."
     }
 
     private companion object {
@@ -514,7 +514,7 @@ class ProviderRubrosViewModel @Inject constructor(
         val rubroId = state.selectedTradeId
         val categoryId = state.selectedCategoryId
         if (rubroId == null || categoryId == null || !state.canSubmit) {
-            _uiState.update { it.copy(error = "Seleccione categoría, rubro y especialidades") }
+            _uiState.update { it.copy(error = "Seleccioná categoría, rubro y especialidades") }
             return
         }
         viewModelScope.launch {
@@ -522,7 +522,7 @@ class ProviderRubrosViewModel @Inject constructor(
             // No POST /full aquí: el body OpenAPI exige modalidad, días y medios de cobro.
             // Solo persistimos el draft y avanzamos al checklist (disponibilidad / pagos).
             val draft = buildDraft(state, rubroId, categoryId) ?: run {
-                _uiState.update { it.copy(isLoading = false, error = "Seleccione categoría, rubro y especialidades") }
+                _uiState.update { it.copy(isLoading = false, error = "Seleccioná categoría, rubro y especialidades") }
                 return@launch
             }
             registerTradeDraftRepository.save(draft)
@@ -587,7 +587,7 @@ data class ProviderAvailabilityUiState(
             if (trimmed.isEmpty()) return null
             val parsed = trimmed.toIntOrNull()
             return if (parsed == null || parsed !in 1..24) {
-                "Ingrese un valor entre 1 y 24, o deje vacío"
+                "Ingresá un valor entre 1 y 24, o deje vacío"
             } else null
         }
 
@@ -655,7 +655,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
                 }
             } else {
                 _uiState.update {
-                    it.copy(error = "Complete primero su rubro y especialidades")
+                    it.copy(error = "Completá primero su rubro y especialidades")
                 }
             }
         }
@@ -730,9 +730,9 @@ class ProviderAvailabilityViewModel @Inject constructor(
         if (!state.canSubmit) {
             val scheduleError = ScheduleValidator.validate(state.weeklySchedule)
             val message = when {
-                state.requiresTurns && state.turnDurationMinutes == null -> "Ingrese la duración del turno"
+                state.requiresTurns && state.turnDurationMinutes == null -> "Ingresá la duración del turno"
                 scheduleError != null -> scheduleError
-                else -> "Complete días, horarios y dónde atiende"
+                else -> "Completá días, horarios y dónde atiende"
             }
             _uiState.update { it.copy(error = message) }
             return
@@ -753,7 +753,7 @@ class ProviderAvailabilityViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         hasRubroContext = false,
-                        error = "Complete primero su rubro y especialidades",
+                        error = "Completá primero su rubro y especialidades",
                     )
                 }
                 return@launch
@@ -930,7 +930,7 @@ class ProviderLocalViewModel @Inject constructor(
         cancelLiveGeocode()
         val state = _uiState.value
         if (state.selectedBarrioId == null || !state.canSubmit) {
-            _uiState.update { it.copy(error = "Complete barrio, calle y número de su local.") }
+            _uiState.update { it.copy(error = "Completá barrio, calle y número de tu local.") }
             return
         }
         if (!state.location.canPersist) {
@@ -1016,7 +1016,7 @@ class ProviderLocalViewModel @Inject constructor(
             }
             val draft = registerTradeDraftRepository.get()
             if (draft == null || draft.subRubroIds.isEmpty()) {
-                _uiState.update { it.copy(isLoading = false, error = "Complete primero rubro y subrubros") }
+                _uiState.update { it.copy(isLoading = false, error = "Completá primero rubro y subrubros") }
                 return@launch
             }
             val updatedDraft = draft.copy(
@@ -1152,7 +1152,7 @@ class ProviderPaymentMethodsViewModel @Inject constructor(
                                 it.copy(
                                     isLoading = false,
                                     error = "Guardamos la solicitud, pero no pudimos verificar el resultado. " +
-                                        "Revise su conexión e intente nuevamente.",
+                                        "Revisá su conexión e intente nuevamente.",
                                 )
                             }
                         }

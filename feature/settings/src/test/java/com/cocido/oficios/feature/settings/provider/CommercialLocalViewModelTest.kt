@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.provider
+﻿package com.cocido.oficios.feature.settings.provider
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
@@ -252,8 +252,8 @@ class CommercialLocalViewModelTest {
         advanceUntilIdle()
         assertEquals(null, accounts.replacedId)
         val state = viewModel.uiState.value
-        assertEquals("Ingrese la calle.", state.streetError)
-        assertEquals("Ingrese la altura.", state.numberError)
+        assertEquals("Ingresá la calle.", state.streetError)
+        assertEquals("Ingresá la altura.", state.numberError)
         assertEquals(null, state.errorMessage)
         assertFalse(state.canSubmit)
     }

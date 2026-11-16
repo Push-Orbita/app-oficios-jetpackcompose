@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.agenda
+﻿package com.cocido.oficios.feature.home.agenda
 
 import com.cocido.oficios.domain.model.AgendaSessionConfig
 import com.cocido.oficios.domain.model.ProviderSubRubroOption
@@ -33,7 +33,7 @@ sealed interface AgendaConfigUiState {
 
         val durationError: String?
             get() = if (hasAttemptedSubmit && durationInput.toIntOrNull().let { it == null || it <= 0 }) {
-                "Ingrese una duración válida"
+                "Ingresá una duración válida"
             } else {
                 null
             }
@@ -42,7 +42,7 @@ sealed interface AgendaConfigUiState {
             get() {
                 if (intervalInput.isBlank()) return null
                 return if (hasAttemptedSubmit && intervalInput.toIntOrNull().let { it == null || it <= 0 }) {
-                    "Ingrese un intervalo válido"
+                    "Ingresá un intervalo válido"
                 } else {
                     null
                 }

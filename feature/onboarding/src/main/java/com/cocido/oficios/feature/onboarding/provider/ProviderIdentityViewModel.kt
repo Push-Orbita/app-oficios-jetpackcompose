@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.provider
+﻿package com.cocido.oficios.feature.onboarding.provider
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -163,7 +163,7 @@ class ProviderIdentityViewModel @Inject constructor(
             (!hasRemoteDniImages && (front == null || back == null)) ||
             (!hasRemoteSelfie && selfie == null)) {
             _uiState.update { 
-                it.copy(uploadError = "Complete el número de DNI y todas las fotos obligatorias") 
+                it.copy(uploadError = "Completá el número de DNI y todas las fotos obligatorias") 
             }
             return
         }

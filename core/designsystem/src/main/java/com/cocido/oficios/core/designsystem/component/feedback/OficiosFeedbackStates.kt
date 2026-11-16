@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.designsystem.component.feedback
+﻿package com.cocido.oficios.core.designsystem.component.feedback
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -279,7 +279,7 @@ private fun ErrorPreview() {
     OficiosTheme {
         OficiosErrorState(
             title = "Sin conexión",
-            description = "Revise su conexión a Internet e intente nuevamente.",
+            description = "Revisá su conexión a Internet e intente nuevamente.",
             isNetworkError = true,
             onRetry = {},
         )

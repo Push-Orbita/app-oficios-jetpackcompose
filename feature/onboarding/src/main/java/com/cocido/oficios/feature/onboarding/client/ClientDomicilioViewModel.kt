@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.client
+﻿package com.cocido.oficios.feature.onboarding.client
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -181,7 +181,7 @@ class ClientDomicilioViewModel @Inject constructor(
         val barrioId = state.selectedBarrioId
         
         if (barrioId == null || state.calle.isBlank()) {
-            _uiState.update { it.copy(error = "Complete barrio y calle") }
+            _uiState.update { it.copy(error = "Completá barrio y calle") }
             return
         }
         

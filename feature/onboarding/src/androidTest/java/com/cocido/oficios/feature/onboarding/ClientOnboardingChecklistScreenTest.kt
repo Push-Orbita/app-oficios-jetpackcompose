@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding
+﻿package com.cocido.oficios.feature.onboarding
 
 import androidx.compose.ui.test.assertIsDisplayed
 import com.cocido.oficios.feature.onboarding.TestHostActivity
@@ -44,7 +44,7 @@ class ClientOnboardingChecklistScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Complete su perfil").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Completá su perfil").assertIsDisplayed()
         composeTestRule.onNodeWithText("Domicilio").assertIsDisplayed()
         composeTestRule.onNodeWithText("Domicilio").performClick()
         assertEquals("domicilio", clickedStepId)

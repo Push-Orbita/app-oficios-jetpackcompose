@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.qa
+﻿package com.cocido.oficios.feature.settings.qa
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -48,7 +48,7 @@ class ErrorCopyComposeTest {
                 )
             }
         }
-        assertErrorCopy("No pudimos cargar su cuenta")
+        assertErrorCopy("No pudimos cargar tu cuenta")
     }
 
     @Test
@@ -167,7 +167,7 @@ class ErrorCopyComposeTest {
                 )
             }
         }
-        assertErrorCopy("No pudimos validar su cuenta")
+        assertErrorCopy("No pudimos validar tu cuenta")
     }
 
     @Test
@@ -180,7 +180,7 @@ class ErrorCopyComposeTest {
                 )
             }
         }
-        assertErrorCopy("No pudimos consultar el estado de su cuenta")
+        assertErrorCopy("No pudimos consultar el estado de tu cuenta")
     }
 
     private fun assertErrorCopy(title: String) {

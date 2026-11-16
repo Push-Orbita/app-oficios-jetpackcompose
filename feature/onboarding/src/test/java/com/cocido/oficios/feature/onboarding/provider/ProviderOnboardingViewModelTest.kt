@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.provider
+﻿package com.cocido.oficios.feature.onboarding.provider
 
 import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
@@ -166,7 +166,7 @@ class ProviderOnboardingViewModelTest {
                         password: String,
                         confirmPassword: String,
                     ) = AppResult.Success(Unit)
-                    override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a su correo")
+                    override suspend fun sendVerificationEmail() = AppResult.Success("Código de verificación reenviado a tu correo")
                     override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
                     override suspend fun getUserRoles() =
                         AppResult.Success(emptyList<com.cocido.oficios.domain.model.UserRoleDefinition>())
@@ -573,7 +573,7 @@ class ProviderOnboardingViewModelTest {
                         confirmPassword: String,
                     ) = AppResult.Success(Unit)
                     override suspend fun sendVerificationEmail() =
-                        AppResult.Success("Código de verificación reenviado a su correo")
+                        AppResult.Success("Código de verificación reenviado a tu correo")
                     override suspend fun verifyEmail(code: String) = AppResult.Success(Unit)
                     override suspend fun getUserRoles() =
                         AppResult.Success(emptyList<com.cocido.oficios.domain.model.UserRoleDefinition>())

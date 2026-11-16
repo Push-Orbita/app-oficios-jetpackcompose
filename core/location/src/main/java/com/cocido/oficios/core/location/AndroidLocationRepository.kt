@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.location
+﻿package com.cocido.oficios.core.location
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -59,14 +59,14 @@ class AndroidLocationRepository @Inject constructor(
                 fusedLocationClient.getCurrentLocation(request, cancellation.token).await()
             }
             if (location == null) {
-                AppResult.Error(AppError.Network("No pudimos obtener su ubicación. Compruebe la señal e intente nuevamente."))
+                AppResult.Error(AppError.Network("No pudimos obtener tu ubicación. Comprobá la señal e intentá de nuevo."))
             } else {
                 AppResult.Success(location.toGeoPoint())
             }
         } catch (_: SecurityException) {
             AppResult.Error(AppError.Forbidden("Necesitamos permiso de ubicación para continuar."))
         } catch (_: Exception) {
-            AppResult.Error(AppError.Network("No pudimos obtener su ubicación. Intente nuevamente."))
+            AppResult.Error(AppError.Network("No pudimos obtener tu ubicación. Intentá de nuevo."))
         }
     }
 
@@ -108,7 +108,7 @@ class AndroidLocationRepository @Inject constructor(
             trySend(AppResult.Error(AppError.Forbidden("Se quitó el permiso de ubicación durante el recorrido.")))
             close()
         } catch (_: Exception) {
-            trySend(AppResult.Error(AppError.Network("No pudimos actualizar su ubicación.")))
+            trySend(AppResult.Error(AppError.Network("No pudimos actualizar tu ubicación.")))
             close()
         }
         awaitClose { fusedLocationClient.removeLocationUpdates(callback) }
@@ -119,7 +119,7 @@ class AndroidLocationRepository @Inject constructor(
         val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
         return when {
             requirePrecise && !hasFine -> AppError.Forbidden(
-                "Permita la ubicación precisa para compartir su recorrido de forma segura.",
+                "Permití la ubicación precisa para compartir su recorrido de forma segura.",
             )
             !hasFine && !hasCoarse -> AppError.Forbidden("Necesitamos permiso de ubicación para continuar.")
             else -> null

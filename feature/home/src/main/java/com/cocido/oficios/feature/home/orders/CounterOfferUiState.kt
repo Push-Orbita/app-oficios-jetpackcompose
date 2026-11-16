@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.home.orders
+﻿package com.cocido.oficios.feature.home.orders
 
 import java.time.LocalDateTime
 
@@ -12,7 +12,7 @@ sealed interface CounterOfferUiState {
     ) : CounterOfferUiState {
         val priceError: String?
             get() = if (price.isNotBlank() && price.toDoubleOrNull() == null) {
-                "Ingrese un monto válido."
+                "Ingresá un monto válido."
             } else {
                 null
             }

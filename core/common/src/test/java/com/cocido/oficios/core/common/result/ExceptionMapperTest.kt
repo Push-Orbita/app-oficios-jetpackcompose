@@ -1,4 +1,4 @@
-package com.cocido.oficios.core.common.result
+﻿package com.cocido.oficios.core.common.result
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,7 +20,7 @@ class ExceptionMapperTest {
 
         assertTrue(error is AppError.Network)
         assertEquals(
-            "No pudimos establecer una conexión segura. Intente nuevamente más tarde.",
+            "No pudimos establecer una conexión segura. Intentá de nuevo más tarde.",
             error.userMessage(),
         )
     }
@@ -120,7 +120,7 @@ class ExceptionMapperTest {
     fun `http 413 never surfaces as error de red`() {
         val error = AppError.Network(message = "HTTP 413 Request Entity Too Large", code = 413)
         assertEquals(
-            "El archivo es demasiado pesado. Pruebe con uno más liviano.",
+            "El archivo es demasiado pesado. Probá con uno más liviano.",
             error.userMessage(),
         )
         assertTrue("Error de red" !in error.userMessage())

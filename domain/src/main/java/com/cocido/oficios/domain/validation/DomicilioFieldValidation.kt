@@ -1,4 +1,4 @@
-package com.cocido.oficios.domain.validation
+﻿package com.cocido.oficios.domain.validation
 
 data class DomicilioFieldErrors(
     val barrioError: String?,
@@ -8,9 +8,9 @@ data class DomicilioFieldErrors(
 )
 
 object DomicilioFieldValidation {
-    const val BARRIO_REQUIRED = "Seleccione un barrio de la lista."
-    const val STREET_REQUIRED = "Ingrese la calle."
-    const val NUMBER_REQUIRED = "Ingrese la altura."
+    const val BARRIO_REQUIRED = "Seleccioná un barrio de la lista."
+    const val STREET_REQUIRED = "Ingresá la calle."
+    const val NUMBER_REQUIRED = "Ingresá la altura."
     const val PERSONA_REQUIRED = "No pudimos identificar a qué cuenta pertenece el domicilio."
 
     /** Piso, departamento y casa/torre son opcionales: no entran en [validate]. */

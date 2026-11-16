@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.settings.provider
+﻿package com.cocido.oficios.feature.settings.provider
 
 import com.cocido.oficios.domain.model.AddressLocationSnapshot
 import com.cocido.oficios.domain.model.CatalogOption
@@ -92,7 +92,7 @@ data class AddServiceUiState(
             if (trimmed.isEmpty()) return null
             val parsed = trimmed.toIntOrNull()
             return if (parsed == null || parsed !in 1..24) {
-                "Ingrese un valor entre 1 y 24, o deje vacío"
+                "Ingresá un valor entre 1 y 24, o deje vacío"
             } else null
         }
 

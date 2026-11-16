@@ -1,4 +1,4 @@
-package com.cocido.oficios.feature.onboarding.client
+﻿package com.cocido.oficios.feature.onboarding.client
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -253,7 +253,7 @@ class ClientContactDomicilioViewModel @Inject constructor(
         val state = _uiState.value
         
         if (!state.canSubmit) {
-            _uiState.update { it.copy(error = "Complete nombre, WhatsApp, barrio y calle") }
+            _uiState.update { it.copy(error = "Completá nombre, WhatsApp, barrio y calle") }
             return
         }
         
