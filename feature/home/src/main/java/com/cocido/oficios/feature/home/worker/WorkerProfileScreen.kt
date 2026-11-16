@@ -194,13 +194,15 @@ private fun WorkerProfileContent(
             hasMoreReviews = uiState.hasMoreReviews,
             onLoadMore = { onEvent(WorkerProfileEvent.LoadNextReviews) },
         )
-        OficiosButton(
-            text = stringResource(R.string.home_worker_report_profile),
-            onClick = onReport,
-            variant = OficiosButtonVariant.Primary,
-            size = OficiosButtonSize.Small,
-            leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
-        )
+        if (!uiState.isSelf) {
+            OficiosButton(
+                text = stringResource(R.string.home_worker_report_profile),
+                onClick = onReport,
+                variant = OficiosButtonVariant.Primary,
+                size = OficiosButtonSize.Small,
+                leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
+            )
+        }
     }
     if (photoViewerIndex >= 0 && photos.isNotEmpty()) {
         WorkerGalleryViewer(

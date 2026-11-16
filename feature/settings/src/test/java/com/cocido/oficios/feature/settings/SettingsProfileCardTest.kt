@@ -45,7 +45,7 @@ class SettingsProfileCardTest {
         }
         composeRule.onNodeWithText("Daniel Prueba").assertIsDisplayed()
         composeRule.onNodeWithText("devmatiasbritez+oficiosqa@gmail.com").assertIsDisplayed()
-        composeRule.onNodeWithText("Correo pendiente de verificación").assertIsDisplayed()
+        composeRule.onNodeWithText("Verificar correo").assertIsDisplayed()
         composeRule.onNodeWithText("Cliente").assertIsDisplayed()
     }
 
