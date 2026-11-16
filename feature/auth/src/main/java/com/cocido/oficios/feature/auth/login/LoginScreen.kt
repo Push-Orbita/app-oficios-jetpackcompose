@@ -10,11 +10,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,9 +23,11 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlertTone
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
+import com.cocido.oficios.core.designsystem.component.inputs.FocusFirstInvalidEffect
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.rememberFirstInvalidFieldNavigator
 import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
@@ -78,7 +77,13 @@ fun LoginScreen(
             }
         },
     ) {
-        val passwordFocus = remember { FocusRequester() }
+        val fieldNavigator = rememberFirstInvalidFieldNavigator()
+        val passwordFocus = fieldNavigator.focusRequester(LoginField.Password)
+        val invalidKeys = buildList {
+            if (uiState.hasAttemptedSubmit && uiState.emailError != null) add(LoginField.Email)
+            if (uiState.hasAttemptedSubmit && uiState.passwordError != null) add(LoginField.Password)
+        }
+        FocusFirstInvalidEffect(uiState.errorFocusNonce, invalidKeys, fieldNavigator)
         when {
             uiState.bannerError != null -> {
                 OficiosInlineAlert(
@@ -129,6 +134,7 @@ fun LoginScreen(
                     imeAction = ImeAction.Next,
                 ),
                 keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
+                focusRequester = fieldNavigator.focusRequester(LoginField.Email),
             )
             OficiosPasswordField(
                 value = uiState.password,
@@ -138,7 +144,7 @@ fun LoginScreen(
                 floatingLabel = false,
                 isError = fieldsInError && (credentialsInvalid || uiState.passwordError != null),
                 supportingText = uiState.passwordError.takeIf { uiState.hasAttemptedSubmit },
-                modifier = Modifier.focusRequester(passwordFocus),
+                focusRequester = passwordFocus,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.Submit) }),
             )
@@ -162,7 +168,7 @@ fun LoginScreen(
             OficiosButton(
                 text = stringResource(R.string.auth_login_button),
                 onClick = { onEvent(LoginEvent.Submit) },
-                enabled = uiState.canSubmit && !uiState.isLoading,
+                enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 variant = OficiosButtonVariant.Primary,
                 size = OficiosButtonSize.Small,
@@ -183,6 +189,8 @@ fun LoginScreen(
         )
     }
 }
+
+private enum class LoginField { Email, Password }
 
 @Preview(showBackground = true, backgroundColor = 0xFF00358B)
 @Composable

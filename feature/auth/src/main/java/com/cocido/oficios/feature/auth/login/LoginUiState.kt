@@ -20,4 +20,6 @@ data class LoginUiState(
     val bannerError: String? = null,
     val canSubmit: Boolean = false,
     val hasAttemptedSubmit: Boolean = false,
+    /** Se incrementa en cada intento fallido para re-disparar foco al primer inválido. */
+    val errorFocusNonce: Int = 0,
 )

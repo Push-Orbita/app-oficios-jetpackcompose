@@ -83,7 +83,7 @@ class RateWorkerViewModel @Inject constructor(
 
     internal companion object {
         const val RATING_VALIDATION_MESSAGE =
-            "No pudimos enviar la calificación. Revise las estrellas e intente nuevamente."
+            "No pudimos enviar la calificación. Revisá las estrellas e intentá de nuevo."
         const val RATING_ALREADY_SENT_MESSAGE = "Este servicio ya fue calificado."
     }
 }

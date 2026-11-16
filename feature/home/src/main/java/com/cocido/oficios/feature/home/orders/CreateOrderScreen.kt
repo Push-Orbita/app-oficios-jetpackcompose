@@ -155,13 +155,7 @@ private fun CreateOrderForm(
             OficiosFormActionsBar(
                 primaryLabel = stringResource(R.string.create_order_continue),
                 onPrimary = { onEvent(CreateOrderEvent.ContinueToSummary) },
-                primaryEnabled = CreateOrderSchedule.canContinue(
-                    selectedSubRubroId = state.selectedSubRubroId,
-                    selectedDomicilioId = state.selectedDomicilioId,
-                    selectedContactoId = state.selectedContactoId,
-                    selectedDate = state.selectedDate,
-                    selectedHour = state.selectedHour,
-                ),
+                primaryEnabled = true,
             )
         },
     ) {

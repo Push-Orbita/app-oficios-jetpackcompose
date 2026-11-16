@@ -81,7 +81,7 @@ fun CounterOfferScreen(
                     text = stringResource(R.string.counter_offer_submit),
                     onClick = { onEvent(CounterOfferEvent.Submit) },
                     loading = uiState.isSubmitting,
-                    enabled = uiState.canSubmit && !uiState.isSubmitting,
+                    enabled = !uiState.isSubmitting,
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Primary,
                     size = OficiosButtonSize.Form,

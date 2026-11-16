@@ -101,6 +101,11 @@ fun OnboardingStepScaffold(
     error: String? = null,
     isLoading: Boolean = false,
     canSubmit: Boolean = true,
+    /**
+     * Si true, el CTA queda habilitado aunque [canSubmit] sea false (para mostrar errores inline).
+     * Dejar false en KYC no editable (doc en revisión).
+     */
+    allowSubmitWhenInvalid: Boolean = true,
     submitText: String? = null,
     submitVariant: OficiosButtonVariant = OficiosButtonVariant.Primary,
     submitSize: OficiosButtonSize = OficiosButtonSize.Form,
@@ -140,7 +145,7 @@ fun OnboardingStepScaffold(
                     OficiosFormActionsBar(
                         primaryLabel = buttonText,
                         onPrimary = onSubmit,
-                        primaryEnabled = canSubmit && !isLoading,
+                        primaryEnabled = !isLoading && (canSubmit || allowSubmitWhenInvalid),
                         primaryLoading = isLoading,
                     )
                 }
@@ -421,9 +426,10 @@ fun ProviderDniStepScreen(
         title = stringResource(R.string.onboarding_step_dni_title),
         error = uiState.error,
         isLoading = uiState.isLoading,
-        // El CTA queda habilitado mientras se pueda editar: si falta algo, al
-        // tocarlo se explica qué. Un botón gris sin motivo deja al usuario trabado.
+        // Mientras sea editable el CTA queda activo (errores al tocar). Si la doc
+        // está en revisión, canSubmit=false y no desbloqueamos el submit.
         canSubmit = uiState.isEditable,
+        allowSubmitWhenInvalid = false,
         submitText = submitText,
         onSubmit = onSubmit,
     ) {
@@ -522,6 +528,7 @@ fun ProviderSelfieStepScreen(
         error = uiState.error,
         isLoading = uiState.isLoading,
         canSubmit = uiState.isEditable,
+        allowSubmitWhenInvalid = false,
         submitText = submitText,
         onSubmit = onSubmit,
     ) {

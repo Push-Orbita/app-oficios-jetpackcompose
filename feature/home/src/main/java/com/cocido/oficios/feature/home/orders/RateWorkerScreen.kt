@@ -116,7 +116,7 @@ fun RateWorkerScreen(
                         text = stringResource(R.string.rate_worker_submit),
                         onClick = { onEvent(RateWorkerEvent.Submit) },
                         loading = state.isSubmitting,
-                        enabled = state.canSubmit && !state.isSubmitting,
+                        enabled = !state.isSubmitting,
                         modifier = Modifier.fillMaxWidth(),
                         variant = OficiosButtonVariant.Primary,
                         size = OficiosButtonSize.Form,

@@ -73,6 +73,7 @@ class LoginViewModel @Inject constructor(
                     passwordError = passwordError,
                     bannerError = null,
                     hasAttemptedSubmit = true,
+                    errorFocusNonce = it.errorFocusNonce + 1,
                 ).validated()
             }
             return
