@@ -8,6 +8,7 @@ import com.cocido.oficios.core.common.result.userMessage
 import com.cocido.oficios.domain.model.NotificationItem
 import com.cocido.oficios.domain.usecase.OrderUseCases
 import com.cocido.oficios.domain.usecase.notifications.GetNotificationsUseCase
+import com.cocido.oficios.domain.usecase.notifications.MarkManyNotificationsReadUseCase
 import com.cocido.oficios.domain.usecase.notifications.MarkNotificationReadUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 class NotificationsViewModel @Inject constructor(
     private val getNotificationsUseCase: GetNotificationsUseCase,
     private val markNotificationReadUseCase: MarkNotificationReadUseCase,
+    private val markManyNotificationsReadUseCase: MarkManyNotificationsReadUseCase,
     private val orderUseCases: OrderUseCases,
 ) : ViewModel() {
 
@@ -32,6 +34,7 @@ class NotificationsViewModel @Inject constructor(
     private val _effects = Channel<NotificationsEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
     private var skipNextResume = true
+    private var markAllJobActive = false
 
     init {
         load(pageNumber = 1, append = false)
@@ -58,7 +61,52 @@ class NotificationsViewModel @Inject constructor(
                 _uiState.update { it.copy(soloNoLeidas = !it.soloNoLeidas, pageNumber = 1) }
                 load(pageNumber = 1, append = false)
             }
+            NotificationsEvent.MarkAllAsRead -> {
+                val unreadIds = _uiState.value.items.filter { !it.isRead }.map { it.id }
+                markIdsAsRead(unreadIds)
+            }
+            is NotificationsEvent.RetryMarkFailed -> markIdsAsRead(event.ids)
             is NotificationsEvent.NotificationClicked -> onNotificationClicked(event.item)
+        }
+    }
+
+    private fun markIdsAsRead(ids: List<Long>) {
+        val uniqueIds = ids.distinct()
+        if (uniqueIds.isEmpty() || markAllJobActive || _uiState.value.isMarkingAllRead) return
+        markAllJobActive = true
+        viewModelScope.launch {
+            val before = _uiState.value.items
+            val idSet = uniqueIds.toSet()
+            _uiState.update { state ->
+                state.copy(
+                    isMarkingAllRead = true,
+                    items = optimisticMark(state.items, idSet, state.soloNoLeidas),
+                )
+            }
+            try {
+                val failedIds = markManyNotificationsReadUseCase(uniqueIds)
+                if (failedIds.isEmpty()) {
+                    _uiState.update { it.copy(isMarkingAllRead = false) }
+                    return@launch
+                }
+                val failedSet = failedIds.toSet()
+                val successIds = idSet - failedSet
+                _uiState.update { state ->
+                    state.copy(
+                        isMarkingAllRead = false,
+                        items = reconcileAfterPartialFailure(
+                            before = before,
+                            soloNoLeidas = state.soloNoLeidas,
+                            successIds = successIds,
+                            failedSet = failedSet,
+                        ),
+                    )
+                }
+                emitEffect(NotificationsEffect.ShowMarkAllError(failedIds))
+            } finally {
+                markAllJobActive = false
+                _uiState.update { it.copy(isMarkingAllRead = false) }
+            }
         }
     }
 
@@ -143,5 +191,32 @@ class NotificationsViewModel @Inject constructor(
 
     private fun emitEffect(effect: NotificationsEffect) {
         viewModelScope.launch { _effects.send(effect) }
+    }
+
+    private companion object {
+        fun optimisticMark(
+            items: List<NotificationItem>,
+            idSet: Set<Long>,
+            soloNoLeidas: Boolean,
+        ): List<NotificationItem> =
+            if (soloNoLeidas) {
+                items.filter { it.id !in idSet }
+            } else {
+                items.map { item -> if (item.id in idSet) item.copy(isRead = true) else item }
+            }
+
+        fun reconcileAfterPartialFailure(
+            before: List<NotificationItem>,
+            soloNoLeidas: Boolean,
+            successIds: Set<Long>,
+            failedSet: Set<Long>,
+        ): List<NotificationItem> =
+            before.mapNotNull { item ->
+                when {
+                    item.id in successIds -> if (soloNoLeidas) null else item.copy(isRead = true)
+                    item.id in failedSet -> item.copy(isRead = false)
+                    else -> item
+                }
+            }
     }
 }

@@ -18,7 +18,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,13 +61,25 @@ fun NotificationsScreen(
     onEvent: (NotificationsEvent) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     OficiosScaffold(
         modifier = modifier,
+        snackbarHostState = snackbarHostState,
         topBar = {
             OficiosBackTopBar(
                 title = stringResource(R.string.notifications_title),
                 onBack = onNavigateBack,
+                actions = {
+                    if (uiState.showMarkAllAction) {
+                        TextButton(
+                            onClick = { onEvent(NotificationsEvent.MarkAllAsRead) },
+                            enabled = uiState.markAllEnabled,
+                        ) {
+                            Text(text = stringResource(R.string.notifications_mark_all))
+                        }
+                    }
+                },
             )
         },
     ) { paddingValues ->
