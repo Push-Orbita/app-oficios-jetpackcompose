@@ -67,7 +67,11 @@ class RegisterViewModel @Inject constructor(
     }
 
     private fun submit() {
-        val state = _uiState.value.copy(hasAttemptedSubmit = true).validated()
+        val current = _uiState.value
+        val state = current.copy(
+            hasAttemptedSubmit = true,
+            errorFocusNonce = current.errorFocusNonce + 1,
+        ).validated()
         if (!state.canSubmit) {
             _uiState.value = state
             return

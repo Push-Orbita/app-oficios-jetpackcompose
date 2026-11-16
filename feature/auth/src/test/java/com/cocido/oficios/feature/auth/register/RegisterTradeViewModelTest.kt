@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -187,7 +188,14 @@ class RegisterTradeViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
         assertEquals(false, viewModel.attemptContinueSection(RegisterTradeFormSection.OFICIO))
-        assertEquals(R.string.auth_wizard_step_oficio_incomplete, viewModel.uiState.value.stepValidationError)
+        val incomplete = viewModel.uiState.value
+        assertEquals(R.string.auth_wizard_step_oficio_incomplete, incomplete.stepValidationError)
+        assertTrue(incomplete.hasAttemptedSubmit)
+        assertEquals(
+            com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED,
+            incomplete.categoryError,
+        )
+        assertEquals(1, incomplete.errorFocusNonce)
     }
 
     @Test
@@ -195,7 +203,9 @@ class RegisterTradeViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
         assertEquals(false, viewModel.attemptContinueSection(RegisterTradeFormSection.COBRO))
-        assertEquals(R.string.auth_wizard_step_cobro_incomplete, viewModel.uiState.value.stepValidationError)
+        val state = viewModel.uiState.value
+        assertEquals(R.string.auth_wizard_step_cobro_incomplete, state.stepValidationError)
+        assertEquals("Elegí al menos un medio de cobro", state.paymentError)
     }
 
     @Test
@@ -204,6 +214,26 @@ class RegisterTradeViewModelTest {
         viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))
         assertEquals(true, viewModel.attemptContinueSection(RegisterTradeFormSection.OFICIO))
         assertEquals(null, viewModel.uiState.value.stepValidationError)
+        assertEquals(null, viewModel.uiState.value.categoryError)
+        assertFalse(viewModel.uiState.value.hasAttemptedSubmit)
+    }
+
+    @Test
+    fun `field errors clear live after submit attempt when user completes them`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertEquals(false, viewModel.attemptContinueSection(RegisterTradeFormSection.OFICIO))
+        assertNotNull(viewModel.uiState.value.categoryError)
+
+        fakeCatalogRepository.categories = listOf(CatalogOption(id = 1, label = "Hogar"))
+        fakeCatalogRepository.rubros = listOf(CatalogOption(id = 10, label = "Plomería"))
+        fakeCatalogRepository.subRubros = listOf(CatalogOption(id = 100, label = "Cañerías"))
+        viewModel.onEvent(RegisterTradeEvent.RetryLoadCatalog)
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.CategoryChanged("Hogar"))
+        advanceUntilIdle()
+        assertEquals(null, viewModel.uiState.value.categoryError)
+        assertNotNull(viewModel.uiState.value.tradeError)
     }
 
     @Test

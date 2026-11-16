@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +37,7 @@ fun OficiosDropdownField(
     enabled: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
+    focusRequester: FocusRequester? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -58,6 +60,7 @@ fun OficiosDropdownField(
             readOnly = true,
             isError = isError,
             supportingText = supportingText,
+            focusRequester = focusRequester,
             trailingContent = {
                 Icon(
                     imageVector = ImageVector.vectorResource(

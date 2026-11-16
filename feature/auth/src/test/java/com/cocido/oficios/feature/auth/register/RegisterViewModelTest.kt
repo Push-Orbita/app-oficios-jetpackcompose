@@ -4,6 +4,7 @@ import com.cocido.oficios.core.common.result.AppError
 import com.cocido.oficios.core.common.result.AppResult
 import com.cocido.oficios.domain.usecase.auth.RegisterClientUseCase
 import com.cocido.oficios.domain.usecase.auth.RegisterProviderUseCase
+import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.feature.auth.FakeAuthRepository
 import kotlinx.coroutines.Dispatchers
@@ -88,13 +89,10 @@ class RegisterViewModelTest {
         assertFalse(before.canSubmit)
         assertFalse(before.hasAttemptedSubmit)
         assertEquals(
-            PasswordPolicy.ERROR_LENGTH,
+            "Te falta entre 6 y 64 caracteres y un símbolo",
             before.passwordError,
         )
-        assertEquals(
-            PasswordPolicy.ERROR_LENGTH,
-            before.visibleFieldError(before.passwordError, before.password),
-        )
+        assertNull(before.visibleFieldError(before.passwordError, before.password))
 
         viewModel.onEvent(RegisterFormEvent.Submit)
         advanceUntilIdle()
@@ -104,30 +102,35 @@ class RegisterViewModelTest {
         assertFalse(after.isLoading)
         assertFalse(after.canSubmit)
         assertEquals(
-            PasswordPolicy.ERROR_LENGTH,
+            "Te falta entre 6 y 64 caracteres y un símbolo",
             after.passwordError,
+        )
+        assertEquals(
+            "Te falta entre 6 y 64 caracteres y un símbolo",
+            after.visibleFieldError(after.passwordError, after.password),
         )
         assertNull(repository.lastProviderRequest)
         assertNull(repository.lastClientRequest)
     }
 
     @Test
-    fun `visibleFieldError hides empty field errors until submit attempt`() {
+    fun `visibleFieldError hides all field errors until submit attempt`() {
         val state = RegisterFormUiState(
-            firstNameError = "Los nombres son obligatorios",
+            firstNameError = AuthValidators.FIELD_REQUIRED,
             password = "xd123",
-            passwordError = PasswordPolicy.ERROR_LENGTH,
+            passwordError = "Te falta entre 6 y 64 caracteres y un símbolo",
         )
         assertNull(state.visibleFieldError(state.firstNameError, state.firstName))
-        assertEquals(
-            PasswordPolicy.ERROR_LENGTH,
-            state.visibleFieldError(state.passwordError, state.password),
-        )
+        assertNull(state.visibleFieldError(state.passwordError, state.password))
 
         val attempted = state.copy(hasAttemptedSubmit = true)
         assertEquals(
-            "Los nombres son obligatorios",
+            AuthValidators.FIELD_REQUIRED,
             attempted.visibleFieldError(attempted.firstNameError, attempted.firstName),
+        )
+        assertEquals(
+            "Te falta entre 6 y 64 caracteres y un símbolo",
+            attempted.visibleFieldError(attempted.passwordError, attempted.password),
         )
     }
 
@@ -153,8 +156,8 @@ class RegisterViewModelTest {
         assertNotNull(state.firstNameError)
         assertNotNull(state.lastNameError)
         assertNotNull(state.documentError)
-        assertEquals("Los nombres son obligatorios", state.firstNameError)
-        assertEquals("El apellido es obligatorio", state.lastNameError)
+        assertEquals(AuthValidators.FIELD_REQUIRED, state.firstNameError)
+        assertEquals(AuthValidators.FIELD_REQUIRED, state.lastNameError)
         assertEquals("Ingresá un DNI válido", state.documentError)
         assertFalse(state.isLoading)
     }

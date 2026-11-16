@@ -38,10 +38,15 @@ data class RegisterFormUiState(
     val isLoading: Boolean = false,
     val canSubmit: Boolean = false,
     val hasAttemptedSubmit: Boolean = false,
+    /** Se incrementa en cada intento fallido para re-disparar foco al primer inválido. */
+    val errorFocusNonce: Int = 0,
 ) {
-    /** Error visible tras el primer envío, o en vivo si el campo no está vacío. */
-    fun visibleFieldError(error: String?, value: String): String? =
-        error.takeIf { hasAttemptedSubmit || value.isNotEmpty() }
+    /**
+     * Error visible solo tras el primer intento de envío; después se actualiza en vivo.
+     * Antes del primer intento no se muestran errores de campo (sí el checklist de contraseña).
+     */
+    fun visibleFieldError(error: String?, value: String = ""): String? =
+        error.takeIf { hasAttemptedSubmit }
 
     companion object {
         /** Señal interna: no mostrar este texto; usar stringResource en la pantalla. */

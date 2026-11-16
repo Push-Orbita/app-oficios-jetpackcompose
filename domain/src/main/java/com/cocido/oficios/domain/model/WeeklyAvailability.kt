@@ -75,9 +75,9 @@ object TimeRangeValidation {
     }
 
     fun validateRange(range: TimeRange): String? {
-        val start = parseMinutes(range.start) ?: return "Use el formato HH:mm (por ejemplo 08:00)."
-        val end = parseMinutes(range.end) ?: return "Use el formato HH:mm (por ejemplo 12:00)."
-        if (start >= end) return "La hora de fin debe ser posterior al inicio."
+        val start = parseMinutes(range.start) ?: return "Usá el formato HH:mm (por ejemplo 08:00)"
+        val end = parseMinutes(range.end) ?: return "Usá el formato HH:mm (por ejemplo 12:00)"
+        if (start >= end) return "La hora de fin tiene que ser posterior al inicio"
         return null
     }
 
@@ -86,7 +86,9 @@ object TimeRangeValidation {
         ranges.forEach { range -> validateRange(range)?.let { return it } }
         val sorted = ranges.map { parseMinutes(it.start)!! to parseMinutes(it.end)!! }.sortedBy { it.first }
         sorted.zipWithNext().forEach { (previous, next) ->
-            if (previous.second > next.first) return "Las franjas de un mismo día no pueden superponerse."
+            if (previous.second > next.first) {
+                return "Las franjas de un mismo día no pueden superponerse"
+            }
         }
         return null
     }

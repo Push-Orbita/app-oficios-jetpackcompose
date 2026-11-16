@@ -46,6 +46,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -257,6 +258,33 @@ class RegistrationWizardViewModelTest {
             com.cocido.oficios.feature.auth.register.RegisterFormUiState.TERMS_REQUIRED_MARKER,
             env.viewModel.uiState.value.personal.termsError,
         )
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `profile next shows field errors and does not navigate`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.viewModel.continueFromProfile()
+        advanceUntilIdle()
+        val state = env.viewModel.uiState.value
+        assertTrue(state.hasAttemptedProfileSubmit)
+        assertEquals(com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED, state.contactNameError)
+        assertEquals(com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED, state.phoneError)
+        assertEquals(com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED, state.barrioError)
+        assertEquals(com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED, state.calleError)
+        assertEquals(1, state.errorFocusNonce)
+        assertFalse(env.effects.contains(RegistrationWizardEffect.GoToReview))
+        env.collectJob?.cancel()
+    }
+
+    @Test
+    fun `profile field errors clear live after attempt`() = runTest(dispatcher) {
+        val env = createEnv()
+        env.viewModel.continueFromProfile()
+        advanceUntilIdle()
+        env.viewModel.onContactNameChanged("Ana")
+        assertEquals(null, env.viewModel.uiState.value.contactNameError)
+        assertNotNull(env.viewModel.uiState.value.phoneError)
         env.collectJob?.cancel()
     }
 

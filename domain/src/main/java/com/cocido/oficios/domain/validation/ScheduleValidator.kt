@@ -5,9 +5,9 @@ import com.cocido.oficios.domain.model.TimeRangeValidation
 import com.cocido.oficios.domain.model.WeeklyAvailability
 
 object ScheduleValidator {
-    const val EMPTY_WEEK = "Seleccione al menos un día laboral"
-    const val FROM_AFTER_TO = "La hora de fin debe ser posterior al inicio."
-    const val OVERLAP = "Las franjas de un mismo día no pueden superponerse."
+    const val EMPTY_WEEK = "Elegí al menos un día laboral"
+    const val FROM_AFTER_TO = "La hora de fin tiene que ser posterior al inicio"
+    const val OVERLAP = "Las franjas de un mismo día no pueden superponerse"
 
     fun validate(week: WeeklyAvailability): String? {
         if (week.activeDays.isEmpty()) return EMPTY_WEEK

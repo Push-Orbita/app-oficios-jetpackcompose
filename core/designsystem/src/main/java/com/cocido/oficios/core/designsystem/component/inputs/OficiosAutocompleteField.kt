@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
@@ -64,6 +65,7 @@ fun <T> OficiosAutocompleteField(
     enabled: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
+    focusRequester: FocusRequester? = null,
     isLoading: Boolean = false,
     noResultsText: String? = null,
     errorText: String? = null,
@@ -137,6 +139,7 @@ fun <T> OficiosAutocompleteField(
             enabled = enabled,
             isError = isError,
             supportingText = supportingText,
+            focusRequester = focusRequester,
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,

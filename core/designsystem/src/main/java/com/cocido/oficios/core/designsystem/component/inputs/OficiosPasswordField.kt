@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
@@ -44,6 +45,7 @@ fun OficiosPasswordField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     floatingLabel: Boolean = true,
+    focusRequester: FocusRequester? = null,
     hiddenVisibilityIconRes: Int = OficiosIcons.Eye,
     visibleVisibilityIconRes: Int = OficiosIcons.EyeClosed,
 ) {
@@ -62,6 +64,7 @@ fun OficiosPasswordField(
         keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Password),
         keyboardActions = keyboardActions,
         floatingLabel = floatingLabel,
+        focusRequester = focusRequester,
         trailingContent = {
             Box(
                 modifier = Modifier.size(OficiosComponentSize.iconMd),

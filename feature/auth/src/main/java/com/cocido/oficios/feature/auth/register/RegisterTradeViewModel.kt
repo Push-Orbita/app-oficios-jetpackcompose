@@ -17,6 +17,7 @@ import com.cocido.oficios.domain.model.insertRange
 import com.cocido.oficios.domain.model.removeRange
 import com.cocido.oficios.domain.model.toFlatTimeSlots
 import com.cocido.oficios.domain.model.withToggledDay
+import com.cocido.oficios.domain.validation.AuthValidators
 import com.cocido.oficios.domain.validation.ScheduleValidator
 import com.cocido.oficios.domain.repository.RegisterTradeDraftRepository
 import com.cocido.oficios.domain.usecase.catalog.GetCategoriesUseCase
@@ -198,24 +199,35 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     /**
-     * Valida el paso del wizard. Si falta algo, deja un mensaje visible y no avanza.
+     * Valida el paso del wizard. Si falta algo, deja errores por campo visibles y no avanza.
      * @return true si el paso está completo.
      */
     fun attemptContinueSection(section: RegisterTradeFormSection): Boolean {
-        val state = _uiState.value
+        val current = _uiState.value
+        val attempted = current.copy(
+            hasAttemptedSubmit = true,
+            lastAttemptedSection = section,
+            errorFocusNonce = current.errorFocusNonce + 1,
+        ).withSectionFieldErrors(section)
         val can = when (section) {
-            RegisterTradeFormSection.OFICIO, RegisterTradeFormSection.FULL -> state.canContinueOficio
-            RegisterTradeFormSection.ZONA -> state.canContinueZona
-            RegisterTradeFormSection.AGENDA -> state.canContinueAgenda
-            RegisterTradeFormSection.COBRO -> state.canContinueCobro
-            RegisterTradeFormSection.IDENTIDAD -> state.canContinueIdentidad
+            RegisterTradeFormSection.OFICIO, RegisterTradeFormSection.FULL -> attempted.canContinueOficio
+            RegisterTradeFormSection.ZONA -> attempted.canContinueZona
+            RegisterTradeFormSection.AGENDA -> attempted.canContinueAgenda
+            RegisterTradeFormSection.COBRO -> attempted.canContinueCobro
+            RegisterTradeFormSection.IDENTIDAD -> attempted.canContinueIdentidad
         }
         if (can) {
-            _uiState.update { it.copy(stepValidationError = null) }
+            _uiState.update {
+                it.copy(
+                    stepValidationError = null,
+                    hasAttemptedSubmit = false,
+                    lastAttemptedSection = null,
+                ).clearSectionFieldErrors()
+            }
             return true
         }
         _uiState.update {
-            it.copy(stepValidationError = stepIncompleteMessage(section))
+            attempted.copy(stepValidationError = stepIncompleteMessage(section))
         }
         return false
     }
@@ -449,7 +461,15 @@ class RegisterTradeViewModel @Inject constructor(
     }
 
     private fun update(block: (RegisterTradeUiState) -> RegisterTradeUiState) {
-        _uiState.update { block(it).validated().copy(stepValidationError = null) }
+        _uiState.update { state ->
+            val next = block(state).validated()
+            val section = next.lastAttemptedSection
+            if (next.hasAttemptedSubmit && section != null) {
+                next.withSectionFieldErrors(section).copy(stepValidationError = null)
+            } else {
+                next.copy(stepValidationError = null)
+            }
+        }
     }
 
     private fun RegisterTradeUiState.validated(): RegisterTradeUiState {
@@ -467,6 +487,102 @@ class RegisterTradeViewModel @Inject constructor(
             turnFieldsValid
         return copy(canContinue = canContinue)
     }
+
+    private fun RegisterTradeUiState.withSectionFieldErrors(
+        section: RegisterTradeFormSection,
+    ): RegisterTradeUiState {
+        if (!hasAttemptedSubmit) return clearSectionFieldErrors()
+        val required = AuthValidators.FIELD_REQUIRED
+        return when (section) {
+            RegisterTradeFormSection.OFICIO -> copy(
+                categoryError = if (selectedCategoryId == null) required else null,
+                tradeError = if (selectedTradeId == null) required else null,
+                specializationError = if (selectedSpecializations.isEmpty()) {
+                    "Elegí al menos una especialidad"
+                } else {
+                    null
+                },
+                experienceError = if (selectedExperienceRange.isBlank()) required else null,
+            )
+            RegisterTradeFormSection.FULL -> copy(
+                categoryError = if (selectedCategoryId == null) required else null,
+                tradeError = if (selectedTradeId == null) required else null,
+                specializationError = if (selectedSpecializations.isEmpty()) {
+                    "Elegí al menos una especialidad"
+                } else {
+                    null
+                },
+                experienceError = if (selectedExperienceRange.isBlank()) required else null,
+                neighborhoodError = if (selectedBarrioId == null || neighborhoodQuery.isBlank()) {
+                    required
+                } else {
+                    null
+                },
+                serviceLocationError = if (!servesAtClientHome && !servesAtLocal) {
+                    "Elegí al menos un lugar de atención"
+                } else {
+                    null
+                },
+                scheduleError = ScheduleValidator.validate(weeklySchedule),
+                turnDurationError = turnDurationFieldError(),
+                paymentError = if (selectedPaymentMethods.isEmpty()) {
+                    "Elegí al menos un medio de cobro"
+                } else {
+                    null
+                },
+                localCalleError = if (servesAtLocal && localCalle.isBlank()) required else null,
+            )
+            RegisterTradeFormSection.ZONA -> copy(
+                neighborhoodError = if (selectedBarrioId == null || neighborhoodQuery.isBlank()) {
+                    required
+                } else {
+                    null
+                },
+                serviceLocationError = if (!servesAtClientHome && !servesAtLocal) {
+                    "Elegí al menos un lugar de atención"
+                } else {
+                    null
+                },
+            )
+            RegisterTradeFormSection.AGENDA -> copy(
+                scheduleError = ScheduleValidator.validate(weeklySchedule),
+                turnDurationError = turnDurationFieldError(),
+            )
+            RegisterTradeFormSection.COBRO -> copy(
+                paymentError = if (selectedPaymentMethods.isEmpty()) {
+                    "Elegí al menos un medio de cobro"
+                } else {
+                    null
+                },
+            )
+            RegisterTradeFormSection.IDENTIDAD -> copy(
+                localCalleError = if (servesAtLocal && localCalle.isBlank()) required else null,
+            )
+        }
+    }
+
+    private fun RegisterTradeUiState.turnDurationFieldError(): String? {
+        if (!requiresTurns) return null
+        val minutes = turnDurationMinutes.toIntOrNull()
+        return when {
+            turnDurationMinutes.isBlank() -> AuthValidators.FIELD_REQUIRED
+            minutes == null || minutes !in 15..480 -> "Usá entre 15 y 480 minutos"
+            else -> null
+        }
+    }
+
+    private fun RegisterTradeUiState.clearSectionFieldErrors(): RegisterTradeUiState = copy(
+        categoryError = null,
+        tradeError = null,
+        specializationError = null,
+        experienceError = null,
+        neighborhoodError = null,
+        serviceLocationError = null,
+        scheduleError = null,
+        turnDurationError = null,
+        paymentError = null,
+        localCalleError = null,
+    )
 
 }
 

@@ -95,7 +95,10 @@ class ClientDataViewModelTest {
         viewModel.onEvent(ClientDataEvent.ContactNameChanged("Daniel"))
         viewModel.onEvent(ClientDataEvent.SaveContact)
 
-        assertEquals("Ingresá tu celular de WhatsApp.", viewModel.uiState.value.contactPhoneError)
+        assertEquals(
+            com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED,
+            viewModel.uiState.value.contactPhoneError,
+        )
         assertNull(viewModel.uiState.value.contactEmailError)
         assertNull(viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.canSaveContact)

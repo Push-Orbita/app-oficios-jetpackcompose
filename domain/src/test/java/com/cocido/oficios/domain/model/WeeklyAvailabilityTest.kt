@@ -18,15 +18,15 @@ class WeeklyAvailabilityTest {
     @Test
     fun rejectsInvalidFormatAndOvernight() {
         assertEquals(
-            "Use el formato HH:mm (por ejemplo 08:00).",
+            "Usá el formato HH:mm (por ejemplo 08:00)",
             TimeRangeValidation.validateRange(TimeRange("8", "12:00")),
         )
         assertEquals(
-            "La hora de fin debe ser posterior al inicio.",
+            "La hora de fin tiene que ser posterior al inicio",
             TimeRangeValidation.validateRange(TimeRange("18:00", "09:00")),
         )
         assertEquals(
-            "La hora de fin debe ser posterior al inicio.",
+            "La hora de fin tiene que ser posterior al inicio",
             TimeRangeValidation.validateRange(TimeRange("09:00", "09:00")),
         )
     }
@@ -36,7 +36,7 @@ class WeeklyAvailabilityTest {
         val error = TimeRangeValidation.validateRanges(
             listOf(TimeRange("08:00", "12:00"), TimeRange("11:00", "14:00")),
         )
-        assertEquals("Las franjas de un mismo día no pueden superponerse.", error)
+        assertEquals("Las franjas de un mismo día no pueden superponerse", error)
         assertNull(
             TimeRangeValidation.validateRanges(
                 listOf(TimeRange("08:00", "12:00"), TimeRange("12:00", "14:00")),

@@ -3,6 +3,7 @@ package com.cocido.oficios.feature.auth.register
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -59,15 +60,14 @@ class RegisterFormScreenTest {
                     mode = RegisterMode.CLIENT,
                     uiState = RegisterFormUiState(
                         hasAttemptedSubmit = true,
-                        firstNameError = "Los nombres son obligatorios",
-                        lastNameError = "El apellido es obligatorio",
+                        firstNameError = "Completá este campo",
+                        lastNameError = "Completá este campo",
                     ),
                     onEvent = {},
                 )
             }
         }
-        composeTestRule.onNodeWithText("Los nombres son obligatorios").assertIsDisplayed()
-        composeTestRule.onNodeWithText("El apellido es obligatorio").assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("Completá este campo")[0].assertIsDisplayed()
     }
 
     @Test

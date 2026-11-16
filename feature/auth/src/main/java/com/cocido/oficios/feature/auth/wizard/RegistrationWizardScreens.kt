@@ -16,9 +16,12 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
+import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
+import com.cocido.oficios.core.designsystem.component.inputs.FocusFirstInvalidEffect
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPhoneField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.rememberFirstInvalidFieldNavigator
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.CatalogOption
@@ -111,57 +114,87 @@ fun RegistrationWizardProfileScreen(
             style = OficiosAuthGlyphSubtitleStyle,
         )
         state.profileError?.let { OficiosInlineAlert(it, modifier = Modifier.fillMaxWidth()) }
-        OficiosTextField(
-            value = state.contactName,
-            onValueChange = onContactNameChanged,
-            label = stringResource(R.string.auth_wizard_contact_name),
-            modifier = Modifier.fillMaxWidth(),
+        val fieldNavigator = rememberFirstInvalidFieldNavigator()
+        val contactNameError = state.contactNameError.takeIf { state.hasAttemptedProfileSubmit }
+        val phoneError = state.phoneError.takeIf { state.hasAttemptedProfileSubmit }
+        val barrioError = state.barrioError.takeIf { state.hasAttemptedProfileSubmit }
+        val calleError = state.calleError.takeIf { state.hasAttemptedProfileSubmit }
+        val invalidKeys = buildList {
+            if (contactNameError != null) add(ProfileField.ContactName)
+            if (phoneError != null) add(ProfileField.Phone)
+            if (barrioError != null) add(ProfileField.Barrio)
+            if (calleError != null) add(ProfileField.Calle)
+        }
+        FocusFirstInvalidEffect(
+            attemptId = state.errorFocusNonce,
+            invalidKeys = invalidKeys,
+            navigator = fieldNavigator,
         )
-        OficiosPhoneField(
-            value = state.phone,
-            onValueChange = onPhoneChanged,
-            selectedCountry = state.selectedCountry,
-            label = stringResource(R.string.auth_wizard_whatsapp),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosAutocompleteField(
-            value = state.barrioQuery,
-            onValueChange = onBarrioQueryChanged,
-            suggestions = state.barrioOptions,
-            onSuggestionSelected = onBarrioSelected,
-            suggestionLabel = { it.label },
-            label = stringResource(R.string.auth_wizard_barrio),
-            isLoading = state.isSearchingBarrios,
-            errorText = state.barrioSearchError,
-            onRetry = onBarrioRetry,
-            onFocused = onBarrioFocused,
-            onSuggestionsDismissed = onBarrioDismissed,
-        )
-        OficiosTextField(
-            value = state.calle,
-            onValueChange = onCalleChanged,
-            label = stringResource(R.string.auth_wizard_street),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosTextField(
-            value = state.numero,
-            onValueChange = onNumeroChanged,
-            label = stringResource(R.string.auth_wizard_number),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosTextField(
-            value = state.piso,
-            onValueChange = onPisoChanged,
-            label = stringResource(R.string.auth_wizard_floor),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OficiosTextField(
-            value = state.departamento,
-            onValueChange = onDepartamentoChanged,
-            label = stringResource(R.string.auth_wizard_apartment),
-            modifier = Modifier.fillMaxWidth(),
-        )
+        FieldAndCtaBlock(spacing = OficiosSpacing.md) {
+            OficiosTextField(
+                value = state.contactName,
+                onValueChange = onContactNameChanged,
+                label = stringResource(R.string.auth_wizard_contact_name),
+                isError = contactNameError != null,
+                supportingText = contactNameError,
+                focusRequester = fieldNavigator.focusRequester(ProfileField.ContactName),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OficiosPhoneField(
+                value = state.phone,
+                onValueChange = onPhoneChanged,
+                selectedCountry = state.selectedCountry,
+                label = stringResource(R.string.auth_wizard_whatsapp),
+                isError = phoneError != null,
+                supportingText = phoneError,
+                focusRequester = fieldNavigator.focusRequester(ProfileField.Phone),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OficiosAutocompleteField(
+                value = state.barrioQuery,
+                onValueChange = onBarrioQueryChanged,
+                suggestions = state.barrioOptions,
+                onSuggestionSelected = onBarrioSelected,
+                suggestionLabel = { it.label },
+                label = stringResource(R.string.auth_wizard_barrio),
+                isLoading = state.isSearchingBarrios,
+                isError = barrioError != null,
+                supportingText = barrioError,
+                focusRequester = fieldNavigator.focusRequester(ProfileField.Barrio),
+                errorText = state.barrioSearchError,
+                onRetry = onBarrioRetry,
+                onFocused = onBarrioFocused,
+                onSuggestionsDismissed = onBarrioDismissed,
+            )
+            OficiosTextField(
+                value = state.calle,
+                onValueChange = onCalleChanged,
+                label = stringResource(R.string.auth_wizard_street),
+                isError = calleError != null,
+                supportingText = calleError,
+                focusRequester = fieldNavigator.focusRequester(ProfileField.Calle),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OficiosTextField(
+                value = state.numero,
+                onValueChange = onNumeroChanged,
+                label = stringResource(R.string.auth_wizard_number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OficiosTextField(
+                value = state.piso,
+                onValueChange = onPisoChanged,
+                label = stringResource(R.string.auth_wizard_floor),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OficiosTextField(
+                value = state.departamento,
+                onValueChange = onDepartamentoChanged,
+                label = stringResource(R.string.auth_wizard_apartment),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
@@ -372,4 +405,11 @@ internal fun hasPersonalDraftForLeaveConfirmation(
         personal.document.isNotBlank() ||
         personal.password.isNotBlank() ||
         personal.acceptedTerms
+}
+
+private enum class ProfileField {
+    ContactName,
+    Phone,
+    Barrio,
+    Calle,
 }
