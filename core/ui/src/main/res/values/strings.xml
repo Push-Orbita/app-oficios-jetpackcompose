@@ -36,4 +36,23 @@
     <string name="weekly_schedule_undo">Deshacer</string>
     <string name="weekly_schedule_copy_monday">Copiar lunes a días hábiles</string>
     <string name="weekly_schedule_hint">Podés cargar varias franjas por día (por ejemplo 08:00–12:00 y 16:00–20:00). El domingo solo se envía si lo incluís.</string>
+
+    <string name="permission_continue">Continuar</string>
+    <string name="permission_not_now">Ahora no</string>
+    <string name="permission_open_settings">Abrir ajustes</string>
+
+    <string name="permission_camera_rationale_title">Acceso a la cámara</string>
+    <string name="permission_camera_rationale_message">Necesitamos la cámara para sacar la foto. Galería sigue disponible sin este permiso.</string>
+    <string name="permission_camera_denied_title">Cámara desactivada</string>
+    <string name="permission_camera_denied_message">Sin cámara no podemos sacar la foto. Podés habilitarla en Ajustes o elegir una imagen de la galería.</string>
+
+    <string name="permission_location_rationale_title">Acceso a la ubicación</string>
+    <string name="permission_location_rationale_message">Usamos tu ubicación para marcar el punto en el mapa. También podés mover el pin a mano.</string>
+    <string name="permission_location_denied_title">Ubicación desactivada</string>
+    <string name="permission_location_denied_message">Sin ubicación no podemos completar esta acción. Podés habilitarla en Ajustes o marcar el punto a mano.</string>
+
+    <string name="permission_tracking_rationale_title">Ubicación en el recorrido</string>
+    <string name="permission_tracking_rationale_message">Para compartir tu recorrido necesitamos ubicación precisa mientras vas al servicio.</string>
+    <string name="permission_tracking_denied_title">Ubicación desactivada</string>
+    <string name="permission_tracking_denied_message">Sin ubicación precisa no podemos compartir el recorrido. Habilitala en Ajustes del teléfono.</string>
 </resources>

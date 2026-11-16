@@ -107,7 +107,7 @@ class OrderDetailViewModel @Inject constructor(
             is OrderDetailEvent.LocationPermissionGranted -> performLocationAction(event.action)
             is OrderDetailEvent.LocationPermissionDenied -> emitEffect(
                 OrderDetailEffect.ShowMessage(
-                    "Para compartir el recorrido necesitamos ubicación precisa. Puede habilitarla desde los ajustes del teléfono.",
+                    "Para compartir el recorrido necesitamos ubicación precisa. Habilitala en Ajustes del teléfono.",
                 ),
             )
             OrderDetailEvent.Finalize -> Unit

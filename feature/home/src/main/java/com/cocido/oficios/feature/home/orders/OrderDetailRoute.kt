@@ -4,8 +4,6 @@ import com.cocido.oficios.core.ui.lifecycle.RefreshOnDataChange
 import com.cocido.oficios.core.common.sync.DataTopic
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,9 +30,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.core.content.ContextCompat
+import com.cocido.oficios.core.ui.permission.PermissionGrantPredicate
+import com.cocido.oficios.core.ui.permission.RuntimePermissionLabels
+import com.cocido.oficios.core.ui.permission.rememberRuntimePermissionRequest
 import com.cocido.oficios.domain.model.BookingStatus
 import com.cocido.oficios.domain.model.UserRole
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.core.ui.R as UiR
 import kotlinx.coroutines.delay
 
 @Composable
@@ -54,18 +56,43 @@ fun OrderDetailRoute(
     val context = LocalContext.current
     var pendingLocationAction by remember { mutableStateOf<TrackingLocationAction?>(null) }
     var showCompletionSuccess by remember { mutableStateOf(false) }
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) { grants ->
-        val action = pendingLocationAction ?: return@rememberLauncherForActivityResult
-        val hasFine = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        viewModel.onEvent(
-            if (hasFine) OrderDetailEvent.LocationPermissionGranted(action)
-            else OrderDetailEvent.LocationPermissionDenied(action),
-        )
-        pendingLocationAction = null
-    }
+
+    val trackingPermission = rememberRuntimePermissionRequest(
+        permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        ),
+        labels = RuntimePermissionLabels(
+            rationaleTitle = stringResource(UiR.string.permission_tracking_rationale_title),
+            rationaleMessage = stringResource(UiR.string.permission_tracking_rationale_message),
+            rationaleConfirm = stringResource(UiR.string.permission_continue),
+            deniedTitle = stringResource(UiR.string.permission_tracking_denied_title),
+            deniedMessage = stringResource(UiR.string.permission_tracking_denied_message),
+            openSettings = stringResource(UiR.string.permission_open_settings),
+            dismiss = stringResource(UiR.string.permission_not_now),
+        ),
+        onGranted = {
+            val action = pendingLocationAction
+            pendingLocationAction = null
+            if (action != null) {
+                viewModel.onEvent(OrderDetailEvent.LocationPermissionGranted(action))
+            }
+        },
+        onDenied = {
+            val action = pendingLocationAction
+            pendingLocationAction = null
+            if (action != null) {
+                viewModel.onEvent(OrderDetailEvent.LocationPermissionDenied(action))
+            }
+        },
+        isSatisfied = PermissionGrantPredicate { grants ->
+            grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                ) == PackageManager.PERMISSION_GRANTED
+        },
+    )
 
     // Reagendar/Puntuar navegan a otra pantalla y vuelven con popBackStack — el ViewModel de
     // esta ruta no se recrea, así que hay que refrescar manualmente al resumir.
@@ -95,17 +122,8 @@ fun OrderDetailRoute(
                 is OrderDetailEffect.NavigateToRate -> onNavigateToRate(effect.bookingId, effect.workerId, effect.workerName)
                 is OrderDetailEffect.NavigateToWorker -> onNavigateToWorker(effect.workerId)
                 is OrderDetailEffect.RequestPreciseLocation -> {
-                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        viewModel.onEvent(OrderDetailEvent.LocationPermissionGranted(effect.action))
-                    } else {
-                        pendingLocationAction = effect.action
-                        locationPermissionLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                            ),
-                        )
-                    }
+                    pendingLocationAction = effect.action
+                    trackingPermission.launch()
                 }
                 is OrderDetailEffect.StartForegroundTracking -> onStartTracking(effect.bookingId)
                 OrderDetailEffect.StopForegroundTracking -> onStopTracking()

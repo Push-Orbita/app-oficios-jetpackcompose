@@ -1,7 +1,6 @@
 package com.cocido.oficios.core.ui.picker
 
 import android.Manifest
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,18 +19,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.res.stringResource
+import com.cocido.oficios.core.common.contract.ImageUploadContract
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
-import com.cocido.oficios.core.common.contract.ImageUploadContract
+import com.cocido.oficios.core.ui.R
 import com.cocido.oficios.core.ui.crop.ImageCropMode
 import com.cocido.oficios.core.ui.crop.ImageCropRequest
 import com.cocido.oficios.core.ui.crop.prepareCropSource
 import com.cocido.oficios.core.ui.crop.rememberImageCropper
 import com.cocido.oficios.core.ui.file.createCameraImageCapture
 import com.cocido.oficios.core.ui.file.prepareImageForUpload
+import com.cocido.oficios.core.ui.permission.RuntimePermissionLabels
+import com.cocido.oficios.core.ui.permission.rememberRuntimePermissionRequest
+import androidx.compose.ui.platform.LocalContext
 
 class ImageSourcePickerState internal constructor(
     val requestImage: () -> Unit,
@@ -42,6 +44,8 @@ class ImageSourcePickerState internal constructor(
  *
  * [skipCrop] = true entrega el JPEG completo (comprimido, sin recorte) — selfie /
  * foto de rostro de identidad. Foto de perfil, DNI, galería y certificado siguen recortando.
+ *
+ * Cámara: rationale → request → si niega, diálogo con Abrir ajustes (nunca silencioso).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,21 +122,22 @@ fun rememberImageSourcePicker(
         cameraLauncher.launch(uri)
     }
 
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        if (granted) {
-            launchCamera()
-        }
-    }
-
-    fun requestCameraCapture() {
-        when {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
-                PackageManager.PERMISSION_GRANTED -> launchCamera()
-            else -> cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
+    val cameraPermission = rememberRuntimePermissionRequest(
+        permissions = arrayOf(Manifest.permission.CAMERA),
+        labels = RuntimePermissionLabels(
+            rationaleTitle = stringResource(R.string.permission_camera_rationale_title),
+            rationaleMessage = stringResource(R.string.permission_camera_rationale_message),
+            rationaleConfirm = stringResource(R.string.permission_continue),
+            deniedTitle = stringResource(R.string.permission_camera_denied_title),
+            deniedMessage = stringResource(R.string.permission_camera_denied_message),
+            openSettings = stringResource(R.string.permission_open_settings),
+            dismiss = stringResource(R.string.permission_not_now),
+        ),
+        onGranted = { launchCamera() },
+        onDenied = {
+            onPickError(context.getString(R.string.permission_camera_denied_message))
+        },
+    )
 
     if (showSheet) {
         ModalBottomSheet(
@@ -157,7 +162,7 @@ fun rememberImageSourcePicker(
                     text = cameraLabel,
                     onClick = {
                         showSheet = false
-                        requestCameraCapture()
+                        cameraPermission.launch()
                     },
                     modifier = Modifier.fillMaxWidth(),
                     variant = OficiosButtonVariant.Outlined,
