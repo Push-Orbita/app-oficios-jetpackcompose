@@ -34,6 +34,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -339,11 +341,13 @@ private fun CertificateDropZone(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(OficiosRadius.lg)
+    val dropZoneLabel = stringResource(R.string.portfolio_drop_zone)
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .dashedBorder(MaterialTheme.colorScheme.outline, OficiosRadius.lg)
+            .semantics(mergeDescendants = true) { contentDescription = dropZoneLabel }
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = OficiosSpacing.md, vertical = OficiosSpacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -356,7 +360,7 @@ private fun CertificateDropZone(
             modifier = Modifier.size(OficiosComponentSize.iconLg),
         )
         Text(
-            text = stringResource(R.string.portfolio_drop_zone),
+            text = dropZoneLabel,
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
