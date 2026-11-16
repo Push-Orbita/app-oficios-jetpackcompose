@@ -234,14 +234,20 @@ class SearchResultsViewModel @Inject constructor(
             val previous = _uiState.value
             try {
             if (!append) {
-                if (refreshing) {
+                // Mantener lista previa + indicador inline (PTR o tipéo con debounce).
+                // Solo skeleton full-screen si no hay contenido previo que conservar.
+                val keepPrevious = previous is SearchResultsUiState.Success ||
+                    previous is SearchResultsUiState.Empty ||
+                    previous is SearchResultsUiState.Idle ||
+                    (previous is SearchResultsUiState.Error && refreshing)
+                if (keepPrevious) {
                     _uiState.update {
                         when (previous) {
                             is SearchResultsUiState.Success -> previous.copy(isRefreshing = true)
                             is SearchResultsUiState.Empty -> previous.copy(isRefreshing = true)
                             is SearchResultsUiState.Error -> previous.copy(isRefreshing = true)
-                                            SearchResultsUiState.Loading -> SearchResultsUiState.Loading
                             is SearchResultsUiState.Idle -> previous.copy(isRefreshing = true)
+                            SearchResultsUiState.Loading -> SearchResultsUiState.Loading
                         }
                     }
                 } else {
@@ -312,7 +318,7 @@ class SearchResultsViewModel @Inject constructor(
                                 else -> previous
                             }
                         }
-                        if (refreshing) emitEffect(SearchResultsEffect.ShowMessage(message))
+                        emitEffect(SearchResultsEffect.ShowMessage(message))
                     } else {
                         _uiState.update { SearchResultsUiState.Error(message) }
                         if (refreshing) emitEffect(SearchResultsEffect.ShowMessage(message))
