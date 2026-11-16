@@ -56,6 +56,7 @@ class ChangePasswordViewModel @Inject constructor(
 
     private fun submit() {
         val state = _uiState.value
+        if (state.isSubmitting) return
         val passwordError = AuthValidators.validatePassword(state.password)
         val confirmationError = AuthValidators.validatePasswordConfirmation(state.password, state.confirmation)
         if (passwordError != null || confirmationError != null) {
@@ -67,7 +68,7 @@ class ChangePasswordViewModel @Inject constructor(
             when (val result = accountUseCases.changePassword(state.email, state.password, state.confirmation)) {
                 is AppResult.Success -> {
                     _uiState.update { it.copy(isSubmitting = false, password = "", confirmation = "") }
-                    emit(ChangePasswordEffect.Saved("Su contraseña se actualizó correctamente."))
+                    emit(ChangePasswordEffect.Saved("Tu contraseña se actualizó correctamente."))
                 }
                 is AppResult.Error -> _uiState.update {
                     it.copy(isSubmitting = false, errorMessage = result.error.userMessage())

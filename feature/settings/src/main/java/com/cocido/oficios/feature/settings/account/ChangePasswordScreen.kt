@@ -81,7 +81,7 @@ private fun ChangePasswordForm(
             OficiosFormActionsBar(
                 primaryLabel = stringResource(R.string.change_password_submit),
                 onPrimary = { onEvent(ChangePasswordEvent.Submit) },
-                primaryEnabled = state.canSubmit && !state.isSubmitting,
+                primaryEnabled = !state.isSubmitting,
                 primaryLoading = state.isSubmitting,
             )
         },
