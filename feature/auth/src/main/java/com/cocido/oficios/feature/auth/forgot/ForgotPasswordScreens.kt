@@ -1,6 +1,5 @@
 package com.cocido.oficios.feature.auth.forgot
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,9 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +24,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordFiel
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementItem
 import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementsChecklist
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
@@ -102,16 +99,19 @@ fun ForgotPasswordScreen(
                 figmaAuthStroke = true,
             )
         }
-        Text(
-            text = stringResource(R.string.auth_back_to_login),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .semantics { role = Role.Button }
-                .clickable(onClick = onBackToLogin),
-        )
+        OficiosTouchTarget(
+            onClick = onBackToLogin,
+            modifier = Modifier.fillMaxWidth(),
+            accessibilityText = stringResource(R.string.auth_back_to_login),
+        ) {
+            Text(
+                text = stringResource(R.string.auth_back_to_login),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
