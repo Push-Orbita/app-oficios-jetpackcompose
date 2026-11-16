@@ -122,6 +122,14 @@ fun OficiosSearchField(
                     horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    if (value.isNotEmpty() && interactive) {
+                        SearchFieldIcon(
+                            icon = OficiosIcons.X,
+                            description = stringResource(com.cocido.oficios.core.designsystem.R.string.ds_search_clear),
+                            onClick = { onValueChange("") },
+                            tint = iconTint,
+                        )
+                    }
                     if (onMicClick != null) {
                         SearchFieldIcon(
                             icon = OficiosIcons.Mic,

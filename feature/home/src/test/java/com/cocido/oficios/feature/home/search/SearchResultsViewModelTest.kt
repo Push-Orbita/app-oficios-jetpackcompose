@@ -33,6 +33,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import com.cocido.oficios.feature.home.FakeRecentSearchRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -86,6 +87,56 @@ class SearchResultsViewModelTest {
         advanceUntilIdle()
         assertEquals(1, searches)
         assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
+    }
+
+    @Test
+    fun `typing after success keeps list instead of full-screen loading`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
+
+        viewModel.onEvent(SearchResultsEvent.QueryChanged("gasista"))
+        advanceTimeBy(300)
+        advanceUntilIdle()
+        // Tipéo con lista previa no debe pasar por skeleton full-screen Loading.
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
+        assertEquals(false, viewModel.uiState.value is SearchResultsUiState.Loading)
+    }
+
+    @Test
+    fun `typed search error keeps previous success and shows message`() = runTest(testDispatcher) {
+        var nextResult: AppResult<PagedWorkers> = AppResult.Success(
+            PagedWorkers(
+                items = listOf(
+                    WorkerSummary(
+                        id = 1L,
+                        displayName = "Test Worker",
+                        specialtyLabel = "Plomería",
+                        rating = 4.5f,
+                        avatarUrl = null,
+                        isVerified = true,
+                        primaryRubroId = 3L,
+                    ),
+                ),
+                pageNumber = 1,
+                totalPages = 1,
+                hasMore = false,
+            ),
+        )
+        val viewModel = createViewModel(searchResultProvider = { nextResult })
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
+
+        val effects = mutableListOf<SearchResultsEffect>()
+        val job = launch { viewModel.effects.collect { effects.add(it) } }
+        nextResult = AppResult.Error(AppError.Network("Sin conexión"))
+        viewModel.onEvent(SearchResultsEvent.QueryChanged("gasista"))
+        advanceTimeBy(300)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value is SearchResultsUiState.Success)
+        assertTrue(effects.any { it is SearchResultsEffect.ShowMessage })
+        job.cancel()
     }
 
     @Test
@@ -220,6 +271,7 @@ class SearchResultsViewModelTest {
                 hasMore = false,
             ),
         ),
+        searchResultProvider: (() -> AppResult<PagedWorkers>)? = null,
         recents: FakeRecentSearchRepository = FakeRecentSearchRepository(),
         savedState: SavedStateHandle = SavedStateHandle(
             mapOf(
@@ -236,7 +288,7 @@ class SearchResultsViewModelTest {
                 pageSize: Int,
             ): AppResult<PagedWorkers> {
                 onSearch()
-                return searchResult
+                return searchResultProvider?.invoke() ?: searchResult
             }
         }
         val catalogRepository = object : CatalogRepository {

@@ -3,6 +3,7 @@
     <string name="ds_search_voice">Buscar por voz</string>
     <string name="ds_search_voice_unavailable">La búsqueda por voz no está disponible en este dispositivo</string>
     <string name="ds_search_action">Buscar</string>
+    <string name="ds_search_clear">Borrar búsqueda</string>
     <string name="ds_search_filters">Filtros</string>
     <string name="ds_verified">Usuario verificado</string>
     <string name="ds_worker_verified">Perfil verificado</string>
