@@ -135,6 +135,7 @@ class CommercialLocalViewModelTest {
         advanceUntilIdle()
         viewModel.onEvent(CommercialLocalEvent.BarrioQueryChanged(""))
         viewModel.onEvent(CommercialLocalEvent.BarrioFocused)
+        advanceTimeBy(300)
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertFalse(state.isSearchingBarrios)
@@ -146,6 +147,7 @@ class CommercialLocalViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
         viewModel.onEvent(CommercialLocalEvent.BarrioFocused)
+        advanceTimeBy(300)
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertEquals(7L, state.selectedBarrioId)
