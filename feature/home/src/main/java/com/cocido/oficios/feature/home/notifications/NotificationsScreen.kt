@@ -108,6 +108,7 @@ fun NotificationsScreen(
                             onItemClick = { onEvent(NotificationsEvent.NotificationClicked(it)) },
                             onLoadMore = { onEvent(NotificationsEvent.LoadMore) },
                             hasMore = state.hasMore,
+                            isLoadingMore = state.isLoadingMore,
                         )
                     }
                 }
@@ -152,6 +153,7 @@ private fun NotificationsList(
     onItemClick: (NotificationItem) -> Unit,
     onLoadMore: () -> Unit,
     hasMore: Boolean,
+    isLoadingMore: Boolean,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -168,6 +170,8 @@ private fun NotificationsList(
                     text = stringResource(R.string.notifications_load_more),
                     onClick = onLoadMore,
                     variant = OficiosButtonVariant.Ghost,
+                    loading = isLoadingMore,
+                    enabled = !isLoadingMore,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

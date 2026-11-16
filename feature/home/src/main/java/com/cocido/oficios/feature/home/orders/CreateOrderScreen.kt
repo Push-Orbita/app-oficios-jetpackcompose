@@ -380,7 +380,7 @@ private fun WorkerMiniCard(state: CreateOrderUiState.Success) {
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     if (state.workerVerified) {
-                        OficiosVerifiedBadge(contentDescription = null)
+                        OficiosVerifiedBadge()
                     }
                 }
                 WorkerFiveStarRow(
