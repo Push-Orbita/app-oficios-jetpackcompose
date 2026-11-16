@@ -88,6 +88,19 @@ data class RegisterTradeUiState(
     val catalogError: String? = null,
     /** Error de validación del paso actual (Siguiente sin datos); distinto de [catalogError]. */
     @StringRes val stepValidationError: Int? = null,
+    val hasAttemptedSubmit: Boolean = false,
+    val lastAttemptedSection: RegisterTradeFormSection? = null,
+    val errorFocusNonce: Int = 0,
+    val categoryError: String? = null,
+    val tradeError: String? = null,
+    val specializationError: String? = null,
+    val experienceError: String? = null,
+    val neighborhoodError: String? = null,
+    val serviceLocationError: String? = null,
+    val scheduleError: String? = null,
+    val turnDurationError: String? = null,
+    val paymentError: String? = null,
+    val localCalleError: String? = null,
     val canContinue: Boolean = false,
 ) {
     val categories: List<String> get() = categoryOptions.map { it.label }

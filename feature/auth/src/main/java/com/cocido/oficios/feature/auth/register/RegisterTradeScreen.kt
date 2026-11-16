@@ -11,6 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButton
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
@@ -20,10 +24,13 @@ import com.cocido.oficios.core.designsystem.component.categories.OficiosCategori
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
+import com.cocido.oficios.core.designsystem.component.inputs.FocusFirstInvalidEffect
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosAutocompleteField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosDropdownField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.inputs.anchorFirstInvalid
+import com.cocido.oficios.core.designsystem.component.inputs.rememberFirstInvalidFieldNavigator
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleDayUi
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleEditor
 import com.cocido.oficios.core.ui.schedule.WeeklyScheduleRangeUi
@@ -75,11 +82,26 @@ fun RegisterTradeScreen(
         val showCobro = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.COBRO)
         val showIdentidad = afterCategory && (section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.IDENTIDAD)
 
-        uiState.stepValidationError?.let { resId ->
-            OficiosInlineAlert(
-                message = stringResource(resId),
-                modifier = Modifier.fillMaxWidth(),
-            )
+        // Banner agregado solo si no hay errores por campo (p.ej. categoría sin elegir en grilla).
+        val hasFieldErrors = listOf(
+            uiState.categoryError,
+            uiState.tradeError,
+            uiState.specializationError,
+            uiState.experienceError,
+            uiState.neighborhoodError,
+            uiState.serviceLocationError,
+            uiState.scheduleError,
+            uiState.turnDurationError,
+            uiState.paymentError,
+            uiState.localCalleError,
+        ).any { it != null }
+        if (!hasFieldErrors) {
+            uiState.stepValidationError?.let { resId ->
+                OficiosInlineAlert(
+                    message = stringResource(resId),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         uiState.catalogError?.let { message ->
@@ -92,21 +114,48 @@ fun RegisterTradeScreen(
             )
         }
 
-        if (showOficio && uiState.selectedCategoryId == null && uiState.categoryOptions.isNotEmpty()) {
-            Text(
-                text = stringResource(R.string.auth_register_trade_category_label),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            OficiosCategoriesGrid(
-                categories = uiState.categoryOptions.map {
-                    CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
-                },
-                onCategoryClick = { item ->
-                    uiState.categoryOptions.find { it.id == item.id }?.let { option ->
-                        onEvent(RegisterTradeEvent.CategoryGridSelected(option))
-                    }
-                },
-            )
+        val fieldNavigator = rememberFirstInvalidFieldNavigator()
+        val invalidKeys = buildList {
+            if (uiState.categoryError != null) add(TradeField.Category)
+            if (uiState.tradeError != null) add(TradeField.Trade)
+            if (uiState.specializationError != null) add(TradeField.Specialization)
+            if (uiState.experienceError != null) add(TradeField.Experience)
+            if (uiState.neighborhoodError != null) add(TradeField.Neighborhood)
+            if (uiState.serviceLocationError != null) add(TradeField.ServiceLocation)
+            if (uiState.scheduleError != null) add(TradeField.Schedule)
+            if (uiState.turnDurationError != null) add(TradeField.TurnDuration)
+            if (uiState.paymentError != null) add(TradeField.Payment)
+            if (uiState.localCalleError != null) add(TradeField.LocalCalle)
+        }
+        FocusFirstInvalidEffect(
+            attemptId = uiState.errorFocusNonce,
+            invalidKeys = invalidKeys,
+            navigator = fieldNavigator,
+        )
+
+        if (showOficio && uiState.selectedCategoryId == null) {
+            Column(
+                modifier = Modifier.anchorFirstInvalid(fieldNavigator, TradeField.Category),
+                verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+            ) {
+                if (uiState.categoryOptions.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.auth_register_trade_category_label),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    OficiosCategoriesGrid(
+                        categories = uiState.categoryOptions.map {
+                            CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+                        },
+                        onCategoryClick = { item ->
+                            uiState.categoryOptions.find { it.id == item.id }?.let { option ->
+                                onEvent(RegisterTradeEvent.CategoryGridSelected(option))
+                            }
+                        },
+                    )
+                }
+                uiState.categoryError?.let { FieldInlineError(it) }
+            }
         } else if (showOficio) {
             FieldAndCtaBlock {
                 Text(
@@ -115,16 +164,22 @@ fun RegisterTradeScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 if (uiState.selectedTrade.isBlank()) {
-                    OficiosCategoriesGrid(
-                        categories = uiState.tradeOptions.map {
-                            CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
-                        },
-                        onCategoryClick = { item ->
-                            uiState.tradeOptions.find { it.id == item.id }?.let { option ->
-                                onEvent(RegisterTradeEvent.TradeChanged(option.label))
-                            }
-                        },
-                    )
+                    Column(
+                        modifier = Modifier.anchorFirstInvalid(fieldNavigator, TradeField.Trade),
+                        verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
+                    ) {
+                        OficiosCategoriesGrid(
+                            categories = uiState.tradeOptions.map {
+                                CategoryGridItem(id = it.id, label = it.label, iconUrl = it.iconUrl)
+                            },
+                            onCategoryClick = { item ->
+                                uiState.tradeOptions.find { it.id == item.id }?.let { option ->
+                                    onEvent(RegisterTradeEvent.TradeChanged(option.label))
+                                }
+                            },
+                        )
+                        uiState.tradeError?.let { FieldInlineError(it) }
+                    }
                 } else {
                     OficiosDropdownField(
                         value = uiState.selectedTrade,
@@ -133,6 +188,9 @@ fun RegisterTradeScreen(
                         label = stringResource(R.string.auth_register_trade_trade_label),
                         placeholder = stringResource(R.string.auth_register_trade_trade_hint),
                         enabled = uiState.isTradeEnabled && !uiState.isLoadingTrades,
+                        isError = uiState.tradeError != null,
+                        supportingText = uiState.tradeError,
+                        focusRequester = fieldNavigator.focusRequester(TradeField.Trade),
                     )
                 }
 
@@ -141,6 +199,11 @@ fun RegisterTradeScreen(
                     isLoading = uiState.isLoadingSpecializations,
                     selected = uiState.selectedSpecializations,
                     descriptionValue = uiState.otherSpecialization,
+                    errorText = uiState.specializationError,
+                    sectionModifier = Modifier.anchorFirstInvalid(
+                        fieldNavigator,
+                        TradeField.Specialization,
+                    ),
                     onToggle = { id, checked -> onEvent(RegisterTradeEvent.SpecializationToggled(id, checked)) },
                     onDescriptionChanged = { onEvent(RegisterTradeEvent.OtherSpecializationChanged(it)) },
                 )
@@ -155,6 +218,9 @@ fun RegisterTradeScreen(
                             onOptionSelected = { onEvent(RegisterTradeEvent.ExperienceRangeChanged(it)) },
                             label = stringResource(R.string.auth_register_trade_experience_field_label),
                             placeholder = stringResource(R.string.auth_register_trade_experience_hint),
+                            isError = uiState.experienceError != null,
+                            supportingText = uiState.experienceError,
+                            focusRequester = fieldNavigator.focusRequester(TradeField.Experience),
                         )
                     }
                 }
@@ -174,6 +240,9 @@ fun RegisterTradeScreen(
                     label = stringResource(R.string.auth_register_trade_neighborhood_field_label),
                     placeholder = stringResource(R.string.auth_register_trade_neighborhood_hint),
                     isLoading = uiState.isSearchingBarrios,
+                    isError = uiState.neighborhoodError != null,
+                    supportingText = uiState.neighborhoodError,
+                    focusRequester = fieldNavigator.focusRequester(TradeField.Neighborhood),
                     errorText = uiState.barrioSearchError,
                     onRetry = { onEvent(RegisterTradeEvent.RetryNeighborhoodSearch) },
                     onFocused = { onEvent(RegisterTradeEvent.NeighborhoodFocused) },
@@ -182,6 +251,7 @@ fun RegisterTradeScreen(
             }
             RegisterTradeLabeledSection(
                 title = stringResource(R.string.auth_register_trade_service_location_label),
+                modifier = Modifier.anchorFirstInvalid(fieldNavigator, TradeField.ServiceLocation),
             ) {
                 OficiosCheckbox(
                     checked = uiState.servesAtClientHome,
@@ -195,12 +265,14 @@ fun RegisterTradeScreen(
                     label = stringResource(R.string.auth_register_trade_serves_at_local),
                     compactRow = true,
                 )
+                uiState.serviceLocationError?.let { FieldInlineError(it) }
             }
         }
 
         if (showAgenda) {
             RegisterTradeLabeledSection(
                 title = stringResource(R.string.auth_register_trade_work_days_label),
+                modifier = Modifier.anchorFirstInvalid(fieldNavigator, TradeField.Schedule),
             ) {
                 WeeklyScheduleEditor(
                     days = uiState.weeklySchedule.toEditorDays(
@@ -222,6 +294,7 @@ fun RegisterTradeScreen(
                     },
                     onCopyMondayToWeekdays = { onEvent(RegisterTradeEvent.CopyMondayToWeekdays) },
                 )
+                uiState.scheduleError?.let { FieldInlineError(it) }
             }
             RegisterTradeLabeledSection(
                 title = stringResource(R.string.auth_register_trade_turns_label),
@@ -237,12 +310,16 @@ fun RegisterTradeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(OficiosSpacing.md),
                     ) {
+                        val turnError = uiState.turnDurationError
                         OficiosTextField(
                             value = uiState.turnDurationMinutes,
                             onValueChange = { onEvent(RegisterTradeEvent.TurnDurationChanged(it)) },
                             label = stringResource(R.string.auth_register_trade_turn_duration),
                             placeholder = "60",
-                            supportingText = stringResource(R.string.auth_register_trade_turn_duration_hint),
+                            isError = turnError != null,
+                            supportingText = turnError
+                                ?: stringResource(R.string.auth_register_trade_turn_duration_hint),
+                            focusRequester = fieldNavigator.focusRequester(TradeField.TurnDuration),
                             modifier = Modifier.weight(1f),
                         )
                         OficiosTextField(
@@ -261,6 +338,7 @@ fun RegisterTradeScreen(
         if (showCobro) {
             RegisterTradeLabeledSection(
                 title = stringResource(R.string.auth_register_trade_payment_label),
+                modifier = Modifier.anchorFirstInvalid(fieldNavigator, TradeField.Payment),
             ) {
                 Text(
                     text = stringResource(R.string.auth_register_trade_payment_hint),
@@ -290,6 +368,7 @@ fun RegisterTradeScreen(
                     label = stringResource(R.string.auth_register_trade_payment_mercadopago),
                     compactRow = true,
                 )
+                uiState.paymentError?.let { FieldInlineError(it) }
             }
         }
 
@@ -301,6 +380,9 @@ fun RegisterTradeScreen(
                     value = uiState.localCalle,
                     onValueChange = { onEvent(RegisterTradeEvent.LocalCalleChanged(it)) },
                     label = stringResource(R.string.auth_wizard_street),
+                    isError = uiState.localCalleError != null,
+                    supportingText = uiState.localCalleError,
+                    focusRequester = fieldNavigator.focusRequester(TradeField.LocalCalle),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OficiosTextField(
@@ -377,11 +459,13 @@ private fun RegisterTradeSpecializationsSection(
     isLoading: Boolean,
     selected: Set<String>,
     descriptionValue: String,
+    errorText: String? = null,
+    sectionModifier: Modifier = Modifier,
     onToggle: (String, Boolean) -> Unit,
     onDescriptionChanged: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = sectionModifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(OficiosSpacing.none)) {
@@ -407,6 +491,7 @@ private fun RegisterTradeSpecializationsSection(
                     compactRow = true,
                 )
             }
+            errorText?.let { FieldInlineError(it) }
         }
 
         // Campo libre y siempre visible: el catálogo de especializaciones es fijo,
@@ -421,6 +506,32 @@ private fun RegisterTradeSpecializationsSection(
             singleLine = false,
         )
     }
+}
+
+@Composable
+private fun FieldInlineError(message: String) {
+    Text(
+        text = message,
+        color = MaterialTheme.colorScheme.error,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.semantics {
+            liveRegion = LiveRegionMode.Polite
+            error(message)
+        },
+    )
+}
+
+private enum class TradeField {
+    Category,
+    Trade,
+    Specialization,
+    Experience,
+    Neighborhood,
+    ServiceLocation,
+    Schedule,
+    TurnDuration,
+    Payment,
+    LocalCalle,
 }
 
 private fun WeeklyAvailability.toEditorDays(labels: Map<String, String>): List<WeeklyScheduleDayUi> {

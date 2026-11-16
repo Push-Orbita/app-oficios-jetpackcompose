@@ -12,12 +12,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -29,11 +30,14 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonSize
 import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVariant
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
+import com.cocido.oficios.core.designsystem.component.inputs.FocusFirstInvalidEffect
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTermsCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
 import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementItem
 import com.cocido.oficios.core.designsystem.component.inputs.PasswordRequirementsChecklist
+import com.cocido.oficios.core.designsystem.component.inputs.anchorFirstInvalid
+import com.cocido.oficios.core.designsystem.component.inputs.rememberFirstInvalidFieldNavigator
 import com.cocido.oficios.domain.validation.PasswordPolicy
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphBodyStyle
@@ -136,6 +140,9 @@ fun RegisterFormScreen(
         RegisterMode.CLIENT -> stringResource(R.string.auth_register_client_screen_title)
         RegisterMode.PROVIDER -> stringResource(R.string.auth_register_provider_screen_title)
     }
+    val fieldNavigator = rememberFirstInvalidFieldNavigator()
+    val termsErrorVisible = uiState.hasAttemptedSubmit && uiState.termsError != null
+    val termsErrorText = stringResource(R.string.auth_terms_required)
 
     AuthRegisterLayout(
         modifier = modifier,
@@ -154,7 +161,8 @@ fun RegisterFormScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = OficiosSpacing.xl)
-                    .padding(top = OficiosSpacing.sm, bottom = OficiosSpacing.md),
+                    .padding(top = OficiosSpacing.sm, bottom = OficiosSpacing.md)
+                    .anchorFirstInvalid(fieldNavigator, RegisterPersonalField.Terms),
                 verticalArrangement = Arrangement.spacedBy(OficiosSpacing.sm),
             ) {
                 Row(
@@ -184,11 +192,15 @@ fun RegisterFormScreen(
                         figmaAuthStroke = true,
                     )
                 }
-                if (uiState.hasAttemptedSubmit && uiState.termsError != null) {
+                if (termsErrorVisible) {
                     Text(
-                        text = stringResource(R.string.auth_terms_required),
+                        text = termsErrorText,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Polite
+                            error(termsErrorText)
+                        },
                     )
                 }
             }
@@ -209,11 +221,6 @@ fun RegisterFormScreen(
         )
         Spacer(Modifier.height(OficiosComponentSize.authRegisterSubtitleToField))
 
-        val lastNameFocus = remember { FocusRequester() }
-        val documentFocus = remember { FocusRequester() }
-        val emailFocus = remember { FocusRequester() }
-        val passwordFocus = remember { FocusRequester() }
-        val confirmFocus = remember { FocusRequester() }
         val firstNameError = uiState.visibleFieldError(uiState.firstNameError, uiState.firstName)
         val lastNameError = uiState.visibleFieldError(uiState.lastNameError, uiState.lastName)
         val documentError = uiState.visibleFieldError(uiState.documentError, uiState.document)
@@ -222,6 +229,20 @@ fun RegisterFormScreen(
         val confirmPasswordError = uiState.visibleFieldError(
             uiState.confirmPasswordError,
             uiState.confirmPassword,
+        )
+        val invalidKeys = buildList {
+            if (firstNameError != null) add(RegisterPersonalField.FirstName)
+            if (lastNameError != null) add(RegisterPersonalField.LastName)
+            if (documentError != null) add(RegisterPersonalField.Document)
+            if (emailError != null) add(RegisterPersonalField.Email)
+            if (passwordError != null) add(RegisterPersonalField.Password)
+            if (confirmPasswordError != null) add(RegisterPersonalField.ConfirmPassword)
+            if (termsErrorVisible) add(RegisterPersonalField.Terms)
+        }
+        FocusFirstInvalidEffect(
+            attemptId = uiState.errorFocusNonce,
+            invalidKeys = invalidKeys,
+            navigator = fieldNavigator,
         )
         FieldAndCtaBlock(spacing = OficiosSpacing.md) {
             if (uiState.generalError != null) {
@@ -236,8 +257,11 @@ fun RegisterFormScreen(
                 floatingLabel = false,
                 isError = firstNameError != null,
                 supportingText = firstNameError,
+                focusRequester = fieldNavigator.focusRequester(RegisterPersonalField.FirstName),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { lastNameFocus.requestFocus() }),
+                keyboardActions = KeyboardActions(
+                    onNext = { fieldNavigator.focusRequester(RegisterPersonalField.LastName).requestFocus() },
+                ),
             )
             OficiosTextField(
                 value = uiState.lastName,
@@ -247,9 +271,11 @@ fun RegisterFormScreen(
                 floatingLabel = false,
                 isError = lastNameError != null,
                 supportingText = lastNameError,
-                modifier = Modifier.focusRequester(lastNameFocus),
+                focusRequester = fieldNavigator.focusRequester(RegisterPersonalField.LastName),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { documentFocus.requestFocus() }),
+                keyboardActions = KeyboardActions(
+                    onNext = { fieldNavigator.focusRequester(RegisterPersonalField.Document).requestFocus() },
+                ),
             )
             OficiosTextField(
                 value = uiState.document,
@@ -259,12 +285,14 @@ fun RegisterFormScreen(
                 floatingLabel = false,
                 isError = documentError != null,
                 supportingText = documentError,
-                modifier = Modifier.focusRequester(documentFocus),
+                focusRequester = fieldNavigator.focusRequester(RegisterPersonalField.Document),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next,
                 ),
-                keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() }),
+                keyboardActions = KeyboardActions(
+                    onNext = { fieldNavigator.focusRequester(RegisterPersonalField.Email).requestFocus() },
+                ),
             )
             OficiosTextField(
                 value = uiState.email,
@@ -274,12 +302,14 @@ fun RegisterFormScreen(
                 floatingLabel = false,
                 isError = emailError != null,
                 supportingText = emailError,
-                modifier = Modifier.focusRequester(emailFocus),
+                focusRequester = fieldNavigator.focusRequester(RegisterPersonalField.Email),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next,
                 ),
-                keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
+                keyboardActions = KeyboardActions(
+                    onNext = { fieldNavigator.focusRequester(RegisterPersonalField.Password).requestFocus() },
+                ),
             )
         }
         Spacer(Modifier.height(OficiosComponentSize.authRegisterEmailToHint))
@@ -297,13 +327,20 @@ fun RegisterFormScreen(
                 placeholder = stringResource(R.string.auth_password_label),
                 floatingLabel = false,
                 isError = passwordError != null,
-                supportingText = passwordError.takeIf { it == PasswordPolicy.ERROR_BLANK || it == PasswordPolicy.ERROR_EDGES },
-                modifier = Modifier.focusRequester(passwordFocus),
+                supportingText = passwordError?.takeIf {
+                    it == PasswordPolicy.ERROR_BLANK ||
+                        it == PasswordPolicy.ERROR_EDGES ||
+                        it.startsWith("Te falta")
+                },
+                focusRequester = fieldNavigator.focusRequester(RegisterPersonalField.Password),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { confirmFocus.requestFocus() }),
+                keyboardActions = KeyboardActions(
+                    onNext = { fieldNavigator.focusRequester(RegisterPersonalField.ConfirmPassword).requestFocus() },
+                ),
             )
             PasswordRequirementsChecklist(
                 requirements = passwordRequirementItems(uiState.password),
+                highlightUnmetAsError = uiState.hasAttemptedSubmit,
             )
             OficiosPasswordField(
                 value = uiState.confirmPassword,
@@ -313,7 +350,7 @@ fun RegisterFormScreen(
                 floatingLabel = false,
                 isError = confirmPasswordError != null,
                 supportingText = confirmPasswordError,
-                modifier = Modifier.focusRequester(confirmFocus),
+                focusRequester = fieldNavigator.focusRequester(RegisterPersonalField.ConfirmPassword),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onEvent(RegisterFormEvent.Submit) }),
             )
@@ -354,3 +391,13 @@ internal fun passwordRequirementItems(password: String): List<PasswordRequiremen
     PasswordPolicy.evaluate(password).requirements.map {
         PasswordRequirementItem(label = it.label, satisfied = it.satisfied)
     }
+
+private enum class RegisterPersonalField {
+    FirstName,
+    LastName,
+    Document,
+    Email,
+    Password,
+    ConfirmPassword,
+    Terms,
+}

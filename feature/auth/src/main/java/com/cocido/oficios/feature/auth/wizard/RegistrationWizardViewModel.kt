@@ -56,6 +56,12 @@ data class RegistrationWizardUiState(
     val providerLocalNumero: String = "",
     val providerDraft: RegisterTradeDraft? = null,
     val profileError: String? = null,
+    val hasAttemptedProfileSubmit: Boolean = false,
+    val errorFocusNonce: Int = 0,
+    val contactNameError: String? = null,
+    val phoneError: String? = null,
+    val barrioError: String? = null,
+    val calleError: String? = null,
     val commitError: String? = null,
     val isCommitting: Boolean = false,
     val commitPhase: RegistrationCommitPhase = RegistrationCommitPhase.NOT_STARTED,
@@ -176,10 +182,10 @@ class RegistrationWizardViewModel @Inject constructor(
         }
     }
 
-    fun onContactNameChanged(value: String) = updateProfile { it.copy(contactName = value, profileError = null) }
-    fun onPhoneChanged(value: String) = updateProfile { it.copy(phone = value, profileError = null) }
-    fun onCalleChanged(value: String) = updateProfile { it.copy(calle = value, profileError = null) }
-    fun onNumeroChanged(value: String) = updateProfile { it.copy(numero = value, profileError = null) }
+    fun onContactNameChanged(value: String) = updateProfile { it.copy(contactName = value).validatedProfile() }
+    fun onPhoneChanged(value: String) = updateProfile { it.copy(phone = value).validatedProfile() }
+    fun onCalleChanged(value: String) = updateProfile { it.copy(calle = value).validatedProfile() }
+    fun onNumeroChanged(value: String) = updateProfile { it.copy(numero = value) }
     fun onPisoChanged(value: String) = updateProfile { it.copy(piso = value) }
     fun onDepartamentoChanged(value: String) = updateProfile { it.copy(departamento = value) }
 
@@ -195,8 +201,7 @@ class RegistrationWizardViewModel @Inject constructor(
                 barrioOptions = emptyList(),
                 isSearchingBarrios = false,
                 barrioSearchError = null,
-                profileError = null,
-            )
+            ).validatedProfile()
         }
     }
     fun retryBarrioSearch() {
@@ -208,11 +213,13 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     fun continueFromProfile() {
-        val state = _uiState.value
-        if (!state.canContinueProfile) {
-            _uiState.update { it.copy(profileError = PROFILE_INCOMPLETE_ERROR) }
-            return
-        }
+        val attempted = _uiState.value.copy(
+            hasAttemptedProfileSubmit = true,
+            errorFocusNonce = _uiState.value.errorFocusNonce + 1,
+            profileError = null,
+        ).validatedProfile()
+        _uiState.update { attempted }
+        if (!attempted.canContinueProfile) return
         persistDraft()
         emit(RegistrationWizardEffect.GoToReview)
     }
@@ -306,7 +313,11 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     private fun continueFromPersonal() {
-        val personal = _uiState.value.personal.copy(hasAttemptedSubmit = true).validatedPersonal()
+        val current = _uiState.value.personal
+        val personal = current.copy(
+            hasAttemptedSubmit = true,
+            errorFocusNonce = current.errorFocusNonce + 1,
+        ).validatedPersonal()
         _uiState.update { it.copy(personal = personal) }
         if (!personal.canSubmit) return
         persistDraft()
@@ -439,7 +450,7 @@ class RegistrationWizardViewModel @Inject constructor(
                 barrioQuery = query,
                 selectedBarrioId = if (preserveSelection) it.selectedBarrioId else null,
                 barrioSearchError = null,
-            )
+            ).validatedProfile()
         }
         // DebouncedBarrioSearcher.distinctUntilChanged drops duplicate submits
         // (e.g. repeated onFocused from autocomplete expand). Loading flag is
@@ -455,12 +466,39 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     private fun updateProfile(block: (RegistrationWizardUiState) -> RegistrationWizardUiState) {
-        _uiState.update(block)
+        _uiState.update { block(it) }
         persistDraft()
     }
 
     private fun emit(effect: RegistrationWizardEffect) {
         viewModelScope.launch { _effects.send(effect) }
+    }
+
+    private fun RegistrationWizardUiState.validatedProfile(): RegistrationWizardUiState {
+        if (!hasAttemptedProfileSubmit) {
+            return copy(
+                contactNameError = null,
+                phoneError = null,
+                barrioError = null,
+                calleError = null,
+                profileError = null,
+            )
+        }
+        val contactNameError = AuthValidators.validateContactName(contactName)
+        val phoneError = AuthValidators.validateArgentineMobile(phone)
+        val barrioError = if (selectedBarrioId == null || barrioQuery.isBlank()) {
+            AuthValidators.FIELD_REQUIRED
+        } else {
+            null
+        }
+        val calleError = AuthValidators.validateRequiredText(calle)
+        return copy(
+            contactNameError = contactNameError,
+            phoneError = phoneError,
+            barrioError = barrioError,
+            calleError = calleError,
+            profileError = null,
+        )
     }
 
     private fun RegisterFormUiState.validatedPersonal(): RegisterFormUiState {
@@ -488,6 +526,7 @@ class RegistrationWizardViewModel @Inject constructor(
     }
 
     companion object {
+        @Deprecated("Usar errores por campo tras hasAttemptedProfileSubmit")
         const val PROFILE_INCOMPLETE_ERROR = "Completá nombre, WhatsApp, barrio y calle"
     }
 }
