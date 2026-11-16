@@ -41,7 +41,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -174,9 +178,20 @@ fun ClientContactDomicilioStepScreen(
     onConfirmPin: () -> Unit,
     onSubmit: () -> Unit,
 ) {
-    val hasUnsavedChanges = uiState.barrioQuery.isNotBlank() ||
-        uiState.calle.isNotBlank() ||
-        uiState.numero.isNotBlank()
+    // Dirty real: comparar contra el snapshot post-preload (no marcar dirty por datos precargados).
+    data class AddressBaseline(val barrio: String, val calle: String, val numero: String)
+    var baseline by remember { mutableStateOf<AddressBaseline?>(null) }
+    LaunchedEffect(uiState.isPreloading, uiState.barrioQuery, uiState.calle, uiState.numero) {
+        if (!uiState.isPreloading && baseline == null) {
+            baseline = AddressBaseline(uiState.barrioQuery, uiState.calle, uiState.numero)
+        }
+    }
+    val snapshot = baseline
+    val hasUnsavedChanges = snapshot != null && (
+        uiState.barrioQuery != snapshot.barrio ||
+            uiState.calle != snapshot.calle ||
+            uiState.numero != snapshot.numero
+        )
     ConfirmDiscardOnSystemBack(hasUnsavedChanges = hasUnsavedChanges)
 
     OnboardingStepScaffold(

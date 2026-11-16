@@ -117,18 +117,17 @@ private fun HomeSuccessContent(
             onNotificationsClick = { onEvent(HomeEvent.OpenNotifications) },
             onProfileClick = { onEvent(HomeEvent.NavigateToSettings) },
         )
+        HomeCategoriesGrid(
+            categories = content.categories,
+            onCategoryClick = { onEvent(HomeEvent.CategorySelected(it)) },
+            showSeeAll = true,
+            onSeeAllClick = { onEvent(HomeEvent.SeeAllCategories) },
+            lazy = false,
+        )
         if (content.featuredWorkers.isNotEmpty()) {
             HomeRecentWorkersSection(
                 workers = content.featuredWorkers,
                 onWorkerClick = { onEvent(HomeEvent.WorkerViewProfile(it.id)) },
-            )
-        } else {
-            HomeCategoriesGrid(
-                categories = content.categories,
-                onCategoryClick = { onEvent(HomeEvent.CategorySelected(it)) },
-                showSeeAll = true,
-                onSeeAllClick = { onEvent(HomeEvent.SeeAllCategories) },
-                lazy = false,
             )
         }
         OficiosSupportCard(

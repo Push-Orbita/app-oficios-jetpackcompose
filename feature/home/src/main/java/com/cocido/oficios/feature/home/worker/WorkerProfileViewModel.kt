@@ -97,6 +97,7 @@ class WorkerProfileViewModel @Inject constructor(
                 emitEffect(WorkerProfileEffect.NavigateToRate(bookingId, state.profile.displayName))
             }
             WorkerProfileEvent.ReportProfileClicked -> {
+                if (isSelfProfile()) return
                 val profile = (uiState.value as? WorkerProfileUiState.Success)?.profile ?: return
                 emitEffect(WorkerProfileEffect.NavigateToReport(workerId, profile.displayName))
             }

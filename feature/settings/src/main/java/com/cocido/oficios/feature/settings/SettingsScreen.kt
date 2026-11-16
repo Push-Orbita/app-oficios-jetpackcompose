@@ -323,6 +323,13 @@ private fun SettingsProfileCard(
                         color = statusColor,
                     )
                 }
+                if (!verified) {
+                    Text(
+                        text = stringResource(R.string.settings_pending_email_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

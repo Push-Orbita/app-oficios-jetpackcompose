@@ -39,7 +39,8 @@
     <string name="settings_delete_account_grace_body_generic">Tu cuenta se va a eliminar en los próximos 3 días. Si cambiás de opinión, cancele la solicitud ahora.</string>
     <string name="settings_delete_account_cancel">Cancelar la baja</string>
     <string name="settings_verified_email">Correo verificado</string>
-    <string name="settings_pending_email">Correo pendiente de verificación</string>
+    <string name="settings_pending_email">Verificar correo</string>
+    <string name="settings_pending_email_hint">Tu correo todavía no está verificado</string>
     <string name="settings_provider_role">Trabajador</string>
     <string name="settings_client_role">Cliente</string>
     <string name="settings_load_error_title">No pudimos cargar tu cuenta</string>
@@ -112,6 +113,8 @@
     <string name="professional_profile_load_error">No pudimos cargar tu perfil profesional</string>
     <string name="professional_profile_retry">Intente nuevamente.</string>
     <string name="professional_profile_oficios">Oficio(s):</string>
+    <string name="professional_profile_oficios_empty">Todavía no cargaste un oficio</string>
+    <string name="professional_profile_specialized_empty">Todavía no cargaste especialidades</string>
     <string name="professional_profile_specialized">Especializado en:</string>
     <string name="professional_profile_works">Trabajos realizados</string>
     <string name="professional_profile_certificates">Certificado(s)</string>

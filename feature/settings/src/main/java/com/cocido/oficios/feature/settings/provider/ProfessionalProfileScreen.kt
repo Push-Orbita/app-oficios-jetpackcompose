@@ -104,7 +104,7 @@ private fun ProfessionalProfileForm(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(OficiosSpacing.OficiosScreenPadding),
+            .padding(OficiosSpacing.OficiosScreenPaddingAfterTopBar),
         verticalArrangement = Arrangement.spacedBy(OficiosSpacing.screenGap),
     ) {
         Text(
@@ -114,7 +114,9 @@ private fun ProfessionalProfileForm(
         )
         OficiosSectionCard(title = stringResource(R.string.professional_profile_oficios)) {
             Text(
-                text = state.oficiosLabel.ifBlank { "—" },
+                text = state.oficiosLabel.ifBlank {
+                    stringResource(R.string.professional_profile_oficios_empty)
+                },
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -125,7 +127,9 @@ private fun ProfessionalProfileForm(
                 modifier = Modifier.padding(top = OficiosSpacing.md),
             )
             Text(
-                text = state.specializedLabel.ifBlank { "—" },
+                text = state.specializedLabel.ifBlank {
+                    stringResource(R.string.professional_profile_specialized_empty)
+                },
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -178,15 +182,6 @@ private fun ProfessionalProfileForm(
             DashedAddTile(
                 label = stringResource(R.string.professional_profile_add),
                 onClick = { onEvent(ProfessionalProfileEvent.AddCertificate) },
-            )
-        }
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            OficiosButton(
-                text = stringResource(R.string.professional_profile_delete_account),
-                onClick = { onEvent(ProfessionalProfileEvent.DeleteAccount) },
-                variant = OficiosButtonVariant.Danger,
-                size = OficiosButtonSize.Small,
-                leadingIcon = ImageVector.vectorResource(OficiosIcons.CircleAlert),
             )
         }
     }

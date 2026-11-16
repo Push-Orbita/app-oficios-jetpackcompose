@@ -28,6 +28,7 @@ import com.cocido.oficios.core.designsystem.component.scaffold.OficiosScaffold
 import com.cocido.oficios.core.designsystem.theme.OficiosSpacing
 import com.cocido.oficios.domain.model.ProviderHomeContent
 import com.cocido.oficios.feature.home.R
+import com.cocido.oficios.feature.home.common.rememberSettledPullRefresh
 import com.cocido.oficios.feature.home.components.ClientHomeBottomBar
 import com.cocido.oficios.feature.home.components.ClientHomeTab
 import com.cocido.oficios.feature.home.components.HomeDashboardSkeleton
@@ -63,9 +64,12 @@ fun ProviderHomeScreen(
                     HomeDashboardSkeleton(contentDescription = stringResource(R.string.home_loading))
                 }
                 is ProviderHomeUiState.Error -> {
+                    val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                        onEvent(ProviderHomeEvent.Refresh)
+                    }
                     PullToRefreshBox(
-                        isRefreshing = state.isRefreshing,
-                        onRefresh = { onEvent(ProviderHomeEvent.Refresh) },
+                        isRefreshing = pullRefresh.isRefreshing,
+                        onRefresh = pullRefresh.onRefresh,
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         OficiosErrorState(
@@ -77,9 +81,12 @@ fun ProviderHomeScreen(
                     }
                 }
                 is ProviderHomeUiState.Success -> {
+                    val pullRefresh = rememberSettledPullRefresh(state.isRefreshing) {
+                        onEvent(ProviderHomeEvent.Refresh)
+                    }
                     PullToRefreshBox(
-                        isRefreshing = state.isRefreshing,
-                        onRefresh = { onEvent(ProviderHomeEvent.Refresh) },
+                        isRefreshing = pullRefresh.isRefreshing,
+                        onRefresh = pullRefresh.onRefresh,
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         ProviderHomeSuccessContent(
