@@ -1,8 +1,6 @@
 package com.cocido.oficios.feature.auth.login
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,9 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +29,7 @@ import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosCheckbox
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosPasswordField
 import com.cocido.oficios.core.designsystem.component.inputs.OficiosTextField
+import com.cocido.oficios.core.designsystem.component.interaction.OficiosTouchTarget
 import com.cocido.oficios.core.designsystem.component.layout.OficiosPromptActionRow
 import com.cocido.oficios.core.designsystem.theme.OficiosAuthGlyphSubtitleStyle
 import com.cocido.oficios.core.designsystem.theme.OficiosComponentSize
@@ -66,19 +62,20 @@ fun LoginScreen(
                 minHeight = OficiosComponentSize.authLoginSupportCardMinHeight,
             )
             Spacer(Modifier.height(OficiosComponentSize.authLoginSupportToForgot))
-            Text(
-                text = stringResource(R.string.auth_forgot_password),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { role = Role.Button }
-                    .clickable(
-                        enabled = !uiState.isLoading,
-                        onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
-                    ),
-            )
+            OficiosTouchTarget(
+                onClick = { onEvent(LoginEvent.ForgotPasswordClicked) },
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                accessibilityText = stringResource(R.string.auth_forgot_password),
+            ) {
+                Text(
+                    text = stringResource(R.string.auth_forgot_password),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         },
     ) {
         val passwordFocus = remember { FocusRequester() }

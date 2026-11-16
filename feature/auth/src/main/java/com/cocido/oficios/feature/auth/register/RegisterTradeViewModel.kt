@@ -531,6 +531,7 @@ class RegisterTradeViewModel @Inject constructor(
                     null
                 },
                 localCalleError = if (servesAtLocal && localCalle.isBlank()) required else null,
+                localNumeroError = if (servesAtLocal && localNumero.isBlank()) required else null,
             )
             RegisterTradeFormSection.ZONA -> copy(
                 neighborhoodError = if (selectedBarrioId == null || neighborhoodQuery.isBlank()) {
@@ -557,6 +558,7 @@ class RegisterTradeViewModel @Inject constructor(
             )
             RegisterTradeFormSection.IDENTIDAD -> copy(
                 localCalleError = if (servesAtLocal && localCalle.isBlank()) required else null,
+                localNumeroError = if (servesAtLocal && localNumero.isBlank()) required else null,
             )
         }
     }
@@ -582,6 +584,7 @@ class RegisterTradeViewModel @Inject constructor(
         turnDurationError = null,
         paymentError = null,
         localCalleError = null,
+        localNumeroError = null,
     )
 
 }

@@ -63,6 +63,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun submit() {
+        if (_uiState.value.isLoading) return
         val emailError = AuthValidators.validateEmail(_uiState.value.email)
         val passwordError = AuthValidators.validateLoginPassword(_uiState.value.password)
         if (emailError != null || passwordError != null) {

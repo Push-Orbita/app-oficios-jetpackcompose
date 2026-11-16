@@ -101,6 +101,7 @@ data class RegisterTradeUiState(
     val turnDurationError: String? = null,
     val paymentError: String? = null,
     val localCalleError: String? = null,
+    val localNumeroError: String? = null,
     val canContinue: Boolean = false,
 ) {
     val categories: List<String> get() = categoryOptions.map { it.label }
@@ -134,7 +135,7 @@ data class RegisterTradeUiState(
         get() = selectedPaymentMethods.isNotEmpty()
 
     val canContinueIdentidad: Boolean
-        get() = !servesAtLocal || localCalle.isNotBlank()
+        get() = !servesAtLocal || (localCalle.isNotBlank() && localNumero.isNotBlank())
 
     companion object {
         val defaultExperienceRanges = listOf(

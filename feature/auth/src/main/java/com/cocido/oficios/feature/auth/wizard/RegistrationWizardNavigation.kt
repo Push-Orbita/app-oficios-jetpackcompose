@@ -144,6 +144,7 @@ private fun ProviderTradeStep(
                 onContinue(wizard, trade)
             }
         },
+        onBack = { navController.popBackStack() },
         // En el wizard el back debe ir al paso anterior. El dialogo de
         // descartar solo corresponde al salir del grafo entero (personal).
         confirmDiscardOnSystemBack = false,

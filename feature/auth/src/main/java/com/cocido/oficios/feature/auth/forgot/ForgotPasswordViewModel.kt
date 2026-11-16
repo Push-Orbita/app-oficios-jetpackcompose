@@ -88,6 +88,7 @@ class ForgotPasswordViewModel @Inject constructor(
     }
 
     private fun submit() {
+        if (_uiState.value.isLoading) return
         val emailError = AuthValidators.validateEmail(_uiState.value.email)
         if (emailError != null) {
             _uiState.update { it.copy(emailError = emailError) }
@@ -98,7 +99,8 @@ class ForgotPasswordViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, generalError = null) }
             when (val result = forgotPasswordUseCase(_uiState.value.email.trim())) {
                 is AppResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                    // Un solo camino post-éxito: navegar al reset (sin pantalla success en carrera).
+                    _uiState.update { it.copy(isLoading = false) }
                     _effects.emit(ForgotPasswordEffect.NavigateToReset)
                 }
                 is AppResult.Error -> {
@@ -107,7 +109,7 @@ class ForgotPasswordViewModel @Inject constructor(
                     // cualquier otro rechazo del backend relacionado a la cuenta.
                     val message = when (result.error) {
                         is AppError.Unauthorized, is AppError.NotFound ->
-                            "Si el correo está registrado, recibirá instrucciones para recuperar su contraseña."
+                            "Si el correo está registrado, vas a recibir instrucciones para recuperar tu contraseña."
                         else -> result.error.userMessage()
                     }
                     _uiState.update {
@@ -149,7 +151,8 @@ class ResetPasswordViewModel @Inject constructor(
     }
 
     private fun submit() {
-        val codeError = if (_uiState.value.code.isBlank()) "Ingrese el código" else null
+        if (_uiState.value.isLoading || _uiState.value.isSuccess) return
+        val codeError = if (_uiState.value.code.isBlank()) "Ingresá el código" else null
         val passwordError = AuthValidators.validatePassword(_uiState.value.password)
         val confirmPasswordError = AuthValidators.validatePasswordConfirmation(
             _uiState.value.password,
@@ -189,8 +192,8 @@ class ResetPasswordViewModel @Inject constructor(
                 )
             ) {
                 is AppResult.Success -> {
+                    // Success visible en pantalla; el CTA del success navega a login.
                     _uiState.update { it.copy(isLoading = false, isSuccess = true) }
-                    _effects.emit(ForgotPasswordEffect.NavigateToLogin)
                 }
                 is AppResult.Error -> {
                     _uiState.update {

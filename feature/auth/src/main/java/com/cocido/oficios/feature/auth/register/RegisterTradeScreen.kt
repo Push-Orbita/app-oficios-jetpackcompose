@@ -21,6 +21,7 @@ import com.cocido.oficios.core.designsystem.component.buttons.OficiosButtonVaria
 import com.cocido.oficios.core.designsystem.component.feedback.OficiosInlineAlert
 import com.cocido.oficios.core.designsystem.component.categories.CategoryGridItem
 import com.cocido.oficios.core.designsystem.component.categories.OficiosCategoriesGrid
+import com.cocido.oficios.core.designsystem.component.navigation.OficiosBackTopBar
 import com.cocido.oficios.domain.model.CatalogOption
 import com.cocido.oficios.domain.model.ProviderPaymentMethods
 import com.cocido.oficios.core.designsystem.component.inputs.FieldAndCtaBlock
@@ -51,6 +52,7 @@ fun RegisterTradeScreen(
     showContinue: Boolean = true,
     continueLabel: String? = null,
     onContinue: (() -> Unit)? = null,
+    onBack: (() -> Unit)? = null,
     confirmDiscardOnSystemBack: Boolean = true,
 ) {
     if (confirmDiscardOnSystemBack) {
@@ -60,20 +62,38 @@ fun RegisterTradeScreen(
     AuthRegisterLayout(
         modifier = modifier,
         isLoading = uiState.isLoading || uiState.isLoadingCatalog,
+        topBar = onBack?.let { back ->
+            {
+                OficiosBackTopBar(
+                    title = stringResource(
+                        when (section) {
+                            RegisterTradeFormSection.ZONA -> R.string.auth_wizard_zona_title
+                            RegisterTradeFormSection.AGENDA -> R.string.auth_wizard_agenda_title
+                            RegisterTradeFormSection.COBRO -> R.string.auth_wizard_cobro_title
+                            RegisterTradeFormSection.IDENTIDAD -> R.string.auth_wizard_identidad_title
+                            else -> R.string.auth_register_trade_title
+                        },
+                    ),
+                    onBack = back,
+                )
+            }
+        },
     ) {
-        Text(
-            text = stringResource(
-                when (section) {
-                    RegisterTradeFormSection.ZONA -> R.string.auth_wizard_zona_title
-                    RegisterTradeFormSection.AGENDA -> R.string.auth_wizard_agenda_title
-                    RegisterTradeFormSection.COBRO -> R.string.auth_wizard_cobro_title
-                    RegisterTradeFormSection.IDENTIDAD -> R.string.auth_wizard_identidad_title
-                    else -> R.string.auth_register_trade_title
-                },
-            ),
-            style = OficiosRegisterTradeTitleStyle,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        if (onBack == null) {
+            Text(
+                text = stringResource(
+                    when (section) {
+                        RegisterTradeFormSection.ZONA -> R.string.auth_wizard_zona_title
+                        RegisterTradeFormSection.AGENDA -> R.string.auth_wizard_agenda_title
+                        RegisterTradeFormSection.COBRO -> R.string.auth_wizard_cobro_title
+                        RegisterTradeFormSection.IDENTIDAD -> R.string.auth_wizard_identidad_title
+                        else -> R.string.auth_register_trade_title
+                    },
+                ),
+                style = OficiosRegisterTradeTitleStyle,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+        }
 
         val afterCategory = section != RegisterTradeFormSection.FULL || uiState.selectedCategoryId != null
         val showOficio = section == RegisterTradeFormSection.FULL || section == RegisterTradeFormSection.OFICIO
@@ -94,6 +114,7 @@ fun RegisterTradeScreen(
             uiState.turnDurationError,
             uiState.paymentError,
             uiState.localCalleError,
+            uiState.localNumeroError,
         ).any { it != null }
         if (!hasFieldErrors) {
             uiState.stepValidationError?.let { resId ->
@@ -126,6 +147,7 @@ fun RegisterTradeScreen(
             if (uiState.turnDurationError != null) add(TradeField.TurnDuration)
             if (uiState.paymentError != null) add(TradeField.Payment)
             if (uiState.localCalleError != null) add(TradeField.LocalCalle)
+            if (uiState.localNumeroError != null) add(TradeField.LocalNumero)
         }
         FocusFirstInvalidEffect(
             attemptId = uiState.errorFocusNonce,
@@ -389,6 +411,9 @@ fun RegisterTradeScreen(
                     value = uiState.localNumero,
                     onValueChange = { onEvent(RegisterTradeEvent.LocalNumeroChanged(it)) },
                     label = stringResource(R.string.auth_wizard_number),
+                    isError = uiState.localNumeroError != null,
+                    supportingText = uiState.localNumeroError,
+                    focusRequester = fieldNavigator.focusRequester(TradeField.LocalNumero),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -532,6 +557,7 @@ private enum class TradeField {
     TurnDuration,
     Payment,
     LocalCalle,
+    LocalNumero,
 }
 
 private fun WeeklyAvailability.toEditorDays(labels: Map<String, String>): List<WeeklyScheduleDayUi> {

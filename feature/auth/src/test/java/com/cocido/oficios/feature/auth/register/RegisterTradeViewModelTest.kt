@@ -209,6 +209,22 @@ class RegisterTradeViewModelTest {
     }
 
     @Test
+    fun `attemptContinueSection identidad requires street number when serves at local`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(RegisterTradeEvent.ServesAtLocalChanged(true))
+        viewModel.onEvent(RegisterTradeEvent.LocalCalleChanged("San Martín"))
+        assertEquals(false, viewModel.attemptContinueSection(RegisterTradeFormSection.IDENTIDAD))
+        assertEquals(
+            com.cocido.oficios.domain.validation.AuthValidators.FIELD_REQUIRED,
+            viewModel.uiState.value.localNumeroError,
+        )
+        viewModel.onEvent(RegisterTradeEvent.LocalNumeroChanged("123"))
+        assertEquals(true, viewModel.attemptContinueSection(RegisterTradeFormSection.IDENTIDAD))
+        assertEquals(null, viewModel.uiState.value.localNumeroError)
+    }
+
+    @Test
     fun `attemptContinueSection clears error when step is complete`() = runTest {
         val viewModel = viewModelWithPlumbingSelected()
         viewModel.onEvent(RegisterTradeEvent.ExperienceRangeChanged("0 a 2 años"))

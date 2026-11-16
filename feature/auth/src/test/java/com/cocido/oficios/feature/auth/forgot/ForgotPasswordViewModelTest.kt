@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -51,7 +52,7 @@ class ForgotPasswordViewModelTest {
     }
 
     @Test
-    fun `success navigates to reset`() = runTest(dispatcher) {
+    fun `success navigates to reset without success screen race`() = runTest(dispatcher) {
         val viewModel = ForgotPasswordViewModel(ForgotPasswordUseCase(FakeAuthRepository()))
         val effects = mutableListOf<ForgotPasswordEffect>()
         val job = launch { viewModel.effects.collect { effects.add(it) } }
@@ -59,7 +60,27 @@ class ForgotPasswordViewModelTest {
         viewModel.onEvent(ForgotPasswordEvent.Submit)
         advanceUntilIdle()
         assertTrue(effects.any { it is ForgotPasswordEffect.NavigateToReset })
+        assertFalse(viewModel.uiState.value.isSuccess)
         job.cancel()
+    }
+
+    @Test
+    fun `ignores double submit while loading`() = runTest(dispatcher) {
+        var calls = 0
+        val slowRepo = object : com.cocido.oficios.domain.repository.AuthRepository by FakeAuthRepository() {
+            override suspend fun requestPasswordReset(email: String): AppResult<Unit> {
+                calls++
+                kotlinx.coroutines.awaitCancellation()
+            }
+        }
+        val viewModel = ForgotPasswordViewModel(ForgotPasswordUseCase(slowRepo))
+        viewModel.onEvent(ForgotPasswordEvent.EmailChanged("user@test.com"))
+        viewModel.onEvent(ForgotPasswordEvent.Submit)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isLoading)
+        viewModel.onEvent(ForgotPasswordEvent.Submit)
+        advanceUntilIdle()
+        assertEquals(1, calls)
     }
 
     @Test

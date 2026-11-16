@@ -41,21 +41,6 @@ fun ResetPasswordRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                ForgotPasswordEffect.NavigateToLogin -> onNavigateToLogin()
-                ForgotPasswordEffect.NavigateToReset -> Unit
-            }
-        }
-    }
-
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onNavigateToLogin()
-        }
-    }
-
     ResetPasswordScreen(
         uiState = uiState,
         onEvent = viewModel::onEvent,
