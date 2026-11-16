@@ -13,6 +13,22 @@ interface NotificationsRepository {
 
     suspend fun registerDeviceToken(fcmToken: String, deviceId: String?): AppResult<Unit>
     suspend fun markAsRead(notificationId: Long): AppResult<Unit>
+
+    /**
+     * Marca varias notificaciones como leídas.
+     * Devuelve los IDs que fallaron (lista vacía = éxito total).
+     * La implementación real aplica el contador de forma optimista una sola vez
+     * y llama al endpoint individual con un límite de concurrencia.
+     */
+    suspend fun markManyAsRead(notificationIds: List<Long>): List<Long> {
+        if (notificationIds.isEmpty()) return emptyList()
+        val failed = mutableListOf<Long>()
+        for (id in notificationIds.distinct()) {
+            if (markAsRead(id) is AppResult.Error) failed += id
+        }
+        return failed
+    }
+
     suspend fun getNotifications(
         pageNumber: Int,
         pageSize: Int,

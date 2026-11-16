@@ -19,6 +19,14 @@ class MarkNotificationReadUseCase @Inject constructor(
         notificationsRepository.markAsRead(notificationId)
 }
 
+class MarkManyNotificationsReadUseCase @Inject constructor(
+    private val notificationsRepository: NotificationsRepository,
+) {
+    /** Devuelve los IDs que no se pudieron marcar como leídos. */
+    suspend operator fun invoke(notificationIds: List<Long>): List<Long> =
+        notificationsRepository.markManyAsRead(notificationIds)
+}
+
 class GetNotificationsUseCase @Inject constructor(
     private val notificationsRepository: NotificationsRepository,
 ) {

@@ -200,6 +200,9 @@
     <string name="notifications_filter_all">Todas</string>
     <string name="notifications_filter_unread">No leídas</string>
     <string name="notifications_mark_read_error">No pudimos marcar la notificación como leída</string>
+    <string name="notifications_mark_all">Marcar todas</string>
+    <string name="notifications_mark_all_error">No pudimos marcar algunas como leídas</string>
+    <string name="notifications_mark_all_retry">Reintentar</string>
     <string name="notifications_load_more">Ver más</string>
     <string name="notifications_unread_label">Nueva</string>
 

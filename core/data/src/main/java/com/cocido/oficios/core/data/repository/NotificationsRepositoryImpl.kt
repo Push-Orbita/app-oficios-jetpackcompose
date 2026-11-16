@@ -8,9 +8,15 @@ import com.cocido.oficios.core.data.mapper.NotificationMapper.toDomain
 import com.cocido.oficios.core.data.remote.NotificationsRemoteDataSource
 import com.cocido.oficios.domain.model.NotificationPage
 import com.cocido.oficios.domain.repository.NotificationsRepository
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 @Singleton
 class NotificationsRepositoryImpl @Inject constructor(
@@ -38,6 +44,36 @@ class NotificationsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun markManyAsRead(notificationIds: List<Long>): List<Long> {
+        val uniqueIds = notificationIds.distinct()
+        if (uniqueIds.isEmpty()) return emptyList()
+
+        val previous = unreadCache.get()
+        previous?.let { unreadCache.set((it - uniqueIds.size).coerceAtLeast(0)) }
+
+        val failed = ConcurrentLinkedQueue<Long>()
+        coroutineScope {
+            val semaphore = Semaphore(MARK_ALL_PARALLELISM)
+            uniqueIds.map { id ->
+                async {
+                    semaphore.withPermit {
+                        when (remoteDataSource.markAsRead(id)) {
+                            is AppResult.Success -> Unit
+                            is AppResult.Error -> failed.add(id)
+                        }
+                    }
+                }
+            }.awaitAll()
+        }
+
+        val failedIds = failed.toList()
+        previous?.let {
+            val successCount = uniqueIds.size - failedIds.size
+            unreadCache.set((it - successCount).coerceAtLeast(0))
+        }
+        return failedIds
+    }
+
     override suspend fun getNotifications(
         pageNumber: Int,
         pageSize: Int,
@@ -48,5 +84,9 @@ class NotificationsRepositoryImpl @Inject constructor(
             unreadCache.set(result.data.items.count { !it.isRead })
         }
         return result
+    }
+
+    private companion object {
+        const val MARK_ALL_PARALLELISM = 4
     }
 }
