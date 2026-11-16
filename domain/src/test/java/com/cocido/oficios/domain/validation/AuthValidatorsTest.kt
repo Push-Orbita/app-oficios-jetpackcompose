@@ -42,22 +42,24 @@ class AuthValidatorsTest {
     }
 
     @Test
-    fun `validateName rejects blank names`() {
-        assertEquals("Los nombres son obligatorios", AuthValidators.validateName("  ", "nombres"))
-        assertEquals("El apellido es obligatorio", AuthValidators.validateName("", "apellido"))
+    fun `validateName rejects blank names with Completá este campo`() {
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validateName("  ", "nombres"))
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validateName("", "apellido"))
     }
 
     @Test
-    fun `email validation uses Correo copy`() {
-        assertEquals("El correo es obligatorio", AuthValidators.validateEmail(""))
-        assertEquals("Ingresá un correo válido", AuthValidators.validateEmail("no-es-correo"))
+    fun `email validation uses short voseo copy`() {
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validateEmail(""))
+        assertEquals(AuthValidators.EMAIL_INVALID, AuthValidators.validateEmail("no-es-correo"))
         assertEquals(null, AuthValidators.validateEmail("ana@oficios.test"))
     }
 
     @Test
     fun `password confirmation and dni use voseo`() {
-        assertEquals("Confirmá tu contraseña", AuthValidators.validatePasswordConfirmation("a", ""))
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validatePasswordConfirmation("a", ""))
+        assertEquals(AuthValidators.PASSWORDS_MISMATCH, AuthValidators.validatePasswordConfirmation("a", "b"))
         assertEquals("Ingresá un DNI válido", AuthValidators.validateDocument("abc"))
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validateDocument(""))
     }
 
     @Test
@@ -69,7 +71,7 @@ class AuthValidatorsTest {
 
     @Test
     fun `validateArgentineMobile rejects blank and short numbers`() {
-        assertEquals("Ingresá tu celular de WhatsApp.", AuthValidators.validateArgentineMobile(""))
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validateArgentineMobile(""))
         assertEquals(
             "Ingresá el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109.",
             AuthValidators.validateArgentineMobile("123"),
@@ -78,10 +80,7 @@ class AuthValidatorsTest {
 
     @Test
     fun `validateContactName rejects blank and too long`() {
-        assertEquals(
-            "Ingresá un nombre para identificar este contacto.",
-            AuthValidators.validateContactName("  "),
-        )
+        assertEquals(AuthValidators.FIELD_REQUIRED, AuthValidators.validateContactName("  "))
         assertEquals(null, AuthValidators.validateContactName("Daniel"))
         assertEquals(
             "El nombre no puede superar 100 caracteres.",
@@ -93,16 +92,25 @@ class AuthValidatorsTest {
     fun `validateOptionalEmail allows blank`() {
         assertEquals(null, AuthValidators.validateOptionalEmail(""))
         assertEquals(null, AuthValidators.validateOptionalEmail("ana@oficios.test"))
-        assertEquals("Ingresá un correo válido", AuthValidators.validateOptionalEmail("mal"))
+        assertEquals(AuthValidators.EMAIL_INVALID, AuthValidators.validateOptionalEmail("mal"))
     }
 
     @Test
     fun `validatePassword delegates to PasswordPolicy`() {
         assertEquals(PasswordPolicy.ERROR_BLANK, AuthValidators.validatePassword(""))
-        assertEquals(PasswordPolicy.ERROR_LENGTH, AuthValidators.validatePassword("xd123"))
-        assertEquals(PasswordPolicy.ERROR_LETTER, AuthValidators.validatePassword("12345678"))
-        assertEquals(PasswordPolicy.ERROR_DIGIT, AuthValidators.validatePassword("abcdefgh"))
-        assertEquals(PasswordPolicy.ERROR_SPECIAL, AuthValidators.validatePassword("secret123"))
+        assertEquals(
+            "Te falta entre 6 y 64 caracteres y un símbolo",
+            AuthValidators.validatePassword("xd123"),
+        )
+        assertEquals(
+            "Te falta al menos una letra y un símbolo",
+            AuthValidators.validatePassword("12345678"),
+        )
+        assertEquals(
+            "Te falta al menos un número y un símbolo",
+            AuthValidators.validatePassword("abcdefgh"),
+        )
+        assertEquals("Te falta un símbolo", AuthValidators.validatePassword("secret123"))
         assertEquals(null, AuthValidators.validatePassword("secret12!"))
     }
 

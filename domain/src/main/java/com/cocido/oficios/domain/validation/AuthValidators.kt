@@ -1,12 +1,16 @@
 package com.cocido.oficios.domain.validation
 
 object AuthValidators {
+    const val FIELD_REQUIRED = "Completá este campo"
+    const val EMAIL_INVALID = "Email inválido"
+    const val PASSWORDS_MISMATCH = "Las contraseñas no coinciden"
+
     private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     private val DNI_REGEX = Regex("^[0-9]{7,11}$")
 
     fun validateEmail(email: String): String? = when {
-        email.isBlank() -> "El correo es obligatorio"
-        !EMAIL_REGEX.matches(email) -> "Ingresá un correo válido"
+        email.isBlank() -> FIELD_REQUIRED
+        !EMAIL_REGEX.matches(email) -> EMAIL_INVALID
         else -> null
     }
 
@@ -17,28 +21,25 @@ object AuthValidators {
         if (password.isBlank()) PasswordPolicy.ERROR_BLANK else null
 
     fun validatePasswordConfirmation(password: String, confirmation: String): String? = when {
-        confirmation.isBlank() -> "Confirmá tu contraseña"
-        password != confirmation -> "Las contraseñas no coinciden"
+        confirmation.isBlank() -> FIELD_REQUIRED
+        password != confirmation -> PASSWORDS_MISMATCH
         else -> null
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun validateName(value: String, fieldName: String): String? = when {
-        value.isBlank() -> when (fieldName) {
-            "nombres" -> "Los nombres son obligatorios"
-            "apellido" -> "El apellido es obligatorio"
-            else -> "El $fieldName es obligatorio"
-        }
+        value.isBlank() -> FIELD_REQUIRED
         else -> null
     }
 
     fun validateDocument(document: String): String? = when {
-        document.isBlank() -> "El DNI es obligatorio"
+        document.isBlank() -> FIELD_REQUIRED
         !DNI_REGEX.matches(document) -> "Ingresá un DNI válido"
         else -> null
     }
 
     fun validateVerificationCode(code: String): String? = when {
-        code.isBlank() -> "Ingresá el código"
+        code.isBlank() -> FIELD_REQUIRED
         code.length != 6 || code.any { !it.isDigit() } -> "El código tiene que tener 6 dígitos"
         else -> null
     }
@@ -58,7 +59,7 @@ object AuthValidators {
     }
 
     fun validateContactName(name: String): String? = when {
-        name.isBlank() -> "Ingresá un nombre para identificar este contacto."
+        name.isBlank() -> FIELD_REQUIRED
         name.trim().length > 100 -> "El nombre no puede superar 100 caracteres."
         else -> null
     }
@@ -70,7 +71,7 @@ object AuthValidators {
     fun validateArgentineMobile(raw: String): String? {
         val phone = normalizeArgentinePhone(raw)
         return when {
-            raw.isBlank() -> "Ingresá tu celular de WhatsApp."
+            raw.isBlank() -> FIELD_REQUIRED
             phone.length != 11 || !phone.startsWith("9") ->
                 "Ingresá el celular con el 9 de móvil, sin +54. Ejemplo: 9 370 5219109."
             else -> null
@@ -83,6 +84,9 @@ object AuthValidators {
         if (trimmed.length > 100) return "El correo no puede superar 100 caracteres."
         return validateEmail(trimmed)
     }
+
+    fun validateRequiredText(value: String): String? =
+        if (value.isBlank()) FIELD_REQUIRED else null
 
     private const val ARGENTINA_COUNTRY_CODE = "54"
 }

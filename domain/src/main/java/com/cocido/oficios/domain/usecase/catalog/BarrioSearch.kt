@@ -10,7 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
@@ -46,11 +46,12 @@ class DebouncedBarrioSearcher(
     private val request = MutableStateFlow<Request?>(null)
     private val generation = AtomicInteger(0)
     private val job: Job = scope.launch {
+        // filterNotNull (no drop(1)): si submit() corre antes de que el collector
+        // se suscriba, el primer Request real no se pierde (drop(1) lo descartaba).
         request
-            .drop(1) // ignore the initial null seed
+            .filterNotNull()
             .distinctUntilChanged()
             .collectLatest { req ->
-                if (req == null) return@collectLatest
                 val q = req.text.trim()
                 if (!req.immediate && q.isNotEmpty()) delay(debounceMs)
                 val gen = generation.get()

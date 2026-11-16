@@ -51,6 +51,11 @@ object PasswordPolicy {
     const val ERROR_DIGIT = "Incluí al menos un número"
     const val ERROR_SPECIAL = "Incluí al menos un símbolo, por ej. ! @ # $ - _"
 
+    private const val MISSING_LENGTH = "entre 6 y 64 caracteres"
+    private const val MISSING_LETTER = "al menos una letra"
+    private const val MISSING_DIGIT = "al menos un número"
+    private const val MISSING_SPECIAL = "un símbolo"
+
     /** Especial = carácter visible que no es letra, número ni espacio/control. */
     fun isSpecialChar(char: Char): Boolean =
         !char.isLetterOrDigit() && !char.isWhitespace() && !char.isISOControl()
@@ -67,17 +72,35 @@ object PasswordPolicy {
             PasswordRequirement(PasswordRequirementId.DIGIT, LABEL_DIGIT, hasDigit),
             PasswordRequirement(PasswordRequirementId.SPECIAL, LABEL_SPECIAL, hasSpecial),
         )
+        val unmet = requirements.filterNot { it.satisfied }.map { it.id }
         val error = when {
             password.isBlank() -> ERROR_BLANK
             hasEdgeSpaces -> ERROR_EDGES
-            !lengthOk -> ERROR_LENGTH
-            !hasLetter -> ERROR_LETTER
-            !hasDigit -> ERROR_DIGIT
-            !hasSpecial -> ERROR_SPECIAL
+            unmet.isNotEmpty() -> formatMissingMessage(unmet)
             else -> null
         }
         return PasswordPolicyResult(requirements = requirements, error = error)
     }
 
     fun validate(password: String): String? = evaluate(password).error
+
+    /** Mensaje corto en voseo: "Te falta al menos un número y un símbolo". */
+    fun formatMissingMessage(unmet: List<PasswordRequirementId>): String {
+        if (unmet.isEmpty()) return ERROR_BLANK
+        val parts = unmet.map { id ->
+            when (id) {
+                PasswordRequirementId.LENGTH -> MISSING_LENGTH
+                PasswordRequirementId.LETTER -> MISSING_LETTER
+                PasswordRequirementId.DIGIT -> MISSING_DIGIT
+                PasswordRequirementId.SPECIAL -> MISSING_SPECIAL
+            }
+        }
+        return "Te falta ${joinWithY(parts)}"
+    }
+
+    private fun joinWithY(parts: List<String>): String = when (parts.size) {
+        1 -> parts[0]
+        2 -> "${parts[0]} y ${parts[1]}"
+        else -> parts.dropLast(1).joinToString(", ") + " y ${parts.last()}"
+    }
 }

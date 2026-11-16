@@ -35,7 +35,7 @@ class PasswordPolicyTest {
     @Test
     fun `five characters fail length and keep the rest live`() {
         val result = PasswordPolicy.evaluate("ab1!c")
-        assertEquals(PasswordPolicy.ERROR_LENGTH, result.error)
+        assertEquals("Te falta entre 6 y 64 caracteres", result.error)
         assertFalse(result.requirement(PasswordRequirementId.LENGTH).satisfied)
         assertTrue(result.requirement(PasswordRequirementId.LETTER).satisfied)
         assertTrue(result.requirement(PasswordRequirementId.DIGIT).satisfied)
@@ -52,7 +52,7 @@ class PasswordPolicyTest {
     fun `password longer than 64 fails length`() {
         val password = "a".repeat(62) + "1!" + "b"
         assertEquals(65, password.length)
-        assertEquals(PasswordPolicy.ERROR_LENGTH, PasswordPolicy.validate(password))
+        assertEquals("Te falta entre 6 y 64 caracteres", PasswordPolicy.validate(password))
     }
 
     @Test
@@ -63,11 +63,23 @@ class PasswordPolicyTest {
     }
 
     @Test
-    fun `missing letter digit or symbol report the right error`() {
-        assertEquals(PasswordPolicy.ERROR_LETTER, PasswordPolicy.validate("123456!"))
-        assertEquals(PasswordPolicy.ERROR_DIGIT, PasswordPolicy.validate("abcdef!"))
-        assertEquals(PasswordPolicy.ERROR_SPECIAL, PasswordPolicy.validate("abc123"))
+    fun `missing letter digit or symbol report aggregated message`() {
+        assertEquals("Te falta al menos una letra", PasswordPolicy.validate("123456!"))
+        assertEquals("Te falta al menos un número", PasswordPolicy.validate("abcdef!"))
+        assertEquals("Te falta un símbolo", PasswordPolicy.validate("abc123"))
         assertFalse(PasswordPolicy.evaluate("abc123").requirement(PasswordRequirementId.SPECIAL).satisfied)
+    }
+
+    @Test
+    fun `multiple missing requirements are listed with y`() {
+        assertEquals(
+            "Te falta entre 6 y 64 caracteres y un símbolo",
+            PasswordPolicy.validate("xd123"),
+        )
+        assertEquals(
+            "Te falta al menos un número y un símbolo",
+            PasswordPolicy.validate("abcdef"),
+        )
     }
 
     @Test
@@ -88,7 +100,7 @@ class PasswordPolicyTest {
     @Test
     fun `spaces do not count as symbol`() {
         assertFalse(PasswordPolicy.isSpecialChar(' '))
-        assertEquals(PasswordPolicy.ERROR_SPECIAL, PasswordPolicy.validate("sec ret1"))
+        assertEquals("Te falta un símbolo", PasswordPolicy.validate("sec ret1"))
     }
 
     @Test
@@ -106,6 +118,16 @@ class PasswordPolicyTest {
     fun `validate matches evaluate error`() {
         val password = "short"
         assertEquals(PasswordPolicy.evaluate(password).error, PasswordPolicy.validate(password))
+    }
+
+    @Test
+    fun `formatMissingMessage joins parts in voseo`() {
+        assertEquals(
+            "Te falta al menos un número y un símbolo",
+            PasswordPolicy.formatMissingMessage(
+                listOf(PasswordRequirementId.DIGIT, PasswordRequirementId.SPECIAL),
+            ),
+        )
     }
 
     private fun PasswordPolicyResult.requirement(id: PasswordRequirementId): PasswordRequirement =

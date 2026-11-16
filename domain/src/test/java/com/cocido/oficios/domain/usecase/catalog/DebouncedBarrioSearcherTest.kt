@@ -44,6 +44,24 @@ class DebouncedBarrioSearcherTest {
     }
 
     @Test
+    fun `submit before collector starts is not dropped`() = runTest(UnconfinedTestDispatcher()) {
+        val repo = FakeCatalogRepository()
+        val results = mutableListOf<List<CatalogOption>>()
+        val searcher = DebouncedBarrioSearcher(
+            scope = this,
+            searchBarrios = SearchBarriosUseCase(repo),
+            onResult = { results += it },
+            debounceMs = 300L,
+        )
+        // Submit synchronously right after construction (StandardTestDispatcher race).
+        searcher.submit("")
+        advanceUntilIdle()
+        assertEquals(listOf(""), repo.queries)
+        assertEquals(listOf("Centro", "San Francisco"), results.single().map { it.label })
+        searcher.cancel()
+    }
+
+    @Test
     fun `stable query triggers exactly one request after debounce`() = runTest(UnconfinedTestDispatcher()) {
         val repo = FakeCatalogRepository()
         val results = mutableListOf<List<CatalogOption>>()
